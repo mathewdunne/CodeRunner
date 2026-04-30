@@ -1,0 +1,29 @@
+# Node
+node_modules/
+dist/
+.npm/
+*.tsbuildinfo
+
+# Gradle / Java
+.gradle/
+build/
+bin/
+*.class
+*.iml
+*.jar
+!containers/sim/project/gradle/wrapper/gradle-wrapper.jar
+
+# IDEs
+.idea/
+.vscode/
+!.wpilib/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Claude Code local
+.claude/settings.local.json
