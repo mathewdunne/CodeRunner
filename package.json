@@ -7,9 +7,13 @@
   "engines": {
     "node": ">=20"
   },
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "build:ascope": "tsx scripts/build-ascope-lite.ts",
     "serve:ascope": "tsx scripts/serve-ascope-lite.ts",
+    "dev:web": "npm run dev --workspace apps/web",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

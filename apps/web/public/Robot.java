@@ -1,6 +1,7 @@
-// Source of truth for the running robot. apps/web/public/Robot.java is a
-// static copy used by the Task 3 web shell until Task 4 wires GET /file to
-// this container. Keep the two in sync until then.
+// Placeholder used by the Task 3 web shell. Source of truth for the running
+// robot is containers/sim/project/src/main/java/frc/robot/Robot.java; this
+// copy is fetched at page load until Task 4 wires GET /file to the sim
+// container's filesystem. Keep the two in sync until then.
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;

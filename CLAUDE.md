@@ -11,6 +11,7 @@ All non-container code is **TypeScript on Node.js**. No Python, no Go, no plain 
 ## Repo layout
 
 ```
+apps/<name>/            Workspace packages for non-container TS code. Currently `web` (browser shell).
 containers/<name>/      Per-container code. Currently only `sim`. Future: router, lsp.
 vendor/AdvantageScope/  Pinned submodule of upstream AdvantageScope (used to build AS Lite).
 scripts/                Root TypeScript scripts run via tsx (build:ascope, serve:ascope).
@@ -18,13 +19,13 @@ dist/                   Build output (gitignored). dist/advantagescope/ is the A
 docs/decisions/         Numbered design notes for non-obvious choices (001-, 002-, ...).
 ```
 
-When other top-level dirs appear (`apps/`, `packages/`, etc.) they will be npm/pnpm workspaces for the TS code. Don't add them speculatively — wait until a task needs them. Right now the root is a single npm package; promote to workspaces when Task 3 lands.
+The root is an npm workspaces root (`"workspaces": ["apps/*"]`). Add new TS code as a new `apps/<name>/` package; root scripts (`build:ascope`, `serve:ascope`, `typecheck`) stay at the repo root and operate on root-level files. Don't add `packages/` speculatively — wait until shared code actually needs to be extracted.
 
 ## Implementation status
 
 - [x] Task 1 — Sim container with hello-world WPILib project
 - [x] Task 2 — AdvantageScope Lite hosted standalone
-- [ ] Task 3 — Minimal web shell (Monaco + AS Lite + Run + console)
+- [x] Task 3 — Minimal web shell (Monaco + AS Lite + Run + console)
 - [ ] Task 4 — Backend wiring for save and run
 
 ## Working principles for this repo
@@ -48,6 +49,8 @@ When other top-level dirs appear (`apps/`, `packages/`, etc.) they will be npm/p
 - Run sim: `docker run --rm -p 5810:5810 --memory=2g frc-sim:mvp`
 - Build AS Lite bundle: `npm run build:ascope` (writes `dist/advantagescope/`)
 - Serve AS Lite: `npm run serve:ascope` (HTTP on `:8080`; override with `PORT=...`)
-- Typecheck root scripts: `npm run typecheck`
+- Run web shell dev server: `npm run dev:web` (Vite on `:3000`; iframes AS Lite from `:8080`)
+- Typecheck root scripts: `npm run typecheck`. Web shell: `npm run typecheck --workspace apps/web`.
 - First-time setup: `git submodule update --init --recursive && npm install && npm run build:ascope`
 - End-to-end verify Task 2: run sim and `serve:ascope`, open Chrome at `http://localhost:8080`, expect AS Lite connected with `/SmartDashboard/counter` incrementing on a Line Graph and `/SmartDashboard/robotPose` moving on a 2D Field tab.
+- End-to-end verify Task 3: run sim, `serve:ascope`, and `dev:web` in three terminals; open Chrome at `http://localhost:3000`, expect Monaco showing `Robot.java` (editable), AS Lite iframe live with counter+pose, and clicking Run appends `clicked` to the console panel.

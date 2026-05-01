@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:web"],
+      "port": 3000
+    },
+    {
+      "name": "ascope",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "serve:ascope"],
+      "port": 8080
+    }
+  ]
+}
