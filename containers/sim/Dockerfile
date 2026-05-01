@@ -18,8 +18,9 @@ RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
 RUN ./gradlew --no-daemon --console=plain build
 RUN ./gradlew --no-daemon --stop; rm -rf /workspace/project/build /workspace/project/.gradle
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
+COPY entrypoint.sh start-sim.sh stop-sim.sh /usr/local/bin/
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh
 
 EXPOSE 5810
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

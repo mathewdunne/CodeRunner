@@ -2,7 +2,7 @@
 
 An experimental browser-based IDE for learning FRC robot programming. Students write Java in Monaco, click Run, and watch their robot simulate in real time with telemetry rendered by AdvantageScope Lite. See [`Project-MVP.md`](./Project-MVP.md) for full scope and the task breakdown.
 
-Status: Task 2 (AdvantageScope Lite hosted standalone) implemented. The browser-side editor and backend wiring (Tasks 3–4) are not built yet.
+Status: Tasks 1-4 of the MVP are implemented: sim container, AdvantageScope Lite hosting, browser shell, and backend save/run wiring.
 
 ## Prerequisites
 
@@ -47,7 +47,36 @@ To rebuild the sim image (Task 1) if you haven't yet:
 docker build -t frc-sim:mvp containers/sim
 ```
 
-## Running the loop (Task 2 manual verification)
+## Running the MVP loop (Task 4)
+
+Build the sim image, then start the full local stack:
+
+```bash
+docker build -t frc-sim:mvp containers/sim
+npm run dev:mvp
+```
+
+`npm run dev:mvp` keeps or starts a named container, `frc-sim-mvp`, then launches:
+
+- AS Lite static server on `http://localhost:8080`
+- Backend on `http://localhost:4000`
+- Web IDE on `http://localhost:3000`
+
+Open [http://localhost:3000](http://localhost:3000). Monaco loads `Robot.java` through `GET /file`, edits auto-save through `POST /file`, and Run opens `WS /run` to stream Gradle and sim logs. AS Lite remains iframed from `:8080` and reconnects to NT4 on `:5810`.
+
+To verify a save from another terminal:
+
+```bash
+docker exec frc-sim-mvp cat /workspace/project/src/main/java/frc/robot/Robot.java
+```
+
+Stopping `npm run dev:mvp` stops the host dev processes but leaves `frc-sim-mvp` running so the container filesystem remains the current project state. Remove it manually when you want a fresh baked project:
+
+```bash
+docker rm -f frc-sim-mvp
+```
+
+## Running AS Lite standalone (Task 2 manual verification)
 
 Two terminals:
 
@@ -93,13 +122,15 @@ See [`docs/decisions/002-advantagescope-lite-hosting.md`](./docs/decisions/002-a
 ## Repo layout
 
 ```
+apps/web/              Vite browser shell with Monaco, AS Lite iframe, console, and Run
+apps/server/           Fastify backend for file save, build/restart, and log streaming
 containers/sim/        Docker sim image + WPILib hello-world (Task 1)
 vendor/AdvantageScope/ Pinned submodule of upstream AdvantageScope, used to build AS Lite
 scripts/               TypeScript build/run scripts (run via tsx)
 dist/advantagescope/   Built AS Lite static bundle (gitignored; output of npm run build:ascope)
 docs/decisions/        Numbered design notes for non-obvious choices
 Project-MVP.md         Full MVP spec and task breakdown
-CLAUDE.md              Repo notes for AI agents working in this repo
+AGENTS.md             Repo notes for AI agents working in this repo
 ```
 
 ## Commands
@@ -108,9 +139,15 @@ CLAUDE.md              Repo notes for AI agents working in this repo
 | --- | --- |
 | `npm run build:ascope` | Build AdvantageScope Lite from the pinned submodule into `dist/advantagescope/` |
 | `npm run serve:ascope` | Serve `dist/advantagescope/` over plain HTTP on `:8080` (override with `PORT=...`) |
+| `npm run dev:server` | Run the MVP backend on `:4000` (override with `PORT=...`; uses `SIM_CONTAINER`, default `frc-sim-mvp`) |
+| `npm run dev:web` | Run the Vite web IDE on `:3000` |
+| `npm run dev:mvp` | Ensure `frc-sim-mvp` is running, then start AS Lite, backend, and web dev servers |
 | `npm run typecheck` | `tsc --noEmit` over `scripts/` |
+| `npm run typecheck --workspace apps/server` | Typecheck the backend |
+| `npm run typecheck --workspace apps/web` | Typecheck the browser shell |
 | `docker build -t frc-sim:mvp containers/sim` | Build the sim container (Task 1) |
 | `docker run --rm -p 5810:5810 --memory=2g frc-sim:mvp` | Run the sim with NT4 on `:5810` |
+| `docker run -d --name frc-sim-mvp -p 5810:5810 --memory=2g frc-sim:mvp` | Run the named long-lived MVP sim container used by the backend |
 
 ## License
 

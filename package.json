@@ -12,6 +12,8 @@
   ],
   "scripts": {
     "build:ascope": "tsx scripts/build-ascope-lite.ts",
+    "dev:mvp": "tsx scripts/dev-mvp.ts",
+    "dev:server": "npm run dev --workspace apps/server",
     "serve:ascope": "tsx scripts/serve-ascope-lite.ts",
     "dev:web": "npm run dev --workspace apps/web",
     "typecheck": "tsc --noEmit"

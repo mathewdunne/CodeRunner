@@ -1,6 +1,5 @@
-// Source of truth for the running robot. apps/web/public/Robot.java is a
-// static copy used by the Task 3 web shell until Task 4 wires GET /file to
-// this container. Keep the two in sync until then.
+// Source of truth for the running robot. Task 4 serves and saves this file
+// through the backend's GET/POST /file routes.
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;

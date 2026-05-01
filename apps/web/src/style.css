@@ -68,6 +68,39 @@ body {
   white-space: pre-wrap;
 }
 
+#run-controls {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 8px;
+  min-width: 112px;
+}
+
+#status {
+  font-family: "Cascadia Code", Consolas, "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1;
+  padding: 7px 8px;
+  text-align: center;
+  color: #d4d4d4;
+  background: #252526;
+  border: 1px solid #333;
+  text-transform: uppercase;
+}
+
+#status[data-status="building"],
+#status[data-status="saving"] {
+  color: #ffd866;
+}
+
+#status[data-status="running"],
+#status[data-status="saved"] {
+  color: #8fdb8f;
+}
+
+#status[data-status="error"] {
+  color: #ff8f8f;
+}
+
 #run {
   padding: 0 24px;
   font-size: 14px;
@@ -81,10 +114,15 @@ body {
   min-width: 96px;
 }
 
-#run:hover {
+#run:hover:not(:disabled) {
   background: #1177bb;
 }
 
-#run:active {
+#run:active:not(:disabled) {
   background: #094771;
+}
+
+#run:disabled {
+  opacity: 0.65;
+  cursor: default;
 }

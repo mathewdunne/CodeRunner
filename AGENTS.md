@@ -1,4 +1,4 @@
-# FRC Web Simulator — Repo Notes for Claude
+# FRC Web Simulator — Repo Notes for Codex
 
 ## What this is
 
