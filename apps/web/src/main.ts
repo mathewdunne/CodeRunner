@@ -1,8 +1,10 @@
 import * as monaco from "monaco-editor";
 import { setupMonaco } from "./monaco-setup.js";
+import { setupTextMate, THEME_NAME } from "./textmate-setup.js";
 import "./style.css";
 
 setupMonaco();
+await setupTextMate();
 
 const consoleEl = document.getElementById("console");
 const editorEl = document.getElementById("editor");
@@ -49,7 +51,7 @@ const initial = await loadRobotJava();
 const editor = monaco.editor.create(editorEl, {
   value: initial,
   language: "java",
-  theme: "vs-dark",
+  theme: THEME_NAME,
   automaticLayout: true,
   fontSize: 14,
   minimap: { enabled: false },
