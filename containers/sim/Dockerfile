@@ -4,7 +4,7 @@ FROM eclipse-temurin:17-jdk-jammy
 # because the sim runs without SimGUI (see project/build.gradle and
 # docs/decisions/001-sim-container.md).
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        bash ca-certificates curl procps \
+        bash ca-certificates curl procps tini \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace
@@ -23,4 +23,4 @@ RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/start-sim.sh /u
     && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh
 
 EXPOSE 5810
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["tini", "--", "/usr/local/bin/entrypoint.sh"]

@@ -35,7 +35,7 @@ Connect desktop AdvantageScope (installed at `C:\Users\Public\wpilib\2026\advant
 docker stop frc-sim
 ```
 
-`exec` in the entrypoint ensures the JVM is PID 1 and receives SIGTERM directly.
+The entrypoint runs under `tini`, starts the sim in the background, and tails `/workspace/sim.log`. Use `/usr/local/bin/stop-sim.sh` and `/usr/local/bin/start-sim.sh` inside the container for the backend-driven rebuild loop.
 
 ## What's inside
 

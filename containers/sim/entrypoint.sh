@@ -3,4 +3,4 @@ set -euo pipefail
 
 cd /workspace/project
 /usr/local/bin/start-sim.sh
-exec tail -n +1 -F /workspace/sim.log
+exec tail -n +1 -F /workspace/sim.log 2>/dev/null

@@ -36,6 +36,7 @@ function runCommand(
 }
 
 async function ensureSimContainer(): Promise<void> {
+  const imageId = (await runCommand("docker", ["image", "inspect", "-f", "{{.Id}}", imageName])).trim();
   const inspect = await runCommand(
     "docker",
     ["inspect", "-f", "{{.State.Running}}", containerName],
@@ -43,15 +44,27 @@ async function ensureSimContainer(): Promise<void> {
   );
   const state = inspect.trim();
 
-  if (state === "true") {
-    console.log(`[sim] ${containerName} already running`);
-    return;
-  }
+  if (state === "true" || state === "false") {
+    const containerImageId = (await runCommand(
+      "docker",
+      ["inspect", "-f", "{{.Image}}", containerName],
+    )).trim();
 
-  if (state === "false") {
-    console.log(`[sim] starting existing container ${containerName}`);
-    await runCommand("docker", ["start", containerName]);
-    return;
+    if (containerImageId !== imageId) {
+      console.log(`[sim] replacing ${containerName}; ${imageName} was rebuilt`);
+      if (state === "true") {
+        await runCommand("docker", ["stop", containerName]);
+      }
+      await runCommand("docker", ["rm", containerName]);
+    } else if (state === "true") {
+      console.log(`[sim] ${containerName} already running`);
+      return;
+    } else {
+      console.log(`[sim] starting existing container ${containerName}`);
+      await runCommand("docker", ["start", containerName]);
+      return;
+    }
+
   }
 
   console.log(`[sim] creating ${containerName} from ${imageName}`);

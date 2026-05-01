@@ -33,11 +33,15 @@ app.addContentTypeParser("text/plain", { parseAs: "string" }, (_req, body, done)
   done(null, body);
 });
 
-function dockerExec(args: string[]): ChildProcessWithoutNullStreams {
-  return spawn("docker", ["exec", ...args], {
+function docker(args: string[]): ChildProcessWithoutNullStreams {
+  return spawn("docker", args, {
     stdio: ["pipe", "pipe", "pipe"],
     windowsHide: true,
   });
+}
+
+function dockerExec(args: string[]): ChildProcessWithoutNullStreams {
+  return docker(["exec", ...args]);
 }
 
 function collectProcess(child: ChildProcessWithoutNullStreams): Promise<string> {
@@ -229,13 +233,17 @@ class LineSplitter {
   }
 }
 
-function spawnRunStep(
+function spawnDockerStep(
   args: string[],
   peer: WebSocketTextPeer,
   streamName: "stdout" | "stderr" | "sim",
+  onStdoutLine?: (line: string) => void,
 ): { child: ChildProcessWithoutNullStreams; done: Promise<{ code: number | null; signal: NodeJS.Signals | null }> } {
-  const child = dockerExec(args);
-  const stdout = new LineSplitter((line) => peer.sendJson({ type: "log", stream: streamName, line }));
+  const child = docker(args);
+  const stdout = new LineSplitter((line) => {
+    peer.sendJson({ type: "log", stream: streamName, line });
+    onStdoutLine?.(line);
+  });
   const stderr = new LineSplitter((line) => peer.sendJson({ type: "log", stream: "stderr", line }));
 
   child.stdout.on("data", (chunk: Buffer) => stdout.push(chunk));
@@ -253,6 +261,22 @@ function spawnRunStep(
   return { child, done };
 }
 
+function spawnRunStep(
+  args: string[],
+  peer: WebSocketTextPeer,
+  streamName: "stdout" | "stderr" | "sim",
+): { child: ChildProcessWithoutNullStreams; done: Promise<{ code: number | null; signal: NodeJS.Signals | null }> } {
+  return spawnDockerStep(["exec", ...args], peer, streamName);
+}
+
+function spawnDockerLogs(
+  since: string,
+  peer: WebSocketTextPeer,
+  onLine: (line: string) => void,
+): { child: ChildProcessWithoutNullStreams; done: Promise<{ code: number | null; signal: NodeJS.Signals | null }> } {
+  return spawnDockerStep(["logs", "--follow", "--since", since, containerName], peer, "sim", onLine);
+}
+
 function killChild(child: ChildProcessWithoutNullStreams | null): void {
   if (!child || child.killed) return;
   child.kill("SIGTERM");
@@ -261,34 +285,87 @@ function killChild(child: ChildProcessWithoutNullStreams | null): void {
   }, 2000).unref();
 }
 
+function killChildren(children: Set<ChildProcessWithoutNullStreams>): void {
+  for (const child of children) {
+    killChild(child);
+  }
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolvePromise) => {
+    setTimeout(resolvePromise, ms);
+  });
+}
+
 async function handleRun(peer: WebSocketTextPeer): Promise<void> {
   activeRun?.cancel();
 
-  let currentChild: ChildProcessWithoutNullStreams | null = null;
+  const currentChildren = new Set<ChildProcessWithoutNullStreams>();
   let canceled = false;
   const session: ActiveRun = {
     cancel: () => {
       canceled = true;
-      killChild(currentChild);
+      killChildren(currentChildren);
       peer.close();
     },
   };
   activeRun = session;
   peer.onClose(() => {
     canceled = true;
-    killChild(currentChild);
+    killChildren(currentChildren);
     if (activeRun === session) {
       activeRun = null;
     }
   });
+
+  const trackChild = (child: ChildProcessWithoutNullStreams): void => {
+    currentChildren.add(child);
+    child.on("close", () => currentChildren.delete(child));
+  };
 
   const runStep = async (
     args: string[],
     streamName: "stdout" | "stderr" | "sim",
   ): Promise<{ code: number | null; signal: NodeJS.Signals | null }> => {
     const { child, done } = spawnRunStep(args, peer, streamName);
-    currentChild = child;
-    return done;
+    trackChild(child);
+    return await done;
+  };
+
+  const streamSimLogsUntilExit = async (
+    since: string,
+    onLine: (line: string) => void,
+  ): Promise<{ code: number | null; signal: NodeJS.Signals | null }> => {
+    const logs = spawnDockerLogs(since, peer, onLine);
+    const waitForSimExitScript = `
+pid="$(cat /workspace/sim.pid 2>/dev/null || true)"
+if [ -z "$pid" ]; then
+  exit 0
+fi
+
+while [ -r "/proc/$pid/stat" ]; do
+  state="$(awk '{ print $3 }' "/proc/$pid/stat" 2>/dev/null || true)"
+  if [ "$state" = "Z" ]; then
+    exit 0
+  fi
+  sleep 0.5
+done
+`;
+    const watcher = spawnRunStep([
+      containerName,
+      "sh",
+      "-lc",
+      waitForSimExitScript,
+    ], peer, "stderr");
+
+    trackChild(logs.child);
+    trackChild(watcher.child);
+
+    const watcherResult = await watcher.done;
+    await delay(500);
+    killChild(logs.child);
+    await logs.done;
+    return watcherResult;
   };
 
   try {
@@ -296,31 +373,37 @@ async function handleRun(peer: WebSocketTextPeer): Promise<void> {
 
     await runStep([containerName, "/usr/local/bin/stop-sim.sh"], "stdout");
 
-    const build = await runStep([
+    const logStart = new Date(Date.now() - 1000).toISOString();
+    const start = await runStep([
       containerName,
-      "sh",
-      "-lc",
-      "cd /workspace/project && ./gradlew --no-daemon --console=plain build",
-    ], "stdout");
+      "/usr/local/bin/start-sim.sh",
+    ], "sim");
 
-    if (build.code !== 0) {
+    if (start.code !== 0) {
       peer.sendJson({ type: "status", status: "error" });
-      peer.sendJson({ type: "exit", code: build.code, signal: build.signal });
+      peer.sendJson({ type: "exit", code: start.code, signal: start.signal });
       peer.close();
       return;
     }
 
-    peer.sendJson({ type: "status", status: "running" });
-    const sim = await runStep([
-      containerName,
-      "sh",
-      "-lc",
-      "/usr/local/bin/start-sim.sh && tail --pid=\"$(cat /workspace/sim.pid)\" -n +1 -F /workspace/sim.log",
-    ], "sim");
+    let reportedRunning = false;
+    let sawBuildFailure = false;
+    const sim = await streamSimLogsUntilExit(logStart, (line) => {
+      if (/BUILD FAILED/.test(line)) {
+        sawBuildFailure = true;
+      }
+      if (
+        !reportedRunning &&
+        /Robot program startup complete|NT: (?:server: listening|Listening on NT3 port|Listening on NT4 port)/.test(line)
+      ) {
+        reportedRunning = true;
+        peer.sendJson({ type: "status", status: "running" });
+      }
+    });
 
     if (!canceled) {
-      peer.sendJson({ type: "exit", code: sim.code, signal: sim.signal });
-      if (sim.code !== 0) peer.sendJson({ type: "status", status: "error" });
+      peer.sendJson({ type: "exit", code: reportedRunning ? sim.code : 1, signal: sim.signal });
+      if (!reportedRunning || sawBuildFailure || sim.code !== 0) peer.sendJson({ type: "status", status: "error" });
       peer.close();
     }
   } catch (err) {

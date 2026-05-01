@@ -41,7 +41,11 @@ The original container entrypoint `exec`ed `./gradlew simulateJava`, making the 
 - `/usr/local/bin/stop-sim.sh`: terminates that process group and removes the pid file.
 - `entrypoint.sh`: starts the initial sim, then tails `/workspace/sim.log` so `docker run` still shows sim output while the container stays alive.
 
-`WS /run` stops the current sim, runs `./gradlew --no-daemon --console=plain build`, starts a new sim, and tails the new sim log. Closing the browser socket kills only the backend's `docker exec tail`, not the sim process.
+`WS /run` stops the current sim, starts `./gradlew --no-daemon --console=plain simulateJava`, and follows container logs from the host with `docker logs --follow --since ...`. This keeps each Run to one Gradle invocation because `simulateJava` performs the required build work before launching the robot. A tiny watcher `docker exec` waits for the current sim PID to exit, so closing or replacing a browser run socket kills only host-side Docker CLI processes and does not leave in-container `tail --pid` processes behind.
+
+The container entrypoint now runs under `tini`, because the backgrounded Gradle/Java sim process can become an orphan under PID 1 after restarts. Without an init/reaper, stopped sim PIDs can remain as zombies; `kill -0` still sees those PIDs, which caused every rebuild to wait for the 10 second hard-kill path. `stop-sim.sh` also treats zombie PIDs as stopped and sends termination to the process groups used by the saved Gradle wrapper process and its descendants.
+
+`npm run dev:mvp` compares the existing `frc-sim-mvp` container image ID to the current `frc-sim:mvp` image ID. If the image was rebuilt, it replaces the old container so the dev stack does not silently keep running stale lifecycle scripts.
 
 ### One-command dev stack without Docker Compose
 
