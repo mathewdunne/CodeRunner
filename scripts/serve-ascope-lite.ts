@@ -83,6 +83,14 @@ app.get<{ Params: { "*": string } }>("/assets/*", async (req, reply) => {
   return reply.sendFile(relative(distDir, target).split(sep).join(posix.sep));
 });
 
+// Upstream AS Lite bug: AprilTagManager (and possibly others) builds asset
+// URLs as `www/textures/...` from inside the hub iframe at /www/hub.html, so
+// they resolve to /www/www/textures/...  Hub (Electron) uses `../www/...`
+// which resolves correctly. Strip the extra `/www/` and serve from /www/.
+app.get<{ Params: { "*": string } }>("/www/www/*", async (req, reply) => {
+  reply.redirect(`/www/${req.params["*"]}`, 302);
+});
+
 await app.register(fastifyStatic, {
   root: distDir,
   index: ["index.html"],
