@@ -4,6 +4,9 @@ import { join, resolve } from "node:path";
 const repoRoot = resolve(import.meta.dirname, "..");
 const containerName = process.env.SIM_CONTAINER ?? "frc-sim-mvp";
 const imageName = process.env.SIM_IMAGE ?? "frc-sim:mvp";
+const projectVolume = process.env.SIM_VOLUME ?? "frc-project";
+const lspContainerName = process.env.LSP_CONTAINER ?? "frc-lsp-mvp";
+const lspImageName = process.env.LSP_IMAGE ?? "frc-lsp:mvp";
 const tsxCli = join(repoRoot, "node_modules", "tsx", "dist", "cli.mjs");
 const viteCli = join(repoRoot, "node_modules", "vite", "bin", "vite.js");
 
@@ -35,11 +38,31 @@ function runCommand(
   });
 }
 
-async function ensureSimContainer(): Promise<void> {
-  const imageId = (await runCommand("docker", ["image", "inspect", "-f", "{{.Id}}", imageName])).trim();
+async function ensureProjectVolume(): Promise<void> {
   const inspect = await runCommand(
     "docker",
-    ["inspect", "-f", "{{.State.Running}}", containerName],
+    ["volume", "inspect", projectVolume],
+    { allowFailure: true },
+  );
+  if (inspect.trim().length > 0) {
+    return;
+  }
+  console.log(`[sim] creating volume ${projectVolume}`);
+  await runCommand("docker", ["volume", "create", projectVolume]);
+}
+
+type EnsureContainerSpec = {
+  tag: string; // log prefix, e.g. "sim" / "lsp"
+  containerName: string;
+  imageName: string;
+  runArgs: string[]; // appended after `docker run -d --name <name>`, before image
+};
+
+async function ensureContainer(spec: EnsureContainerSpec): Promise<void> {
+  const imageId = (await runCommand("docker", ["image", "inspect", "-f", "{{.Id}}", spec.imageName])).trim();
+  const inspect = await runCommand(
+    "docker",
+    ["inspect", "-f", "{{.State.Running}}", spec.containerName],
     { allowFailure: true },
   );
   const state = inspect.trim();
@@ -47,37 +70,70 @@ async function ensureSimContainer(): Promise<void> {
   if (state === "true" || state === "false") {
     const containerImageId = (await runCommand(
       "docker",
-      ["inspect", "-f", "{{.Image}}", containerName],
+      ["inspect", "-f", "{{.Image}}", spec.containerName],
     )).trim();
 
     if (containerImageId !== imageId) {
-      console.log(`[sim] replacing ${containerName}; ${imageName} was rebuilt`);
+      console.log(`[${spec.tag}] replacing ${spec.containerName}; ${spec.imageName} was rebuilt`);
       if (state === "true") {
-        await runCommand("docker", ["stop", containerName]);
+        await runCommand("docker", ["stop", spec.containerName]);
       }
-      await runCommand("docker", ["rm", containerName]);
+      // Named volumes referenced in spec.runArgs are intentionally preserved
+      // across container replacements so user edits survive image rebuilds.
+      await runCommand("docker", ["rm", spec.containerName]);
     } else if (state === "true") {
-      console.log(`[sim] ${containerName} already running`);
+      console.log(`[${spec.tag}] ${spec.containerName} already running`);
       return;
     } else {
-      console.log(`[sim] starting existing container ${containerName}`);
-      await runCommand("docker", ["start", containerName]);
+      console.log(`[${spec.tag}] starting existing container ${spec.containerName}`);
+      await runCommand("docker", ["start", spec.containerName]);
       return;
     }
-
   }
 
-  console.log(`[sim] creating ${containerName} from ${imageName}`);
+  console.log(`[${spec.tag}] creating ${spec.containerName} from ${spec.imageName}`);
   await runCommand("docker", [
     "run",
     "-d",
     "--name",
-    containerName,
-    "-p",
-    "5810:5810",
-    "--memory=2g",
-    imageName,
+    spec.containerName,
+    ...spec.runArgs,
+    spec.imageName,
   ]);
+}
+
+async function ensureSimContainer(): Promise<void> {
+  await ensureProjectVolume();
+  await ensureContainer({
+    tag: "sim",
+    containerName,
+    imageName,
+    runArgs: [
+      "-p",
+      "5810:5810",
+      "-v",
+      `${projectVolume}:/workspace/project`,
+      "--memory=2g",
+    ],
+  });
+}
+
+async function ensureLspContainer(): Promise<void> {
+  await ensureContainer({
+    tag: "lsp",
+    containerName: lspContainerName,
+    imageName: lspImageName,
+    runArgs: [
+      // No port publish: backend reaches jdtls only via `docker exec`.
+      "-v",
+      `${projectVolume}:/workspace/project`,
+      // jdtls's JVM is configured with -Xmx1500m, but Buildship's gradle
+      // import + Eclipse's classpath builder need substantial off-heap memory
+      // and Metaspace. 2GB triggers the OOM killer mid-import. 4GB gives
+      // comfortable headroom for the cold-start path. See decision 007.
+      "--memory=4g",
+    ],
+  });
 }
 
 function startProcess(name: string, args: string[], cwd = repoRoot): ChildProcess {
@@ -102,7 +158,7 @@ function startProcess(name: string, args: string[], cwd = repoRoot): ChildProces
   return child;
 }
 
-await ensureSimContainer();
+await Promise.all([ensureSimContainer(), ensureLspContainer()]);
 
 const children = [
   startProcess("ascope", [tsxCli, "scripts/serve-ascope-lite.ts"]),
@@ -111,7 +167,7 @@ const children = [
 ];
 
 function shutdown(): void {
-  console.log("[dev] stopping host dev processes; sim container is left running");
+  console.log("[dev] stopping host dev processes; sim and lsp containers are left running");
   for (const child of children) {
     if (!child.killed) child.kill("SIGTERM");
   }

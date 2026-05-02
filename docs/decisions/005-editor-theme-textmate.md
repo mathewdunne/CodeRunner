@@ -1,7 +1,15 @@
 # 005 — Dark Modern syntax highlighting via TextMate
 
-**Status:** Implemented (post-MVP, milestone 1 of editor experience work)
+**Status:** Superseded by [009](./009-stock-monaco-vscode.md) (2026-05-02)
 **Date:** 2026-05-01
+
+## Superseded by 009
+
+The hand-rolled TextMate adapter was the right call when M1 stood alone — pulling in `@codingame/monaco-vscode-api`'s ~30 transitive deps and migrating off `monaco-editor` to get Dark Modern was disproportionate to the value. M2 (decision 008) then needed that ecosystem anyway via `monaco-languageclient`, which dissolved the avoidance: keeping a parallel bespoke runtime for theme + grammar tokenization while the LSP path was already on `@codingame` added zero value and one extra place where a subtle bug could hide. Decision 009 drops this adapter, the vendored `java.tmLanguage.json`, and the three vendored Dark Modern theme JSONs in favour of `@codingame/monaco-vscode-java-default-extension` + `@codingame/monaco-vscode-theme-defaults-default-extension`, which ship VS Code's grammar and theme directly.
+
+The historical implementation notes below remain accurate for the period 2026-05-01 → 2026-05-02 and are kept for posterity.
+
+---
 
 ## Context
 
