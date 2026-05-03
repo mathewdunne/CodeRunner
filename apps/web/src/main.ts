@@ -1,4 +1,5 @@
 import * as monaco from "monaco-editor";
+import { startJavaLsp } from "./java-lsp.js";
 import { setupMonaco } from "./monaco-setup.js";
 import "./style.css";
 
@@ -45,14 +46,31 @@ async function loadRobotJava(): Promise<string> {
 }
 
 const initial = await loadRobotJava();
+const robotFileUri = "file:///workspace/project/src/main/java/frc/robot/Robot.java";
+
+const model = monaco.editor.createModel(
+  initial,
+  "java",
+  monaco.Uri.parse(robotFileUri),
+);
 
 const editor = monaco.editor.create(editorEl, {
-  value: initial,
-  language: "java",
+  model,
   theme: "vs-dark",
   automaticLayout: true,
   fontSize: 14,
   minimap: { enabled: false },
+});
+
+function javaLanguageServerUrl(): string {
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${protocol}//${window.location.hostname}:30003/jdtls`;
+}
+
+void startJavaLsp({
+  model,
+  url: javaLanguageServerUrl(),
+  onStatus: appendConsole,
 });
 
 let saveTimer: number | undefined;
