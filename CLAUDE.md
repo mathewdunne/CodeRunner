@@ -27,8 +27,6 @@ The root is an npm workspaces root (`"workspaces": ["apps/*"]`). Add new TS code
 - [x] Task 2 — AdvantageScope Lite hosted standalone
 - [x] Task 3 — Minimal web shell (Monaco + AS Lite + Run + console)
 - [x] Task 4 — Backend wiring for save and run
-- [x] Post-MVP M1 — Dark Modern syntax theme via TextMate (vscode-textmate + Java grammar; see `docs/decisions/005-editor-theme-textmate.md`)
-- [ ] Post-MVP M2 — jdtls integration for autocomplete + diagnostics
 
 ## Working principles for this repo
 
@@ -60,4 +58,3 @@ The root is an npm workspaces root (`"workspaces": ["apps/*"]`). Add new TS code
 - End-to-end verify Task 2: run sim and `serve:ascope`, open Chrome at `http://localhost:8080`, expect AS Lite connected with `/SmartDashboard/counter` incrementing on a Line Graph and `/SmartDashboard/robotPose` moving on a 2D Field tab.
 - End-to-end verify Task 3: run sim, `serve:ascope`, and `dev:web` in three terminals; open Chrome at `http://localhost:3000`, expect Monaco showing `Robot.java` (editable), AS Lite iframe live with counter+pose, and clicking Run appends `clicked` to the console panel.
 - End-to-end verify Task 4: rebuild `frc-sim:mvp`, run `npm run dev:mvp`, open `http://localhost:3000`, edit `Robot.java`, wait for auto-save, click Run, and expect build/sim logs plus AS Lite reconnecting to the updated NT4 data. Syntax errors should show raw Gradle compile output and recover after fixing the file and running again.
-- Verify Dark Modern theme: open `http://localhost:3000` and confirm `Robot.java` highlighting matches VS Code with the Dark Modern theme (keywords blue, types teal, strings orange, comments green, default-fg `#CCCCCC`). Source: `apps/web/src/textmate-setup.ts` + vendored grammars/themes. Bump the vendored snapshots in `apps/web/src/{grammars,themes}/` to refresh.

@@ -11,9 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "monaco-editor": "^0.52.0",
-    "vscode-oniguruma": "^2.0.1",
-    "vscode-textmate": "^9.3.2"
+    "monaco-editor": "^0.52.0"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
