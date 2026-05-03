@@ -1,0 +1,186 @@
+{
+  "nodes": [
+    {"id": "lsp_main_lspbridge", "label": "LSP WebSocket Bridge (apps/lsp/src/main.ts)", "file_type": "code", "source_file": "apps/lsp/src/main.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "lsp_main_launchlanguageserver", "label": "launchLanguageServer()", "file_type": "code", "source_file": "apps/lsp/src/main.ts", "source_location": "line 70", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "lsp_main_handleupgrade", "label": "handleUpgrade()", "file_type": "code", "source_file": "apps/lsp/src/main.ts", "source_location": "line 133", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "lsp_main_aswebsocket", "label": "asWebSocket()", "file_type": "code", "source_file": "apps/lsp/src/main.ts", "source_location": "line 109", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "lsp_main_eclipsejdtls", "label": "Eclipse JDT LS Process", "file_type": "rationale", "source_file": "apps/lsp/src/main.ts", "source_location": "line 24", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_backendservice", "label": "MVP Backend Service (apps/server/src/main.ts)", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_handlerun", "label": "handleRun()", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": "line 300", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_websockettextpeer", "label": "WebSocketTextPeer class", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": "line 115", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_linesplitter", "label": "LineSplitter class", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": "line 211", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_spawndockerstep", "label": "spawnDockerStep()", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": "line 236", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_spawndockerlogs", "label": "spawnDockerLogs()", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": "line 272", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_readrobotfile", "label": "readRobotFile()", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": "line 67", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_writerobotfile", "label": "writeRobotFile()", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": "line 71", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_docker", "label": "docker() helper", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": "line 36", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_dockerexec", "label": "dockerExec() helper", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": "line 43", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "server_main_acceptwebsocket", "label": "acceptWebSocket()", "file_type": "code", "source_file": "apps/server/src/main.ts", "source_location": "line 186", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_viteconfig", "label": "Vite Config (apps/web/vite.config.ts)", "file_type": "code", "source_file": "apps/web/vite.config.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_javalsp_startjavalsp", "label": "startJavaLsp()", "file_type": "code", "source_file": "apps/web/src/java-lsp.ts", "source_location": "line 156", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_javalsp_browserlspclient", "label": "BrowserLspClient class", "file_type": "code", "source_file": "apps/web/src/java-lsp.ts", "source_location": "line 298", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_javalsp_registersemantictokens", "label": "registerSemanticTokensProvider()", "file_type": "code", "source_file": "apps/web/src/java-lsp.ts", "source_location": "line 258", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_javalsp_handlediagnostics", "label": "handleDiagnostics()", "file_type": "code", "source_file": "apps/web/src/java-lsp.ts", "source_location": "line 450", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_main_entry", "label": "Web Shell Entry (apps/web/src/main.ts)", "file_type": "code", "source_file": "apps/web/src/main.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_main_loadrobotjava", "label": "loadRobotJava()", "file_type": "code", "source_file": "apps/web/src/main.ts", "source_location": "line 41", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_main_saverobotjava", "label": "saveRobotJava()", "file_type": "code", "source_file": "apps/web/src/main.ts", "source_location": "line 85", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_main_schedulesave", "label": "scheduleSave()", "file_type": "code", "source_file": "apps/web/src/main.ts", "source_location": "line 98", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_main_flushsave", "label": "flushSave()", "file_type": "code", "source_file": "apps/web/src/main.ts", "source_location": "line 112", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_main_handlerunmessage", "label": "handleRunMessage()", "file_type": "code", "source_file": "apps/web/src/main.ts", "source_location": "line 141", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_monacosetup_setupmonaco", "label": "setupMonaco()", "file_type": "code", "source_file": "apps/web/src/monaco-setup.ts", "source_location": "line 4", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_vscodemod_registerdefaultdarkmodern", "label": "registerDefaultDarkModernTheme()", "file_type": "code", "source_file": "apps/web/src/vscode-dark-modern.ts", "source_location": "line 775", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "web_vscodemod_vscodetokencolors", "label": "VS Code Dark Modern Token Colors", "file_type": "rationale", "source_file": "apps/web/src/vscode-dark-modern.ts", "source_location": "line 25", "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "robot_java", "label": "Robot.java (sim project source of truth)", "file_type": "code", "source_file": "containers/sim/project/src/main/java/frc/robot/Robot.java", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "main_java", "label": "Main.java (WPILib entry point)", "file_type": "code", "source_file": "containers/sim/project/src/main/java/frc/robot/Main.java", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "robotcontainer_java", "label": "RobotContainer.java", "file_type": "code", "source_file": "containers/sim/project/src/main/java/frc/robot/RobotContainer.java", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "scripts_buildascope", "label": "build-ascope-lite.ts script", "file_type": "code", "source_file": "scripts/build-ascope-lite.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "scripts_devmvp", "label": "dev-mvp.ts orchestration script", "file_type": "code", "source_file": "scripts/dev-mvp.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "scripts_serveascope", "label": "serve-ascope-lite.ts script", "file_type": "code", "source_file": "scripts/serve-ascope-lite.ts", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "project_mvp_doc", "label": "Project-MVP.md (MVP Spec)", "file_type": "document", "source_file": "Project-MVP.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "readme_doc", "label": "README.md", "file_type": "document", "source_file": "README.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "spike_multitenancy_doc", "label": "Spike-Multi-Tenancy.md", "file_type": "document", "source_file": "Spike-Multi-Tenancy.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "index_html", "label": "Web Shell index.html", "file_type": "code", "source_file": "apps/web/index.html", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "dec001_sim_container", "label": "Decision 001: Sim Container Architecture", "file_type": "document", "source_file": "docs/decisions/001-sim-container.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "dec002_ascope_hosting", "label": "Decision 002: AdvantageScope Lite Hosting", "file_type": "document", "source_file": "docs/decisions/002-advantagescope-lite-hosting.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "dec003_web_shell", "label": "Decision 003: Minimal Web Shell", "file_type": "document", "source_file": "docs/decisions/003-web-shell.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "dec004_backend_wiring", "label": "Decision 004: Backend Wiring for Save and Run", "file_type": "document", "source_file": "docs/decisions/004-backend-wiring.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "dec005_java_lsp", "label": "Decision 005: Java LSP MVP Integration", "file_type": "document", "source_file": "docs/decisions/005-java-lsp.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null},
+    {"id": "rationale_headless_sim", "label": "Rationale: Headless sim via omission (no SimGUI/DriverStation)", "file_type": "rationale", "source_file": "docs/decisions/001-sim-container.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "GradleRIO 2026 makes SimGUI and DriverStation sim opt-in; removing those lines from build.gradle avoids needing an X server or DISPLAY env var."},
+    {"id": "rationale_aslite_hostname", "label": "Rationale: AS Lite reads window.location.hostname for NT4", "file_type": "rationale", "source_file": "docs/decisions/002-advantagescope-lite-hosting.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "When ASCOPE_DISTRIBUTION=LITE, AS Lite hardcodes window.location.hostname:5810 for NT4, so serving on localhost:8080 with sim on localhost:5810 works with zero source patches."},
+    {"id": "rationale_custom_ws", "label": "Rationale: Custom WebSocket sender without @fastify/websocket", "file_type": "rationale", "source_file": "docs/decisions/004-backend-wiring.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "The /run socket is server-to-client text streaming only; the backend implements WebSocket handshake and unmasked text frames directly on Node HTTP upgrade event, avoiding a dependency."},
+    {"id": "rationale_plain_monaco_lsp", "label": "Rationale: Plain Monaco client with direct LSP requests instead of TypeFox wrappers", "file_type": "rationale", "source_file": "docs/decisions/005-java-lsp.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "TypeFox MonacoVscodeApiWrapper caused unreliable browser behavior; a small direct LSP adapter in java-lsp.ts is simpler and more debuggable for MVP scope."},
+    {"id": "rationale_no_coep", "label": "Rationale: No Cross-Origin-Embedder-Policy headers (AS Lite iframe)", "file_type": "rationale", "source_file": "docs/decisions/005-java-lsp.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "Adding COEP caused Chrome to reject the AS Lite iframe from localhost:8080, so cross-origin isolation headers were deliberately left off the Vite dev server."},
+    {"id": "rationale_ascope_iframe", "label": "Rationale: AS Lite embedded via iframe, not bundled into web app", "file_type": "rationale", "source_file": "docs/decisions/003-web-shell.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "iframe sandboxes AS Lite's WebGL/wasm/asset loading, avoids coupling build pipelines, and auto-connects to NT4 via window.location.hostname."},
+    {"id": "rationale_tini_pid1", "label": "Rationale: tini as PID 1 in sim container to reap zombie processes", "file_type": "rationale", "source_file": "docs/decisions/004-backend-wiring.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "Without an init reaper, stopped sim PIDs remained as zombies and caused every rebuild to wait for the 10-second hard-kill path."},
+    {"id": "rationale_single_stage_dockerfile", "label": "Rationale: Single-stage Dockerfile to preserve Gradle cache", "file_type": "rationale", "source_file": "docs/decisions/001-sim-container.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "Multi-stage builds would lose ~/.gradle/caches; baking the cache in a single stage is necessary so container startup does not re-download WPILib jars."},
+    {"id": "concept_nt4_routing_multitenancy", "label": "NT4 Routing under Multi-Tenancy (spike question)", "file_type": "rationale", "source_file": "Spike-Multi-Tenancy.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "AS Lite hardcodes window.location.hostname:5810; multi-tenant options include port-per-user, subdomain-per-user, WS proxy demux by path, or patching AS Lite to read endpoint from URL param."},
+    {"id": "concept_shared_jdtls", "label": "Shared vs. Per-user JDT LS topology (spike question)", "file_type": "rationale", "source_file": "Spike-Multi-Tenancy.md", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null, "rationale": "Eclipse JDT LS supports multiple workspaces in one process. Shared instance saves ~1.5 GB RAM per student if it works with correct per-browser routing and failure isolation."}
+  ],
+  "edges": [
+    {"source": "lsp_main_handleupgrade", "target": "lsp_main_launchlanguageserver", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/lsp/src/main.ts", "source_location": "line 150-152", "weight": 1.0},
+    {"source": "lsp_main_launchlanguageserver", "target": "lsp_main_aswebsocket", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/lsp/src/main.ts", "source_location": "line 71-72", "weight": 1.0},
+    {"source": "lsp_main_launchlanguageserver", "target": "lsp_main_eclipsejdtls", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/lsp/src/main.ts", "source_location": "line 74", "weight": 1.0},
+    {"source": "lsp_main_lspbridge", "target": "lsp_main_handleupgrade", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/lsp/src/main.ts", "source_location": "line 170", "weight": 1.0},
+
+    {"source": "server_main_handlerun", "target": "server_main_spawndockerstep", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 264-269", "weight": 1.0},
+    {"source": "server_main_handlerun", "target": "server_main_spawndockerlogs", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 339", "weight": 1.0},
+    {"source": "server_main_handlerun", "target": "server_main_websockettextpeer", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 372-386", "weight": 1.0},
+    {"source": "server_main_spawndockerstep", "target": "server_main_docker", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 242", "weight": 1.0},
+    {"source": "server_main_spawndockerstep", "target": "server_main_linesplitter", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 243", "weight": 1.0},
+    {"source": "server_main_dockerexec", "target": "server_main_docker", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 44", "weight": 1.0},
+    {"source": "server_main_readrobotfile", "target": "server_main_dockerexec", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 68", "weight": 1.0},
+    {"source": "server_main_writerobotfile", "target": "server_main_dockerexec", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 72", "weight": 1.0},
+    {"source": "server_main_backendservice", "target": "server_main_acceptwebsocket", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 437", "weight": 1.0},
+    {"source": "server_main_backendservice", "target": "server_main_handlerun", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 439", "weight": 1.0},
+    {"source": "server_main_backendservice", "target": "server_main_readrobotfile", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 92", "weight": 1.0},
+    {"source": "server_main_backendservice", "target": "server_main_writerobotfile", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 107", "weight": 1.0},
+    {"source": "server_main_backendservice", "target": "robot_java", "relation": "shares_data_with", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/server/src/main.ts", "source_location": "line 9", "weight": 1.0},
+
+    {"source": "web_main_entry", "target": "web_javalsp_startjavalsp", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 75", "weight": 1.0},
+    {"source": "web_main_entry", "target": "web_monacosetup_setupmonaco", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 7", "weight": 1.0},
+    {"source": "web_main_entry", "target": "web_main_loadrobotjava", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 49", "weight": 1.0},
+    {"source": "web_main_entry", "target": "web_main_schedulesave", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 169", "weight": 1.0},
+    {"source": "web_main_entry", "target": "web_main_flushsave", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 176", "weight": 1.0},
+    {"source": "web_main_entry", "target": "web_main_handlerunmessage", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 189", "weight": 1.0},
+    {"source": "web_main_schedulesave", "target": "web_main_saverobotjava", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 104", "weight": 1.0},
+    {"source": "web_main_flushsave", "target": "web_main_saverobotjava", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 116", "weight": 1.0},
+    {"source": "web_main_loadrobotjava", "target": "server_main_backendservice", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 42", "weight": 1.0},
+    {"source": "web_main_saverobotjava", "target": "server_main_backendservice", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 87", "weight": 1.0},
+
+    {"source": "web_monacosetup_setupmonaco", "target": "web_vscodemod_registerdefaultdarkmodern", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/monaco-setup.ts", "source_location": "line 5", "weight": 1.0},
+    {"source": "web_vscodemod_registerdefaultdarkmodern", "target": "web_vscodemod_vscodetokencolors", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/vscode-dark-modern.ts", "source_location": "line 780", "weight": 1.0},
+
+    {"source": "web_javalsp_startjavalsp", "target": "web_javalsp_browserlspclient", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/java-lsp.ts", "source_location": "line 157", "weight": 1.0},
+    {"source": "web_javalsp_startjavalsp", "target": "web_javalsp_registersemantictokens", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/java-lsp.ts", "source_location": "line 175", "weight": 1.0},
+    {"source": "web_javalsp_startjavalsp", "target": "web_javalsp_handlediagnostics", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/java-lsp.ts", "source_location": "line 191", "weight": 1.0},
+    {"source": "web_javalsp_browserlspclient", "target": "lsp_main_lspbridge", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/java-lsp.ts", "source_location": "line 157", "weight": 1.0},
+    {"source": "web_javalsp_startjavalsp", "target": "robot_java", "relation": "shares_data_with", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/java-lsp.ts", "source_location": "line 106", "weight": 1.0},
+
+    {"source": "scripts_devmvp", "target": "scripts_serveascope", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "scripts/dev-mvp.ts", "source_location": "line 126", "weight": 1.0},
+    {"source": "scripts_devmvp", "target": "server_main_backendservice", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "scripts/dev-mvp.ts", "source_location": "line 127", "weight": 1.0},
+    {"source": "scripts_devmvp", "target": "web_main_entry", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "scripts/dev-mvp.ts", "source_location": "line 128", "weight": 1.0},
+
+    {"source": "scripts_buildascope", "target": "scripts_serveascope", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.85, "source_file": "scripts/build-ascope-lite.ts", "source_location": null, "weight": 0.85},
+
+    {"source": "main_java", "target": "robot_java", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "containers/sim/project/src/main/java/frc/robot/Main.java", "source_location": "line 9", "weight": 1.0},
+    {"source": "robot_java", "target": "robotcontainer_java", "relation": "calls", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "containers/sim/project/src/main/java/frc/robot/Robot.java", "source_location": "line 15", "weight": 1.0},
+
+    {"source": "web_viteconfig", "target": "server_main_backendservice", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/vite.config.ts", "source_location": "line 13-19", "weight": 1.0},
+
+    {"source": "dec001_sim_container", "target": "robot_java", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/001-sim-container.md", "source_location": null, "weight": 1.0},
+    {"source": "dec001_sim_container", "target": "rationale_headless_sim", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/001-sim-container.md", "source_location": null, "weight": 1.0},
+    {"source": "dec001_sim_container", "target": "rationale_single_stage_dockerfile", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/001-sim-container.md", "source_location": null, "weight": 1.0},
+
+    {"source": "dec002_ascope_hosting", "target": "scripts_buildascope", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/002-advantagescope-lite-hosting.md", "source_location": null, "weight": 1.0},
+    {"source": "dec002_ascope_hosting", "target": "scripts_serveascope", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/002-advantagescope-lite-hosting.md", "source_location": null, "weight": 1.0},
+    {"source": "dec002_ascope_hosting", "target": "rationale_aslite_hostname", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/002-advantagescope-lite-hosting.md", "source_location": null, "weight": 1.0},
+
+    {"source": "dec003_web_shell", "target": "web_main_entry", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/003-web-shell.md", "source_location": null, "weight": 1.0},
+    {"source": "dec003_web_shell", "target": "web_monacosetup_setupmonaco", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/003-web-shell.md", "source_location": null, "weight": 1.0},
+    {"source": "dec003_web_shell", "target": "rationale_ascope_iframe", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/003-web-shell.md", "source_location": null, "weight": 1.0},
+
+    {"source": "dec004_backend_wiring", "target": "server_main_backendservice", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/004-backend-wiring.md", "source_location": null, "weight": 1.0},
+    {"source": "dec004_backend_wiring", "target": "scripts_devmvp", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/004-backend-wiring.md", "source_location": null, "weight": 1.0},
+    {"source": "dec004_backend_wiring", "target": "rationale_custom_ws", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/004-backend-wiring.md", "source_location": null, "weight": 1.0},
+    {"source": "dec004_backend_wiring", "target": "rationale_tini_pid1", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/004-backend-wiring.md", "source_location": null, "weight": 1.0},
+
+    {"source": "dec005_java_lsp", "target": "lsp_main_lspbridge", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/005-java-lsp.md", "source_location": null, "weight": 1.0},
+    {"source": "dec005_java_lsp", "target": "web_javalsp_startjavalsp", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/005-java-lsp.md", "source_location": null, "weight": 1.0},
+    {"source": "dec005_java_lsp", "target": "rationale_plain_monaco_lsp", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/005-java-lsp.md", "source_location": null, "weight": 1.0},
+    {"source": "dec005_java_lsp", "target": "rationale_no_coep", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/005-java-lsp.md", "source_location": null, "weight": 1.0},
+
+    {"source": "spike_multitenancy_doc", "target": "dec002_ascope_hosting", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "Spike-Multi-Tenancy.md", "source_location": "line 26", "weight": 1.0},
+    {"source": "spike_multitenancy_doc", "target": "concept_nt4_routing_multitenancy", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "Spike-Multi-Tenancy.md", "source_location": null, "weight": 1.0},
+    {"source": "spike_multitenancy_doc", "target": "concept_shared_jdtls", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "Spike-Multi-Tenancy.md", "source_location": null, "weight": 1.0},
+    {"source": "spike_multitenancy_doc", "target": "project_mvp_doc", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "Spike-Multi-Tenancy.md", "source_location": "line 3", "weight": 1.0},
+
+    {"source": "project_mvp_doc", "target": "robot_java", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "Project-MVP.md", "source_location": null, "weight": 1.0},
+    {"source": "readme_doc", "target": "project_mvp_doc", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "README.md", "source_location": "line 3", "weight": 1.0},
+    {"source": "readme_doc", "target": "dec002_ascope_hosting", "relation": "references", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "README.md", "source_location": "line 124", "weight": 1.0},
+
+    {"source": "rationale_aslite_hostname", "target": "rationale_ascope_iframe", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.85, "source_file": "docs/decisions/002-advantagescope-lite-hosting.md", "source_location": null, "weight": 0.85},
+    {"source": "concept_nt4_routing_multitenancy", "target": "rationale_aslite_hostname", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.95, "source_file": "Spike-Multi-Tenancy.md", "source_location": null, "weight": 0.95},
+    {"source": "rationale_custom_ws", "target": "server_main_websockettextpeer", "relation": "rationale_for", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/decisions/004-backend-wiring.md", "source_location": null, "weight": 1.0},
+
+    {"source": "web_javalsp_browserlspclient", "target": "web_javalsp_registersemantictokens", "relation": "shares_data_with", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/java-lsp.ts", "source_location": "line 258-295", "weight": 1.0},
+
+    {"source": "concept_shared_jdtls", "target": "lsp_main_lspbridge", "relation": "conceptually_related_to", "confidence": "INFERRED", "confidence_score": 0.85, "source_file": "Spike-Multi-Tenancy.md", "source_location": null, "weight": 0.85},
+
+    {"source": "web_main_saverobotjava", "target": "robot_java", "relation": "shares_data_with", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "apps/web/src/main.ts", "source_location": "line 85-96", "weight": 1.0},
+
+    {"source": "server_main_handlerun", "target": "robot_java", "relation": "shares_data_with", "confidence": "INFERRED", "confidence_score": 0.95, "source_file": "apps/server/src/main.ts", "source_location": "line 374-378", "weight": 0.95},
+
+    {"source": "web_vscodemod_vscodetokencolors", "target": "web_javalsp_registersemantictokens", "relation": "semantically_similar_to", "confidence": "INFERRED", "confidence_score": 0.75, "source_file": "apps/web/src/vscode-dark-modern.ts", "source_location": null, "weight": 0.75}
+  ],
+  "hyperedges": [
+    {
+      "id": "edit_save_run_loop",
+      "label": "Edit-Save-Run-Sim Loop (core MVP end-to-end flow)",
+      "nodes": ["web_main_entry", "server_main_backendservice", "robot_java", "server_main_handlerun"],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Project-MVP.md"
+    },
+    {
+      "id": "lsp_intelligence_stack",
+      "label": "Java LSP Intelligence Stack (browser to JDT LS)",
+      "nodes": ["web_javalsp_startjavalsp", "web_javalsp_browserlspclient", "lsp_main_lspbridge", "lsp_main_eclipsejdtls"],
+      "relation": "implement",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "docs/decisions/005-java-lsp.md"
+    },
+    {
+      "id": "ascope_nt4_integration",
+      "label": "AdvantageScope Lite NT4 Hosting and Display",
+      "nodes": ["scripts_buildascope", "scripts_serveascope", "rationale_aslite_hostname", "index_html"],
+      "relation": "implement",
+      "confidence": "EXTRACTED",
+      "confidence_score": 0.95,
+      "source_file": "docs/decisions/002-advantagescope-lite-hosting.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -64,3 +64,13 @@ The root is an npm workspaces root (`"workspaces": ["apps/*"]`). Add new TS code
 - End-to-end verify Task 3: run sim, `serve:ascope`, and `dev:web` in three terminals; open Chrome at `http://localhost:3000`, expect Monaco showing `Robot.java` (editable), AS Lite iframe live with counter+pose, and clicking Run appends `clicked` to the console panel.
 - End-to-end verify Task 4: rebuild `frc-sim:mvp`, run `npm run dev:mvp`, open `http://localhost:3000`, edit `Robot.java`, wait for auto-save, click Run, and expect build/sim logs plus AS Lite reconnecting to the updated NT4 data. Syntax errors should show raw Gradle compile output and recover after fixing the file and running again.
 - End-to-end verify Java LSP: rebuild `frc-lsp:mvp`, run `npm run dev:mvp`, open `http://localhost:3000`, expect `java language server connected`, hover WPILib symbols such as `Pose2d`, request completions after `SmartDashboard.`, and introduce/fix a Java error to confirm Monaco diagnostics.
+
+## graphify
+
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- For cross-module "how does X relate to Y" questions, prefer `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"` over grep — these traverse the graph's EXTRACTED + INFERRED edges instead of scanning files
+- After modifying code files in this session, run `graphify update .` to keep the graph current (AST-only, no API cost)
