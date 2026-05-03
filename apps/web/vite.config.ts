@@ -1,6 +1,12 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  build: {
+    target: "esnext",
+  },
+  worker: {
+    format: "es",
+  },
   server: {
     port: 3000,
     strictPort: true,

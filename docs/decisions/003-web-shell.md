@@ -38,6 +38,8 @@ The user runs `npm run serve:ascope` and `npm run dev:web` in two terminals duri
 
 Java has no language-specific worker shipped by Monaco — it has a Monarch-based syntax-highlighting tokenizer that runs on the main thread. So only the default editor worker is registered. JSON/TS/CSS/HTML workers are intentionally not wired up; they'd add ~MB of bundle for no benefit in this single-language editor. They can be added later if a feature needs them.
 
+Follow-up: the editor theme is now registered locally from a mechanical conversion of VS Code's built-in Default Dark Modern theme data (`dark_vs.json` -> `dark_plus.json` -> `dark_modern.json`). Standalone Monaco only ships `vs`, `vs-dark`, and high contrast themes, so `apps/web/src/vscode-dark-modern.ts` vendors the normalized theme object and applies VS Code's documented semantic-token-to-TextMate fallback map for Monaco.
+
 ### Robot.java duplicated as a static placeholder, with cross-pointers
 
 `apps/web/public/Robot.java` is a verbatim copy of `containers/sim/project/src/main/java/frc/robot/Robot.java`. Both files start with a comment pointing at the other so the duplication is intentional and traceable. Task 4 deletes the static copy and makes Monaco fetch the live file via `GET /file` (a backend route that `cat`s out of the running sim container) — at that point the container's copy becomes the sole source of truth.

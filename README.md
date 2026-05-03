@@ -2,7 +2,7 @@
 
 An experimental browser-based IDE for learning FRC robot programming. Students write Java in Monaco, click Run, and watch their robot simulate in real time with telemetry rendered by AdvantageScope Lite. See [`Project-MVP.md`](./Project-MVP.md) for full scope and the task breakdown.
 
-Status: Tasks 1-4 of the MVP are implemented: sim container, AdvantageScope Lite hosting, browser shell, and backend save/run wiring.
+Status: Tasks 1-4 of the MVP are implemented: sim container, AdvantageScope Lite hosting, browser shell, and backend save/run wiring. The browser shell also has a Java LSP MVP add-on for hover, completion, and diagnostics through Eclipse JDT LS.
 
 ## Prerequisites
 
@@ -41,28 +41,31 @@ npm run build:ascope                       # builds AS Lite → dist/advantagesc
 
 The AS Lite build downloads ~50 MB of bundled field/robot models on first run and takes several minutes (rollup + wasm). Subsequent runs are fast because `npm install` and the Lite bundles are cached.
 
-To rebuild the sim image (Task 1) if you haven't yet:
+To rebuild the sim and Java LSP images if you haven't yet:
 
 ```bash
 docker build -t frc-sim:mvp containers/sim
+docker build -f containers/lsp/Dockerfile -t frc-lsp:mvp .
 ```
 
 ## Running the MVP loop (Task 4)
 
-Build the sim image, then start the full local stack:
+Build the sim and LSP images, then start the full local stack:
 
 ```bash
 docker build -t frc-sim:mvp containers/sim
+docker build -f containers/lsp/Dockerfile -t frc-lsp:mvp .
 npm run dev:mvp
 ```
 
-`npm run dev:mvp` keeps or starts a named container, `frc-sim-mvp`, then launches:
+`npm run dev:mvp` keeps or starts named containers, `frc-sim-mvp` and `frc-lsp-mvp`, then launches:
 
 - AS Lite static server on `http://localhost:8080`
 - Backend on `http://localhost:4000`
+- Java LSP WebSocket bridge on `ws://localhost:30003/jdtls` inside the LSP container
 - Web IDE on `http://localhost:3000`
 
-Open [http://localhost:3000](http://localhost:3000). Monaco loads `Robot.java` through `GET /file`, edits auto-save through `POST /file`, and Run opens `WS /run` to stream Gradle and sim logs. AS Lite remains iframed from `:8080` and reconnects to NT4 on `:5810`.
+Open [http://localhost:3000](http://localhost:3000). Monaco loads `Robot.java` through `GET /file`, connects that same editor buffer to JDT LS for Java hover/completion/diagnostics, edits auto-save through `POST /file`, and Run opens `WS /run` to stream Gradle and sim logs. AS Lite remains iframed from `:8080` and reconnects to NT4 on `:5810`.
 
 To verify a save from another terminal:
 
@@ -70,10 +73,11 @@ To verify a save from another terminal:
 docker exec frc-sim-mvp cat /workspace/project/src/main/java/frc/robot/Robot.java
 ```
 
-Stopping `npm run dev:mvp` stops the host dev processes but leaves `frc-sim-mvp` running so the container filesystem remains the current project state. Remove it manually when you want a fresh baked project:
+Stopping `npm run dev:mvp` stops the host dev processes but leaves `frc-sim-mvp` and `frc-lsp-mvp` running so their startup cost is paid once. Remove them manually when you want a fresh baked project or LSP workspace:
 
 ```bash
 docker rm -f frc-sim-mvp
+docker rm -f frc-lsp-mvp
 ```
 
 ## Running AS Lite standalone (Task 2 manual verification)
@@ -124,7 +128,9 @@ See [`docs/decisions/002-advantagescope-lite-hosting.md`](./docs/decisions/002-a
 ```
 apps/web/              Vite browser shell with Monaco, AS Lite iframe, console, and Run
 apps/server/           Fastify backend for file save, build/restart, and log streaming
+apps/lsp/              Node TypeScript WebSocket bridge from browser LSP traffic to Eclipse JDT LS
 containers/sim/        Docker sim image + WPILib hello-world (Task 1)
+containers/lsp/        Docker Java LSP image with Eclipse JDT LS and a baked WPILib project
 vendor/AdvantageScope/ Pinned submodule of upstream AdvantageScope, used to build AS Lite
 scripts/               TypeScript build/run scripts (run via tsx)
 dist/advantagescope/   Built AS Lite static bundle (gitignored; output of npm run build:ascope)
@@ -139,15 +145,19 @@ AGENTS.md             Repo notes for AI agents working in this repo
 | --- | --- |
 | `npm run build:ascope` | Build AdvantageScope Lite from the pinned submodule into `dist/advantagescope/` |
 | `npm run serve:ascope` | Serve `dist/advantagescope/` over plain HTTP on `:8080` (override with `PORT=...`) |
+| `npm run dev:lsp` | Run the Java LSP bridge on `:30003/jdtls` on the host; normally the Docker image runs this |
 | `npm run dev:server` | Run the MVP backend on `:4000` (override with `PORT=...`; uses `SIM_CONTAINER`, default `frc-sim-mvp`) |
 | `npm run dev:web` | Run the Vite web IDE on `:3000` |
-| `npm run dev:mvp` | Ensure `frc-sim-mvp` is running, then start AS Lite, backend, and web dev servers |
+| `npm run dev:mvp` | Ensure `frc-sim-mvp` and `frc-lsp-mvp` are running, then start AS Lite, backend, and web dev servers |
 | `npm run typecheck` | `tsc --noEmit` over `scripts/` |
 | `npm run typecheck --workspace apps/server` | Typecheck the backend |
 | `npm run typecheck --workspace apps/web` | Typecheck the browser shell |
+| `npm run typecheck --workspace apps/lsp` | Typecheck the Java LSP bridge |
 | `docker build -t frc-sim:mvp containers/sim` | Build the sim container (Task 1) |
+| `docker build -f containers/lsp/Dockerfile -t frc-lsp:mvp .` | Build the Java LSP container |
 | `docker run --rm -p 5810:5810 --memory=2g frc-sim:mvp` | Run the sim with NT4 on `:5810` |
 | `docker run -d --name frc-sim-mvp -p 5810:5810 --memory=2g frc-sim:mvp` | Run the named long-lived MVP sim container used by the backend |
+| `docker run -d --name frc-lsp-mvp -p 30003:30003 --memory=2g frc-lsp:mvp` | Run the named Java LSP container used by the web editor |
 
 ## License
 
