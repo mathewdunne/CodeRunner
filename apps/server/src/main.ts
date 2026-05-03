@@ -1,33 +1,14 @@
 import Fastify from "fastify";
-import fastifyWebsocket, { type WebSocket } from "@fastify/websocket";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { createHash } from "node:crypto";
+import type { IncomingMessage } from "node:http";
+import type { Duplex } from "node:stream";
+import { URL } from "node:url";
 
 const containerName = process.env.SIM_CONTAINER ?? "frc-sim-mvp";
-const lspContainerName = process.env.LSP_CONTAINER ?? "frc-lsp-mvp";
 const robotFile = "/workspace/project/src/main/java/frc/robot/Robot.java";
 const port = Number(process.env.PORT ?? 4000);
 const host = process.env.HOST ?? "127.0.0.1";
-
-// Launches jdtls inside the LSP container. The wildcard in -jar requires shell
-// expansion, so this is run via `sh -lc`. -data points at the writable
-// workspace dir baked into the image; -configuration must match the host OS
-// (linux for this container's base image).
-const jdtlsLaunchScript = [
-  "exec java",
-  "-Declipse.application=org.eclipse.jdt.ls.core.id1",
-  "-Dosgi.bundles.defaultStartLevel=4",
-  "-Declipse.product=org.eclipse.jdt.ls.core.product",
-  "-Dlog.protocol=true",
-  "-Dlog.level=ALL",
-  "-Xms256m",
-  "-Xmx1500m",
-  "--add-modules=ALL-SYSTEM",
-  "--add-opens java.base/java.util=ALL-UNNAMED",
-  "--add-opens java.base/java.lang=ALL-UNNAMED",
-  "-jar /opt/jdtls/plugins/org.eclipse.equinox.launcher_*.jar",
-  "-configuration /opt/jdtls/config_linux",
-  "-data /workspace/jdtls-data",
-].join(" ");
 
 type RunStatus = "building" | "running" | "error";
 
@@ -50,16 +31,6 @@ const app = Fastify({
 
 app.addContentTypeParser("text/plain", { parseAs: "string" }, (_req, body, done) => {
   done(null, body);
-});
-
-// /run and /lsp are both served via @fastify/websocket. /run was originally
-// hand-rolled (decision 004) when adding npm deps was inconvenient; with the
-// jdtls work that constraint is gone, and a single plugin handling both
-// upgrade routes is simpler than the manual handshake + custom framing.
-await app.register(fastifyWebsocket, {
-  options: {
-    maxPayload: 4 * 1024 * 1024,
-  },
 });
 
 function docker(args: string[]): ChildProcessWithoutNullStreams {
@@ -141,34 +112,44 @@ app.post("/file", async (req, reply) => {
   }
 });
 
-class RunPeer {
-  #socket: WebSocket;
+class WebSocketTextPeer {
+  #socket: Duplex;
   #closed = false;
   #onClose: Array<() => void> = [];
 
-  constructor(socket: WebSocket) {
+  constructor(socket: Duplex) {
     this.#socket = socket;
+    socket.on("data", (data: Buffer) => {
+      if (data.length > 0 && ((data[0] ?? 0) & 0x0f) === 0x08) {
+        this.close();
+      }
+    });
+    socket.on("error", () => {
+      this.markClosed();
+    });
+    socket.on("end", () => this.markClosed());
     socket.on("close", () => this.markClosed());
-    socket.on("error", () => this.markClosed());
   }
 
   get closed(): boolean {
-    return this.#closed || this.#socket.readyState >= 2; // CLOSING | CLOSED
+    return this.#closed || this.#socket.destroyed;
   }
 
   sendJson(message: RunMessage): void {
+    this.sendText(JSON.stringify(message));
+  }
+
+  sendText(text: string): void {
     if (this.closed) return;
-    this.#socket.send(JSON.stringify(message));
+    const payload = Buffer.from(text, "utf8");
+    const header = makeTextFrameHeader(payload.length);
+    this.#socket.write(Buffer.concat([header, payload]));
   }
 
   close(): void {
     if (this.closed) return;
     this.markClosed();
-    try {
-      this.#socket.close();
-    } catch {
-      // ignore — already closing
-    }
+    this.#socket.end(Buffer.from([0x88, 0x00]));
   }
 
   onClose(callback: () => void): void {
@@ -182,6 +163,49 @@ class RunPeer {
       callback();
     }
   }
+}
+
+function makeTextFrameHeader(length: number): Buffer {
+  if (length < 126) {
+    return Buffer.from([0x81, length]);
+  }
+  if (length <= 0xffff) {
+    const header = Buffer.alloc(4);
+    header[0] = 0x81;
+    header[1] = 126;
+    header.writeUInt16BE(length, 2);
+    return header;
+  }
+  const header = Buffer.alloc(10);
+  header[0] = 0x81;
+  header[1] = 127;
+  header.writeBigUInt64BE(BigInt(length), 2);
+  return header;
+}
+
+function acceptWebSocket(req: IncomingMessage, socket: Duplex): WebSocketTextPeer | null {
+  const key = req.headers["sec-websocket-key"];
+  if (typeof key !== "string") {
+    socket.destroy();
+    return null;
+  }
+
+  const accept = createHash("sha1")
+    .update(`${key}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`)
+    .digest("base64");
+
+  socket.write(
+    [
+      "HTTP/1.1 101 Switching Protocols",
+      "Upgrade: websocket",
+      "Connection: Upgrade",
+      `Sec-WebSocket-Accept: ${accept}`,
+      "",
+      "",
+    ].join("\r\n"),
+  );
+
+  return new WebSocketTextPeer(socket);
 }
 
 class LineSplitter {
@@ -211,7 +235,7 @@ class LineSplitter {
 
 function spawnDockerStep(
   args: string[],
-  peer: RunPeer,
+  peer: WebSocketTextPeer,
   streamName: "stdout" | "stderr" | "sim",
   onStdoutLine?: (line: string) => void,
 ): { child: ChildProcessWithoutNullStreams; done: Promise<{ code: number | null; signal: NodeJS.Signals | null }> } {
@@ -239,7 +263,7 @@ function spawnDockerStep(
 
 function spawnRunStep(
   args: string[],
-  peer: RunPeer,
+  peer: WebSocketTextPeer,
   streamName: "stdout" | "stderr" | "sim",
 ): { child: ChildProcessWithoutNullStreams; done: Promise<{ code: number | null; signal: NodeJS.Signals | null }> } {
   return spawnDockerStep(["exec", ...args], peer, streamName);
@@ -247,7 +271,7 @@ function spawnRunStep(
 
 function spawnDockerLogs(
   since: string,
-  peer: RunPeer,
+  peer: WebSocketTextPeer,
   onLine: (line: string) => void,
 ): { child: ChildProcessWithoutNullStreams; done: Promise<{ code: number | null; signal: NodeJS.Signals | null }> } {
   return spawnDockerStep(["logs", "--follow", "--since", since, containerName], peer, "sim", onLine);
@@ -273,7 +297,7 @@ function delay(ms: number): Promise<void> {
   });
 }
 
-async function handleRun(peer: RunPeer): Promise<void> {
+async function handleRun(peer: WebSocketTextPeer): Promise<void> {
   activeRun?.cancel();
 
   const currentChildren = new Set<ChildProcessWithoutNullStreams>();
@@ -399,224 +423,20 @@ done
   }
 }
 
-app.get("/run", { websocket: true }, (socket: WebSocket) => {
-  const peer = new RunPeer(socket);
+app.server.on("upgrade", (req, socket, head) => {
+  const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
+  if (url.pathname !== "/run") {
+    socket.destroy();
+    return;
+  }
+
+  if (head.length > 0) {
+    socket.unshift(head);
+  }
+
+  const peer = acceptWebSocket(req, socket);
+  if (!peer) return;
   void handleRun(peer);
-});
-
-class LspFrameParser {
-  // Parses Content-Length-prefixed JSON-RPC messages from a byte stream and
-  // emits each message body as a UTF-8 string. State machine: read headers
-  // until blank line, then read N bytes of body, then loop.
-  #buffer: Buffer = Buffer.alloc(0);
-  #expectedBodyLength: number | null = null;
-  #emit: (body: string) => void;
-
-  constructor(emit: (body: string) => void) {
-    this.#emit = emit;
-  }
-
-  push(chunk: Buffer): void {
-    this.#buffer = this.#buffer.length === 0 ? chunk : Buffer.concat([this.#buffer, chunk]);
-    while (this.tryConsumeOne()) {
-      // keep going until we run out of complete messages
-    }
-  }
-
-  private tryConsumeOne(): boolean {
-    if (this.#expectedBodyLength === null) {
-      const headerEnd = this.#buffer.indexOf("\r\n\r\n");
-      if (headerEnd === -1) return false;
-      const rawHeaders = this.#buffer.subarray(0, headerEnd).toString("ascii");
-      const match = /Content-Length:\s*(\d+)/i.exec(rawHeaders);
-      if (!match) {
-        // Malformed: drop the bad headers and resync.
-        this.#buffer = this.#buffer.subarray(headerEnd + 4);
-        return true;
-      }
-      this.#expectedBodyLength = Number(match[1]);
-      this.#buffer = this.#buffer.subarray(headerEnd + 4);
-    }
-
-    if (this.#buffer.length < this.#expectedBodyLength) return false;
-    const body = this.#buffer.subarray(0, this.#expectedBodyLength).toString("utf8");
-    this.#buffer = this.#buffer.subarray(this.#expectedBodyLength);
-    this.#expectedBodyLength = null;
-    this.#emit(body);
-    return true;
-  }
-}
-
-function encodeLspFrame(body: string): Buffer {
-  const payload = Buffer.from(body, "utf8");
-  const header = Buffer.from(`Content-Length: ${payload.length}\r\n\r\n`, "ascii");
-  return Buffer.concat([header, payload]);
-}
-
-async function execInLsp(args: string[]): Promise<{ code: number | null; stdout: string; stderr: string }> {
-  return new Promise((resolvePromise, reject) => {
-    const child = spawn("docker", ["exec", lspContainerName, ...args], {
-      stdio: ["ignore", "pipe", "pipe"],
-      windowsHide: true,
-    });
-    const out: Buffer[] = [];
-    const err: Buffer[] = [];
-    child.stdout.on("data", (c: Buffer) => out.push(c));
-    child.stderr.on("data", (c: Buffer) => err.push(c));
-    child.on("error", reject);
-    child.on("close", (code) => resolvePromise({
-      code,
-      stdout: Buffer.concat(out).toString("utf8"),
-      stderr: Buffer.concat(err).toString("utf8"),
-    }));
-  });
-}
-
-// jdtls writes a workspace lock file that survives crashes. If the previous
-// session was killed mid-import (e.g. browser closed during the cold start),
-// the next jdtls process tries to resume and silently never finishes. We can't
-// reliably detect this from the LSP protocol — the symptom is "no
-// language/status: ServiceReady ever arrives". Periodically resetting the
-// workspace on suspect signals is the cheapest mitigation.
-async function resetJdtlsWorkspaceIfStale(): Promise<void> {
-  // Workspace is "stale" if a .metadata/.lock file exists but no jdtls process
-  // is currently using it. We check for a running java process inside the LSP
-  // container; if none, any stale lock means a previous crash.
-  const psResult = await execInLsp(["pgrep", "-f", "org.eclipse.jdt.ls"]);
-  if (psResult.code === 0 && psResult.stdout.trim().length > 0) {
-    return; // jdtls is running, leave the workspace alone
-  }
-  const lockResult = await execInLsp(["test", "-e", "/workspace/jdtls-data/.metadata/.lock"]);
-  if (lockResult.code !== 0) return; // no lock file, nothing to reset
-
-  app.log.warn("[lsp] stale jdtls-data lock detected with no live jdtls process; clearing workspace");
-  await execInLsp(["sh", "-lc", "rm -rf /workspace/jdtls-data && mkdir -p /workspace/jdtls-data"]);
-}
-
-async function handleLsp(socket: WebSocket): Promise<void> {
-  app.log.info("[lsp] WS connected; spawning jdtls");
-
-  // Register the inbound message handler IMMEDIATELY, before any await. Faster
-  // language clients (monaco-languageclient) send `initialize` within
-  // milliseconds of WS open, and if the listener is registered after
-  // `await resetJdtlsWorkspaceIfStale()` plus the docker spawn the message
-  // fires into a void and jdtls hangs forever waiting for initialize. Buffer
-  // messages until the child's stdin is writable, then drain.
-  const inboundQueue: string[] = [];
-  let drainToStdin: ((body: string) => void) | undefined;
-  socket.on("message", (data: Buffer | string) => {
-    const body = typeof data === "string" ? data : data.toString("utf8");
-    if (drainToStdin) {
-      drainToStdin(body);
-    } else {
-      inboundQueue.push(body);
-    }
-  });
-
-  try {
-    await resetJdtlsWorkspaceIfStale();
-  } catch (err) {
-    app.log.warn(err, "[lsp] failed to check workspace state; continuing anyway");
-  }
-
-  const child = spawn("docker", ["exec", "-i", lspContainerName, "sh", "-lc", jdtlsLaunchScript], {
-    stdio: ["pipe", "pipe", "pipe"],
-    windowsHide: true,
-  });
-
-  let closed = false;
-  let cleanShutdownStarted = false;
-
-  const closeAll = (): void => {
-    if (closed) return;
-    closed = true;
-    killChild(child);
-    try {
-      socket.close();
-    } catch {
-      // already closing
-    }
-  };
-
-  // Graceful LSP shutdown: send `shutdown` then `exit` over stdin and wait
-  // briefly for jdtls to flush its workspace state. Falling back to SIGTERM if
-  // jdtls doesn't exit on its own. Without this, killing jdtls mid-Gradle-
-  // import corrupts /workspace/jdtls-data and the next session hangs forever.
-  const beginCleanShutdown = (): void => {
-    if (cleanShutdownStarted || closed) return;
-    cleanShutdownStarted = true;
-    if (!child.stdin.writable) {
-      closeAll();
-      return;
-    }
-    try {
-      child.stdin.write(encodeLspFrame(JSON.stringify({
-        jsonrpc: "2.0", id: 999_999, method: "shutdown",
-      })));
-      child.stdin.write(encodeLspFrame(JSON.stringify({
-        jsonrpc: "2.0", method: "exit",
-      })));
-      child.stdin.end();
-    } catch (err) {
-      app.log.warn(err, "[lsp] clean shutdown failed; falling back to SIGTERM");
-      closeAll();
-      return;
-    }
-    // Give jdtls up to 5s to write its workspace state and exit cleanly.
-    setTimeout(() => {
-      if (!closed) {
-        app.log.warn("[lsp] jdtls did not exit within 5s of clean shutdown; killing");
-        closeAll();
-      }
-    }, 5000).unref();
-  };
-
-  const parser = new LspFrameParser((body) => {
-    if (socket.readyState === socket.OPEN) {
-      socket.send(body);
-    }
-  });
-
-  child.stdout.on("data", (chunk: Buffer) => parser.push(chunk));
-
-  // jdtls's stderr is the first place we'll see startup failures (missing jar,
-  // wrong config dir, permissions). Log at info so it shows under the default
-  // log level. It's noisy once jdtls is healthy; flip back to debug after MVP
-  // shakeout.
-  child.stderr.on("data", (chunk: Buffer) => {
-    const text = chunk.toString("utf8").trimEnd();
-    if (text.length > 0) app.log.info({ jdtls: text });
-  });
-
-  child.on("error", (err) => {
-    app.log.error(err, "[lsp] failed to spawn jdtls");
-    closeAll();
-  });
-  child.on("close", (code, signal) => {
-    app.log.info(`[lsp] jdtls exited code=${code ?? "null"} signal=${signal ?? "null"}`);
-    closeAll();
-  });
-
-  // Wire the inbound drain now that child.stdin exists, then flush anything
-  // buffered between WS open and process spawn.
-  drainToStdin = (body) => {
-    if (!child.stdin.writable) return;
-    child.stdin.write(encodeLspFrame(body));
-  };
-  while (inboundQueue.length > 0) {
-    const body = inboundQueue.shift();
-    if (body !== undefined) drainToStdin(body);
-  }
-  socket.on("close", beginCleanShutdown);
-  socket.on("error", () => {
-    // Socket errors usually mean the connection is already gone; skip the
-    // graceful path because writing to stdin would just throw.
-    closeAll();
-  });
-}
-
-app.get("/lsp", { websocket: true }, (socket: WebSocket) => {
-  void handleLsp(socket);
 });
 
 try {

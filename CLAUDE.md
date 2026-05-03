@@ -12,7 +12,7 @@ All non-container code is **TypeScript on Node.js**. No Python, no Go, no plain 
 
 ```
 apps/<name>/            Workspace packages for non-container TS code. Currently `web` (browser shell) and `server` (MVP backend).
-containers/<name>/      Per-container code. Currently `sim` (WPILib runner) and `lsp` (jdtls). Future: router.
+containers/<name>/      Per-container code. Currently only `sim`. Future: router, lsp.
 vendor/AdvantageScope/  Pinned submodule of upstream AdvantageScope (used to build AS Lite).
 scripts/                Root TypeScript scripts run via tsx (build:ascope, serve:ascope).
 dist/                   Build output (gitignored). dist/advantagescope/ is the AS Lite bundle.
@@ -27,8 +27,8 @@ The root is an npm workspaces root (`"workspaces": ["apps/*"]`). Add new TS code
 - [x] Task 2 — AdvantageScope Lite hosted standalone
 - [x] Task 3 — Minimal web shell (Monaco + AS Lite + Run + console)
 - [x] Task 4 — Backend wiring for save and run
-- [x] Post-MVP M1 — Dark Modern syntax theme via the stock `@codingame/monaco-vscode-theme-defaults-default-extension` + `@codingame/monaco-vscode-java-default-extension` (replaces an earlier hand-rolled TextMate adapter; see `docs/decisions/005-editor-theme-textmate.md` for history and `009-stock-monaco-vscode.md` for the current implementation).
-- [x] Post-MVP M2 — jdtls in a sidecar `frc-lsp:mvp` container, `/lsp` WebSocket bridge in the backend, and `monaco-languageclient` in `apps/web` (replaces an earlier hand-rolled Monaco LSP adapter). Project tree shared between sim and LSP containers via Docker named volume `frc-project`. See `docs/decisions/006-project-tree-volume.md`, `007-jdtls-container.md`, `008-lsp-wiring.md`, and `009-stock-monaco-vscode.md`.
+- [x] Post-MVP M1 — Dark Modern syntax theme via TextMate (vscode-textmate + Java grammar; see `docs/decisions/005-editor-theme-textmate.md`)
+- [ ] Post-MVP M2 — jdtls integration for autocomplete + diagnostics
 
 ## Working principles for this repo
 
@@ -48,19 +48,16 @@ The root is an npm workspaces root (`"workspaces": ["apps/*"]`). Add new TS code
 ## Commands
 
 - Build sim image: `docker build -t frc-sim:mvp containers/sim`
-- Build LSP image: `docker build -f containers/lsp/Dockerfile -t frc-lsp:mvp .` (build context is the repo root because the Dockerfile copies `containers/sim/project/` to prime its own gradle cache)
-- Run sim: `docker run --rm -p 5810:5810 --memory=2g frc-sim:mvp` (use `-v frc-project:/workspace/project` if you want edits to persist across runs)
-- Run named MVP sim container: `docker run -d --name frc-sim-mvp -p 5810:5810 -v frc-project:/workspace/project --memory=2g frc-sim:mvp`
-- Run named LSP container: `docker run -d --name frc-lsp-mvp -v frc-project:/workspace/project --memory=4g frc-lsp:mvp` (jdtls + Buildship gradle import needs ~3 GB resident; 2 GB triggers the OOM killer)
+- Run sim: `docker run --rm -p 5810:5810 --memory=2g frc-sim:mvp`
+- Run named MVP sim container: `docker run -d --name frc-sim-mvp -p 5810:5810 --memory=2g frc-sim:mvp`
 - Build AS Lite bundle: `npm run build:ascope` (writes `dist/advantagescope/`)
 - Serve AS Lite: `npm run serve:ascope` (HTTP on `:8080`; override with `PORT=...`)
-- Run backend: `npm run dev:server` (Fastify on `:4000`; override with `PORT=...`; uses `SIM_CONTAINER` / `LSP_CONTAINER`, defaults `frc-sim-mvp` / `frc-lsp-mvp`)
+- Run backend: `npm run dev:server` (Fastify on `:4000`; override with `PORT=...`; uses `SIM_CONTAINER`, default `frc-sim-mvp`)
 - Run web shell dev server: `npm run dev:web` (Vite on `:3000`; iframes AS Lite from `:8080`)
-- Run full MVP dev stack: `npm run dev:mvp` (keeps/starts `frc-sim-mvp` and `frc-lsp-mvp`, ensures volume `frc-project`, then starts AS Lite, backend, and web)
+- Run full MVP dev stack: `npm run dev:mvp` (keeps/starts `frc-sim-mvp`, then starts AS Lite, backend, and web)
 - Typecheck root scripts: `npm run typecheck`. Web shell: `npm run typecheck --workspace apps/web`. Backend: `npm run typecheck --workspace apps/server`.
 - First-time setup: `git submodule update --init --recursive && npm install && npm run build:ascope`
 - End-to-end verify Task 2: run sim and `serve:ascope`, open Chrome at `http://localhost:8080`, expect AS Lite connected with `/SmartDashboard/counter` incrementing on a Line Graph and `/SmartDashboard/robotPose` moving on a 2D Field tab.
 - End-to-end verify Task 3: run sim, `serve:ascope`, and `dev:web` in three terminals; open Chrome at `http://localhost:3000`, expect Monaco showing `Robot.java` (editable), AS Lite iframe live with counter+pose, and clicking Run appends `clicked` to the console panel.
 - End-to-end verify Task 4: rebuild `frc-sim:mvp`, run `npm run dev:mvp`, open `http://localhost:3000`, edit `Robot.java`, wait for auto-save, click Run, and expect build/sim logs plus AS Lite reconnecting to the updated NT4 data. Syntax errors should show raw Gradle compile output and recover after fixing the file and running again.
-- Verify Dark Modern theme: open `http://localhost:3000` and confirm `Robot.java` highlighting matches VS Code with the Dark Modern theme (keywords blue, types teal, strings orange, comments green, default-fg `#CCCCCC`). Source: `@codingame/monaco-vscode-java-default-extension` (grammar) + `@codingame/monaco-vscode-theme-defaults-default-extension` (theme), wired through `MonacoVscodeApiWrapper` in `apps/web/src/monaco-setup.ts` with `'workbench.colorTheme': 'Default Dark Modern'`. Bump those packages to refresh the grammar/theme.
-- End-to-end verify M2 (jdtls): build both `frc-sim:mvp` and `frc-lsp:mvp`, run `npm run dev:mvp`, open `http://localhost:3000`. Status pill shows `lsp-loading` then `idle` (under ~30s). Type `RobotB` and expect a completion list; introduce `int x = "oops";` and expect a red squiggle within ~1s; remove the error and the squiggle clears. Run still works end-to-end. After closing the page, `docker exec frc-lsp-mvp pgrep -fa java` is empty (no leaked jdtls processes).
+- Verify Dark Modern theme: open `http://localhost:3000` and confirm `Robot.java` highlighting matches VS Code with the Dark Modern theme (keywords blue, types teal, strings orange, comments green, default-fg `#CCCCCC`). Source: `apps/web/src/textmate-setup.ts` + vendored grammars/themes. Bump the vendored snapshots in `apps/web/src/{grammars,themes}/` to refresh.

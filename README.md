@@ -2,7 +2,7 @@
 
 An experimental browser-based IDE for learning FRC robot programming. Students write Java in Monaco, click Run, and watch their robot simulate in real time with telemetry rendered by AdvantageScope Lite. See [`Project-MVP.md`](./Project-MVP.md) for full scope and the task breakdown.
 
-Status: MVP tasks 1-4 are implemented (sim container, AdvantageScope Lite hosting, browser shell, backend save/run wiring), plus two post-MVP milestones: a Dark Modern editor theme (M1) and Eclipse JDT Language Server in a sidecar container providing autocomplete, hover, and inline diagnostics (M2). Both are wired through the standard `monaco-languageclient` + `@codingame/monaco-vscode-api` stack — see [`docs/decisions/009-stock-monaco-vscode.md`](./docs/decisions/009-stock-monaco-vscode.md).
+Status: Tasks 1-4 of the MVP are implemented: sim container, AdvantageScope Lite hosting, browser shell, and backend save/run wiring.
 
 ## Prerequisites
 
@@ -47,29 +47,22 @@ To rebuild the sim image (Task 1) if you haven't yet:
 docker build -t frc-sim:mvp containers/sim
 ```
 
-## Running the MVP loop
+## Running the MVP loop (Task 4)
 
-Build both container images, then start the full local stack:
+Build the sim image, then start the full local stack:
 
 ```bash
 docker build -t frc-sim:mvp containers/sim
-docker build -f containers/lsp/Dockerfile -t frc-lsp:mvp .
 npm run dev:mvp
 ```
 
-The LSP image's build context is the repo root (not `containers/lsp/`) because the Dockerfile copies `containers/sim/project/` to prime its own Gradle dependency cache.
-
-`npm run dev:mvp` keeps or starts two named containers, `frc-sim-mvp` and `frc-lsp-mvp`, ensures the named volume `frc-project` exists, then launches:
+`npm run dev:mvp` keeps or starts a named container, `frc-sim-mvp`, then launches:
 
 - AS Lite static server on `http://localhost:8080`
 - Backend on `http://localhost:4000`
 - Web IDE on `http://localhost:3000`
 
-Open [http://localhost:3000](http://localhost:3000). Monaco loads `Robot.java` through `GET /file`, edits auto-save through `POST /file`, and Run opens `WS /run` to stream Gradle and sim logs. The status pill briefly shows `lsp-loading` while jdtls boots inside `frc-lsp-mvp` (typically under 30s), then settles to `idle`. After that you should see live completions, hover tooltips, and red squigglies for type errors. AS Lite remains iframed from `:8080` and reconnects to NT4 on `:5810`.
-
-### How the project tree is shared
-
-The two containers share `/workspace/project` through the Docker named volume `frc-project`. On first startup the volume is empty, so Docker auto-populates it from whichever image mounts it first. Saves from the editor (`POST /file` → `docker exec frc-sim-mvp ...`) land in the volume and are immediately visible to jdtls inside `frc-lsp-mvp`. See [`docs/decisions/006-project-tree-volume.md`](./docs/decisions/006-project-tree-volume.md).
+Open [http://localhost:3000](http://localhost:3000). Monaco loads `Robot.java` through `GET /file`, edits auto-save through `POST /file`, and Run opens `WS /run` to stream Gradle and sim logs. AS Lite remains iframed from `:8080` and reconnects to NT4 on `:5810`.
 
 To verify a save from another terminal:
 
@@ -77,25 +70,11 @@ To verify a save from another terminal:
 docker exec frc-sim-mvp cat /workspace/project/src/main/java/frc/robot/Robot.java
 ```
 
-### Cleanup
-
-Stopping `npm run dev:mvp` stops the host dev processes but leaves both containers running so the project state persists. To wipe state:
+Stopping `npm run dev:mvp` stops the host dev processes but leaves `frc-sim-mvp` running so the container filesystem remains the current project state. Remove it manually when you want a fresh baked project:
 
 ```bash
-docker rm -f frc-sim-mvp frc-lsp-mvp
-docker volume rm frc-project   # removes user edits — both images bake a fresh project, the volume re-initializes from the sim image on next start
+docker rm -f frc-sim-mvp
 ```
-
-### Memory
-
-The sim container is capped at 2 GB; the LSP container at 4 GB. Co-running both costs ~5 GB resident on the host during jdtls cold start (Buildship's Gradle import is the worst offender), settling to ~3 GB once warm. Lowering the LSP cap below 4 GB triggers the kernel OOM killer mid-import — the symptom is a `language server failed` status that retries on reload but never reaches `idle`.
-
-### LSP troubleshooting
-
-- The first `/lsp` connection after a fresh container start can take ~30s while jdtls imports the Gradle project. Subsequent reconnects within the same container lifetime are nearly instant.
-- The status pill flips to `idle` when `monaco-languageclient`'s `client.start()` resolves — that's when the LSP `initialize` handshake completes, which can be a few seconds before jdtls's Buildship Gradle import finishes. Completions for WPILib types may briefly return empty during that window even though the pill says `idle`. Wait a few more seconds on cold start.
-- jdtls writes diagnostic logs to `/workspace/jdtls-data/.metadata/.log` inside `frc-lsp-mvp`. If completions/diagnostics never appear, check that file via `docker exec frc-lsp-mvp cat /workspace/jdtls-data/.metadata/.log`.
-- If completions return nothing for WPILib types, the Gradle classpath import probably failed. Rebuilding `frc-lsp:mvp` re-primes the gradle cache.
 
 ## Running AS Lite standalone (Task 2 manual verification)
 
@@ -103,7 +82,7 @@ Two terminals:
 
 ```bash
 # Terminal 1 — sim container (NT4 on :5810)
-docker run --rm -p 5810:5810 -v frc-project:/workspace/project --memory=2g frc-sim:mvp
+docker run --rm -p 5810:5810 --memory=2g frc-sim:mvp
 
 # Terminal 2 — AS Lite static server (:8080)
 npm run serve:ascope
@@ -144,9 +123,8 @@ See [`docs/decisions/002-advantagescope-lite-hosting.md`](./docs/decisions/002-a
 
 ```
 apps/web/              Vite browser shell with Monaco, AS Lite iframe, console, and Run
-apps/server/           Fastify backend for file save, build/restart, log streaming, and the /lsp bridge
+apps/server/           Fastify backend for file save, build/restart, and log streaming
 containers/sim/        Docker sim image + WPILib hello-world (Task 1)
-containers/lsp/        Docker image hosting Eclipse JDT Language Server (Post-MVP M2)
 vendor/AdvantageScope/ Pinned submodule of upstream AdvantageScope, used to build AS Lite
 scripts/               TypeScript build/run scripts (run via tsx)
 dist/advantagescope/   Built AS Lite static bundle (gitignored; output of npm run build:ascope)
@@ -168,10 +146,8 @@ AGENTS.md             Repo notes for AI agents working in this repo
 | `npm run typecheck --workspace apps/server` | Typecheck the backend |
 | `npm run typecheck --workspace apps/web` | Typecheck the browser shell |
 | `docker build -t frc-sim:mvp containers/sim` | Build the sim container (Task 1) |
-| `docker build -f containers/lsp/Dockerfile -t frc-lsp:mvp .` | Build the LSP container (M2). Build context must be the repo root. |
-| `docker run --rm -p 5810:5810 -v frc-project:/workspace/project --memory=2g frc-sim:mvp` | Run the sim with NT4 on `:5810` and the shared project volume |
-| `docker run -d --name frc-sim-mvp -p 5810:5810 -v frc-project:/workspace/project --memory=2g frc-sim:mvp` | Run the named long-lived MVP sim container used by the backend |
-| `docker run -d --name frc-lsp-mvp -v frc-project:/workspace/project --memory=4g frc-lsp:mvp` | Run the named long-lived LSP container used by the backend |
+| `docker run --rm -p 5810:5810 --memory=2g frc-sim:mvp` | Run the sim with NT4 on `:5810` |
+| `docker run -d --name frc-sim-mvp -p 5810:5810 --memory=2g frc-sim:mvp` | Run the named long-lived MVP sim container used by the backend |
 
 ## License
 

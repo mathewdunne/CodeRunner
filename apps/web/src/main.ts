@@ -1,7 +1,6 @@
 import * as monaco from "monaco-editor";
 import { setupMonaco } from "./monaco-setup.js";
 import { setupTextMate, THEME_NAME } from "./textmate-setup.js";
-import { startLanguageClient } from "./lsp-setup.js";
 import "./style.css";
 
 setupMonaco();
@@ -32,7 +31,7 @@ function appendConsole(line: string): void {
   consoleNode.scrollTop = consoleNode.scrollHeight;
 }
 
-type Status = "idle" | "saving" | "saved" | "building" | "running" | "error" | "lsp-loading";
+type Status = "idle" | "saving" | "saved" | "building" | "running" | "error";
 
 function setStatus(status: Status): void {
   statusNode.textContent = status;
@@ -49,32 +48,13 @@ async function loadRobotJava(): Promise<string> {
 
 const initial = await loadRobotJava();
 
-// The model URI must match the path jdtls sees inside the LSP container so
-// completions and diagnostics resolve to the right document.
-const modelUri = monaco.Uri.parse("file:///workspace/project/src/main/java/frc/robot/Robot.java");
-const model = monaco.editor.createModel(initial, "java", modelUri);
-
 const editor = monaco.editor.create(editorEl, {
-  model,
+  value: initial,
+  language: "java",
   theme: THEME_NAME,
   automaticLayout: true,
   fontSize: 14,
   minimap: { enabled: false },
-});
-
-setStatus("lsp-loading");
-const languageClient = startLanguageClient();
-languageClient.ready
-  .then(() => {
-    appendConsole("language server ready");
-    setStatus("idle");
-  })
-  .catch((err: unknown) => {
-    appendConsole(err instanceof Error ? `language server failed: ${err.message}` : "language server failed");
-    setStatus("error");
-  });
-window.addEventListener("beforeunload", () => {
-  void languageClient.dispose();
 });
 
 let saveTimer: number | undefined;
@@ -208,6 +188,4 @@ runButton.addEventListener("click", () => {
 });
 
 appendConsole("ready");
-// status is left as "lsp-loading" until startLanguageClient resolves, so the
-// pill reflects the language server's startup latency rather than flashing
-// "idle" while jdtls is still booting.
+setStatus("idle");
