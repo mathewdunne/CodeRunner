@@ -70,6 +70,28 @@ type LspCompletionList = {
   items: LspCompletionItem[];
 };
 
+type LspSemanticTokensLegend = {
+  tokenTypes: string[];
+  tokenModifiers: string[];
+};
+
+type LspSemanticTokensProvider = {
+  legend: LspSemanticTokensLegend;
+  full?: boolean | { delta?: boolean };
+  range?: boolean | object;
+};
+
+type LspInitializeResult = {
+  capabilities?: {
+    semanticTokensProvider?: LspSemanticTokensProvider | null;
+  };
+};
+
+type LspSemanticTokens = {
+  resultId?: string;
+  data: number[];
+};
+
 type JavaLspConfig = {
   model: monaco.editor.ITextModel;
   url: string;
@@ -82,14 +104,63 @@ type PendingRequest = {
 };
 
 const projectRootUri = "file:///workspace/project";
+const semanticTokenTypes = [
+  "namespace",
+  "type",
+  "class",
+  "enum",
+  "interface",
+  "struct",
+  "typeParameter",
+  "parameter",
+  "variable",
+  "property",
+  "enumMember",
+  "event",
+  "function",
+  "method",
+  "macro",
+  "keyword",
+  "modifier",
+  "annotation",
+  "annotationMember",
+  "record",
+  "recordComponent",
+  "comment",
+  "string",
+  "number",
+  "regexp",
+  "operator",
+] as const;
+const semanticTokenModifiers = [
+  "declaration",
+  "definition",
+  "readonly",
+  "static",
+  "deprecated",
+  "abstract",
+  "async",
+  "modification",
+  "documentation",
+  "defaultLibrary",
+  "public",
+  "private",
+  "protected",
+  "native",
+  "generic",
+  "typeArgument",
+  "importDeclaration",
+  "constructor",
+] as const;
 
 export async function startJavaLsp(config: JavaLspConfig): Promise<void> {
   const client = new BrowserLspClient(config.url);
   const model = config.model;
+  let semanticTokensDisposable: monaco.IDisposable | undefined;
 
   try {
     await client.open();
-    await client.request("initialize", initializeParams());
+    const initializeResult = await client.request("initialize", initializeParams());
     client.notify("initialized", {});
     client.notify("textDocument/didOpen", {
       textDocument: {
@@ -100,6 +171,15 @@ export async function startJavaLsp(config: JavaLspConfig): Promise<void> {
       },
     });
     config.onStatus("java language server connected");
+
+    semanticTokensDisposable = registerSemanticTokensProvider(
+      client,
+      model,
+      initializeResult,
+    );
+    if (semanticTokensDisposable) {
+      config.onStatus("java semantic highlighting enabled");
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";
     config.onStatus(`java language server unavailable: ${message}`);
@@ -167,10 +247,51 @@ export async function startJavaLsp(config: JavaLspConfig): Promise<void> {
     contentDisposable.dispose();
     completionDisposable.dispose();
     hoverDisposable.dispose();
+    semanticTokensDisposable?.dispose();
     client.notify("textDocument/didClose", {
       textDocument: { uri: model.uri.toString() },
     });
     client.close();
+  });
+}
+
+function registerSemanticTokensProvider(
+  client: BrowserLspClient,
+  model: monaco.editor.ITextModel,
+  initializeResult: unknown,
+): monaco.IDisposable | undefined {
+  const provider = semanticTokensProvider(initializeResult);
+  if (!provider?.legend || !provider.full) {
+    return undefined;
+  }
+
+  return monaco.languages.registerDocumentSemanticTokensProvider("java", {
+    getLegend() {
+      return provider.legend;
+    },
+    provideDocumentSemanticTokens: async (semanticModel, _lastResultId, token) => {
+      if (semanticModel.uri.toString() !== model.uri.toString()) {
+        return null;
+      }
+
+      const result = await client
+        .request("textDocument/semanticTokens/full", {
+          textDocument: { uri: model.uri.toString() },
+        })
+        .catch(() => null);
+
+      if (token.isCancellationRequested || !isSemanticTokens(result)) {
+        return null;
+      }
+
+      return {
+        resultId: result.resultId,
+        data: Uint32Array.from(result.data),
+      };
+    },
+    releaseDocumentSemanticTokens(_resultId) {
+      // JDT LS does not need an explicit release notification for full tokens.
+    },
   });
 }
 
@@ -285,6 +406,21 @@ function initializeParams(): unknown {
         publishDiagnostics: {
           relatedInformation: true,
         },
+        semanticTokens: {
+          dynamicRegistration: false,
+          tokenTypes: semanticTokenTypes,
+          tokenModifiers: semanticTokenModifiers,
+          formats: ["relative"],
+          requests: {
+            range: false,
+            full: {
+              delta: false,
+            },
+          },
+          overlappingTokenSupport: false,
+          multilineTokenSupport: false,
+          augmentsSyntaxTokens: true,
+        },
       },
       workspace: {
         workspaceFolders: true,
@@ -370,6 +506,20 @@ function completionItems(result: unknown): LspCompletionItem[] {
     return (result as LspCompletionList).items.filter(isCompletionItem);
   }
   return [];
+}
+
+function semanticTokensProvider(result: unknown): LspSemanticTokensProvider | undefined {
+  if (!isObject(result)) {
+    return undefined;
+  }
+
+  const capabilities = (result as LspInitializeResult).capabilities;
+  const provider = capabilities?.semanticTokensProvider;
+  if (!isSemanticTokensProvider(provider)) {
+    return undefined;
+  }
+
+  return provider;
 }
 
 function hoverToMonaco(result: unknown): monaco.languages.Hover | undefined {
@@ -510,4 +660,31 @@ function isPosition(value: unknown): value is LspPosition {
 
 function isCompletionItem(value: unknown): value is LspCompletionItem {
   return isObject(value) && typeof value.label === "string";
+}
+
+function isSemanticTokensProvider(value: unknown): value is LspSemanticTokensProvider {
+  return (
+    isObject(value) &&
+    isSemanticTokensLegend(value.legend) &&
+    (value.full === true || isObject(value.full))
+  );
+}
+
+function isSemanticTokensLegend(value: unknown): value is LspSemanticTokensLegend {
+  return (
+    isObject(value) &&
+    Array.isArray(value.tokenTypes) &&
+    value.tokenTypes.every((tokenType) => typeof tokenType === "string") &&
+    Array.isArray(value.tokenModifiers) &&
+    value.tokenModifiers.every((tokenModifier) => typeof tokenModifier === "string")
+  );
+}
+
+function isSemanticTokens(value: unknown): value is LspSemanticTokens {
+  return (
+    isObject(value) &&
+    Array.isArray(value.data) &&
+    value.data.every((tokenPart) => typeof tokenPart === "number") &&
+    (value.resultId === undefined || typeof value.resultId === "string")
+  );
 }

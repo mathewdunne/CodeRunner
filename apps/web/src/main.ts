@@ -1,6 +1,7 @@
 import * as monaco from "monaco-editor";
 import { startJavaLsp } from "./java-lsp.js";
 import { setupMonaco } from "./monaco-setup.js";
+import { defaultDarkModernThemeName } from "./vscode-dark-modern.js";
 import "./style.css";
 
 setupMonaco();
@@ -56,10 +57,14 @@ const model = monaco.editor.createModel(
 
 const editor = monaco.editor.create(editorEl, {
   model,
-  theme: "vs-dark",
+  theme: defaultDarkModernThemeName,
   automaticLayout: true,
+  "semanticHighlighting.enabled": true,
+  bracketPairColorization: { enabled: true },
   fontSize: 14,
+  lineHeight: 20,
   minimap: { enabled: false },
+  smoothScrolling: true,
 });
 
 function javaLanguageServerUrl(): string {

@@ -19,6 +19,8 @@ The MVP now keeps plain `monaco-editor` and adds a small direct LSP adapter in `
 
 The app still loads the file through `GET /file`, auto-saves through `POST /file`, and runs through `WS /run`. LSP is attached to the active browser model; the sim container remains the source of truth for execution.
 
+Follow-up: the adapter also advertises `textDocument.semanticTokens` support and registers a Monaco document semantic tokens provider when JDT LS returns a `semanticTokensProvider` capability. This lets Monaco color Java identifiers by resolved symbol kind instead of relying only on Monaco's basic Java tokenizer.
+
 ### Local WPILib-aware JDT LS image
 
 The LSP server runs in `frc-lsp:mvp`, separate from the sim container. The image installs Eclipse JDT LS and copies the same baked Gradle project from `containers/sim/project` into `/workspace/project`, then runs `./gradlew build` during image build. This primes Gradle/WPILib dependencies so JDT LS can resolve FRC symbols without waiting for the student's first edit/run.
