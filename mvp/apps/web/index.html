@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FRC Web Simulator</title>
+  </head>
+  <body>
+    <div id="app">
+      <div id="editor"></div>
+      <div id="scope">
+        <iframe
+          id="scope-frame"
+          src="http://localhost:8080"
+          title="AdvantageScope Lite"
+        ></iframe>
+      </div>
+      <div id="console-row">
+        <div id="console" aria-label="Console output"></div>
+        <div id="run-controls">
+          <div id="status" data-status="idle">idle</div>
+          <button id="run" type="button">Run</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

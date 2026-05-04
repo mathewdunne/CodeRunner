@@ -1,33 +1,30 @@
 {
   "name": "frc-programming-training-sim",
   "private": true,
-  "version": "0.0.0",
-  "description": "Browser-based IDE for learning FRC robot programming. See Project-MVP.md.",
+  "version": "1.0.0-v1.0",
+  "description": "V1 rewrite scaffold for the FRC Web Simulator.",
   "type": "module",
-  "engines": {
-    "node": ">=20"
-  },
+  "packageManager": "bun@1.3.13",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
-    "build:ascope": "tsx scripts/build-ascope-lite.ts",
-    "dev:mvp": "tsx scripts/dev-mvp.ts",
-    "dev:spike:multi": "tsx scripts/dev-spike-multi-tenancy.ts",
-    "dev:lsp": "npm run dev --workspace apps/lsp",
-    "dev:router": "npm run dev --workspace apps/router",
-    "dev:server": "npm run dev --workspace apps/server",
-    "patch:ascope:nt4-proxy": "tsx scripts/patch-ascope-lite-nt4-proxy.ts",
-    "serve:ascope": "tsx scripts/serve-ascope-lite.ts",
-    "spike:multi": "tsx scripts/spike-multi-tenancy.ts",
-    "dev:web": "npm run dev --workspace apps/web",
-    "typecheck": "tsc --noEmit"
+    "dev:control": "bun apps/control/src/main.ts",
+    "dev:web": "bun --cwd apps/web run dev",
+    "typecheck": "bun scripts/typecheck.ts",
+    "test": "bun test"
   },
   "devDependencies": {
-    "@fastify/static": "^8.0.4",
-    "@types/node": "^22.10.0",
-    "fastify": "^5.2.0",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "@types/bun": "^1.3.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.6"
+  },
+  "dependencies": {
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
   }
 }

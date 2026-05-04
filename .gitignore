@@ -4,6 +4,9 @@ dist/
 .npm/
 *.tsbuildinfo
 
+# V1 runtime data
+data/
+
 # Gradle / Java
 .gradle/
 build/

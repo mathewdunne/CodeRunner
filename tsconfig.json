@@ -1,17 +1,4 @@
 {
-  "compilerOptions": {
-    "target": "es2022",
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "lib": ["es2022"],
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "resolveJsonModule": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": false
-  },
-  "include": ["scripts/**/*.ts"],
-  "exclude": ["node_modules", "vendor", "dist"]
+  "extends": "./tsconfig.base.json",
+  "include": []
 }
