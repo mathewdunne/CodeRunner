@@ -15,7 +15,7 @@
         "relation": "participate_in",
         "confidence": "EXTRACTED",
         "confidence_score": 1.0,
-        "source_file": "Project-MVP.md"
+        "source_file": "mvp/Project-MVP.md"
       },
       {
         "id": "lsp_intelligence_stack",
@@ -29,7 +29,7 @@
         "relation": "implement",
         "confidence": "EXTRACTED",
         "confidence_score": 1.0,
-        "source_file": "docs/decisions/005-java-lsp.md"
+        "source_file": "mvp/docs/decisions/005-java-lsp.md"
       },
       {
         "id": "ascope_nt4_integration",
@@ -43,7 +43,7 @@
         "relation": "implement",
         "confidence": "EXTRACTED",
         "confidence_score": 0.95,
-        "source_file": "docs/decisions/002-advantagescope-lite-hosting.md"
+        "source_file": "mvp/docs/decisions/002-advantagescope-lite-hosting.md"
       }
     ]
   },
@@ -576,7 +576,7 @@
       "source_file": "apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "apps_web_vite_config_ts",
-      "community": 19,
+      "community": 20,
       "norm_label": "vite.config.ts"
     },
     {
@@ -981,7 +981,7 @@
       "source_file": "mvp\\apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_vite_config_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "vite.config.ts"
     },
     {
@@ -1836,7 +1836,7 @@
       "source_file": "mvp\\scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_patch_ascope_lite_nt4_proxy_ts",
-      "community": 21,
+      "community": 22,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts"
     },
     {
@@ -2038,12 +2038,30 @@
       "norm_label": "getprojectpathaccess()"
     },
     {
+      "label": "template-integrity.test.ts",
+      "file_type": "code",
+      "source_file": "scripts\\template-integrity.test.ts",
+      "source_location": "L1",
+      "id": "scripts_template_integrity_test_ts",
+      "community": 19,
+      "norm_label": "template-integrity.test.ts"
+    },
+    {
+      "label": "expectTemplateFile()",
+      "file_type": "code",
+      "source_file": "scripts\\template-integrity.test.ts",
+      "source_location": "L9",
+      "id": "scripts_template_integrity_test_expecttemplatefile",
+      "community": 19,
+      "norm_label": "expecttemplatefile()"
+    },
+    {
       "label": "typecheck.ts",
       "file_type": "code",
       "source_file": "scripts\\typecheck.ts",
       "source_location": "L1",
       "id": "scripts_typecheck_ts",
-      "community": 22,
+      "community": 23,
       "norm_label": "typecheck.ts"
     },
     {
@@ -2078,7 +2096,7 @@
       "file_type": "code",
       "source_file": "scripts\\apply-ascope-patches.ts",
       "source_location": "L1",
-      "community": 23,
+      "community": 24,
       "norm_label": "apply-ascope-patches.ts",
       "id": "scripts_apply_ascope_patches_ts"
     },
@@ -2096,7 +2114,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-v1.ts",
       "source_location": "L1",
-      "community": 24,
+      "community": 25,
       "norm_label": "dev-v1.ts",
       "id": "scripts_dev_v1_ts"
     },
@@ -2105,7 +2123,7 @@
       "file_type": "code",
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L1",
-      "community": 25,
+      "community": 26,
       "norm_label": "verify-v1-two-user.ts",
       "id": "scripts_verify_v1_two_user_ts"
     },
@@ -2222,7 +2240,7 @@
       "file_type": "code",
       "source_file": "scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
-      "community": 26,
+      "community": 27,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts",
       "id": "scripts_patch_ascope_lite_nt4_proxy_ts"
     },
@@ -2245,22 +2263,22 @@
       "id": "scripts_spike_multi_tenancy_ts"
     },
     {
-      "label": "LSP WebSocket Bridge (apps/lsp/src/main.ts)",
+      "label": "LSP WebSocket Bridge (mvp/apps/lsp/src/main.ts)",
       "file_type": "code",
-      "source_file": "apps/lsp/src/main.ts",
+      "source_file": "mvp/apps/lsp/src/main.ts",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
       "community": 0,
-      "norm_label": "lsp websocket bridge (apps/lsp/src/main.ts)",
+      "norm_label": "lsp websocket bridge (mvp/apps/lsp/src/main.ts)",
       "id": "lsp_main_lspbridge"
     },
     {
       "label": "launchLanguageServer()",
       "file_type": "code",
-      "source_file": "apps/lsp/src/main.ts",
+      "source_file": "mvp/apps/lsp/src/main.ts",
       "source_location": "line 70",
       "source_url": null,
       "captured_at": null,
@@ -2273,7 +2291,7 @@
     {
       "label": "handleUpgrade()",
       "file_type": "code",
-      "source_file": "apps/lsp/src/main.ts",
+      "source_file": "mvp/apps/lsp/src/main.ts",
       "source_location": "line 133",
       "source_url": null,
       "captured_at": null,
@@ -2286,7 +2304,7 @@
     {
       "label": "asWebSocket()",
       "file_type": "code",
-      "source_file": "apps/lsp/src/main.ts",
+      "source_file": "mvp/apps/lsp/src/main.ts",
       "source_location": "line 109",
       "source_url": null,
       "captured_at": null,
@@ -2299,7 +2317,7 @@
     {
       "label": "Eclipse JDT LS Process",
       "file_type": "rationale",
-      "source_file": "apps/lsp/src/main.ts",
+      "source_file": "mvp/apps/lsp/src/main.ts",
       "source_location": "line 24",
       "source_url": null,
       "captured_at": null,
@@ -2310,22 +2328,22 @@
       "id": "lsp_main_eclipsejdtls"
     },
     {
-      "label": "MVP Backend Service (apps/server/src/main.ts)",
+      "label": "MVP Backend Service (mvp/apps/server/src/main.ts)",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
       "community": 0,
-      "norm_label": "mvp backend service (apps/server/src/main.ts)",
+      "norm_label": "mvp backend service (mvp/apps/server/src/main.ts)",
       "id": "server_main_backendservice"
     },
     {
       "label": "handleRun()",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 300",
       "source_url": null,
       "captured_at": null,
@@ -2338,7 +2356,7 @@
     {
       "label": "WebSocketTextPeer class",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 115",
       "source_url": null,
       "captured_at": null,
@@ -2351,7 +2369,7 @@
     {
       "label": "LineSplitter class",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 211",
       "source_url": null,
       "captured_at": null,
@@ -2364,7 +2382,7 @@
     {
       "label": "spawnDockerStep()",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 236",
       "source_url": null,
       "captured_at": null,
@@ -2377,7 +2395,7 @@
     {
       "label": "spawnDockerLogs()",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 272",
       "source_url": null,
       "captured_at": null,
@@ -2390,7 +2408,7 @@
     {
       "label": "readRobotFile()",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 67",
       "source_url": null,
       "captured_at": null,
@@ -2403,7 +2421,7 @@
     {
       "label": "writeRobotFile()",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 71",
       "source_url": null,
       "captured_at": null,
@@ -2416,7 +2434,7 @@
     {
       "label": "docker() helper",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 36",
       "source_url": null,
       "captured_at": null,
@@ -2429,7 +2447,7 @@
     {
       "label": "dockerExec() helper",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 43",
       "source_url": null,
       "captured_at": null,
@@ -2442,7 +2460,7 @@
     {
       "label": "acceptWebSocket()",
       "file_type": "code",
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 186",
       "source_url": null,
       "captured_at": null,
@@ -2453,22 +2471,22 @@
       "id": "server_main_acceptwebsocket"
     },
     {
-      "label": "Vite Config (apps/web/vite.config.ts)",
+      "label": "Vite Config (mvp/apps/web/vite.config.ts)",
       "file_type": "code",
-      "source_file": "apps/web/vite.config.ts",
+      "source_file": "mvp/apps/web/vite.config.ts",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
       "community": 0,
-      "norm_label": "vite config (apps/web/vite.config.ts)",
+      "norm_label": "vite config (mvp/apps/web/vite.config.ts)",
       "id": "web_viteconfig"
     },
     {
       "label": "startJavaLsp()",
       "file_type": "code",
-      "source_file": "apps/web/src/java-lsp.ts",
+      "source_file": "mvp/apps/web/src/java-lsp.ts",
       "source_location": "line 156",
       "source_url": null,
       "captured_at": null,
@@ -2481,7 +2499,7 @@
     {
       "label": "BrowserLspClient class",
       "file_type": "code",
-      "source_file": "apps/web/src/java-lsp.ts",
+      "source_file": "mvp/apps/web/src/java-lsp.ts",
       "source_location": "line 298",
       "source_url": null,
       "captured_at": null,
@@ -2494,7 +2512,7 @@
     {
       "label": "registerSemanticTokensProvider()",
       "file_type": "code",
-      "source_file": "apps/web/src/java-lsp.ts",
+      "source_file": "mvp/apps/web/src/java-lsp.ts",
       "source_location": "line 258",
       "source_url": null,
       "captured_at": null,
@@ -2507,7 +2525,7 @@
     {
       "label": "handleDiagnostics()",
       "file_type": "code",
-      "source_file": "apps/web/src/java-lsp.ts",
+      "source_file": "mvp/apps/web/src/java-lsp.ts",
       "source_location": "line 450",
       "source_url": null,
       "captured_at": null,
@@ -2518,22 +2536,22 @@
       "id": "web_javalsp_handlediagnostics"
     },
     {
-      "label": "Web Shell Entry (apps/web/src/main.ts)",
+      "label": "Web Shell Entry (mvp/apps/web/src/main.ts)",
       "file_type": "code",
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
       "community": 0,
-      "norm_label": "web shell entry (apps/web/src/main.ts)",
+      "norm_label": "web shell entry (mvp/apps/web/src/main.ts)",
       "id": "web_main_entry"
     },
     {
       "label": "loadRobotJava()",
       "file_type": "code",
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 41",
       "source_url": null,
       "captured_at": null,
@@ -2546,7 +2564,7 @@
     {
       "label": "saveRobotJava()",
       "file_type": "code",
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 85",
       "source_url": null,
       "captured_at": null,
@@ -2559,7 +2577,7 @@
     {
       "label": "scheduleSave()",
       "file_type": "code",
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 98",
       "source_url": null,
       "captured_at": null,
@@ -2572,7 +2590,7 @@
     {
       "label": "flushSave()",
       "file_type": "code",
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 112",
       "source_url": null,
       "captured_at": null,
@@ -2585,7 +2603,7 @@
     {
       "label": "handleRunMessage()",
       "file_type": "code",
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 141",
       "source_url": null,
       "captured_at": null,
@@ -2598,7 +2616,7 @@
     {
       "label": "setupMonaco()",
       "file_type": "code",
-      "source_file": "apps/web/src/monaco-setup.ts",
+      "source_file": "mvp/apps/web/src/monaco-setup.ts",
       "source_location": "line 4",
       "source_url": null,
       "captured_at": null,
@@ -2611,7 +2629,7 @@
     {
       "label": "registerDefaultDarkModernTheme()",
       "file_type": "code",
-      "source_file": "apps/web/src/vscode-dark-modern.ts",
+      "source_file": "mvp/apps/web/src/vscode-dark-modern.ts",
       "source_location": "line 775",
       "source_url": null,
       "captured_at": null,
@@ -2624,7 +2642,7 @@
     {
       "label": "VS Code Dark Modern Token Colors",
       "file_type": "rationale",
-      "source_file": "apps/web/src/vscode-dark-modern.ts",
+      "source_file": "mvp/apps/web/src/vscode-dark-modern.ts",
       "source_location": "line 25",
       "source_url": null,
       "captured_at": null,
@@ -2637,7 +2655,7 @@
     {
       "label": "Robot.java (sim project source of truth)",
       "file_type": "code",
-      "source_file": "containers/sim/project/src/main/java/frc/robot/Robot.java",
+      "source_file": "mvp/containers/sim/project/src/main/java/frc/robot/Robot.java",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2650,7 +2668,7 @@
     {
       "label": "Main.java (WPILib entry point)",
       "file_type": "code",
-      "source_file": "containers/sim/project/src/main/java/frc/robot/Main.java",
+      "source_file": "mvp/containers/sim/project/src/main/java/frc/robot/Main.java",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2663,7 +2681,7 @@
     {
       "label": "RobotContainer.java",
       "file_type": "code",
-      "source_file": "containers/sim/project/src/main/java/frc/robot/RobotContainer.java",
+      "source_file": "mvp/containers/sim/project/src/main/java/frc/robot/RobotContainer.java",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2676,7 +2694,7 @@
     {
       "label": "build-ascope-lite.ts script",
       "file_type": "code",
-      "source_file": "scripts/build-ascope-lite.ts",
+      "source_file": "mvp/scripts/build-ascope-lite.ts",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2689,7 +2707,7 @@
     {
       "label": "dev-mvp.ts orchestration script",
       "file_type": "code",
-      "source_file": "scripts/dev-mvp.ts",
+      "source_file": "mvp/scripts/dev-mvp.ts",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2702,7 +2720,7 @@
     {
       "label": "serve-ascope-lite.ts script",
       "file_type": "code",
-      "source_file": "scripts/serve-ascope-lite.ts",
+      "source_file": "mvp/scripts/serve-ascope-lite.ts",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2713,9 +2731,9 @@
       "id": "scripts_serveascope"
     },
     {
-      "label": "Project-MVP.md (MVP Spec)",
+      "label": "mvp/Project-MVP.md (MVP Spec)",
       "file_type": "document",
-      "source_file": "Project-MVP.md",
+      "source_file": "mvp/Project-MVP.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2739,9 +2757,9 @@
       "id": "readme_doc"
     },
     {
-      "label": "Spike-Multi-Tenancy.md",
+      "label": "mvp/Spike-Multi-Tenancy.md",
       "file_type": "document",
-      "source_file": "Spike-Multi-Tenancy.md",
+      "source_file": "mvp/Spike-Multi-Tenancy.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2754,20 +2772,20 @@
     {
       "label": "Web Shell index.html",
       "file_type": "code",
-      "source_file": "apps/web/index.html",
+      "source_file": "mvp/apps/web/index.html",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "web shell index.html",
       "id": "index_html"
     },
     {
       "label": "Decision 001: Sim Container Architecture",
       "file_type": "document",
-      "source_file": "docs/decisions/001-sim-container.md",
+      "source_file": "mvp/docs/decisions/001-sim-container.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2780,7 +2798,7 @@
     {
       "label": "Decision 002: AdvantageScope Lite Hosting",
       "file_type": "document",
-      "source_file": "docs/decisions/002-advantagescope-lite-hosting.md",
+      "source_file": "mvp/docs/decisions/002-advantagescope-lite-hosting.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2793,7 +2811,7 @@
     {
       "label": "Decision 003: Minimal Web Shell",
       "file_type": "document",
-      "source_file": "docs/decisions/003-web-shell.md",
+      "source_file": "mvp/docs/decisions/003-web-shell.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2806,7 +2824,7 @@
     {
       "label": "Decision 004: Backend Wiring for Save and Run",
       "file_type": "document",
-      "source_file": "docs/decisions/004-backend-wiring.md",
+      "source_file": "mvp/docs/decisions/004-backend-wiring.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2819,7 +2837,7 @@
     {
       "label": "Decision 005: Java LSP MVP Integration",
       "file_type": "document",
-      "source_file": "docs/decisions/005-java-lsp.md",
+      "source_file": "mvp/docs/decisions/005-java-lsp.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2832,7 +2850,7 @@
     {
       "label": "Rationale: Headless sim via omission (no SimGUI/DriverStation)",
       "file_type": "rationale",
-      "source_file": "docs/decisions/001-sim-container.md",
+      "source_file": "mvp/docs/decisions/001-sim-container.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2846,7 +2864,7 @@
     {
       "label": "Rationale: AS Lite reads window.location.hostname for NT4",
       "file_type": "rationale",
-      "source_file": "docs/decisions/002-advantagescope-lite-hosting.md",
+      "source_file": "mvp/docs/decisions/002-advantagescope-lite-hosting.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2860,7 +2878,7 @@
     {
       "label": "Rationale: Custom WebSocket sender without @fastify/websocket",
       "file_type": "rationale",
-      "source_file": "docs/decisions/004-backend-wiring.md",
+      "source_file": "mvp/docs/decisions/004-backend-wiring.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2874,7 +2892,7 @@
     {
       "label": "Rationale: Plain Monaco client with direct LSP requests instead of TypeFox wrappers",
       "file_type": "rationale",
-      "source_file": "docs/decisions/005-java-lsp.md",
+      "source_file": "mvp/docs/decisions/005-java-lsp.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2888,7 +2906,7 @@
     {
       "label": "Rationale: No Cross-Origin-Embedder-Policy headers (AS Lite iframe)",
       "file_type": "rationale",
-      "source_file": "docs/decisions/005-java-lsp.md",
+      "source_file": "mvp/docs/decisions/005-java-lsp.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2902,7 +2920,7 @@
     {
       "label": "Rationale: AS Lite embedded via iframe, not bundled into web app",
       "file_type": "rationale",
-      "source_file": "docs/decisions/003-web-shell.md",
+      "source_file": "mvp/docs/decisions/003-web-shell.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2916,7 +2934,7 @@
     {
       "label": "Rationale: tini as PID 1 in sim container to reap zombie processes",
       "file_type": "rationale",
-      "source_file": "docs/decisions/004-backend-wiring.md",
+      "source_file": "mvp/docs/decisions/004-backend-wiring.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2930,7 +2948,7 @@
     {
       "label": "Rationale: Single-stage Dockerfile to preserve Gradle cache",
       "file_type": "rationale",
-      "source_file": "docs/decisions/001-sim-container.md",
+      "source_file": "mvp/docs/decisions/001-sim-container.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2944,7 +2962,7 @@
     {
       "label": "NT4 Routing under Multi-Tenancy (spike question)",
       "file_type": "rationale",
-      "source_file": "Spike-Multi-Tenancy.md",
+      "source_file": "mvp/Spike-Multi-Tenancy.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2958,7 +2976,7 @@
     {
       "label": "Shared vs. Per-user JDT LS topology (spike question)",
       "file_type": "rationale",
-      "source_file": "Spike-Multi-Tenancy.md",
+      "source_file": "mvp/Spike-Multi-Tenancy.md",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -2978,9 +2996,9 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_test_ts",
-      "target": "src_app_createapp",
-      "confidence_score": 1.0
+      "target": "src_app_createapp"
     },
     {
       "relation": "contains",
@@ -2988,9 +3006,9 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_test_ts",
-      "target": "src_app_test_exists",
-      "confidence_score": 1.0
+      "target": "src_app_test_exists"
     },
     {
       "relation": "contains",
@@ -2998,9 +3016,9 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_test_ts",
-      "target": "src_app_test_createtemplate",
-      "confidence_score": 1.0
+      "target": "src_app_test_createtemplate"
     },
     {
       "relation": "contains",
@@ -3008,9 +3026,9 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_test_ts",
-      "target": "src_app_test_withapp",
-      "confidence_score": 1.0
+      "target": "src_app_test_withapp"
     },
     {
       "relation": "contains",
@@ -3018,9 +3036,9 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_test_ts",
-      "target": "src_app_test_login",
-      "confidence_score": 1.0
+      "target": "src_app_test_login"
     },
     {
       "relation": "contains",
@@ -3028,9 +3046,9 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L60",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_test_ts",
-      "target": "src_app_test_cookiefrom",
-      "confidence_score": 1.0
+      "target": "src_app_test_cookiefrom"
     },
     {
       "relation": "calls",
@@ -3039,9 +3057,9 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L28",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_test_withapp",
-      "target": "src_app_test_createtemplate",
-      "confidence_score": 1.0
+      "target": "src_app_test_createtemplate"
     },
     {
       "relation": "calls",
@@ -3061,9 +3079,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_cookies_parsesignedsessioncookie",
-      "confidence_score": 1.0
+      "target": "src_cookies_parsesignedsessioncookie"
     },
     {
       "relation": "imports",
@@ -3072,9 +3090,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_cookies_serializeexpiredsessioncookie",
-      "confidence_score": 1.0
+      "target": "src_cookies_serializeexpiredsessioncookie"
     },
     {
       "relation": "imports",
@@ -3083,9 +3101,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_cookies_serializesessioncookie",
-      "confidence_score": 1.0
+      "target": "src_cookies_serializesessioncookie"
     },
     {
       "relation": "imports",
@@ -3094,9 +3112,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_storage_createstorage",
-      "confidence_score": 1.0
+      "target": "src_storage_createstorage"
     },
     {
       "relation": "imports",
@@ -3105,9 +3123,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_storage_slugtakenerror",
-      "confidence_score": 1.0
+      "target": "src_storage_slugtakenerror"
     },
     {
       "relation": "imports",
@@ -3116,9 +3134,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_storage_appstorage",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage"
     },
     {
       "relation": "contains",
@@ -3126,9 +3144,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_htmlresponse",
-      "confidence_score": 1.0
+      "target": "src_app_htmlresponse"
     },
     {
       "relation": "contains",
@@ -3136,9 +3154,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L22",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_redirect",
-      "confidence_score": 1.0
+      "target": "src_app_redirect"
     },
     {
       "relation": "contains",
@@ -3146,9 +3164,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L28",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_escapehtml",
-      "confidence_score": 1.0
+      "target": "src_app_escapehtml"
     },
     {
       "relation": "contains",
@@ -3156,9 +3174,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_loginpage",
-      "confidence_score": 1.0
+      "target": "src_app_loginpage"
     },
     {
       "relation": "contains",
@@ -3166,9 +3184,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L68",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_workspacepage",
-      "confidence_score": 1.0
+      "target": "src_app_workspacepage"
     },
     {
       "relation": "contains",
@@ -3176,9 +3194,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L107",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_notfound",
-      "confidence_score": 1.0
+      "target": "src_app_notfound"
     },
     {
       "relation": "contains",
@@ -3186,9 +3204,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L111",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_readdisplayname",
-      "confidence_score": 1.0
+      "target": "src_app_readdisplayname"
     },
     {
       "relation": "contains",
@@ -3196,9 +3214,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L126",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_currentuserid",
-      "confidence_score": 1.0
+      "target": "src_app_currentuserid"
     },
     {
       "relation": "contains",
@@ -3206,9 +3224,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L130",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_authfromrequest",
-      "confidence_score": 1.0
+      "target": "src_app_authfromrequest"
     },
     {
       "relation": "contains",
@@ -3216,9 +3234,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L145",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_resolveworkspacerequest",
-      "confidence_score": 1.0
+      "target": "src_app_resolveworkspacerequest"
     },
     {
       "relation": "contains",
@@ -3226,9 +3244,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L164",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
-      "target": "src_app_createapp",
-      "confidence_score": 1.0
+      "target": "src_app_createapp"
     },
     {
       "relation": "calls",
@@ -3237,9 +3255,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L39",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_loginpage",
-      "target": "src_app_htmlresponse",
-      "confidence_score": 1.0
+      "target": "src_app_htmlresponse"
     },
     {
       "relation": "calls",
@@ -3248,9 +3266,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_workspacepage",
-      "target": "src_app_htmlresponse",
-      "confidence_score": 1.0
+      "target": "src_app_htmlresponse"
     },
     {
       "relation": "calls",
@@ -3259,9 +3277,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L153",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_resolveworkspacerequest",
-      "target": "src_app_redirect",
-      "confidence_score": 1.0
+      "target": "src_app_redirect"
     },
     {
       "relation": "calls",
@@ -3270,9 +3288,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L37",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_loginpage",
-      "target": "src_app_escapehtml",
-      "confidence_score": 1.0
+      "target": "src_app_escapehtml"
     },
     {
       "relation": "calls",
@@ -3281,9 +3299,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L69",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_workspacepage",
-      "target": "src_app_escapehtml",
-      "confidence_score": 1.0
+      "target": "src_app_escapehtml"
     },
     {
       "relation": "calls",
@@ -3292,9 +3310,9 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L151",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_app_resolveworkspacerequest",
-      "target": "src_app_authfromrequest",
-      "confidence_score": 1.0
+      "target": "src_app_authfromrequest"
     },
     {
       "relation": "calls",
@@ -3314,9 +3332,9 @@
       "source_file": "apps\\control\\src\\main.ts",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_main_ts",
-      "target": "src_app_createapp",
-      "confidence_score": 1.0
+      "target": "src_app_createapp"
     },
     {
       "relation": "calls",
@@ -3335,9 +3353,9 @@
       "source_file": "apps\\control\\src\\config.ts",
       "source_location": "L17",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_config_ts",
-      "target": "src_config_loadcontrolconfig",
-      "confidence_score": 1.0
+      "target": "src_config_loadcontrolconfig"
     },
     {
       "relation": "imports",
@@ -3346,9 +3364,9 @@
       "source_file": "apps\\control\\src\\migrate.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_migrate_ts",
-      "target": "src_config_loadcontrolconfig",
-      "confidence_score": 1.0
+      "target": "src_config_loadcontrolconfig"
     },
     {
       "relation": "imports",
@@ -3357,9 +3375,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L9",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_storage_ts",
-      "target": "src_config_loadcontrolconfig",
-      "confidence_score": 1.0
+      "target": "src_config_loadcontrolconfig"
     },
     {
       "relation": "calls",
@@ -3378,9 +3396,9 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_cookies_ts",
-      "target": "src_cookies_base64url",
-      "confidence_score": 1.0
+      "target": "src_cookies_base64url"
     },
     {
       "relation": "contains",
@@ -3388,9 +3406,9 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L11",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_cookies_ts",
-      "target": "src_cookies_signsessionid",
-      "confidence_score": 1.0
+      "target": "src_cookies_signsessionid"
     },
     {
       "relation": "contains",
@@ -3398,9 +3416,9 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L15",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_cookies_ts",
-      "target": "src_cookies_serializesessioncookie",
-      "confidence_score": 1.0
+      "target": "src_cookies_serializesessioncookie"
     },
     {
       "relation": "contains",
@@ -3408,9 +3426,9 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_cookies_ts",
-      "target": "src_cookies_serializeexpiredsessioncookie",
-      "confidence_score": 1.0
+      "target": "src_cookies_serializeexpiredsessioncookie"
     },
     {
       "relation": "contains",
@@ -3418,9 +3436,9 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_cookies_ts",
-      "target": "src_cookies_parsecookies",
-      "confidence_score": 1.0
+      "target": "src_cookies_parsecookies"
     },
     {
       "relation": "contains",
@@ -3428,9 +3446,9 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L53",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_cookies_ts",
-      "target": "src_cookies_parsesignedsessioncookie",
-      "confidence_score": 1.0
+      "target": "src_cookies_parsesignedsessioncookie"
     },
     {
       "relation": "calls",
@@ -3439,9 +3457,9 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_cookies_signsessionid",
-      "target": "src_cookies_base64url",
-      "confidence_score": 1.0
+      "target": "src_cookies_base64url"
     },
     {
       "relation": "calls",
@@ -3450,9 +3468,9 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_cookies_serializesessioncookie",
-      "target": "src_cookies_signsessionid",
-      "confidence_score": 1.0
+      "target": "src_cookies_signsessionid"
     },
     {
       "relation": "calls",
@@ -3461,9 +3479,9 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L69",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_cookies_parsesignedsessioncookie",
-      "target": "src_cookies_signsessionid",
-      "confidence_score": 1.0
+      "target": "src_cookies_signsessionid"
     },
     {
       "relation": "calls",
@@ -3472,9 +3490,9 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L54",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_cookies_parsesignedsessioncookie",
-      "target": "src_cookies_parsecookies",
-      "confidence_score": 1.0
+      "target": "src_cookies_parsecookies"
     },
     {
       "relation": "imports",
@@ -3483,9 +3501,9 @@
       "source_file": "apps\\control\\src\\migrate.ts",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_migrate_ts",
-      "target": "src_migrations_applymigrations",
-      "confidence_score": 1.0
+      "target": "src_migrations_applymigrations"
     },
     {
       "relation": "imports",
@@ -3494,9 +3512,9 @@
       "source_file": "apps\\control\\src\\migrate.ts",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_migrate_ts",
-      "target": "src_migrations_migrationstatus",
-      "confidence_score": 1.0
+      "target": "src_migrations_migrationstatus"
     },
     {
       "relation": "contains",
@@ -3504,9 +3522,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_migrations_ts",
-      "target": "src_migrations_loadmigrations",
-      "confidence_score": 1.0
+      "target": "src_migrations_loadmigrations"
     },
     {
       "relation": "contains",
@@ -3514,9 +3532,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L40",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_migrations_ts",
-      "target": "src_migrations_ensuremigrationtable",
-      "confidence_score": 1.0
+      "target": "src_migrations_ensuremigrationtable"
     },
     {
       "relation": "contains",
@@ -3524,9 +3542,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L50",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_migrations_ts",
-      "target": "src_migrations_listappliedmigrations",
-      "confidence_score": 1.0
+      "target": "src_migrations_listappliedmigrations"
     },
     {
       "relation": "contains",
@@ -3534,9 +3552,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L57",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_migrations_ts",
-      "target": "src_migrations_verifyappliedmigrationchecksums",
-      "confidence_score": 1.0
+      "target": "src_migrations_verifyappliedmigrationchecksums"
     },
     {
       "relation": "contains",
@@ -3544,9 +3562,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L74",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_migrations_ts",
-      "target": "src_migrations_migrationstatus",
-      "confidence_score": 1.0
+      "target": "src_migrations_migrationstatus"
     },
     {
       "relation": "contains",
@@ -3554,9 +3572,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L89",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_migrations_ts",
-      "target": "src_migrations_applymigrations",
-      "confidence_score": 1.0
+      "target": "src_migrations_applymigrations"
     },
     {
       "relation": "calls",
@@ -3565,9 +3583,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L75",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_migrations_migrationstatus",
-      "target": "src_migrations_loadmigrations",
-      "confidence_score": 1.0
+      "target": "src_migrations_loadmigrations"
     },
     {
       "relation": "calls",
@@ -3576,9 +3594,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L90",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_migrations_applymigrations",
-      "target": "src_migrations_loadmigrations",
-      "confidence_score": 1.0
+      "target": "src_migrations_loadmigrations"
     },
     {
       "relation": "calls",
@@ -3587,9 +3605,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L51",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_migrations_listappliedmigrations",
-      "target": "src_migrations_ensuremigrationtable",
-      "confidence_score": 1.0
+      "target": "src_migrations_ensuremigrationtable"
     },
     {
       "relation": "calls",
@@ -3598,9 +3616,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L60",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_migrations_verifyappliedmigrationchecksums",
-      "target": "src_migrations_listappliedmigrations",
-      "confidence_score": 1.0
+      "target": "src_migrations_listappliedmigrations"
     },
     {
       "relation": "calls",
@@ -3609,9 +3627,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L78",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_migrations_migrationstatus",
-      "target": "src_migrations_listappliedmigrations",
-      "confidence_score": 1.0
+      "target": "src_migrations_listappliedmigrations"
     },
     {
       "relation": "calls",
@@ -3620,9 +3638,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L93",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_migrations_applymigrations",
-      "target": "src_migrations_listappliedmigrations",
-      "confidence_score": 1.0
+      "target": "src_migrations_listappliedmigrations"
     },
     {
       "relation": "calls",
@@ -3631,9 +3649,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L76",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_migrations_migrationstatus",
-      "target": "src_migrations_verifyappliedmigrationchecksums",
-      "confidence_score": 1.0
+      "target": "src_migrations_verifyappliedmigrationchecksums"
     },
     {
       "relation": "calls",
@@ -3642,9 +3660,9 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L91",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_migrations_applymigrations",
-      "target": "src_migrations_verifyappliedmigrationchecksums",
-      "confidence_score": 1.0
+      "target": "src_migrations_verifyappliedmigrationchecksums"
     },
     {
       "relation": "imports",
@@ -3653,9 +3671,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_storage_ts",
-      "target": "src_migrations_applymigrations",
-      "confidence_score": 1.0
+      "target": "src_migrations_applymigrations"
     },
     {
       "relation": "calls",
@@ -3674,9 +3692,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L47",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_storage_ts",
-      "target": "src_storage_slugtakenerror",
-      "confidence_score": 1.0
+      "target": "src_storage_slugtakenerror"
     },
     {
       "relation": "contains",
@@ -3684,9 +3702,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L54",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_storage_ts",
-      "target": "src_storage_randomid",
-      "confidence_score": 1.0
+      "target": "src_storage_randomid"
     },
     {
       "relation": "contains",
@@ -3694,9 +3712,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L58",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_storage_ts",
-      "target": "src_storage_nowiso",
-      "confidence_score": 1.0
+      "target": "src_storage_nowiso"
     },
     {
       "relation": "contains",
@@ -3704,9 +3722,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L62",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_storage_ts",
-      "target": "src_storage_slugfromdisplayname",
-      "confidence_score": 1.0
+      "target": "src_storage_slugfromdisplayname"
     },
     {
       "relation": "contains",
@@ -3714,9 +3732,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L76",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_storage_ts",
-      "target": "src_storage_ensureworkspacefiles",
-      "confidence_score": 1.0
+      "target": "src_storage_ensureworkspacefiles"
     },
     {
       "relation": "contains",
@@ -3724,9 +3742,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L99",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_storage_ts",
-      "target": "src_storage_appstorage",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage"
     },
     {
       "relation": "contains",
@@ -3734,9 +3752,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L308",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_control_src_storage_ts",
-      "target": "src_storage_createstorage",
-      "confidence_score": 1.0
+      "target": "src_storage_createstorage"
     },
     {
       "relation": "method",
@@ -3744,9 +3762,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L48",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_slugtakenerror",
-      "target": "src_storage_slugtakenerror_constructor",
-      "confidence_score": 1.0
+      "target": "src_storage_slugtakenerror_constructor"
     },
     {
       "relation": "calls",
@@ -3755,9 +3773,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L160",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_createorloaduserworkspace",
-      "target": "src_storage_randomid",
-      "confidence_score": 1.0
+      "target": "src_storage_randomid"
     },
     {
       "relation": "calls",
@@ -3766,9 +3784,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L187",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_createsession",
-      "target": "src_storage_randomid",
-      "confidence_score": 1.0
+      "target": "src_storage_randomid"
     },
     {
       "relation": "calls",
@@ -3777,9 +3795,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L162",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_createorloaduserworkspace",
-      "target": "src_storage_nowiso",
-      "confidence_score": 1.0
+      "target": "src_storage_nowiso"
     },
     {
       "relation": "calls",
@@ -3788,9 +3806,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L188",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_createsession",
-      "target": "src_storage_nowiso",
-      "confidence_score": 1.0
+      "target": "src_storage_nowiso"
     },
     {
       "relation": "calls",
@@ -3799,9 +3817,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L290",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_touchuserandworkspace",
-      "target": "src_storage_nowiso",
-      "confidence_score": 1.0
+      "target": "src_storage_nowiso"
     },
     {
       "relation": "calls",
@@ -3810,9 +3828,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L298",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_touchsession",
-      "target": "src_storage_nowiso",
-      "confidence_score": 1.0
+      "target": "src_storage_nowiso"
     },
     {
       "relation": "calls",
@@ -3821,9 +3839,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L144",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_createorloaduserworkspace",
-      "target": "src_storage_slugfromdisplayname",
-      "confidence_score": 1.0
+      "target": "src_storage_slugfromdisplayname"
     },
     {
       "relation": "calls",
@@ -3832,9 +3850,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L163",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_createorloaduserworkspace",
-      "target": "src_storage_ensureworkspacefiles",
-      "confidence_score": 1.0
+      "target": "src_storage_ensureworkspacefiles"
     },
     {
       "relation": "method",
@@ -3842,9 +3860,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L103",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_constructor",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_constructor"
     },
     {
       "relation": "method",
@@ -3852,9 +3870,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L110",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_initialize",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_initialize"
     },
     {
       "relation": "method",
@@ -3862,9 +3880,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L115",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_close",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_close"
     },
     {
       "relation": "method",
@@ -3872,9 +3890,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L119",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_finduserbyslug",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_finduserbyslug"
     },
     {
       "relation": "method",
@@ -3882,9 +3900,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L125",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_findworkspacebyuserid",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_findworkspacebyuserid"
     },
     {
       "relation": "method",
@@ -3892,9 +3910,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L132",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_findworkspacebyslug",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_findworkspacebyslug"
     },
     {
       "relation": "method",
@@ -3902,9 +3920,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L139",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_createorloaduserworkspace",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_createorloaduserworkspace"
     },
     {
       "relation": "method",
@@ -3912,9 +3930,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L186",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_createsession",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_createsession"
     },
     {
       "relation": "method",
@@ -3922,9 +3940,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L205",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_login",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_login"
     },
     {
       "relation": "method",
@@ -3932,9 +3950,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L211",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_getauthcontext",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_getauthcontext"
     },
     {
       "relation": "method",
@@ -3942,9 +3960,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L289",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_touchuserandworkspace",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_touchuserandworkspace"
     },
     {
       "relation": "method",
@@ -3952,9 +3970,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L297",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_touchsession",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_touchsession"
     },
     {
       "relation": "method",
@@ -3962,9 +3980,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L303",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage",
-      "target": "src_storage_appstorage_deletesession",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_deletesession"
     },
     {
       "relation": "calls",
@@ -3973,9 +3991,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L310",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_createstorage",
-      "target": "src_storage_appstorage_initialize",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_initialize"
     },
     {
       "relation": "calls",
@@ -3984,9 +4002,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L145",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_createorloaduserworkspace",
-      "target": "src_storage_appstorage_finduserbyslug",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_finduserbyslug"
     },
     {
       "relation": "calls",
@@ -3995,9 +4013,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L149",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_createorloaduserworkspace",
-      "target": "src_storage_appstorage_findworkspacebyuserid",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_findworkspacebyuserid"
     },
     {
       "relation": "calls",
@@ -4006,9 +4024,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L153",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_createorloaduserworkspace",
-      "target": "src_storage_appstorage_touchuserandworkspace",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_touchuserandworkspace"
     },
     {
       "relation": "calls",
@@ -4017,9 +4035,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L206",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_login",
-      "target": "src_storage_appstorage_createorloaduserworkspace",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_createorloaduserworkspace"
     },
     {
       "relation": "calls",
@@ -4028,9 +4046,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L207",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_login",
-      "target": "src_storage_appstorage_createsession",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_createsession"
     },
     {
       "relation": "calls",
@@ -4039,9 +4057,9 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L300",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_storage_appstorage_touchsession",
-      "target": "src_storage_appstorage_touchuserandworkspace",
-      "confidence_score": 1.0
+      "target": "src_storage_appstorage_touchuserandworkspace"
     },
     {
       "relation": "contains",
@@ -7781,9 +7799,9 @@
       "source_file": "packages\\contracts\\src\\index.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "packages_contracts_src_index_test_ts",
-      "target": "src_index_getprojectpathaccess",
-      "confidence_score": 1.0
+      "target": "src_index_getprojectpathaccess"
     },
     {
       "relation": "imports",
@@ -7792,9 +7810,9 @@
       "source_file": "packages\\contracts\\src\\index.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "packages_contracts_src_index_test_ts",
-      "target": "src_index_isprojectpath",
-      "confidence_score": 1.0
+      "target": "src_index_isprojectpath"
     },
     {
       "relation": "imports",
@@ -7814,9 +7832,9 @@
       "source_file": "packages\\contracts\\src\\index.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "packages_contracts_src_index_test_ts",
-      "target": "src_index_parseprojectpath",
-      "confidence_score": 1.0
+      "target": "src_index_parseprojectpath"
     },
     {
       "relation": "contains",
@@ -7834,9 +7852,9 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L35",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "packages_contracts_src_index_ts",
-      "target": "src_index_projectpathissue",
-      "confidence_score": 1.0
+      "target": "src_index_projectpathissue"
     },
     {
       "relation": "contains",
@@ -7844,9 +7862,9 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L82",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "packages_contracts_src_index_ts",
-      "target": "src_index_parseprojectpath",
-      "confidence_score": 1.0
+      "target": "src_index_parseprojectpath"
     },
     {
       "relation": "contains",
@@ -7854,9 +7872,9 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L86",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "packages_contracts_src_index_ts",
-      "target": "src_index_isprojectpath",
-      "confidence_score": 1.0
+      "target": "src_index_isprojectpath"
     },
     {
       "relation": "contains",
@@ -7864,9 +7882,9 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L92",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "packages_contracts_src_index_ts",
-      "target": "src_index_matchespathorchild",
-      "confidence_score": 1.0
+      "target": "src_index_matchespathorchild"
     },
     {
       "relation": "contains",
@@ -7874,9 +7892,9 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L96",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "packages_contracts_src_index_ts",
-      "target": "src_index_getprojectpathaccess",
-      "confidence_score": 1.0
+      "target": "src_index_getprojectpathaccess"
     },
     {
       "relation": "calls",
@@ -7885,9 +7903,19 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L104",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_index_getprojectpathaccess",
-      "target": "src_index_matchespathorchild",
-      "confidence_score": 1.0
+      "target": "src_index_matchespathorchild"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\template-integrity.test.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_template_integrity_test_ts",
+      "target": "scripts_template_integrity_test_expecttemplatefile"
     },
     {
       "relation": "imports_from",
@@ -7937,7 +7965,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/lsp/src/main.ts",
+      "source_file": "mvp/apps/lsp/src/main.ts",
       "source_location": "line 170",
       "weight": 1.0,
       "source": "lsp_main_lspbridge",
@@ -7947,7 +7975,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/java-lsp.ts",
+      "source_file": "mvp/apps/web/src/java-lsp.ts",
       "source_location": "line 157",
       "weight": 1.0,
       "source": "web_javalsp_browserlspclient",
@@ -7957,7 +7985,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/005-java-lsp.md",
+      "source_file": "mvp/docs/decisions/005-java-lsp.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec005_java_lsp",
@@ -7967,7 +7995,7 @@
       "relation": "conceptually_related_to",
       "confidence": "INFERRED",
       "confidence_score": 0.85,
-      "source_file": "Spike-Multi-Tenancy.md",
+      "source_file": "mvp/Spike-Multi-Tenancy.md",
       "source_location": null,
       "weight": 0.85,
       "source": "concept_shared_jdtls",
@@ -7977,7 +8005,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/lsp/src/main.ts",
+      "source_file": "mvp/apps/lsp/src/main.ts",
       "source_location": "line 150-152",
       "weight": 1.0,
       "source": "lsp_main_handleupgrade",
@@ -7987,7 +8015,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/lsp/src/main.ts",
+      "source_file": "mvp/apps/lsp/src/main.ts",
       "source_location": "line 71-72",
       "weight": 1.0,
       "source": "lsp_main_launchlanguageserver",
@@ -7997,7 +8025,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/lsp/src/main.ts",
+      "source_file": "mvp/apps/lsp/src/main.ts",
       "source_location": "line 74",
       "weight": 1.0,
       "source": "lsp_main_launchlanguageserver",
@@ -8007,7 +8035,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 437",
       "weight": 1.0,
       "source": "server_main_backendservice",
@@ -8017,7 +8045,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 439",
       "weight": 1.0,
       "source": "server_main_backendservice",
@@ -8027,7 +8055,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 92",
       "weight": 1.0,
       "source": "server_main_backendservice",
@@ -8037,7 +8065,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 107",
       "weight": 1.0,
       "source": "server_main_backendservice",
@@ -8047,7 +8075,7 @@
       "relation": "shares_data_with",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 9",
       "weight": 1.0,
       "source": "server_main_backendservice",
@@ -8057,7 +8085,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 42",
       "weight": 1.0,
       "source": "web_main_loadrobotjava",
@@ -8067,7 +8095,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 87",
       "weight": 1.0,
       "source": "web_main_saverobotjava",
@@ -8077,7 +8105,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "scripts/dev-mvp.ts",
+      "source_file": "mvp/scripts/dev-mvp.ts",
       "source_location": "line 127",
       "weight": 1.0,
       "source": "scripts_devmvp",
@@ -8087,7 +8115,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/vite.config.ts",
+      "source_file": "mvp/apps/web/vite.config.ts",
       "source_location": "line 13-19",
       "weight": 1.0,
       "source": "web_viteconfig",
@@ -8097,7 +8125,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/004-backend-wiring.md",
+      "source_file": "mvp/docs/decisions/004-backend-wiring.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec004_backend_wiring",
@@ -8107,7 +8135,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 264-269",
       "weight": 1.0,
       "source": "server_main_handlerun",
@@ -8117,7 +8145,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 339",
       "weight": 1.0,
       "source": "server_main_handlerun",
@@ -8127,7 +8155,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 372-386",
       "weight": 1.0,
       "source": "server_main_handlerun",
@@ -8137,7 +8165,7 @@
       "relation": "shares_data_with",
       "confidence": "INFERRED",
       "confidence_score": 0.95,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 374-378",
       "weight": 0.95,
       "source": "server_main_handlerun",
@@ -8147,7 +8175,7 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/004-backend-wiring.md",
+      "source_file": "mvp/docs/decisions/004-backend-wiring.md",
       "source_location": null,
       "weight": 1.0,
       "source": "rationale_custom_ws",
@@ -8157,7 +8185,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 243",
       "weight": 1.0,
       "source": "server_main_spawndockerstep",
@@ -8167,7 +8195,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 242",
       "weight": 1.0,
       "source": "server_main_spawndockerstep",
@@ -8177,7 +8205,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 68",
       "weight": 1.0,
       "source": "server_main_readrobotfile",
@@ -8187,7 +8215,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 72",
       "weight": 1.0,
       "source": "server_main_writerobotfile",
@@ -8197,7 +8225,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/server/src/main.ts",
+      "source_file": "mvp/apps/server/src/main.ts",
       "source_location": "line 44",
       "weight": 1.0,
       "source": "server_main_dockerexec",
@@ -8207,7 +8235,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 75",
       "weight": 1.0,
       "source": "web_main_entry",
@@ -8217,7 +8245,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/java-lsp.ts",
+      "source_file": "mvp/apps/web/src/java-lsp.ts",
       "source_location": "line 157",
       "weight": 1.0,
       "source": "web_javalsp_startjavalsp",
@@ -8227,7 +8255,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/java-lsp.ts",
+      "source_file": "mvp/apps/web/src/java-lsp.ts",
       "source_location": "line 175",
       "weight": 1.0,
       "source": "web_javalsp_startjavalsp",
@@ -8237,7 +8265,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/java-lsp.ts",
+      "source_file": "mvp/apps/web/src/java-lsp.ts",
       "source_location": "line 191",
       "weight": 1.0,
       "source": "web_javalsp_startjavalsp",
@@ -8247,7 +8275,7 @@
       "relation": "shares_data_with",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/java-lsp.ts",
+      "source_file": "mvp/apps/web/src/java-lsp.ts",
       "source_location": "line 106",
       "weight": 1.0,
       "source": "web_javalsp_startjavalsp",
@@ -8257,7 +8285,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/005-java-lsp.md",
+      "source_file": "mvp/docs/decisions/005-java-lsp.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec005_java_lsp",
@@ -8267,7 +8295,7 @@
       "relation": "shares_data_with",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/java-lsp.ts",
+      "source_file": "mvp/apps/web/src/java-lsp.ts",
       "source_location": "line 258-295",
       "weight": 1.0,
       "source": "web_javalsp_browserlspclient",
@@ -8277,7 +8305,7 @@
       "relation": "semantically_similar_to",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
-      "source_file": "apps/web/src/vscode-dark-modern.ts",
+      "source_file": "mvp/apps/web/src/vscode-dark-modern.ts",
       "source_location": null,
       "weight": 0.75,
       "source": "web_vscodemod_vscodetokencolors",
@@ -8287,7 +8315,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 7",
       "weight": 1.0,
       "source": "web_main_entry",
@@ -8297,7 +8325,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 49",
       "weight": 1.0,
       "source": "web_main_entry",
@@ -8307,7 +8335,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 169",
       "weight": 1.0,
       "source": "web_main_entry",
@@ -8317,7 +8345,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 176",
       "weight": 1.0,
       "source": "web_main_entry",
@@ -8327,7 +8355,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 189",
       "weight": 1.0,
       "source": "web_main_entry",
@@ -8337,7 +8365,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "scripts/dev-mvp.ts",
+      "source_file": "mvp/scripts/dev-mvp.ts",
       "source_location": "line 128",
       "weight": 1.0,
       "source": "scripts_devmvp",
@@ -8347,7 +8375,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/003-web-shell.md",
+      "source_file": "mvp/docs/decisions/003-web-shell.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec003_web_shell",
@@ -8357,7 +8385,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 104",
       "weight": 1.0,
       "source": "web_main_schedulesave",
@@ -8367,7 +8395,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 116",
       "weight": 1.0,
       "source": "web_main_flushsave",
@@ -8377,7 +8405,7 @@
       "relation": "shares_data_with",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/main.ts",
+      "source_file": "mvp/apps/web/src/main.ts",
       "source_location": "line 85-96",
       "weight": 1.0,
       "source": "web_main_saverobotjava",
@@ -8387,7 +8415,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/monaco-setup.ts",
+      "source_file": "mvp/apps/web/src/monaco-setup.ts",
       "source_location": "line 5",
       "weight": 1.0,
       "source": "web_monacosetup_setupmonaco",
@@ -8397,7 +8425,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/003-web-shell.md",
+      "source_file": "mvp/docs/decisions/003-web-shell.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec003_web_shell",
@@ -8407,7 +8435,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "apps/web/src/vscode-dark-modern.ts",
+      "source_file": "mvp/apps/web/src/vscode-dark-modern.ts",
       "source_location": "line 780",
       "weight": 1.0,
       "source": "web_vscodemod_registerdefaultdarkmodern",
@@ -8417,7 +8445,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "containers/sim/project/src/main/java/frc/robot/Main.java",
+      "source_file": "mvp/containers/sim/project/src/main/java/frc/robot/Main.java",
       "source_location": "line 9",
       "weight": 1.0,
       "source": "main_java",
@@ -8427,7 +8455,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "containers/sim/project/src/main/java/frc/robot/Robot.java",
+      "source_file": "mvp/containers/sim/project/src/main/java/frc/robot/Robot.java",
       "source_location": "line 15",
       "weight": 1.0,
       "source": "robot_java",
@@ -8437,7 +8465,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/001-sim-container.md",
+      "source_file": "mvp/docs/decisions/001-sim-container.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec001_sim_container",
@@ -8447,7 +8475,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "Project-MVP.md",
+      "source_file": "mvp/Project-MVP.md",
       "source_location": null,
       "weight": 1.0,
       "source": "project_mvp_doc",
@@ -8457,7 +8485,7 @@
       "relation": "conceptually_related_to",
       "confidence": "INFERRED",
       "confidence_score": 0.85,
-      "source_file": "scripts/build-ascope-lite.ts",
+      "source_file": "mvp/scripts/build-ascope-lite.ts",
       "source_location": null,
       "weight": 0.85,
       "source": "scripts_buildascope",
@@ -8467,7 +8495,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/002-advantagescope-lite-hosting.md",
+      "source_file": "mvp/docs/decisions/002-advantagescope-lite-hosting.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec002_ascope_hosting",
@@ -8477,7 +8505,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "scripts/dev-mvp.ts",
+      "source_file": "mvp/scripts/dev-mvp.ts",
       "source_location": "line 126",
       "weight": 1.0,
       "source": "scripts_devmvp",
@@ -8487,7 +8515,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/004-backend-wiring.md",
+      "source_file": "mvp/docs/decisions/004-backend-wiring.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec004_backend_wiring",
@@ -8497,7 +8525,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/002-advantagescope-lite-hosting.md",
+      "source_file": "mvp/docs/decisions/002-advantagescope-lite-hosting.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec002_ascope_hosting",
@@ -8507,7 +8535,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "Spike-Multi-Tenancy.md",
+      "source_file": "mvp/Spike-Multi-Tenancy.md",
       "source_location": "line 3",
       "weight": 1.0,
       "source": "spike_multitenancy_doc",
@@ -8537,7 +8565,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "Spike-Multi-Tenancy.md",
+      "source_file": "mvp/Spike-Multi-Tenancy.md",
       "source_location": "line 26",
       "weight": 1.0,
       "source": "spike_multitenancy_doc",
@@ -8547,7 +8575,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "Spike-Multi-Tenancy.md",
+      "source_file": "mvp/Spike-Multi-Tenancy.md",
       "source_location": null,
       "weight": 1.0,
       "source": "spike_multitenancy_doc",
@@ -8557,7 +8585,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "Spike-Multi-Tenancy.md",
+      "source_file": "mvp/Spike-Multi-Tenancy.md",
       "source_location": null,
       "weight": 1.0,
       "source": "spike_multitenancy_doc",
@@ -8567,7 +8595,7 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/001-sim-container.md",
+      "source_file": "mvp/docs/decisions/001-sim-container.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec001_sim_container",
@@ -8577,7 +8605,7 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/001-sim-container.md",
+      "source_file": "mvp/docs/decisions/001-sim-container.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec001_sim_container",
@@ -8587,7 +8615,7 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/002-advantagescope-lite-hosting.md",
+      "source_file": "mvp/docs/decisions/002-advantagescope-lite-hosting.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec002_ascope_hosting",
@@ -8597,7 +8625,7 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/003-web-shell.md",
+      "source_file": "mvp/docs/decisions/003-web-shell.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec003_web_shell",
@@ -8607,7 +8635,7 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/004-backend-wiring.md",
+      "source_file": "mvp/docs/decisions/004-backend-wiring.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec004_backend_wiring",
@@ -8617,7 +8645,7 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/004-backend-wiring.md",
+      "source_file": "mvp/docs/decisions/004-backend-wiring.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec004_backend_wiring",
@@ -8627,7 +8655,7 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/005-java-lsp.md",
+      "source_file": "mvp/docs/decisions/005-java-lsp.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec005_java_lsp",
@@ -8637,7 +8665,7 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/005-java-lsp.md",
+      "source_file": "mvp/docs/decisions/005-java-lsp.md",
       "source_location": null,
       "weight": 1.0,
       "source": "dec005_java_lsp",
@@ -8647,7 +8675,7 @@
       "relation": "conceptually_related_to",
       "confidence": "INFERRED",
       "confidence_score": 0.85,
-      "source_file": "docs/decisions/002-advantagescope-lite-hosting.md",
+      "source_file": "mvp/docs/decisions/002-advantagescope-lite-hosting.md",
       "source_location": null,
       "weight": 0.85,
       "source": "rationale_aslite_hostname",
@@ -8657,7 +8685,7 @@
       "relation": "conceptually_related_to",
       "confidence": "INFERRED",
       "confidence_score": 0.95,
-      "source_file": "Spike-Multi-Tenancy.md",
+      "source_file": "mvp/Spike-Multi-Tenancy.md",
       "source_location": null,
       "weight": 0.95,
       "source": "concept_nt4_routing_multitenancy",
@@ -8677,7 +8705,7 @@
       "relation": "participate_in",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "Project-MVP.md"
+      "source_file": "mvp/Project-MVP.md"
     },
     {
       "id": "lsp_intelligence_stack",
@@ -8691,7 +8719,7 @@
       "relation": "implement",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
-      "source_file": "docs/decisions/005-java-lsp.md"
+      "source_file": "mvp/docs/decisions/005-java-lsp.md"
     },
     {
       "id": "ascope_nt4_integration",
@@ -8705,7 +8733,7 @@
       "relation": "implement",
       "confidence": "EXTRACTED",
       "confidence_score": 0.95,
-      "source_file": "docs/decisions/002-advantagescope-lite-hosting.md"
+      "source_file": "mvp/docs/decisions/002-advantagescope-lite-hosting.md"
     }
   ]
 }

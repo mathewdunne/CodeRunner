@@ -33,11 +33,11 @@ data/                          Runtime data, gitignored
 
 ## Current Status
 
-- [x] V1-0 started: MVP archived and V1 scaffold created
-- [ ] V1-1: contracts, storage, and session skeleton
+- [x] V1-0: MVP archived and V1 scaffold created
+- [x] V1-1: contracts, storage, and session skeleton
 - [ ] V1-2+: see `V1-Design.md`
 
-The MVP archive contains the completed single-user proof loop and Java LSP add-on.
+The V1-1 root includes shared contracts, SQLite migrations, signed-cookie login/session flow, and first-login workspace creation from `templates/wpilib-java-command/`. The MVP archive contains the completed single-user proof loop and Java LSP add-on.
 
 ## Working Principles
 
@@ -65,8 +65,9 @@ The MVP archive contains the completed single-user proof loop and Java LSP add-o
 - Install V1 dependencies: `bun install`
 - Typecheck V1: `bun run typecheck`
 - Run Bun tests: `bun run test`
-- Start placeholder control plane: `bun run dev:control`
-- Start placeholder web shell: `bun run dev:web`
+- Apply/check V1 migrations: `bun run migrate`, `bun run migrate:status`
+- Start V1-1 control plane: `bun run dev:control`
+- Start placeholder web shell for V1-2+: `bun run dev:web`
 
 MVP commands live in `mvp/README.md`.
 

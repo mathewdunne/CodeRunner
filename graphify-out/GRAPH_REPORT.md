@@ -1,11 +1,11 @@
 # Graph Report - FRC-Programming-Training-Sim  (2026-05-04)
 
 ## Corpus Check
-- 36 files · ~36,068 words
+- 37 files · ~36,210 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 299 nodes · 552 edges · 20 communities detected
+- 301 nodes · 553 edges · 20 communities detected
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 14 edges (avg confidence: 0.83)
 - Token cost: 0 input · 0 output
 
@@ -29,38 +29,38 @@
 - [[_COMMUNITY_Community 16|Community 16]]
 - [[_COMMUNITY_Community 17|Community 17]]
 - [[_COMMUNITY_Community 18|Community 18]]
-- [[_COMMUNITY_Community 27|Community 27]]
+- [[_COMMUNITY_Community 28|Community 28]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `AppStorage` - 15 edges
 2. `isObject()` - 13 edges
 3. `startJavaLsp()` - 10 edges
 4. `BrowserLspClient` - 10 edges
-5. `MVP Backend Service (apps/server/src/main.ts)` - 10 edges
+5. `MVP Backend Service (mvp/apps/server/src/main.ts)` - 10 edges
 6. `WebSocketTextPeer` - 9 edges
 7. `registerDefaultDarkModernTheme()` - 8 edges
 8. `main()` - 8 edges
-9. `Web Shell Entry (apps/web/src/main.ts)` - 8 edges
+9. `Web Shell Entry (mvp/apps/web/src/main.ts)` - 8 edges
 10. `Robot.java (sim project source of truth)` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Shared vs. Per-user JDT LS topology (spike question)` --conceptually_related_to--> `LSP WebSocket Bridge (apps/lsp/src/main.ts)`  [INFERRED]
-  Spike-Multi-Tenancy.md → apps/lsp/src/main.ts
+- `Shared vs. Per-user JDT LS topology (spike question)` --conceptually_related_to--> `LSP WebSocket Bridge (mvp/apps/lsp/src/main.ts)`  [INFERRED]
+  mvp/Spike-Multi-Tenancy.md → mvp/apps/lsp/src/main.ts
 - `Decision 002: AdvantageScope Lite Hosting` --references--> `build-ascope-lite.ts script`  [EXTRACTED]
-  docs/decisions/002-advantagescope-lite-hosting.md → scripts/build-ascope-lite.ts
+  mvp/docs/decisions/002-advantagescope-lite-hosting.md → mvp/scripts/build-ascope-lite.ts
 - `createApp()` --calls--> `createStorage()`  [INFERRED]
   apps\control\src\app.ts → apps\control\src\storage.ts
-- `Decision 005: Java LSP MVP Integration` --references--> `LSP WebSocket Bridge (apps/lsp/src/main.ts)`  [EXTRACTED]
-  docs/decisions/005-java-lsp.md → apps/lsp/src/main.ts
-- `Decision 004: Backend Wiring for Save and Run` --references--> `MVP Backend Service (apps/server/src/main.ts)`  [EXTRACTED]
-  docs/decisions/004-backend-wiring.md → apps/server/src/main.ts
+- `Decision 005: Java LSP MVP Integration` --references--> `LSP WebSocket Bridge (mvp/apps/lsp/src/main.ts)`  [EXTRACTED]
+  mvp/docs/decisions/005-java-lsp.md → mvp/apps/lsp/src/main.ts
+- `Decision 004: Backend Wiring for Save and Run` --references--> `MVP Backend Service (mvp/apps/server/src/main.ts)`  [EXTRACTED]
+  mvp/docs/decisions/004-backend-wiring.md → mvp/apps/server/src/main.ts
 
 ## Hyperedges (group relationships)
 - **Edit-Save-Run-Sim Loop (core MVP end-to-end flow)** — web_main_entry, server_main_backendservice, robot_java, server_main_handlerun [EXTRACTED 1.00]
 - **Java LSP Intelligence Stack (browser to JDT LS)** — web_javalsp_startjavalsp, web_javalsp_browserlspclient, lsp_main_lspbridge, lsp_main_eclipsejdtls [EXTRACTED 1.00]
 - **AdvantageScope Lite NT4 Hosting and Display** — scripts_buildascope, scripts_serveascope, rationale_aslite_hostname, index_html [EXTRACTED 0.95]
 
-## Communities (28 total, 6 thin omitted)
+## Communities (29 total, 6 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.05
@@ -119,7 +119,7 @@ Cohesion: 0.6
 Nodes (3): asWebSocket(), handleUpgrade(), launchLanguageServer()
 
 ## Knowledge Gaps
-- **10 isolated node(s):** `Eclipse JDT LS Process`, `LineSplitter class`, `Vite Config (apps/web/vite.config.ts)`, `Main.java (WPILib entry point)`, `Web Shell index.html` (+5 more)
+- **10 isolated node(s):** `Eclipse JDT LS Process`, `LineSplitter class`, `Vite Config (mvp/apps/web/vite.config.ts)`, `Main.java (WPILib entry point)`, `Web Shell index.html` (+5 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -128,7 +128,7 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `AppStorage` connect `Community 3` to `Community 4`?**
   _High betweenness centrality (0.015) - this node is a cross-community bridge._
-- **What connects `Eclipse JDT LS Process`, `LineSplitter class`, `Vite Config (apps/web/vite.config.ts)` to the rest of the system?**
+- **What connects `Eclipse JDT LS Process`, `LineSplitter class`, `Vite Config (mvp/apps/web/vite.config.ts)` to the rest of the system?**
   _10 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.05 - nodes in this community are weakly interconnected._

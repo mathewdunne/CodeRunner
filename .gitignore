@@ -14,7 +14,7 @@ bin/
 *.class
 *.iml
 *.jar
-!containers/sim/project/gradle/wrapper/gradle-wrapper.jar
+!**/gradle/wrapper/gradle-wrapper.jar
 
 # IDEs
 .idea/
