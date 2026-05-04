@@ -1,9 +1,200 @@
-export const V1_ROUTE_SLUG_PATTERN = /^[a-zA-Z0-9_-]{1,40}$/;
+import { z } from "zod";
 
-export type V1WorkspaceRoute = {
-  workspaceSlug: string;
-};
+export const V1_ROUTE_SLUG_PATTERN = /^[a-zA-Z0-9_-]{1,40}$/;
+export const V1_USER_ID_PATTERN = /^usr_[a-f0-9]{32}$/;
+export const V1_WORKSPACE_ID_PATTERN = /^ws_[a-f0-9]{32}$/;
+export const V1_SESSION_ID_PATTERN = /^ses_[a-f0-9]{32}$/;
+
+export const workspaceSlugSchema = z.string().regex(V1_ROUTE_SLUG_PATTERN);
+export const userIdSchema = z.string().regex(V1_USER_ID_PATTERN);
+export const workspaceIdSchema = z.string().regex(V1_WORKSPACE_ID_PATTERN);
+export const sessionIdSchema = z.string().regex(V1_SESSION_ID_PATTERN);
+
+export const displayNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Display name is required.")
+  .max(80, "Display name must be 80 characters or fewer.");
+
+export const workspaceRouteSchema = z.object({
+  workspaceSlug: workspaceSlugSchema,
+});
 
 export function isWorkspaceSlug(value: string): boolean {
-  return V1_ROUTE_SLUG_PATTERN.test(value);
+  return workspaceSlugSchema.safeParse(value).success;
 }
+
+export type V1WorkspaceRoute = z.infer<typeof workspaceRouteSchema>;
+export type UserId = z.infer<typeof userIdSchema>;
+export type WorkspaceId = z.infer<typeof workspaceIdSchema>;
+export type SessionId = z.infer<typeof sessionIdSchema>;
+export type WorkspaceSlug = z.infer<typeof workspaceSlugSchema>;
+
+export type ProjectPath = string & { readonly __projectPath: unique symbol };
+
+function projectPathIssue(value: string): string | null {
+  if (value.length === 0) {
+    return "Project path must not be empty.";
+  }
+
+  if (value.length > 512) {
+    return "Project path is too long.";
+  }
+
+  if (value.startsWith("/") || value.startsWith("\\")) {
+    return "Project path must be relative.";
+  }
+
+  if (/^[a-zA-Z]:/.test(value)) {
+    return "Project path must not include a drive letter.";
+  }
+
+  if (value.includes("\\")) {
+    return "Project path must use POSIX separators.";
+  }
+
+  if (/[\u0000-\u001f\u007f]/.test(value)) {
+    return "Project path must not include control characters.";
+  }
+
+  const segments = value.split("/");
+  if (segments.some((segment) => segment.length === 0)) {
+    return "Project path must not include empty segments.";
+  }
+
+  if (segments.some((segment) => segment === "." || segment === "..")) {
+    return "Project path must not include dot segments.";
+  }
+
+  return null;
+}
+
+export const projectPathSchema = z
+  .string()
+  .superRefine((value, context) => {
+    const issue = projectPathIssue(value);
+    if (issue) {
+      context.addIssue({ code: "custom", message: issue });
+    }
+  })
+  .transform((value) => value as ProjectPath);
+
+export function parseProjectPath(value: string): ProjectPath {
+  return projectPathSchema.parse(value);
+}
+
+export function isProjectPath(value: string): boolean {
+  return projectPathSchema.safeParse(value).success;
+}
+
+export type ProjectPathAccess = "editable" | "readonly" | "blocked" | "outside-allowlist";
+
+function matchesPathOrChild(path: string, prefix: string): boolean {
+  return path === prefix || path.startsWith(`${prefix}/`);
+}
+
+export function getProjectPathAccess(path: string): ProjectPathAccess {
+  const parsed = projectPathSchema.safeParse(path);
+  if (!parsed.success) {
+    return "blocked";
+  }
+
+  const safePath = parsed.data;
+  if (
+    matchesPathOrChild(safePath, ".gradle") ||
+    matchesPathOrChild(safePath, "build") ||
+    matchesPathOrChild(safePath, "gradle/wrapper") ||
+    matchesPathOrChild(safePath, "logs")
+  ) {
+    return "blocked";
+  }
+
+  if (
+    matchesPathOrChild(safePath, "src/main/java") ||
+    matchesPathOrChild(safePath, "src/test/java") ||
+    matchesPathOrChild(safePath, "src/main/deploy")
+  ) {
+    return "editable";
+  }
+
+  if (
+    safePath === "build.gradle" ||
+    safePath === "settings.gradle" ||
+    safePath === "gradle.properties" ||
+    matchesPathOrChild(safePath, ".wpilib")
+  ) {
+    return "readonly";
+  }
+
+  return "outside-allowlist";
+}
+
+export const writeFileRequestSchema = z.object({
+  contents: z.string(),
+});
+
+export const createFileRequestSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("file"),
+    path: projectPathSchema,
+    contents: z.string().optional(),
+  }),
+  z.object({
+    kind: z.literal("directory"),
+    path: projectPathSchema,
+  }),
+]);
+
+export const renameFileRequestSchema = z.object({
+  from: projectPathSchema,
+  to: projectPathSchema,
+});
+
+export const heartbeatRequestSchema = z.object({
+  closing: z.boolean().optional(),
+});
+
+export const runClientMessageSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("start") }),
+  z.object({ type: z.literal("stop") }),
+]);
+
+export const runServerMessageSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("hello"),
+    runId: z.string().min(1),
+    queueDepth: z.number().int().min(0),
+  }),
+  z.object({
+    type: z.literal("status"),
+    status: z.enum(["queued", "stopping", "building", "running", "failed", "stopped"]),
+    queueDepth: z.number().int().min(0).optional(),
+    queuePosition: z.number().int().min(0).optional(),
+  }),
+  z.object({
+    type: z.literal("queue"),
+    queueDepth: z.number().int().min(0),
+    queuePosition: z.number().int().min(0),
+  }),
+  z.object({
+    type: z.literal("log"),
+    stream: z.enum(["stdout", "stderr", "sim"]),
+    line: z.string(),
+  }),
+  z.object({
+    type: z.literal("exit"),
+    code: z.number().int().nullable(),
+    signal: z.string().nullable(),
+  }),
+  z.object({
+    type: z.literal("error"),
+    message: z.string(),
+  }),
+]);
+
+export type WriteFileRequest = z.infer<typeof writeFileRequestSchema>;
+export type CreateFileRequest = z.infer<typeof createFileRequestSchema>;
+export type RenameFileRequest = z.infer<typeof renameFileRequestSchema>;
+export type HeartbeatRequest = z.infer<typeof heartbeatRequestSchema>;
+export type RunClientMessage = z.infer<typeof runClientMessageSchema>;
+export type RunServerMessage = z.infer<typeof runServerMessageSchema>;

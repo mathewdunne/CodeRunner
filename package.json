@@ -12,6 +12,8 @@
   "scripts": {
     "dev:control": "bun apps/control/src/main.ts",
     "dev:web": "bun --cwd apps/web run dev",
+    "migrate": "bun apps/control/src/migrate.ts apply",
+    "migrate:status": "bun apps/control/src/migrate.ts status",
     "typecheck": "bun scripts/typecheck.ts",
     "test": "bun test"
   },

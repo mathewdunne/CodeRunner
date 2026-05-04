@@ -49,13 +49,526 @@
   },
   "nodes": [
     {
+      "label": "app.test.ts",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L1",
+      "id": "apps_control_src_app_test_ts",
+      "community": 10,
+      "norm_label": "app.test.ts"
+    },
+    {
+      "label": "exists()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L7",
+      "id": "src_app_test_exists",
+      "community": 10,
+      "norm_label": "exists()"
+    },
+    {
+      "label": "createTemplate()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L16",
+      "id": "src_app_test_createtemplate",
+      "community": 10,
+      "norm_label": "createtemplate()"
+    },
+    {
+      "label": "withApp()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L26",
+      "id": "src_app_test_withapp",
+      "community": 10,
+      "norm_label": "withapp()"
+    },
+    {
+      "label": "login()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L43",
+      "id": "src_app_test_login",
+      "community": 10,
+      "norm_label": "login()"
+    },
+    {
+      "label": "cookieFrom()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L60",
+      "id": "src_app_test_cookiefrom",
+      "community": 10,
+      "norm_label": "cookiefrom()"
+    },
+    {
+      "label": "app.ts",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L1",
+      "id": "apps_control_src_app_ts",
+      "community": 4,
+      "norm_label": "app.ts"
+    },
+    {
+      "label": "htmlResponse()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L16",
+      "id": "src_app_htmlresponse",
+      "community": 4,
+      "norm_label": "htmlresponse()"
+    },
+    {
+      "label": "redirect()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L22",
+      "id": "src_app_redirect",
+      "community": 4,
+      "norm_label": "redirect()"
+    },
+    {
+      "label": "escapeHtml()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L28",
+      "id": "src_app_escapehtml",
+      "community": 4,
+      "norm_label": "escapehtml()"
+    },
+    {
+      "label": "loginPage()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L36",
+      "id": "src_app_loginpage",
+      "community": 4,
+      "norm_label": "loginpage()"
+    },
+    {
+      "label": "workspacePage()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L68",
+      "id": "src_app_workspacepage",
+      "community": 4,
+      "norm_label": "workspacepage()"
+    },
+    {
+      "label": "notFound()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L107",
+      "id": "src_app_notfound",
+      "community": 4,
+      "norm_label": "notfound()"
+    },
+    {
+      "label": "readDisplayName()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L111",
+      "id": "src_app_readdisplayname",
+      "community": 4,
+      "norm_label": "readdisplayname()"
+    },
+    {
+      "label": "currentUserId()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L126",
+      "id": "src_app_currentuserid",
+      "community": 4,
+      "norm_label": "currentuserid()"
+    },
+    {
+      "label": "authFromRequest()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L130",
+      "id": "src_app_authfromrequest",
+      "community": 4,
+      "norm_label": "authfromrequest()"
+    },
+    {
+      "label": "resolveWorkspaceRequest()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L145",
+      "id": "src_app_resolveworkspacerequest",
+      "community": 4,
+      "norm_label": "resolveworkspacerequest()"
+    },
+    {
+      "label": "createApp()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L164",
+      "id": "src_app_createapp",
+      "community": 10,
+      "norm_label": "createapp()"
+    },
+    {
+      "label": "config.ts",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L1",
+      "id": "apps_control_src_config_ts",
+      "community": 3,
+      "norm_label": "config.ts"
+    },
+    {
+      "label": "loadControlConfig()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L17",
+      "id": "src_config_loadcontrolconfig",
+      "community": 3,
+      "norm_label": "loadcontrolconfig()"
+    },
+    {
+      "label": "cookies.ts",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L1",
+      "id": "apps_control_src_cookies_ts",
+      "community": 4,
+      "norm_label": "cookies.ts"
+    },
+    {
+      "label": "base64Url()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L7",
+      "id": "src_cookies_base64url",
+      "community": 4,
+      "norm_label": "base64url()"
+    },
+    {
+      "label": "signSessionId()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L11",
+      "id": "src_cookies_signsessionid",
+      "community": 4,
+      "norm_label": "signsessionid()"
+    },
+    {
+      "label": "serializeSessionCookie()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L15",
+      "id": "src_cookies_serializesessioncookie",
+      "community": 4,
+      "norm_label": "serializesessioncookie()"
+    },
+    {
+      "label": "serializeExpiredSessionCookie()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L26",
+      "id": "src_cookies_serializeexpiredsessioncookie",
+      "community": 4,
+      "norm_label": "serializeexpiredsessioncookie()"
+    },
+    {
+      "label": "parseCookies()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L36",
+      "id": "src_cookies_parsecookies",
+      "community": 4,
+      "norm_label": "parsecookies()"
+    },
+    {
+      "label": "parseSignedSessionCookie()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L53",
+      "id": "src_cookies_parsesignedsessioncookie",
+      "community": 4,
+      "norm_label": "parsesignedsessioncookie()"
+    },
+    {
       "label": "main.ts",
       "file_type": "code",
       "source_file": "apps\\control\\src\\main.ts",
       "source_location": "L1",
       "id": "apps_control_src_main_ts",
-      "community": 17,
+      "community": 10,
       "norm_label": "main.ts"
+    },
+    {
+      "label": "migrate.ts",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\migrate.ts",
+      "source_location": "L1",
+      "id": "apps_control_src_migrate_ts",
+      "community": 3,
+      "norm_label": "migrate.ts"
+    },
+    {
+      "label": "migrations.ts",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L1",
+      "id": "apps_control_src_migrations_ts",
+      "community": 3,
+      "norm_label": "migrations.ts"
+    },
+    {
+      "label": "loadMigrations()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L23",
+      "id": "src_migrations_loadmigrations",
+      "community": 3,
+      "norm_label": "loadmigrations()"
+    },
+    {
+      "label": "ensureMigrationTable()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L40",
+      "id": "src_migrations_ensuremigrationtable",
+      "community": 3,
+      "norm_label": "ensuremigrationtable()"
+    },
+    {
+      "label": "listAppliedMigrations()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L50",
+      "id": "src_migrations_listappliedmigrations",
+      "community": 3,
+      "norm_label": "listappliedmigrations()"
+    },
+    {
+      "label": "verifyAppliedMigrationChecksums()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L57",
+      "id": "src_migrations_verifyappliedmigrationchecksums",
+      "community": 3,
+      "norm_label": "verifyappliedmigrationchecksums()"
+    },
+    {
+      "label": "migrationStatus()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L74",
+      "id": "src_migrations_migrationstatus",
+      "community": 3,
+      "norm_label": "migrationstatus()"
+    },
+    {
+      "label": "applyMigrations()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L89",
+      "id": "src_migrations_applymigrations",
+      "community": 3,
+      "norm_label": "applymigrations()"
+    },
+    {
+      "label": "storage.ts",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L1",
+      "id": "apps_control_src_storage_ts",
+      "community": 3,
+      "norm_label": "storage.ts"
+    },
+    {
+      "label": "SlugTakenError",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L47",
+      "id": "src_storage_slugtakenerror",
+      "community": 4,
+      "norm_label": "slugtakenerror"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L48",
+      "id": "src_storage_slugtakenerror_constructor",
+      "community": 4,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": "randomId()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L54",
+      "id": "src_storage_randomid",
+      "community": 3,
+      "norm_label": "randomid()"
+    },
+    {
+      "label": "nowIso()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L58",
+      "id": "src_storage_nowiso",
+      "community": 3,
+      "norm_label": "nowiso()"
+    },
+    {
+      "label": "slugFromDisplayName()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L62",
+      "id": "src_storage_slugfromdisplayname",
+      "community": 3,
+      "norm_label": "slugfromdisplayname()"
+    },
+    {
+      "label": "ensureWorkspaceFiles()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L76",
+      "id": "src_storage_ensureworkspacefiles",
+      "community": 3,
+      "norm_label": "ensureworkspacefiles()"
+    },
+    {
+      "label": "AppStorage",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L99",
+      "id": "src_storage_appstorage",
+      "community": 3,
+      "norm_label": "appstorage"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L103",
+      "id": "src_storage_appstorage_constructor",
+      "community": 3,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": ".initialize()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L110",
+      "id": "src_storage_appstorage_initialize",
+      "community": 3,
+      "norm_label": ".initialize()"
+    },
+    {
+      "label": ".close()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L115",
+      "id": "src_storage_appstorage_close",
+      "community": 3,
+      "norm_label": ".close()"
+    },
+    {
+      "label": ".findUserBySlug()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L119",
+      "id": "src_storage_appstorage_finduserbyslug",
+      "community": 3,
+      "norm_label": ".finduserbyslug()"
+    },
+    {
+      "label": ".findWorkspaceByUserId()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L125",
+      "id": "src_storage_appstorage_findworkspacebyuserid",
+      "community": 3,
+      "norm_label": ".findworkspacebyuserid()"
+    },
+    {
+      "label": ".findWorkspaceBySlug()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L132",
+      "id": "src_storage_appstorage_findworkspacebyslug",
+      "community": 3,
+      "norm_label": ".findworkspacebyslug()"
+    },
+    {
+      "label": ".createOrLoadUserWorkspace()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L139",
+      "id": "src_storage_appstorage_createorloaduserworkspace",
+      "community": 3,
+      "norm_label": ".createorloaduserworkspace()"
+    },
+    {
+      "label": ".createSession()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L186",
+      "id": "src_storage_appstorage_createsession",
+      "community": 3,
+      "norm_label": ".createsession()"
+    },
+    {
+      "label": ".login()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L205",
+      "id": "src_storage_appstorage_login",
+      "community": 3,
+      "norm_label": ".login()"
+    },
+    {
+      "label": ".getAuthContext()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L211",
+      "id": "src_storage_appstorage_getauthcontext",
+      "community": 3,
+      "norm_label": ".getauthcontext()"
+    },
+    {
+      "label": ".touchUserAndWorkspace()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L289",
+      "id": "src_storage_appstorage_touchuserandworkspace",
+      "community": 3,
+      "norm_label": ".touchuserandworkspace()"
+    },
+    {
+      "label": ".touchSession()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L297",
+      "id": "src_storage_appstorage_touchsession",
+      "community": 3,
+      "norm_label": ".touchsession()"
+    },
+    {
+      "label": ".deleteSession()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L303",
+      "id": "src_storage_appstorage_deletesession",
+      "community": 3,
+      "norm_label": ".deletesession()"
+    },
+    {
+      "label": "createStorage()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L308",
+      "id": "src_storage_createstorage",
+      "community": 3,
+      "norm_label": "createstorage()"
     },
     {
       "label": "vite.config.ts",
@@ -63,7 +576,7 @@
       "source_file": "apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "apps_web_vite_config_ts",
-      "community": 18,
+      "community": 19,
       "norm_label": "vite.config.ts"
     },
     {
@@ -72,7 +585,7 @@
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L1",
       "id": "apps_web_src_main_tsx",
-      "community": 14,
+      "community": 9,
       "norm_label": "main.tsx"
     },
     {
@@ -81,7 +594,7 @@
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L6",
       "id": "src_main_app",
-      "community": 14,
+      "community": 9,
       "norm_label": "app()"
     },
     {
@@ -90,7 +603,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_lsp_src_main_ts",
-      "community": 11,
+      "community": 14,
       "norm_label": "main.ts"
     },
     {
@@ -99,7 +612,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L70",
       "id": "src_main_launchlanguageserver",
-      "community": 11,
+      "community": 14,
       "norm_label": "launchlanguageserver()"
     },
     {
@@ -108,7 +621,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L109",
       "id": "src_main_aswebsocket",
-      "community": 11,
+      "community": 14,
       "norm_label": "aswebsocket()"
     },
     {
@@ -117,7 +630,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L133",
       "id": "src_main_handleupgrade",
-      "community": 11,
+      "community": 14,
       "norm_label": "handleupgrade()"
     },
     {
@@ -126,7 +639,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_router_src_main_ts",
-      "community": 8,
+      "community": 11,
       "norm_label": "main.ts"
     },
     {
@@ -135,7 +648,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L17",
       "id": "src_main_parsesessions",
-      "community": 8,
+      "community": 11,
       "norm_label": "parsesessions()"
     },
     {
@@ -144,7 +657,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L36",
       "id": "src_main_sessionfrompath",
-      "community": 8,
+      "community": 11,
       "norm_label": "sessionfrompath()"
     },
     {
@@ -153,7 +666,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L44",
       "id": "src_main_nt4httpurl",
-      "community": 8,
+      "community": 11,
       "norm_label": "nt4httpurl()"
     },
     {
@@ -162,7 +675,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L48",
       "id": "src_main_nt4wsurl",
-      "community": 8,
+      "community": 11,
       "norm_label": "nt4wsurl()"
     },
     {
@@ -171,7 +684,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L52",
       "id": "src_main_requestedprotocols",
-      "community": 8,
+      "community": 11,
       "norm_label": "requestedprotocols()"
     },
     {
@@ -180,7 +693,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L58",
       "id": "src_main_pipewebsockets",
-      "community": 8,
+      "community": 11,
       "norm_label": "pipewebsockets()"
     },
     {
@@ -468,7 +981,7 @@
       "source_file": "mvp\\apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_vite_config_ts",
-      "community": 19,
+      "community": 20,
       "norm_label": "vite.config.ts"
     },
     {
@@ -765,7 +1278,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_src_main_ts",
-      "community": 3,
+      "community": 5,
       "norm_label": "main.ts"
     },
     {
@@ -774,7 +1287,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L27",
       "id": "src_main_appendconsole",
-      "community": 3,
+      "community": 5,
       "norm_label": "appendconsole()"
     },
     {
@@ -783,7 +1296,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L37",
       "id": "src_main_setstatus",
-      "community": 3,
+      "community": 5,
       "norm_label": "setstatus()"
     },
     {
@@ -792,7 +1305,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L42",
       "id": "src_main_loadrobotjava",
-      "community": 3,
+      "community": 5,
       "norm_label": "loadrobotjava()"
     },
     {
@@ -801,7 +1314,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L71",
       "id": "src_main_javalanguageserverurl",
-      "community": 3,
+      "community": 5,
       "norm_label": "javalanguageserverurl()"
     },
     {
@@ -810,7 +1323,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L103",
       "id": "src_main_saverobotjava",
-      "community": 3,
+      "community": 5,
       "norm_label": "saverobotjava()"
     },
     {
@@ -819,7 +1332,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L116",
       "id": "src_main_schedulesave",
-      "community": 3,
+      "community": 5,
       "norm_label": "schedulesave()"
     },
     {
@@ -828,7 +1341,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L130",
       "id": "src_main_flushsave",
-      "community": 3,
+      "community": 5,
       "norm_label": "flushsave()"
     },
     {
@@ -837,7 +1350,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L149",
       "id": "src_main_parserunmessage",
-      "community": 3,
+      "community": 5,
       "norm_label": "parserunmessage()"
     },
     {
@@ -846,7 +1359,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L159",
       "id": "src_main_handlerunmessage",
-      "community": 3,
+      "community": 5,
       "norm_label": "handlerunmessage()"
     },
     {
@@ -855,7 +1368,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L181",
       "id": "src_main_runwebsocketurl",
-      "community": 3,
+      "community": 5,
       "norm_label": "runwebsocketurl()"
     },
     {
@@ -864,7 +1377,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L233",
       "id": "src_main_currentsessionuser",
-      "community": 3,
+      "community": 5,
       "norm_label": "currentsessionuser()"
     },
     {
@@ -873,7 +1386,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L238",
       "id": "src_main_sessionpath",
-      "community": 3,
+      "community": 5,
       "norm_label": "sessionpath()"
     },
     {
@@ -882,7 +1395,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L247",
       "id": "src_main_envvalue",
-      "community": 3,
+      "community": 5,
       "norm_label": "envvalue()"
     },
     {
@@ -891,7 +1404,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L253",
       "id": "src_main_parseportmap",
-      "community": 3,
+      "community": 5,
       "norm_label": "parseportmap()"
     },
     {
@@ -900,7 +1413,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L269",
       "id": "src_main_projectfileuri",
-      "community": 3,
+      "community": 5,
       "norm_label": "projectfileuri()"
     },
     {
@@ -909,7 +1422,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L275",
       "id": "src_main_parsestringmap",
-      "community": 3,
+      "community": 5,
       "norm_label": "parsestringmap()"
     },
     {
@@ -918,7 +1431,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L291",
       "id": "src_main_advantagescopeurl",
-      "community": 3,
+      "community": 5,
       "norm_label": "advantagescopeurl()"
     },
     {
@@ -927,7 +1440,7 @@
       "source_file": "mvp\\apps\\web\\src\\monaco-setup.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_src_monaco_setup_ts",
-      "community": 4,
+      "community": 6,
       "norm_label": "monaco-setup.ts"
     },
     {
@@ -936,7 +1449,7 @@
       "source_file": "mvp\\apps\\web\\src\\monaco-setup.ts",
       "source_location": "L4",
       "id": "src_monaco_setup_setupmonaco",
-      "community": 4,
+      "community": 6,
       "norm_label": "setupmonaco()"
     },
     {
@@ -945,7 +1458,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_src_vscode_dark_modern_ts",
-      "community": 4,
+      "community": 6,
       "norm_label": "vscode-dark-modern.ts"
     },
     {
@@ -954,7 +1467,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L775",
       "id": "src_vscode_dark_modern_registerdefaultdarkmoderntheme",
-      "community": 4,
+      "community": 6,
       "norm_label": "registerdefaultdarkmoderntheme()"
     },
     {
@@ -963,7 +1476,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L788",
       "id": "src_vscode_dark_modern_vscodetextmaterules",
-      "community": 4,
+      "community": 6,
       "norm_label": "vscodetextmaterules()"
     },
     {
@@ -972,7 +1485,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L804",
       "id": "src_vscode_dark_modern_semanticfallbackrules",
-      "community": 4,
+      "community": 6,
       "norm_label": "semanticfallbackrules()"
     },
     {
@@ -981,7 +1494,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L816",
       "id": "src_vscode_dark_modern_directsemanticrules",
-      "community": 4,
+      "community": 6,
       "norm_label": "directsemanticrules()"
     },
     {
@@ -990,7 +1503,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L828",
       "id": "src_vscode_dark_modern_findtextmatesettings",
-      "community": 4,
+      "community": 6,
       "norm_label": "findtextmatesettings()"
     },
     {
@@ -999,7 +1512,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L844",
       "id": "src_vscode_dark_modern_textmatescopematches",
-      "community": 4,
+      "community": 6,
       "norm_label": "textmatescopematches()"
     },
     {
@@ -1008,7 +1521,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L848",
       "id": "src_vscode_dark_modern_torule",
-      "community": 4,
+      "community": 6,
       "norm_label": "torule()"
     },
     {
@@ -1017,7 +1530,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L866",
       "id": "src_vscode_dark_modern_colorformonacotokenrule",
-      "community": 4,
+      "community": 6,
       "norm_label": "colorformonacotokenrule()"
     },
     {
@@ -1026,7 +1539,7 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_main_java",
-      "community": 12,
+      "community": 15,
       "norm_label": "main.java"
     },
     {
@@ -1035,7 +1548,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L5",
       "id": "robot_main_main",
-      "community": 12,
+      "community": 15,
       "norm_label": "main"
     },
     {
@@ -1044,7 +1557,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L6",
       "id": "robot_main_main_main",
-      "community": 12,
+      "community": 15,
       "norm_label": ".main()"
     },
     {
@@ -1053,7 +1566,7 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_robot_java",
-      "community": 10,
+      "community": 13,
       "norm_label": "robot.java"
     },
     {
@@ -1062,7 +1575,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L13",
       "id": "robot_robot_robot",
-      "community": 10,
+      "community": 13,
       "norm_label": "robot"
     },
     {
@@ -1071,7 +1584,7 @@
       "source_file": "",
       "source_location": "",
       "id": "timedrobot",
-      "community": 10,
+      "community": 13,
       "norm_label": "timedrobot"
     },
     {
@@ -1080,7 +1593,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L29",
       "id": "robot_robot_robot_robotinit",
-      "community": 10,
+      "community": 13,
       "norm_label": ".robotinit()"
     },
     {
@@ -1089,7 +1602,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L34",
       "id": "robot_robot_robot_robotperiodic",
-      "community": 10,
+      "community": 13,
       "norm_label": ".robotperiodic()"
     },
     {
@@ -1098,7 +1611,7 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_robotcontainer_java",
-      "community": 13,
+      "community": 16,
       "norm_label": "robotcontainer.java"
     },
     {
@@ -1107,7 +1620,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L3",
       "id": "robot_robotcontainer_robotcontainer",
-      "community": 13,
+      "community": 16,
       "norm_label": "robotcontainer"
     },
     {
@@ -1116,7 +1629,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L4",
       "id": "robot_robotcontainer_robotcontainer_robotcontainer",
-      "community": 13,
+      "community": 16,
       "norm_label": ".robotcontainer()"
     },
     {
@@ -1125,7 +1638,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L1",
       "id": "mvp_scripts_build_ascope_lite_ts",
-      "community": 5,
+      "community": 7,
       "norm_label": "build-ascope-lite.ts"
     },
     {
@@ -1134,7 +1647,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L26",
       "id": "scripts_build_ascope_lite_run",
-      "community": 5,
+      "community": 7,
       "norm_label": "run()"
     },
     {
@@ -1143,7 +1656,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L41",
       "id": "scripts_build_ascope_lite_ensuresubmodule",
-      "community": 5,
+      "community": 7,
       "norm_label": "ensuresubmodule()"
     },
     {
@@ -1152,7 +1665,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L49",
       "id": "scripts_build_ascope_lite_ensureemscripten",
-      "community": 5,
+      "community": 7,
       "norm_label": "ensureemscripten()"
     },
     {
@@ -1161,7 +1674,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L65",
       "id": "scripts_build_ascope_lite_envwithemsdk",
-      "community": 5,
+      "community": 7,
       "norm_label": "envwithemsdk()"
     },
     {
@@ -1170,7 +1683,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L76",
       "id": "scripts_build_ascope_lite_npminstallsubmodule",
-      "community": 5,
+      "community": 7,
       "norm_label": "npminstallsubmodule()"
     },
     {
@@ -1179,7 +1692,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L82",
       "id": "scripts_build_ascope_lite_compilelite",
-      "community": 5,
+      "community": 7,
       "norm_label": "compilelite()"
     },
     {
@@ -1188,7 +1701,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L89",
       "id": "scripts_build_ascope_lite_compilewasm",
-      "community": 5,
+      "community": 7,
       "norm_label": "compilewasm()"
     },
     {
@@ -1197,7 +1710,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L102",
       "id": "scripts_build_ascope_lite_listgitsymlinksunder",
-      "community": 5,
+      "community": 7,
       "norm_label": "listgitsymlinksunder()"
     },
     {
@@ -1206,7 +1719,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L122",
       "id": "scripts_build_ascope_lite_resolvesymlinksindist",
-      "community": 5,
+      "community": 7,
       "norm_label": "resolvesymlinksindist()"
     },
     {
@@ -1215,7 +1728,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L146",
       "id": "scripts_build_ascope_lite_stagebundle",
-      "community": 5,
+      "community": 7,
       "norm_label": "stagebundle()"
     },
     {
@@ -1224,7 +1737,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L157",
       "id": "scripts_build_ascope_lite_main",
-      "community": 5,
+      "community": 7,
       "norm_label": "main()"
     },
     {
@@ -1233,7 +1746,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L1",
       "id": "mvp_scripts_dev_mvp_ts",
-      "community": 9,
+      "community": 12,
       "norm_label": "dev-mvp.ts"
     },
     {
@@ -1242,7 +1755,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L12",
       "id": "scripts_dev_mvp_runcommand",
-      "community": 9,
+      "community": 12,
       "norm_label": "runcommand()"
     },
     {
@@ -1251,7 +1764,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L40",
       "id": "scripts_dev_mvp_ensurecontainer",
-      "community": 9,
+      "community": 12,
       "norm_label": "ensurecontainer()"
     },
     {
@@ -1260,7 +1773,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L82",
       "id": "scripts_dev_mvp_ensuresimcontainer",
-      "community": 9,
+      "community": 12,
       "norm_label": "ensuresimcontainer()"
     },
     {
@@ -1269,7 +1782,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L91",
       "id": "scripts_dev_mvp_ensurelspcontainer",
-      "community": 9,
+      "community": 12,
       "norm_label": "ensurelspcontainer()"
     },
     {
@@ -1278,7 +1791,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L100",
       "id": "scripts_dev_mvp_startprocess",
-      "community": 9,
+      "community": 12,
       "norm_label": "startprocess()"
     },
     {
@@ -1287,7 +1800,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L131",
       "id": "scripts_dev_mvp_shutdown",
-      "community": 9,
+      "community": 12,
       "norm_label": "shutdown()"
     },
     {
@@ -1296,7 +1809,7 @@
       "source_file": "mvp\\scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_dev_spike_multi_tenancy_ts",
-      "community": 15,
+      "community": 17,
       "norm_label": "dev-spike-multi-tenancy.ts"
     },
     {
@@ -1305,7 +1818,7 @@
       "source_file": "mvp\\scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L11",
       "id": "scripts_dev_spike_multi_tenancy_startprocess",
-      "community": 15,
+      "community": 17,
       "norm_label": "startprocess()"
     },
     {
@@ -1314,7 +1827,7 @@
       "source_file": "mvp\\scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L51",
       "id": "scripts_dev_spike_multi_tenancy_shutdown",
-      "community": 15,
+      "community": 17,
       "norm_label": "shutdown()"
     },
     {
@@ -1323,7 +1836,7 @@
       "source_file": "mvp\\scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_patch_ascope_lite_nt4_proxy_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts"
     },
     {
@@ -1332,7 +1845,7 @@
       "source_file": "mvp\\scripts\\serve-ascope-lite.ts",
       "source_location": "L1",
       "id": "mvp_scripts_serve_ascope_lite_ts",
-      "community": 16,
+      "community": 18,
       "norm_label": "serve-ascope-lite.ts"
     },
     {
@@ -1341,7 +1854,7 @@
       "source_file": "mvp\\scripts\\serve-ascope-lite.ts",
       "source_location": "L29",
       "id": "scripts_serve_ascope_lite_buildassetmanifest",
-      "community": 16,
+      "community": 18,
       "norm_label": "buildassetmanifest()"
     },
     {
@@ -1350,7 +1863,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_spike_multi_tenancy_ts",
-      "community": 6,
+      "community": 8,
       "norm_label": "spike-multi-tenancy.ts"
     },
     {
@@ -1359,7 +1872,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L32",
       "id": "scripts_spike_multi_tenancy_run",
-      "community": 6,
+      "community": 8,
       "norm_label": "run()"
     },
     {
@@ -1368,7 +1881,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L47",
       "id": "scripts_spike_multi_tenancy_containerstate",
-      "community": 6,
+      "community": 8,
       "norm_label": "containerstate()"
     },
     {
@@ -1377,7 +1890,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L52",
       "id": "scripts_spike_multi_tenancy_ensurecontainer",
-      "community": 6,
+      "community": 8,
       "norm_label": "ensurecontainer()"
     },
     {
@@ -1386,7 +1899,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L68",
       "id": "scripts_spike_multi_tenancy_up",
-      "community": 6,
+      "community": 8,
       "norm_label": "up()"
     },
     {
@@ -1395,7 +1908,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L76",
       "id": "scripts_spike_multi_tenancy_down",
-      "community": 6,
+      "community": 8,
       "norm_label": "down()"
     },
     {
@@ -1404,7 +1917,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L87",
       "id": "scripts_spike_multi_tenancy_printenv",
-      "community": 6,
+      "community": 8,
       "norm_label": "printenv()"
     },
     {
@@ -1413,7 +1926,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L97",
       "id": "scripts_spike_multi_tenancy_dockerstats",
-      "community": 6,
+      "community": 8,
       "norm_label": "dockerstats()"
     },
     {
@@ -1422,7 +1935,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L105",
       "id": "scripts_spike_multi_tenancy_parsemib",
-      "community": 6,
+      "community": 8,
       "norm_label": "parsemib()"
     },
     {
@@ -1431,7 +1944,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L122",
       "id": "scripts_spike_multi_tenancy_stats",
-      "community": 6,
+      "community": 8,
       "norm_label": "stats()"
     },
     {
@@ -1440,7 +1953,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L145",
       "id": "scripts_spike_multi_tenancy_lifecycle",
-      "community": 6,
+      "community": 8,
       "norm_label": "lifecycle()"
     },
     {
@@ -1449,7 +1962,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L168",
       "id": "scripts_spike_multi_tenancy_main",
-      "community": 6,
+      "community": 8,
       "norm_label": "main()"
     },
     {
@@ -1458,7 +1971,7 @@
       "source_file": "packages\\contracts\\src\\index.test.ts",
       "source_location": "L1",
       "id": "packages_contracts_src_index_test_ts",
-      "community": 14,
+      "community": 9,
       "norm_label": "index.test.ts"
     },
     {
@@ -1467,17 +1980,62 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L1",
       "id": "packages_contracts_src_index_ts",
-      "community": 14,
+      "community": 9,
       "norm_label": "index.ts"
     },
     {
       "label": "isWorkspaceSlug()",
       "file_type": "code",
       "source_file": "packages\\contracts\\src\\index.ts",
-      "source_location": "L7",
+      "source_location": "L23",
       "id": "src_index_isworkspaceslug",
-      "community": 14,
+      "community": 9,
       "norm_label": "isworkspaceslug()"
+    },
+    {
+      "label": "projectPathIssue()",
+      "file_type": "code",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L35",
+      "id": "src_index_projectpathissue",
+      "community": 9,
+      "norm_label": "projectpathissue()"
+    },
+    {
+      "label": "parseProjectPath()",
+      "file_type": "code",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L82",
+      "id": "src_index_parseprojectpath",
+      "community": 9,
+      "norm_label": "parseprojectpath()"
+    },
+    {
+      "label": "isProjectPath()",
+      "file_type": "code",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L86",
+      "id": "src_index_isprojectpath",
+      "community": 9,
+      "norm_label": "isprojectpath()"
+    },
+    {
+      "label": "matchesPathOrChild()",
+      "file_type": "code",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L92",
+      "id": "src_index_matchespathorchild",
+      "community": 9,
+      "norm_label": "matchespathorchild()"
+    },
+    {
+      "label": "getProjectPathAccess()",
+      "file_type": "code",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L96",
+      "id": "src_index_getprojectpathaccess",
+      "community": 9,
+      "norm_label": "getprojectpathaccess()"
     },
     {
       "label": "typecheck.ts",
@@ -1485,7 +2043,7 @@
       "source_file": "scripts\\typecheck.ts",
       "source_location": "L1",
       "id": "scripts_typecheck_ts",
-      "community": 21,
+      "community": 22,
       "norm_label": "typecheck.ts"
     },
     {
@@ -1494,7 +2052,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_main_java",
-      "community": 12,
+      "community": 15,
       "norm_label": "main.java"
     },
     {
@@ -1503,7 +2061,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_robot_java",
-      "community": 10,
+      "community": 13,
       "norm_label": "robot.java"
     },
     {
@@ -1512,7 +2070,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_robotcontainer_java",
-      "community": 13,
+      "community": 16,
       "norm_label": "robotcontainer.java"
     },
     {
@@ -1520,7 +2078,7 @@
       "file_type": "code",
       "source_file": "scripts\\apply-ascope-patches.ts",
       "source_location": "L1",
-      "community": 22,
+      "community": 23,
       "norm_label": "apply-ascope-patches.ts",
       "id": "scripts_apply_ascope_patches_ts"
     },
@@ -1529,7 +2087,7 @@
       "file_type": "code",
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L1",
-      "community": 5,
+      "community": 7,
       "norm_label": "build-ascope-lite.ts",
       "id": "scripts_build_ascope_lite_ts"
     },
@@ -1538,7 +2096,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-v1.ts",
       "source_location": "L1",
-      "community": 23,
+      "community": 24,
       "norm_label": "dev-v1.ts",
       "id": "scripts_dev_v1_ts"
     },
@@ -1547,7 +2105,7 @@
       "file_type": "code",
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L1",
-      "community": 24,
+      "community": 25,
       "norm_label": "verify-v1-two-user.ts",
       "id": "scripts_verify_v1_two_user_ts"
     },
@@ -1556,7 +2114,7 @@
       "file_type": "code",
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L1",
-      "community": 11,
+      "community": 14,
       "norm_label": "main.ts",
       "id": "apps_lsp_src_main_ts"
     },
@@ -1565,7 +2123,7 @@
       "file_type": "code",
       "source_file": "apps\\router\\src\\main.ts",
       "source_location": "L1",
-      "community": 8,
+      "community": 11,
       "norm_label": "main.ts",
       "id": "apps_router_src_main_ts"
     },
@@ -1592,7 +2150,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 5,
       "norm_label": "main.ts",
       "id": "apps_web_src_main_ts"
     },
@@ -1601,7 +2159,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\monaco-setup.ts",
       "source_location": "L1",
-      "community": 4,
+      "community": 6,
       "norm_label": "monaco-setup.ts",
       "id": "apps_web_src_monaco_setup_ts"
     },
@@ -1610,7 +2168,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L1",
-      "community": 4,
+      "community": 6,
       "norm_label": "vscode-dark-modern.ts",
       "id": "apps_web_src_vscode_dark_modern_ts"
     },
@@ -1619,7 +2177,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
-      "community": 12,
+      "community": 15,
       "norm_label": "main.java",
       "id": "containers_sim_project_src_main_java_frc_robot_main_java"
     },
@@ -1628,7 +2186,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
-      "community": 10,
+      "community": 13,
       "norm_label": "robot.java",
       "id": "containers_sim_project_src_main_java_frc_robot_robot_java"
     },
@@ -1637,7 +2195,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
-      "community": 13,
+      "community": 16,
       "norm_label": "robotcontainer.java",
       "id": "containers_sim_project_src_main_java_frc_robot_robotcontainer_java"
     },
@@ -1646,7 +2204,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L1",
-      "community": 9,
+      "community": 12,
       "norm_label": "dev-mvp.ts",
       "id": "scripts_dev_mvp_ts"
     },
@@ -1655,7 +2213,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L1",
-      "community": 15,
+      "community": 17,
       "norm_label": "dev-spike-multi-tenancy.ts",
       "id": "scripts_dev_spike_multi_tenancy_ts"
     },
@@ -1664,7 +2222,7 @@
       "file_type": "code",
       "source_file": "scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
-      "community": 25,
+      "community": 26,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts",
       "id": "scripts_patch_ascope_lite_nt4_proxy_ts"
     },
@@ -1673,7 +2231,7 @@
       "file_type": "code",
       "source_file": "scripts\\serve-ascope-lite.ts",
       "source_location": "L1",
-      "community": 16,
+      "community": 18,
       "norm_label": "serve-ascope-lite.ts",
       "id": "scripts_serve_ascope_lite_ts"
     },
@@ -1682,7 +2240,7 @@
       "file_type": "code",
       "source_file": "scripts\\spike-multi-tenancy.ts",
       "source_location": "L1",
-      "community": 6,
+      "community": 8,
       "norm_label": "spike-multi-tenancy.ts",
       "id": "scripts_spike_multi_tenancy_ts"
     },
@@ -1695,7 +2253,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "lsp websocket bridge (apps/lsp/src/main.ts)",
       "id": "lsp_main_lspbridge"
     },
@@ -1708,7 +2266,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "launchlanguageserver()",
       "id": "lsp_main_launchlanguageserver"
     },
@@ -1721,7 +2279,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "handleupgrade()",
       "id": "lsp_main_handleupgrade"
     },
@@ -1734,7 +2292,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "aswebsocket()",
       "id": "lsp_main_aswebsocket"
     },
@@ -1747,7 +2305,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "eclipse jdt ls process",
       "id": "lsp_main_eclipsejdtls"
     },
@@ -1916,7 +2474,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "startjavalsp()",
       "id": "web_javalsp_startjavalsp"
     },
@@ -1929,7 +2487,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "browserlspclient class",
       "id": "web_javalsp_browserlspclient"
     },
@@ -1942,7 +2500,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "registersemantictokensprovider()",
       "id": "web_javalsp_registersemantictokens"
     },
@@ -1955,7 +2513,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "handlediagnostics()",
       "id": "web_javalsp_handlediagnostics"
     },
@@ -2202,7 +2760,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 26,
+      "community": 27,
       "norm_label": "web shell index.html",
       "id": "index_html"
     },
@@ -2267,7 +2825,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 7,
+      "community": 0,
       "norm_label": "decision 005: java lsp mvp integration",
       "id": "dec005_java_lsp"
     },
@@ -2323,7 +2881,7 @@
       "author": null,
       "contributor": null,
       "rationale": "TypeFox MonacoVscodeApiWrapper caused unreliable browser behavior; a small direct LSP adapter in java-lsp.ts is simpler and more debuggable for MVP scope.",
-      "community": 7,
+      "community": 0,
       "norm_label": "rationale: plain monaco client with direct lsp requests instead of typefox wrappers",
       "id": "rationale_plain_monaco_lsp"
     },
@@ -2337,7 +2895,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Adding COEP caused Chrome to reject the AS Lite iframe from localhost:8080, so cross-origin isolation headers were deliberately left off the Vite dev server.",
-      "community": 7,
+      "community": 0,
       "norm_label": "rationale: no cross-origin-embedder-policy headers (as lite iframe)",
       "id": "rationale_no_coep"
     },
@@ -2413,6 +2971,1078 @@
     }
   ],
   "links": [
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_createapp",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_exists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_createtemplate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_withapp",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_cookiefrom",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "src_app_test_withapp",
+      "target": "src_app_test_createtemplate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "src_app_test_withapp",
+      "target": "src_app_createapp"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_cookies_parsesignedsessioncookie",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_cookies_serializeexpiredsessioncookie",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_cookies_serializesessioncookie",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_storage_createstorage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_storage_slugtakenerror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L8",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_storage_appstorage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_htmlresponse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_redirect",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_escapehtml",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_loginpage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_workspacepage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L107",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_notfound",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L111",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_readdisplayname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L126",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_currentuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L130",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_authfromrequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L145",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_resolveworkspacerequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L164",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_createapp",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "src_app_loginpage",
+      "target": "src_app_htmlresponse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "src_app_workspacepage",
+      "target": "src_app_htmlresponse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L153",
+      "weight": 1.0,
+      "source": "src_app_resolveworkspacerequest",
+      "target": "src_app_redirect",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "src_app_loginpage",
+      "target": "src_app_escapehtml",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "src_app_workspacepage",
+      "target": "src_app_escapehtml",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L151",
+      "weight": 1.0,
+      "source": "src_app_resolveworkspacerequest",
+      "target": "src_app_authfromrequest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L131",
+      "weight": 1.0,
+      "source": "src_app_authfromrequest",
+      "target": "src_cookies_parsesignedsessioncookie"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\main.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "apps_control_src_main_ts",
+      "target": "src_app_createapp",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L165",
+      "weight": 1.0,
+      "source": "src_app_createapp",
+      "target": "src_storage_createstorage"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "apps_control_src_config_ts",
+      "target": "src_config_loadcontrolconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrate.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "apps_control_src_migrate_ts",
+      "target": "src_config_loadcontrolconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "apps_control_src_storage_ts",
+      "target": "src_config_loadcontrolconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L104",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_constructor",
+      "target": "src_config_loadcontrolconfig"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "apps_control_src_cookies_ts",
+      "target": "src_cookies_base64url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "apps_control_src_cookies_ts",
+      "target": "src_cookies_signsessionid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L15",
+      "weight": 1.0,
+      "source": "apps_control_src_cookies_ts",
+      "target": "src_cookies_serializesessioncookie",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "apps_control_src_cookies_ts",
+      "target": "src_cookies_serializeexpiredsessioncookie",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "apps_control_src_cookies_ts",
+      "target": "src_cookies_parsecookies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "apps_control_src_cookies_ts",
+      "target": "src_cookies_parsesignedsessioncookie",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "src_cookies_signsessionid",
+      "target": "src_cookies_base64url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "src_cookies_serializesessioncookie",
+      "target": "src_cookies_signsessionid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "src_cookies_parsesignedsessioncookie",
+      "target": "src_cookies_signsessionid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\cookies.ts",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "src_cookies_parsesignedsessioncookie",
+      "target": "src_cookies_parsecookies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrate.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "apps_control_src_migrate_ts",
+      "target": "src_migrations_applymigrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrate.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "apps_control_src_migrate_ts",
+      "target": "src_migrations_migrationstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "apps_control_src_migrations_ts",
+      "target": "src_migrations_loadmigrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "apps_control_src_migrations_ts",
+      "target": "src_migrations_ensuremigrationtable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L50",
+      "weight": 1.0,
+      "source": "apps_control_src_migrations_ts",
+      "target": "src_migrations_listappliedmigrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "apps_control_src_migrations_ts",
+      "target": "src_migrations_verifyappliedmigrationchecksums",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L74",
+      "weight": 1.0,
+      "source": "apps_control_src_migrations_ts",
+      "target": "src_migrations_migrationstatus",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L89",
+      "weight": 1.0,
+      "source": "apps_control_src_migrations_ts",
+      "target": "src_migrations_applymigrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L75",
+      "weight": 1.0,
+      "source": "src_migrations_migrationstatus",
+      "target": "src_migrations_loadmigrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L90",
+      "weight": 1.0,
+      "source": "src_migrations_applymigrations",
+      "target": "src_migrations_loadmigrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "src_migrations_listappliedmigrations",
+      "target": "src_migrations_ensuremigrationtable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "src_migrations_verifyappliedmigrationchecksums",
+      "target": "src_migrations_listappliedmigrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L78",
+      "weight": 1.0,
+      "source": "src_migrations_migrationstatus",
+      "target": "src_migrations_listappliedmigrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L93",
+      "weight": 1.0,
+      "source": "src_migrations_applymigrations",
+      "target": "src_migrations_listappliedmigrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "src_migrations_migrationstatus",
+      "target": "src_migrations_verifyappliedmigrationchecksums",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\migrations.ts",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "src_migrations_applymigrations",
+      "target": "src_migrations_verifyappliedmigrationchecksums",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "apps_control_src_storage_ts",
+      "target": "src_migrations_applymigrations",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L112",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_initialize",
+      "target": "src_migrations_applymigrations"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "apps_control_src_storage_ts",
+      "target": "src_storage_slugtakenerror",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L54",
+      "weight": 1.0,
+      "source": "apps_control_src_storage_ts",
+      "target": "src_storage_randomid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "apps_control_src_storage_ts",
+      "target": "src_storage_nowiso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L62",
+      "weight": 1.0,
+      "source": "apps_control_src_storage_ts",
+      "target": "src_storage_slugfromdisplayname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L76",
+      "weight": 1.0,
+      "source": "apps_control_src_storage_ts",
+      "target": "src_storage_ensureworkspacefiles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L99",
+      "weight": 1.0,
+      "source": "apps_control_src_storage_ts",
+      "target": "src_storage_appstorage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L308",
+      "weight": 1.0,
+      "source": "apps_control_src_storage_ts",
+      "target": "src_storage_createstorage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "src_storage_slugtakenerror",
+      "target": "src_storage_slugtakenerror_constructor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L160",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_createorloaduserworkspace",
+      "target": "src_storage_randomid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L187",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_createsession",
+      "target": "src_storage_randomid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L162",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_createorloaduserworkspace",
+      "target": "src_storage_nowiso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L188",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_createsession",
+      "target": "src_storage_nowiso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L290",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_touchuserandworkspace",
+      "target": "src_storage_nowiso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L298",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_touchsession",
+      "target": "src_storage_nowiso",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L144",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_createorloaduserworkspace",
+      "target": "src_storage_slugfromdisplayname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L163",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_createorloaduserworkspace",
+      "target": "src_storage_ensureworkspacefiles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_constructor",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L110",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_initialize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L115",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_close",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L119",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_finduserbyslug",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L125",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_findworkspacebyuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L132",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_findworkspacebyslug",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L139",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_createorloaduserworkspace",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L186",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_createsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L205",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_login",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L211",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_getauthcontext",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L289",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_touchuserandworkspace",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L297",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_touchsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L303",
+      "weight": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_deletesession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L310",
+      "weight": 1.0,
+      "source": "src_storage_createstorage",
+      "target": "src_storage_appstorage_initialize",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L145",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_createorloaduserworkspace",
+      "target": "src_storage_appstorage_finduserbyslug",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L149",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_createorloaduserworkspace",
+      "target": "src_storage_appstorage_findworkspacebyuserid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L153",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_createorloaduserworkspace",
+      "target": "src_storage_appstorage_touchuserandworkspace",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L206",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_login",
+      "target": "src_storage_appstorage_createorloaduserworkspace",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L207",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_login",
+      "target": "src_storage_appstorage_createsession",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L300",
+      "weight": 1.0,
+      "source": "src_storage_appstorage_touchsession",
+      "target": "src_storage_appstorage_touchuserandworkspace",
+      "confidence_score": 1.0
+    },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -6151,9 +7781,42 @@
       "source_file": "packages\\contracts\\src\\index.test.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "source": "packages_contracts_src_index_test_ts",
+      "target": "src_index_getprojectpathaccess",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages\\contracts\\src\\index.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "packages_contracts_src_index_test_ts",
+      "target": "src_index_isprojectpath",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages\\contracts\\src\\index.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
       "confidence_score": 1.0,
       "source": "packages_contracts_src_index_test_ts",
       "target": "src_index_isworkspaceslug"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages\\contracts\\src\\index.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "packages_contracts_src_index_test_ts",
+      "target": "src_index_parseprojectpath",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -6164,6 +7827,67 @@
       "confidence_score": 1.0,
       "source": "packages_contracts_src_index_ts",
       "target": "src_index_isworkspaceslug"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "packages_contracts_src_index_ts",
+      "target": "src_index_projectpathissue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L82",
+      "weight": 1.0,
+      "source": "packages_contracts_src_index_ts",
+      "target": "src_index_parseprojectpath",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L86",
+      "weight": 1.0,
+      "source": "packages_contracts_src_index_ts",
+      "target": "src_index_isprojectpath",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L92",
+      "weight": 1.0,
+      "source": "packages_contracts_src_index_ts",
+      "target": "src_index_matchespathorchild",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L96",
+      "weight": 1.0,
+      "source": "packages_contracts_src_index_ts",
+      "target": "src_index_getprojectpathaccess",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "packages\\contracts\\src\\index.ts",
+      "source_location": "L104",
+      "weight": 1.0,
+      "source": "src_index_getprojectpathaccess",
+      "target": "src_index_matchespathorchild",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",

@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "bun src/main.ts",
+    "migrate": "bun src/migrate.ts apply",
+    "migrate:status": "bun src/migrate.ts status",
     "typecheck": "tsc -b"
   },
   "dependencies": {
