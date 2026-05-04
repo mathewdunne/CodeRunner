@@ -197,6 +197,17 @@ export const heartbeatResponseSchema = z.object({
   closing: z.boolean(),
 });
 
+export const projectFileResponseSchema = z.object({
+  path: projectPathSchema,
+  contents: z.string(),
+  access: z.enum(["editable", "readonly"]),
+});
+
+export const fileMutationResponseSchema = z.object({
+  ok: z.literal(true),
+  tree: projectTreeResponseSchema,
+});
+
 export const runClientMessageSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("start") }),
   z.object({ type: z.literal("stop") }),
@@ -242,5 +253,7 @@ export type HeartbeatRequest = z.infer<typeof heartbeatRequestSchema>;
 export type SessionResponse = z.infer<typeof sessionResponseSchema>;
 export type ProjectTreeResponse = z.infer<typeof projectTreeResponseSchema>;
 export type HeartbeatResponse = z.infer<typeof heartbeatResponseSchema>;
+export type ProjectFileResponse = z.infer<typeof projectFileResponseSchema>;
+export type FileMutationResponse = z.infer<typeof fileMutationResponseSchema>;
 export type RunClientMessage = z.infer<typeof runClientMessageSchema>;
 export type RunServerMessage = z.infer<typeof runServerMessageSchema>;

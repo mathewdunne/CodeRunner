@@ -117,194 +117,284 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L1",
       "id": "apps_control_src_app_ts",
-      "community": 4,
+      "community": 1,
       "norm_label": "app.ts"
     },
     {
       "label": "htmlResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L31",
+      "source_location": "L40",
       "id": "src_app_htmlresponse",
-      "community": 4,
+      "community": 1,
       "norm_label": "htmlresponse()"
     },
     {
       "label": "redirect()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L37",
+      "source_location": "L46",
       "id": "src_app_redirect",
-      "community": 4,
+      "community": 1,
       "norm_label": "redirect()"
     },
     {
       "label": "jsonResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L43",
+      "source_location": "L52",
       "id": "src_app_jsonresponse",
-      "community": 4,
+      "community": 1,
       "norm_label": "jsonresponse()"
     },
     {
       "label": "escapeHtml()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L49",
+      "source_location": "L58",
       "id": "src_app_escapehtml",
-      "community": 4,
+      "community": 1,
       "norm_label": "escapehtml()"
     },
     {
       "label": "loginPage()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L57",
+      "source_location": "L66",
       "id": "src_app_loginpage",
-      "community": 4,
+      "community": 1,
       "norm_label": "loginpage()"
     },
     {
       "label": "notFound()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L89",
+      "source_location": "L98",
       "id": "src_app_notfound",
-      "community": 4,
+      "community": 1,
       "norm_label": "notfound()"
     },
     {
       "label": "readDisplayName()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L93",
+      "source_location": "L102",
       "id": "src_app_readdisplayname",
-      "community": 4,
+      "community": 1,
       "norm_label": "readdisplayname()"
     },
     {
       "label": "currentUserId()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L108",
+      "source_location": "L117",
       "id": "src_app_currentuserid",
-      "community": 4,
+      "community": 1,
       "norm_label": "currentuserid()"
     },
     {
       "label": "authFromRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L112",
+      "source_location": "L121",
       "id": "src_app_authfromrequest",
-      "community": 4,
+      "community": 1,
       "norm_label": "authfromrequest()"
     },
     {
       "label": "resolveWorkspaceRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L129",
+      "source_location": "L138",
       "id": "src_app_resolveworkspacerequest",
-      "community": 4,
+      "community": 1,
       "norm_label": "resolveworkspacerequest()"
     },
     {
       "label": "sessionResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L153",
+      "source_location": "L162",
       "id": "src_app_sessionresponse",
-      "community": 4,
+      "community": 1,
       "norm_label": "sessionresponse()"
     },
     {
       "label": "sortProjectNodes()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L167",
+      "source_location": "L176",
       "id": "src_app_sortprojectnodes",
-      "community": 4,
+      "community": 1,
       "norm_label": "sortprojectnodes()"
     },
     {
       "label": "readProjectTreeNode()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L175",
+      "source_location": "L184",
       "id": "src_app_readprojecttreenode",
-      "community": 4,
+      "community": 1,
       "norm_label": "readprojecttreenode()"
     },
     {
       "label": "projectTreeResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L227",
+      "source_location": "L240",
       "id": "src_app_projecttreeresponse",
-      "community": 4,
+      "community": 1,
       "norm_label": "projecttreeresponse()"
+    },
+    {
+      "label": "mutationResponse()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L255",
+      "id": "src_app_mutationresponse",
+      "community": 1,
+      "norm_label": "mutationresponse()"
+    },
+    {
+      "label": "projectPathFromQuery()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L262",
+      "id": "src_app_projectpathfromquery",
+      "community": 1,
+      "norm_label": "projectpathfromquery()"
+    },
+    {
+      "label": "resolveProjectFilePath()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L276",
+      "id": "src_app_resolveprojectfilepath",
+      "community": 1,
+      "norm_label": "resolveprojectfilepath()"
+    },
+    {
+      "label": "readJsonRequest()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L300",
+      "id": "src_app_readjsonrequest",
+      "community": 1,
+      "norm_label": "readjsonrequest()"
+    },
+    {
+      "label": "readProjectFile()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L316",
+      "id": "src_app_readprojectfile",
+      "community": 1,
+      "norm_label": "readprojectfile()"
+    },
+    {
+      "label": "writeProjectFile()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L334",
+      "id": "src_app_writeprojectfile",
+      "community": 1,
+      "norm_label": "writeprojectfile()"
+    },
+    {
+      "label": "createProjectEntry()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L349",
+      "id": "src_app_createprojectentry",
+      "community": 1,
+      "norm_label": "createprojectentry()"
+    },
+    {
+      "label": "renameProjectEntry()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L370",
+      "id": "src_app_renameprojectentry",
+      "community": 1,
+      "norm_label": "renameprojectentry()"
+    },
+    {
+      "label": "deleteProjectEntry()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L393",
+      "id": "src_app_deleteprojectentry",
+      "community": 1,
+      "norm_label": "deleteprojectentry()"
+    },
+    {
+      "label": "apiErrorResponse()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L412",
+      "id": "src_app_apierrorresponse",
+      "community": 1,
+      "norm_label": "apierrorresponse()"
     },
     {
       "label": "readHeartbeatRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L242",
+      "source_location": "L419",
       "id": "src_app_readheartbeatrequest",
-      "community": 4,
+      "community": 1,
       "norm_label": "readheartbeatrequest()"
     },
     {
       "label": "contentTypeFor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L249",
+      "source_location": "L426",
       "id": "src_app_contenttypefor",
-      "community": 4,
+      "community": 1,
       "norm_label": "contenttypefor()"
     },
     {
       "label": "isInsideDirectory()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L269",
+      "source_location": "L446",
       "id": "src_app_isinsidedirectory",
-      "community": 4,
+      "community": 1,
       "norm_label": "isinsidedirectory()"
     },
     {
       "label": "staticFileResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L274",
+      "source_location": "L451",
       "id": "src_app_staticfileresponse",
-      "community": 4,
+      "community": 1,
       "norm_label": "staticfileresponse()"
     },
     {
       "label": "webShellResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L292",
+      "source_location": "L469",
       "id": "src_app_webshellresponse",
-      "community": 4,
+      "community": 1,
       "norm_label": "webshellresponse()"
     },
     {
       "label": "webAssetResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L304",
+      "source_location": "L481",
       "id": "src_app_webassetresponse",
-      "community": 4,
+      "community": 1,
       "norm_label": "webassetresponse()"
     },
     {
       "label": "createApp()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L320",
+      "source_location": "L497",
       "id": "src_app_createapp",
       "community": 9,
       "norm_label": "createapp()"
@@ -315,7 +405,7 @@
       "source_file": "apps\\control\\src\\config.ts",
       "source_location": "L1",
       "id": "apps_control_src_config_ts",
-      "community": 5,
+      "community": 3,
       "norm_label": "config.ts"
     },
     {
@@ -324,7 +414,7 @@
       "source_file": "apps\\control\\src\\config.ts",
       "source_location": "L18",
       "id": "src_config_loadcontrolconfig",
-      "community": 5,
+      "community": 3,
       "norm_label": "loadcontrolconfig()"
     },
     {
@@ -333,7 +423,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L1",
       "id": "apps_control_src_cookies_ts",
-      "community": 4,
+      "community": 1,
       "norm_label": "cookies.ts"
     },
     {
@@ -342,7 +432,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L7",
       "id": "src_cookies_base64url",
-      "community": 4,
+      "community": 1,
       "norm_label": "base64url()"
     },
     {
@@ -351,7 +441,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L11",
       "id": "src_cookies_signsessionid",
-      "community": 4,
+      "community": 1,
       "norm_label": "signsessionid()"
     },
     {
@@ -360,7 +450,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L15",
       "id": "src_cookies_serializesessioncookie",
-      "community": 4,
+      "community": 1,
       "norm_label": "serializesessioncookie()"
     },
     {
@@ -369,7 +459,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L26",
       "id": "src_cookies_serializeexpiredsessioncookie",
-      "community": 4,
+      "community": 1,
       "norm_label": "serializeexpiredsessioncookie()"
     },
     {
@@ -378,7 +468,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L36",
       "id": "src_cookies_parsecookies",
-      "community": 4,
+      "community": 1,
       "norm_label": "parsecookies()"
     },
     {
@@ -387,7 +477,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L53",
       "id": "src_cookies_parsesignedsessioncookie",
-      "community": 4,
+      "community": 1,
       "norm_label": "parsesignedsessioncookie()"
     },
     {
@@ -405,7 +495,7 @@
       "source_file": "apps\\control\\src\\migrate.ts",
       "source_location": "L1",
       "id": "apps_control_src_migrate_ts",
-      "community": 5,
+      "community": 3,
       "norm_label": "migrate.ts"
     },
     {
@@ -414,7 +504,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L1",
       "id": "apps_control_src_migrations_ts",
-      "community": 5,
+      "community": 3,
       "norm_label": "migrations.ts"
     },
     {
@@ -423,7 +513,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L23",
       "id": "src_migrations_loadmigrations",
-      "community": 5,
+      "community": 3,
       "norm_label": "loadmigrations()"
     },
     {
@@ -432,7 +522,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L40",
       "id": "src_migrations_ensuremigrationtable",
-      "community": 5,
+      "community": 3,
       "norm_label": "ensuremigrationtable()"
     },
     {
@@ -441,7 +531,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L50",
       "id": "src_migrations_listappliedmigrations",
-      "community": 5,
+      "community": 3,
       "norm_label": "listappliedmigrations()"
     },
     {
@@ -450,7 +540,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L57",
       "id": "src_migrations_verifyappliedmigrationchecksums",
-      "community": 5,
+      "community": 3,
       "norm_label": "verifyappliedmigrationchecksums()"
     },
     {
@@ -459,7 +549,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L74",
       "id": "src_migrations_migrationstatus",
-      "community": 5,
+      "community": 3,
       "norm_label": "migrationstatus()"
     },
     {
@@ -468,7 +558,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L89",
       "id": "src_migrations_applymigrations",
-      "community": 5,
+      "community": 3,
       "norm_label": "applymigrations()"
     },
     {
@@ -477,7 +567,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L1",
       "id": "apps_control_src_storage_ts",
-      "community": 5,
+      "community": 3,
       "norm_label": "storage.ts"
     },
     {
@@ -486,7 +576,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L47",
       "id": "src_storage_slugtakenerror",
-      "community": 4,
+      "community": 3,
       "norm_label": "slugtakenerror"
     },
     {
@@ -495,7 +585,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L48",
       "id": "src_storage_slugtakenerror_constructor",
-      "community": 4,
+      "community": 3,
       "norm_label": ".constructor()"
     },
     {
@@ -504,7 +594,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L54",
       "id": "src_storage_randomid",
-      "community": 5,
+      "community": 3,
       "norm_label": "randomid()"
     },
     {
@@ -513,7 +603,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L58",
       "id": "src_storage_nowiso",
-      "community": 5,
+      "community": 3,
       "norm_label": "nowiso()"
     },
     {
@@ -522,7 +612,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L62",
       "id": "src_storage_slugfromdisplayname",
-      "community": 5,
+      "community": 3,
       "norm_label": "slugfromdisplayname()"
     },
     {
@@ -531,7 +621,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L76",
       "id": "src_storage_ensureworkspacefiles",
-      "community": 5,
+      "community": 3,
       "norm_label": "ensureworkspacefiles()"
     },
     {
@@ -540,7 +630,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L99",
       "id": "src_storage_appstorage",
-      "community": 5,
+      "community": 3,
       "norm_label": "appstorage"
     },
     {
@@ -549,7 +639,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L103",
       "id": "src_storage_appstorage_constructor",
-      "community": 5,
+      "community": 3,
       "norm_label": ".constructor()"
     },
     {
@@ -558,7 +648,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L110",
       "id": "src_storage_appstorage_initialize",
-      "community": 5,
+      "community": 3,
       "norm_label": ".initialize()"
     },
     {
@@ -567,7 +657,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L115",
       "id": "src_storage_appstorage_close",
-      "community": 5,
+      "community": 3,
       "norm_label": ".close()"
     },
     {
@@ -576,7 +666,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L119",
       "id": "src_storage_appstorage_finduserbyslug",
-      "community": 5,
+      "community": 3,
       "norm_label": ".finduserbyslug()"
     },
     {
@@ -585,7 +675,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L125",
       "id": "src_storage_appstorage_findworkspacebyuserid",
-      "community": 5,
+      "community": 3,
       "norm_label": ".findworkspacebyuserid()"
     },
     {
@@ -594,7 +684,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L132",
       "id": "src_storage_appstorage_findworkspacebyslug",
-      "community": 5,
+      "community": 3,
       "norm_label": ".findworkspacebyslug()"
     },
     {
@@ -603,7 +693,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L139",
       "id": "src_storage_appstorage_createorloaduserworkspace",
-      "community": 5,
+      "community": 3,
       "norm_label": ".createorloaduserworkspace()"
     },
     {
@@ -612,7 +702,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L186",
       "id": "src_storage_appstorage_createsession",
-      "community": 5,
+      "community": 3,
       "norm_label": ".createsession()"
     },
     {
@@ -621,7 +711,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L205",
       "id": "src_storage_appstorage_login",
-      "community": 5,
+      "community": 3,
       "norm_label": ".login()"
     },
     {
@@ -630,7 +720,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L211",
       "id": "src_storage_appstorage_getauthcontext",
-      "community": 5,
+      "community": 3,
       "norm_label": ".getauthcontext()"
     },
     {
@@ -639,7 +729,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L289",
       "id": "src_storage_appstorage_touchuserandworkspace",
-      "community": 5,
+      "community": 3,
       "norm_label": ".touchuserandworkspace()"
     },
     {
@@ -648,7 +738,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L297",
       "id": "src_storage_appstorage_touchsession",
-      "community": 5,
+      "community": 3,
       "norm_label": ".touchsession()"
     },
     {
@@ -657,7 +747,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L303",
       "id": "src_storage_appstorage_deletesession",
-      "community": 5,
+      "community": 3,
       "norm_label": ".deletesession()"
     },
     {
@@ -666,7 +756,7 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L308",
       "id": "src_storage_createstorage",
-      "community": 5,
+      "community": 3,
       "norm_label": "createstorage()"
     },
     {
@@ -688,28 +778,91 @@
       "norm_label": "main.tsx"
     },
     {
-      "label": "workspaceSlugFromLocation()",
+      "label": "getWorker()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L17",
+      "id": "src_main_getworker",
+      "community": 6,
+      "norm_label": "getworker()"
+    },
+    {
+      "label": "workspaceSlugFromLocation()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L41",
       "id": "src_main_workspaceslugfromlocation",
       "community": 6,
       "norm_label": "workspaceslugfromlocation()"
     },
     {
+      "label": "fileName()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L47",
+      "id": "src_main_filename",
+      "community": 6,
+      "norm_label": "filename()"
+    },
+    {
+      "label": "parentPath()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L52",
+      "id": "src_main_parentpath",
+      "community": 6,
+      "norm_label": "parentpath()"
+    },
+    {
+      "label": "languageFor()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L56",
+      "id": "src_main_languagefor",
+      "community": 6,
+      "norm_label": "languagefor()"
+    },
+    {
+      "label": "modelUriFor()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L69",
+      "id": "src_main_modelurifor",
+      "community": 6,
+      "norm_label": "modelurifor()"
+    },
+    {
       "label": "fetchJson()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L23",
+      "source_location": "L73",
       "id": "src_main_fetchjson",
       "community": 6,
       "norm_label": "fetchjson()"
     },
     {
+      "label": "canOpen()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L93",
+      "id": "src_main_canopen",
+      "community": 6,
+      "norm_label": "canopen()"
+    },
+    {
+      "label": "setTree()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L97",
+      "id": "src_main_settree",
+      "community": 6,
+      "norm_label": "settree()"
+    },
+    {
       "label": "loadWorkspace()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L76",
+      "source_location": "L351",
       "id": "src_main_loadworkspace",
       "community": 6,
       "norm_label": "loadworkspace()"
@@ -718,10 +871,19 @@
       "label": "sendHeartbeat()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L105",
+      "source_location": "L390",
       "id": "src_main_sendheartbeat",
       "community": 6,
       "norm_label": "sendheartbeat()"
+    },
+    {
+      "label": "warnOnDirtyFiles()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L405",
+      "id": "src_main_warnondirtyfiles",
+      "community": 6,
+      "norm_label": "warnondirtyfiles()"
     },
     {
       "label": "main.ts",
@@ -828,7 +990,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_server_src_main_ts",
-      "community": 2,
+      "community": 4,
       "norm_label": "main.ts"
     },
     {
@@ -837,7 +999,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L42",
       "id": "src_main_docker",
-      "community": 2,
+      "community": 4,
       "norm_label": "docker()"
     },
     {
@@ -846,7 +1008,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L49",
       "id": "src_main_dockerexec",
-      "community": 2,
+      "community": 4,
       "norm_label": "dockerexec()"
     },
     {
@@ -855,7 +1017,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L53",
       "id": "src_main_parsesessioncontainers",
-      "community": 2,
+      "community": 4,
       "norm_label": "parsesessioncontainers()"
     },
     {
@@ -864,7 +1026,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L68",
       "id": "src_main_userfromurl",
-      "community": 2,
+      "community": 4,
       "norm_label": "userfromurl()"
     },
     {
@@ -873,7 +1035,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L73",
       "id": "src_main_sessionfromurl",
-      "community": 2,
+      "community": 4,
       "norm_label": "sessionfromurl()"
     },
     {
@@ -882,7 +1044,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L87",
       "id": "src_main_collectprocess",
-      "community": 2,
+      "community": 4,
       "norm_label": "collectprocess()"
     },
     {
@@ -891,7 +1053,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L107",
       "id": "src_main_readrobotfile",
-      "community": 2,
+      "community": 4,
       "norm_label": "readrobotfile()"
     },
     {
@@ -900,7 +1062,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L111",
       "id": "src_main_writerobotfile",
-      "community": 2,
+      "community": 4,
       "norm_label": "writerobotfile()"
     },
     {
@@ -909,7 +1071,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L125",
       "id": "src_main_quoteshell",
-      "community": 2,
+      "community": 4,
       "norm_label": "quoteshell()"
     },
     {
@@ -918,7 +1080,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L165",
       "id": "src_main_websockettextpeer",
-      "community": 2,
+      "community": 4,
       "norm_label": "websockettextpeer"
     },
     {
@@ -927,7 +1089,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L170",
       "id": "src_main_websockettextpeer_constructor",
-      "community": 2,
+      "community": 4,
       "norm_label": ".constructor()"
     },
     {
@@ -936,7 +1098,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L184",
       "id": "src_main_websockettextpeer_closed",
-      "community": 2,
+      "community": 4,
       "norm_label": ".closed()"
     },
     {
@@ -945,7 +1107,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L188",
       "id": "src_main_websockettextpeer_sendjson",
-      "community": 2,
+      "community": 4,
       "norm_label": ".sendjson()"
     },
     {
@@ -954,7 +1116,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L192",
       "id": "src_main_websockettextpeer_sendtext",
-      "community": 2,
+      "community": 4,
       "norm_label": ".sendtext()"
     },
     {
@@ -963,7 +1125,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L199",
       "id": "src_main_websockettextpeer_close",
-      "community": 2,
+      "community": 4,
       "norm_label": ".close()"
     },
     {
@@ -972,7 +1134,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L205",
       "id": "src_main_websockettextpeer_onclose",
-      "community": 2,
+      "community": 4,
       "norm_label": ".onclose()"
     },
     {
@@ -981,7 +1143,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L209",
       "id": "src_main_websockettextpeer_markclosed",
-      "community": 2,
+      "community": 4,
       "norm_label": ".markclosed()"
     },
     {
@@ -990,7 +1152,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L218",
       "id": "src_main_maketextframeheader",
-      "community": 2,
+      "community": 4,
       "norm_label": "maketextframeheader()"
     },
     {
@@ -999,7 +1161,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L236",
       "id": "src_main_acceptwebsocket",
-      "community": 2,
+      "community": 4,
       "norm_label": "acceptwebsocket()"
     },
     {
@@ -1008,7 +1170,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L261",
       "id": "src_main_linesplitter",
-      "community": 2,
+      "community": 4,
       "norm_label": "linesplitter"
     },
     {
@@ -1017,7 +1179,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L265",
       "id": "src_main_linesplitter_constructor",
-      "community": 2,
+      "community": 4,
       "norm_label": ".constructor()"
     },
     {
@@ -1026,7 +1188,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L269",
       "id": "src_main_linesplitter_push",
-      "community": 2,
+      "community": 4,
       "norm_label": ".push()"
     },
     {
@@ -1035,7 +1197,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L278",
       "id": "src_main_linesplitter_flush",
-      "community": 2,
+      "community": 4,
       "norm_label": ".flush()"
     },
     {
@@ -1044,7 +1206,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L286",
       "id": "src_main_spawndockerstep",
-      "community": 2,
+      "community": 4,
       "norm_label": "spawndockerstep()"
     },
     {
@@ -1053,7 +1215,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L314",
       "id": "src_main_spawnrunstep",
-      "community": 2,
+      "community": 4,
       "norm_label": "spawnrunstep()"
     },
     {
@@ -1062,7 +1224,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L322",
       "id": "src_main_spawndockerlogs",
-      "community": 2,
+      "community": 4,
       "norm_label": "spawndockerlogs()"
     },
     {
@@ -1071,7 +1233,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L331",
       "id": "src_main_killchild",
-      "community": 2,
+      "community": 4,
       "norm_label": "killchild()"
     },
     {
@@ -1080,7 +1242,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L339",
       "id": "src_main_killchildren",
-      "community": 2,
+      "community": 4,
       "norm_label": "killchildren()"
     },
     {
@@ -1089,7 +1251,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L345",
       "id": "src_main_delay",
-      "community": 2,
+      "community": 4,
       "norm_label": "delay()"
     },
     {
@@ -1098,7 +1260,7 @@
       "source_file": "mvp\\apps\\server\\src\\main.ts",
       "source_location": "L351",
       "id": "src_main_handlerun",
-      "community": 2,
+      "community": 4,
       "norm_label": "handlerun()"
     },
     {
@@ -1116,7 +1278,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_src_java_lsp_ts",
-      "community": 1,
+      "community": 2,
       "norm_label": "java-lsp.ts"
     },
     {
@@ -1125,7 +1287,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L156",
       "id": "src_java_lsp_startjavalsp",
-      "community": 1,
+      "community": 2,
       "norm_label": "startjavalsp()"
     },
     {
@@ -1134,7 +1296,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L258",
       "id": "src_java_lsp_registersemantictokensprovider",
-      "community": 1,
+      "community": 2,
       "norm_label": "registersemantictokensprovider()"
     },
     {
@@ -1143,7 +1305,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L298",
       "id": "src_java_lsp_browserlspclient",
-      "community": 1,
+      "community": 2,
       "norm_label": "browserlspclient"
     },
     {
@@ -1152,7 +1314,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L304",
       "id": "src_java_lsp_browserlspclient_constructor",
-      "community": 1,
+      "community": 2,
       "norm_label": ".constructor()"
     },
     {
@@ -1161,7 +1323,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L306",
       "id": "src_java_lsp_browserlspclient_open",
-      "community": 1,
+      "community": 2,
       "norm_label": ".open()"
     },
     {
@@ -1170,7 +1332,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L331",
       "id": "src_java_lsp_browserlspclient_request",
-      "community": 1,
+      "community": 2,
       "norm_label": ".request()"
     },
     {
@@ -1179,7 +1341,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L339",
       "id": "src_java_lsp_browserlspclient_notify",
-      "community": 1,
+      "community": 2,
       "norm_label": ".notify()"
     },
     {
@@ -1188,7 +1350,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L343",
       "id": "src_java_lsp_browserlspclient_onnotification",
-      "community": 1,
+      "community": 2,
       "norm_label": ".onnotification()"
     },
     {
@@ -1197,7 +1359,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L347",
       "id": "src_java_lsp_browserlspclient_close",
-      "community": 1,
+      "community": 2,
       "norm_label": ".close()"
     },
     {
@@ -1206,7 +1368,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L351",
       "id": "src_java_lsp_browserlspclient_send",
-      "community": 1,
+      "community": 2,
       "norm_label": ".send()"
     },
     {
@@ -1215,7 +1377,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L358",
       "id": "src_java_lsp_browserlspclient_handlemessage",
-      "community": 1,
+      "community": 2,
       "norm_label": ".handlemessage()"
     },
     {
@@ -1224,7 +1386,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L383",
       "id": "src_java_lsp_initializeparams",
-      "community": 1,
+      "community": 2,
       "norm_label": "initializeparams()"
     },
     {
@@ -1233,7 +1395,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L434",
       "id": "src_java_lsp_tolspposition",
-      "community": 1,
+      "community": 2,
       "norm_label": "tolspposition()"
     },
     {
@@ -1242,7 +1404,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L441",
       "id": "src_java_lsp_tomonacorange",
-      "community": 1,
+      "community": 2,
       "norm_label": "tomonacorange()"
     },
     {
@@ -1251,7 +1413,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L450",
       "id": "src_java_lsp_handlediagnostics",
-      "community": 1,
+      "community": 2,
       "norm_label": "handlediagnostics()"
     },
     {
@@ -1260,7 +1422,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L471",
       "id": "src_java_lsp_completionitemstosuggestions",
-      "community": 1,
+      "community": 2,
       "norm_label": "completionitemstosuggestions()"
     },
     {
@@ -1269,7 +1431,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L501",
       "id": "src_java_lsp_completionitems",
-      "community": 1,
+      "community": 2,
       "norm_label": "completionitems()"
     },
     {
@@ -1278,7 +1440,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L511",
       "id": "src_java_lsp_semantictokensprovider",
-      "community": 1,
+      "community": 2,
       "norm_label": "semantictokensprovider()"
     },
     {
@@ -1287,7 +1449,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L525",
       "id": "src_java_lsp_hovertomonaco",
-      "community": 1,
+      "community": 2,
       "norm_label": "hovertomonaco()"
     },
     {
@@ -1296,7 +1458,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L542",
       "id": "src_java_lsp_hovercontentstomarkdown",
-      "community": 1,
+      "community": 2,
       "norm_label": "hovercontentstomarkdown()"
     },
     {
@@ -1305,7 +1467,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L557",
       "id": "src_java_lsp_documentationtomarkdown",
-      "community": 1,
+      "community": 2,
       "norm_label": "documentationtomarkdown()"
     },
     {
@@ -1314,7 +1476,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L569",
       "id": "src_java_lsp_tomarkerseverity",
-      "community": 1,
+      "community": 2,
       "norm_label": "tomarkerseverity()"
     },
     {
@@ -1323,7 +1485,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L584",
       "id": "src_java_lsp_tocompletionitemkind",
-      "community": 1,
+      "community": 2,
       "norm_label": "tocompletionitemkind()"
     },
     {
@@ -1332,7 +1494,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L633",
       "id": "src_java_lsp_isobject",
-      "community": 1,
+      "community": 2,
       "norm_label": "isobject()"
     },
     {
@@ -1341,7 +1503,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L637",
       "id": "src_java_lsp_islspdiagnostic",
-      "community": 1,
+      "community": 2,
       "norm_label": "islspdiagnostic()"
     },
     {
@@ -1350,7 +1512,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L645",
       "id": "src_java_lsp_isrange",
-      "community": 1,
+      "community": 2,
       "norm_label": "isrange()"
     },
     {
@@ -1359,7 +1521,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L653",
       "id": "src_java_lsp_isposition",
-      "community": 1,
+      "community": 2,
       "norm_label": "isposition()"
     },
     {
@@ -1368,7 +1530,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L661",
       "id": "src_java_lsp_iscompletionitem",
-      "community": 1,
+      "community": 2,
       "norm_label": "iscompletionitem()"
     },
     {
@@ -1377,7 +1539,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L665",
       "id": "src_java_lsp_issemantictokensprovider",
-      "community": 1,
+      "community": 2,
       "norm_label": "issemantictokensprovider()"
     },
     {
@@ -1386,7 +1548,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L673",
       "id": "src_java_lsp_issemantictokenslegend",
-      "community": 1,
+      "community": 2,
       "norm_label": "issemantictokenslegend()"
     },
     {
@@ -1395,7 +1557,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L683",
       "id": "src_java_lsp_issemantictokens",
-      "community": 1,
+      "community": 2,
       "norm_label": "issemantictokens()"
     },
     {
@@ -1404,7 +1566,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_src_main_ts",
-      "community": 3,
+      "community": 5,
       "norm_label": "main.ts"
     },
     {
@@ -1413,7 +1575,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L27",
       "id": "src_main_appendconsole",
-      "community": 3,
+      "community": 5,
       "norm_label": "appendconsole()"
     },
     {
@@ -1422,7 +1584,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L37",
       "id": "src_main_setstatus",
-      "community": 3,
+      "community": 5,
       "norm_label": "setstatus()"
     },
     {
@@ -1431,7 +1593,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L42",
       "id": "src_main_loadrobotjava",
-      "community": 3,
+      "community": 5,
       "norm_label": "loadrobotjava()"
     },
     {
@@ -1440,7 +1602,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L71",
       "id": "src_main_javalanguageserverurl",
-      "community": 3,
+      "community": 5,
       "norm_label": "javalanguageserverurl()"
     },
     {
@@ -1449,7 +1611,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L103",
       "id": "src_main_saverobotjava",
-      "community": 3,
+      "community": 5,
       "norm_label": "saverobotjava()"
     },
     {
@@ -1458,7 +1620,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L116",
       "id": "src_main_schedulesave",
-      "community": 3,
+      "community": 5,
       "norm_label": "schedulesave()"
     },
     {
@@ -1467,7 +1629,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L130",
       "id": "src_main_flushsave",
-      "community": 3,
+      "community": 5,
       "norm_label": "flushsave()"
     },
     {
@@ -1476,7 +1638,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L149",
       "id": "src_main_parserunmessage",
-      "community": 3,
+      "community": 5,
       "norm_label": "parserunmessage()"
     },
     {
@@ -1485,7 +1647,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L159",
       "id": "src_main_handlerunmessage",
-      "community": 3,
+      "community": 5,
       "norm_label": "handlerunmessage()"
     },
     {
@@ -1494,7 +1656,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L181",
       "id": "src_main_runwebsocketurl",
-      "community": 3,
+      "community": 5,
       "norm_label": "runwebsocketurl()"
     },
     {
@@ -1503,7 +1665,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L233",
       "id": "src_main_currentsessionuser",
-      "community": 3,
+      "community": 5,
       "norm_label": "currentsessionuser()"
     },
     {
@@ -1512,7 +1674,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L238",
       "id": "src_main_sessionpath",
-      "community": 3,
+      "community": 5,
       "norm_label": "sessionpath()"
     },
     {
@@ -1521,7 +1683,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L247",
       "id": "src_main_envvalue",
-      "community": 3,
+      "community": 5,
       "norm_label": "envvalue()"
     },
     {
@@ -1530,7 +1692,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L253",
       "id": "src_main_parseportmap",
-      "community": 3,
+      "community": 5,
       "norm_label": "parseportmap()"
     },
     {
@@ -1539,7 +1701,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L269",
       "id": "src_main_projectfileuri",
-      "community": 3,
+      "community": 5,
       "norm_label": "projectfileuri()"
     },
     {
@@ -1548,7 +1710,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L275",
       "id": "src_main_parsestringmap",
-      "community": 3,
+      "community": 5,
       "norm_label": "parsestringmap()"
     },
     {
@@ -1557,7 +1719,7 @@
       "source_file": "mvp\\apps\\web\\src\\main.ts",
       "source_location": "L291",
       "id": "src_main_advantagescopeurl",
-      "community": 3,
+      "community": 5,
       "norm_label": "advantagescopeurl()"
     },
     {
@@ -1566,7 +1728,7 @@
       "source_file": "mvp\\apps\\web\\src\\monaco-setup.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_src_monaco_setup_ts",
-      "community": 3,
+      "community": 5,
       "norm_label": "monaco-setup.ts"
     },
     {
@@ -1575,7 +1737,7 @@
       "source_file": "mvp\\apps\\web\\src\\monaco-setup.ts",
       "source_location": "L4",
       "id": "src_monaco_setup_setupmonaco",
-      "community": 3,
+      "community": 5,
       "norm_label": "setupmonaco()"
     },
     {
@@ -1584,7 +1746,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_src_vscode_dark_modern_ts",
-      "community": 3,
+      "community": 5,
       "norm_label": "vscode-dark-modern.ts"
     },
     {
@@ -1593,7 +1755,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L775",
       "id": "src_vscode_dark_modern_registerdefaultdarkmoderntheme",
-      "community": 3,
+      "community": 5,
       "norm_label": "registerdefaultdarkmoderntheme()"
     },
     {
@@ -1602,7 +1764,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L788",
       "id": "src_vscode_dark_modern_vscodetextmaterules",
-      "community": 3,
+      "community": 5,
       "norm_label": "vscodetextmaterules()"
     },
     {
@@ -1611,7 +1773,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L804",
       "id": "src_vscode_dark_modern_semanticfallbackrules",
-      "community": 3,
+      "community": 5,
       "norm_label": "semanticfallbackrules()"
     },
     {
@@ -1620,7 +1782,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L816",
       "id": "src_vscode_dark_modern_directsemanticrules",
-      "community": 3,
+      "community": 5,
       "norm_label": "directsemanticrules()"
     },
     {
@@ -1629,7 +1791,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L828",
       "id": "src_vscode_dark_modern_findtextmatesettings",
-      "community": 3,
+      "community": 5,
       "norm_label": "findtextmatesettings()"
     },
     {
@@ -1638,7 +1800,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L844",
       "id": "src_vscode_dark_modern_textmatescopematches",
-      "community": 3,
+      "community": 5,
       "norm_label": "textmatescopematches()"
     },
     {
@@ -1647,7 +1809,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L848",
       "id": "src_vscode_dark_modern_torule",
-      "community": 3,
+      "community": 5,
       "norm_label": "torule()"
     },
     {
@@ -1656,7 +1818,7 @@
       "source_file": "mvp\\apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L866",
       "id": "src_vscode_dark_modern_colorformonacotokenrule",
-      "community": 3,
+      "community": 5,
       "norm_label": "colorformonacotokenrule()"
     },
     {
@@ -2222,7 +2384,7 @@
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L68",
-      "community": 4,
+      "community": 1,
       "norm_label": "workspacepage()",
       "id": "src_app_workspacepage"
     },
@@ -2294,7 +2456,7 @@
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 4,
       "norm_label": "main.ts",
       "id": "apps_server_src_main_ts"
     },
@@ -2303,7 +2465,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L1",
-      "community": 1,
+      "community": 2,
       "norm_label": "java-lsp.ts",
       "id": "apps_web_src_java_lsp_ts"
     },
@@ -2312,7 +2474,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 5,
       "norm_label": "main.ts",
       "id": "apps_web_src_main_ts"
     },
@@ -2321,7 +2483,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\monaco-setup.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 5,
       "norm_label": "monaco-setup.ts",
       "id": "apps_web_src_monaco_setup_ts"
     },
@@ -2330,7 +2492,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L1",
-      "community": 3,
+      "community": 5,
       "norm_label": "vscode-dark-modern.ts",
       "id": "apps_web_src_vscode_dark_modern_ts"
     },
@@ -3447,6 +3609,106 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L255",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_mutationresponse"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L262",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_projectpathfromquery"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L276",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_resolveprojectfilepath"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L300",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_readjsonrequest"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L316",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_readprojectfile"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L334",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_writeprojectfile"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L349",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_createprojectentry"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L370",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_renameprojectentry"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L393",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_deleteprojectentry"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L404",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_apierrorresponse"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L242",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -3572,6 +3834,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L408",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_apierrorresponse",
+      "target": "src_app_jsonresponse"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L37",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -3642,6 +3915,138 @@
       "source_location": "L182",
       "weight": 1.0,
       "source": "src_app_readprojecttreenode",
+      "target": "src_index_getprojectpathaccess"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L258",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_mutationresponse",
+      "target": "src_app_projecttreeresponse"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L346",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_writeprojectfile",
+      "target": "src_app_mutationresponse"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L367",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_createprojectentry",
+      "target": "src_app_mutationresponse"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L390",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_renameprojectentry",
+      "target": "src_app_mutationresponse"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L401",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_deleteprojectentry",
+      "target": "src_app_mutationresponse"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L293",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_resolveprojectfilepath",
+      "target": "src_app_isinsidedirectory"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L317",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_readprojectfile",
+      "target": "src_app_resolveprojectfilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L339",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_writeprojectfile",
+      "target": "src_app_resolveprojectfilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L350",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_createprojectentry",
+      "target": "src_app_resolveprojectfilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L371",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_renameprojectentry",
+      "target": "src_app_resolveprojectfilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L394",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_app_deleteprojectentry",
+      "target": "src_app_resolveprojectfilepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L283",
+      "weight": 1.0,
+      "source": "src_app_resolveprojectfilepath",
       "target": "src_index_getprojectpathaccess"
     },
     {
@@ -4421,7 +4826,57 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "apps_web_src_main_tsx",
+      "target": "src_main_getworker"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_tsx",
       "target": "src_main_workspaceslugfromlocation"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L47",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_main_filename"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L52",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_main_parentpath"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L56",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_main_languagefor"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L69",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_main_modelurifor"
     },
     {
       "relation": "contains",
@@ -4432,6 +4887,26 @@
       "confidence_score": 1.0,
       "source": "apps_web_src_main_tsx",
       "target": "src_main_fetchjson"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L93",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_main_canopen"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L97",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_main_settree"
     },
     {
       "relation": "contains",
@@ -4457,6 +4932,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L405",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_main_warnondirtyfiles"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L6",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -4473,6 +4958,17 @@
       "weight": 1.0,
       "source": "src_main_workspaceslugfromlocation",
       "target": "src_index_isworkspaceslug"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L63",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_languagefor",
+      "target": "src_main_filename"
     },
     {
       "relation": "calls",

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@frc-sim/contracts": "workspace:*",
+    "monaco-editor": "^0.55.1",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
   },

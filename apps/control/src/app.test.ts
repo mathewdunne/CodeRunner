@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtemp, mkdir, rm, writeFile, access } from "node:fs/promises";
+import { mkdtemp, mkdir, rm, writeFile, access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createApp, type ControlApp } from "./app";
@@ -257,6 +257,175 @@ describe("V1-2 routing and shell APIs", () => {
         user: { displayName: "bob" },
         workspace: { slug: "bob" },
       });
+    });
+  });
+});
+
+describe("V1-3 project file APIs", () => {
+  test("creates, edits, reloads, renames, and deletes allowlisted project files", async () => {
+    await withApp(async (app) => {
+      const response = await login(app, "alice");
+      const cookie = cookieFrom(response);
+      const authHeaders = {
+        cookie,
+        "content-type": "application/json",
+      };
+
+      const createDirectory = await app.fetch(
+        new Request("http://localhost/u/alice/api/files", {
+          method: "POST",
+          headers: authHeaders,
+          body: JSON.stringify({ kind: "directory", path: "src/main/java/frc/robot/subsystems" }),
+        }),
+      );
+      expect(createDirectory.status).toBe(200);
+
+      const filePath = "src/main/java/frc/robot/subsystems/ExampleSubsystem.java";
+      const createFile = await app.fetch(
+        new Request("http://localhost/u/alice/api/files", {
+          method: "POST",
+          headers: authHeaders,
+          body: JSON.stringify({
+            kind: "file",
+            path: filePath,
+            contents: "package frc.robot.subsystems;\n\npublic class ExampleSubsystem {}\n",
+          }),
+        }),
+      );
+      expect(createFile.status).toBe(200);
+
+      const write = await app.fetch(
+        new Request(`http://localhost/u/alice/api/files?path=${encodeURIComponent(filePath)}`, {
+          method: "PUT",
+          headers: authHeaders,
+          body: JSON.stringify({
+            contents: "package frc.robot.subsystems;\n\npublic final class ExampleSubsystem {}\n",
+          }),
+        }),
+      );
+      expect(write.status).toBe(200);
+
+      const read = await app.fetch(
+        new Request(`http://localhost/u/alice/api/files?path=${encodeURIComponent(filePath)}`, {
+          headers: { cookie },
+        }),
+      );
+      expect(read.status).toBe(200);
+      expect(await read.json()).toMatchObject({
+        path: filePath,
+        contents: "package frc.robot.subsystems;\n\npublic final class ExampleSubsystem {}\n",
+        access: "editable",
+      });
+
+      const workspace = app.storage.db.query("SELECT * FROM workspaces WHERE slug = ?").get("alice") as {
+        project_path: string;
+      };
+      expect(await readFile(join(workspace.project_path, ...filePath.split("/")), "utf8")).toContain("final class");
+
+      const renamedPath = "src/main/java/frc/robot/subsystems/RenamedSubsystem.java";
+      const renameResponse = await app.fetch(
+        new Request("http://localhost/u/alice/api/files/rename", {
+          method: "PATCH",
+          headers: authHeaders,
+          body: JSON.stringify({ from: filePath, to: renamedPath }),
+        }),
+      );
+      expect(renameResponse.status).toBe(200);
+
+      const deleteResponse = await app.fetch(
+        new Request(`http://localhost/u/alice/api/files?path=${encodeURIComponent(renamedPath)}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        }),
+      );
+      expect(deleteResponse.status).toBe(200);
+    });
+  });
+
+  test("does not let another session read or mutate a workspace's files", async () => {
+    await withApp(async (app) => {
+      const alice = await login(app, "alice");
+      const bob = await login(app, "bob");
+      const bobCookie = cookieFrom(bob);
+      const aliceCookie = cookieFrom(alice);
+
+      const bobReadsAlice = await app.fetch(
+        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/Robot.java", {
+          headers: { cookie: bobCookie },
+        }),
+      );
+      expect(bobReadsAlice.status).toBe(403);
+
+      const bobMutatesAlice = await app.fetch(
+        new Request("http://localhost/u/alice/api/files", {
+          method: "POST",
+          headers: {
+            cookie: bobCookie,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ kind: "file", path: "src/main/java/frc/robot/Bob.java" }),
+        }),
+      );
+      expect(bobMutatesAlice.status).toBe(403);
+
+      const aliceReadsAlice = await app.fetch(
+        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/Robot.java", {
+          headers: { cookie: aliceCookie },
+        }),
+      );
+      expect(aliceReadsAlice.status).toBe(200);
+    });
+  });
+
+  test("rejects hidden, generated, readonly, and outside-allowlist paths", async () => {
+    await withApp(async (app) => {
+      const response = await login(app, "alice");
+      const cookie = cookieFrom(response);
+
+      const hiddenRead = await app.fetch(
+        new Request("http://localhost/u/alice/api/files?path=gradle/wrapper/gradle-wrapper.jar", {
+          headers: { cookie },
+        }),
+      );
+      expect(hiddenRead.status).toBe(403);
+
+      const generatedRead = await app.fetch(
+        new Request("http://localhost/u/alice/api/files?path=build/classes/Robot.class", {
+          headers: { cookie },
+        }),
+      );
+      expect(generatedRead.status).toBe(403);
+
+      const readonlyWrite = await app.fetch(
+        new Request("http://localhost/u/alice/api/files?path=build.gradle", {
+          method: "PUT",
+          headers: {
+            cookie,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ contents: "plugins {}\n" }),
+        }),
+      );
+      expect(readonlyWrite.status).toBe(403);
+
+      const outsideCreate = await app.fetch(
+        new Request("http://localhost/u/alice/api/files", {
+          method: "POST",
+          headers: {
+            cookie,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ kind: "file", path: "vendordeps/Extra.json" }),
+        }),
+      );
+      expect(outsideCreate.status).toBe(403);
+
+      const badPath = await app.fetch(
+        new Request("http://localhost/u/alice/api/files?path=../Robot.java", {
+          headers: { cookie },
+        }),
+      );
+      expect(badPath.status).toBe(400);
     });
   });
 });
