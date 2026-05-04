@@ -317,7 +317,7 @@ Minimum V1 metadata:
 - `container_leases(workspace_id, sim_container, lsp_container, sim_port, lsp_port, state, last_used_at, created_at)`
 - `run_jobs(id, workspace_id, state, requested_at, started_at, finished_at, exit_code, log_path)`
 
-The app can start with SQLite migrations as plain SQL files run by a Bun script. Do not hide schema changes in app startup logic once more than one migration exists.
+SQLite migrations live as plain SQL files under `apps/control/migrations/` or `packages/contracts/migrations/` once shared. The database includes a `schema_migrations` table that records migration name, checksum, and applied timestamp. On startup, the control plane refuses to run if any applied migration's recorded checksum no longer matches its on-disk file; unapplied migrations may be edited freely until they are run. The control plane auto-runs pending migrations on startup in V1 because there is only one process and one local database, but every applied migration must be logged. Also provide `bun run migrate` and `bun run migrate:status` so operators and agents can run or inspect migrations explicitly. Do not hide schema changes in ad hoc startup code outside migration files.
 
 ### 7.3 Filesystem layout
 
@@ -328,12 +328,13 @@ data/
   app.db
   users/
     <workspaceId>/
-      project/
-      jdtls-data/
+      project/          authoritative student work; backup and restore this
+      jdtls-data/       regenerable LSP cache; safe to reset
+      home/             regenerable tool cache; safe to prune when containers are stopped
       logs/
-        runs/
+        runs/           transient run history; safe to prune; not backed up
   backups/
-    YYYY-MM-DD/
+    YYYY-MM-DD/         project snapshots only; exclude home/ and jdtls-data/
 ```
 
 The mounted project path is:
@@ -348,7 +349,26 @@ The JDT LS data path is:
 data/users/<workspaceId>/jdtls-data  ->  /workspace/jdtls-data
 ```
 
-First login copies the starter template from `templates/wpilib-java-command/` into the workspace project path.
+The container home path is:
+
+```
+data/users/<workspaceId>/home  ->  /home/frc
+```
+
+First login copies the starter template from `templates/wpilib-java-command/` into the workspace project path. Workspace creation also creates `jdtls-data/`, `home/`, and `logs/runs/`; `home/` starts empty, uses mode `0700` where the host supports POSIX modes, and is owned by the configured `FRC_UID:FRC_GID` on Linux. Tooling populates `home/` on first Gradle or LSP run.
+
+### 7.4 Template provenance
+
+The committed starter template under `templates/wpilib-java-command/` is the source of truth for new workspaces.
+
+V1-0 must create it from the WPILib 2026 Java command-based template and MVP project evidence:
+
+- Source install path on the author's machine: `C:\Users\Public\wpilib\2026\utility\resources\app\resources\gradle\`.
+- WPILib/GradleRIO version: document the exact version in `templates/wpilib-java-command/README.md`.
+- Keep the Gradle wrapper, `build.gradle`, `settings.gradle`, `gradle.properties`, `.wpilib` preferences required by GradleRIO, `vendordeps/WPILibNewCommands.json`, and `src/main/java/frc/robot/**`.
+- Keep the MVP telemetry example only if it remains useful as the first classroom starter program.
+- Remove machine-specific IDE metadata and any local absolute paths.
+- The sim and LSP images may copy this template only for cache priming. They must not become the source of truth for student files.
 
 ---
 
@@ -379,6 +399,7 @@ Minimum V1 routes:
 
 ```
 GET    /session
+POST   /heartbeat
 GET    /project/tree
 GET    /files?path=<project-relative-path>
 PUT    /files?path=<project-relative-path>
@@ -411,6 +432,30 @@ File path rules:
   - `gradle/wrapper/**`
   - generated logs and temporary files
 
+File API semantics:
+
+```ts
+type WriteFileRequest = {
+  contents: string;
+};
+
+type CreateFileRequest =
+  | { kind: "file"; path: string; contents?: string }
+  | { kind: "directory"; path: string };
+
+type RenameFileRequest = {
+  from: string;
+  to: string;
+};
+```
+
+- `GET /files?path=X` returns file text. Directories use `/project/tree`, not `GET /files`.
+- `PUT /files?path=X` writes full file contents and creates the file if missing. Parent directories must already exist.
+- `POST /files` creates a file or directory and fails if the path already exists.
+- `PATCH /files/rename` moves one file or directory and fails if `to` exists.
+- `DELETE /files?path=X` deletes a file. It deletes directories only when empty unless a future explicit recursive option is added.
+- All write APIs return the updated tree node or enough metadata for the client to update the tree without a full refresh.
+
 ### 8.3 WebSocket routes
 
 ```
@@ -429,7 +474,13 @@ Server-to-client:
 ```ts
 type RunServerMessage =
   | { type: "hello"; runId: string; queueDepth: number }
-  | { type: "status"; status: "queued" | "stopping" | "building" | "running" | "failed" | "stopped" }
+  | {
+      type: "status";
+      status: "queued" | "stopping" | "building" | "running" | "failed" | "stopped";
+      queueDepth?: number;
+      queuePosition?: number;
+    }
+  | { type: "queue"; queueDepth: number; queuePosition: number }
   | { type: "log"; stream: "stdout" | "stderr" | "sim"; line: string }
   | { type: "exit"; code: number | null; signal: string | null }
   | { type: "error"; message: string };
@@ -443,7 +494,7 @@ type RunClientMessage =
   | { type: "stop" };
 ```
 
-One workspace can have only one active run. A new `start` cancels or supersedes the previous run for that workspace.
+One workspace can have only one active run. A new `start` cancels or supersedes the previous run for that workspace. `queueDepth` and `queuePosition` are present on `status: "queued"` messages and on later `queue` updates.
 
 ---
 
@@ -508,6 +559,14 @@ Future auth:
 - OAuth/SSO replaces `/login` and session creation.
 - The workspace/project/container contracts remain unchanged.
 
+Heartbeat:
+
+- The web shell sends `POST /u/:workspaceSlug/api/heartbeat` every 60 seconds while the tab is loaded.
+- Any API call, run WebSocket message, LSP WebSocket activity, or successful heartbeat updates `last_seen_at`.
+- `pagehide` should send a best-effort final heartbeat with a `closing` flag, but idle teardown must not rely on it.
+- A workspace is considered browser-inactive after 5 minutes without heartbeat or other activity.
+- Browser-inactive is not the same as container-idle. Container stop timers in the orchestrator still apply so a throttled background tab does not immediately lose its sim/LSP containers.
+
 ### 9.3 Project store
 
 Responsibilities:
@@ -531,6 +590,7 @@ Responsibilities:
 - Build or verify required images.
 - Create, start, stop, and remove per-workspace sim/LSP containers.
 - Allocate loopback host ports for sim NT4 and LSP bridge.
+- Run containers with a UID/GID that can safely write the host data directory.
 - Apply memory limits, CPU limits if needed, labels, and mounts.
 - Reconnect to existing containers after control-plane restart.
 - Tear down idle containers without deleting project data.
@@ -551,6 +611,32 @@ Default lifecycle:
 - Mark idle after 15 minutes without app heartbeat or run activity.
 - Stop idle after 30 minutes.
 - Remove stopped managed containers during daily cleanup if they can be recreated.
+
+Port allocation:
+
+- Allocate ports from configured loopback-only ranges:
+  - `SIM_PORT_RANGE=25810-25899`
+  - `LSP_PORT_RANGE=30003-30102`
+- Choose the lowest free port in the range, store it in `container_leases`, and bind only to `127.0.0.1`.
+- On restart, inspect Docker first. If a managed container is running, use Docker's actual published port and update SQLite if it differs.
+- If SQLite records a port but no matching container exists, check whether the port is still free before reusing it; otherwise allocate the next free port.
+- If no port is available, workspace startup fails with an operator-visible resource error.
+
+Restart reconciliation:
+
+- Docker labels are runtime truth; SQLite is cached intent and history.
+- Labeled container exists and SQLite row exists: adopt the container, update state and published ports from Docker.
+- Labeled container exists and SQLite row is missing: adopt it only if its workspace still exists; otherwise stop/remove it as orphaned managed infrastructure.
+- SQLite row exists and container is gone: mark the lease stopped, clear stale ports, and recreate on next ensure.
+- Container exists but has the wrong role/workspace label or is published on a non-loopback host address: stop it and recreate from SQLite intent.
+- Never delete project files during reconciliation.
+
+UID/GID policy:
+
+- V1 images create a non-root `frc` user.
+- On Linux, build or run images with `FRC_UID`/`FRC_GID` matching the host user that owns `data/`; runtime commands include `--user <FRC_UID>:<FRC_GID>`.
+- On Docker Desktop/Windows, defaults may be used, but V1-4 must still verify the control plane can read, write, and delete files produced by Gradle and JDT LS.
+- Gradle and JDT LS writable home/cache paths must live under the mounted `data/users/<workspaceId>/home`, not under `/root`.
 
 Prewarming:
 
@@ -634,10 +720,13 @@ Minimum V1 operator surface:
 GET  /admin/status
 POST /admin/workspaces/:workspaceId/restart-sim
 POST /admin/workspaces/:workspaceId/restart-lsp
+POST /admin/workspaces/:workspaceId/reset-lsp-data
 POST /admin/workspaces/:workspaceId/stop-containers
 ```
 
 Protect these with a local operator token or localhost-only access in V1. Do not expose them to students.
+
+`reset-lsp-data` stops the LSP container, deletes `data/users/<workspaceId>/jdtls-data`, recreates the directory with the configured UID/GID ownership, and starts the LSP container again. It must never touch `project/`.
 
 ---
 
@@ -649,6 +738,7 @@ The V1 sim image should keep the good MVP decisions:
 
 - JDK 17.
 - Ubuntu/glibc base, not Alpine.
+- Non-root `frc` runtime user with configurable UID/GID.
 - Gradle/WPILib dependencies primed during image build.
 - No SimGUI or DriverStation sim extension.
 - `tini` or equivalent init/reaper.
@@ -670,7 +760,9 @@ docker run -d
   --label frc-sim.role=sim
   --label frc-sim.workspace=<workspaceId>
   --mount type=bind,src=<projectPath>,dst=/workspace/project
+  --mount type=bind,src=<homePath>,dst=/home/frc
   -p 127.0.0.1:<simPort>:5810
+  --user <FRC_UID>:<FRC_GID>
   --memory=<simMemoryLimit>
   frc-sim:v1
 ```
@@ -681,9 +773,11 @@ The V1 LSP image should:
 
 - Install Eclipse JDT LS.
 - Include Bun if the bridge runs on Bun.
+- Run as the same non-root UID/GID policy as the sim image.
 - Prime Gradle/WPILib dependencies during image build.
 - Mount the project at `/workspace/project`.
 - Mount JDT LS data at `/workspace/jdtls-data`.
+- Mount the workspace home at `/home/frc`.
 - Listen on container port `30003` for `/jdtls`.
 
 First implementation should try the current bridge shape under Bun. If `vscode-ws-jsonrpc` or stream behavior does not work cleanly under Bun, replace it with a small Bun-native WebSocket-to-stdio JSON-RPC bridge. Do not reintroduce Node unless a decision log documents the blocker.
@@ -698,7 +792,9 @@ docker run -d
   --label frc-sim.workspace=<workspaceId>
   --mount type=bind,src=<projectPath>,dst=/workspace/project
   --mount type=bind,src=<jdtlsDataPath>,dst=/workspace/jdtls-data
+  --mount type=bind,src=<homePath>,dst=/home/frc
   -p 127.0.0.1:<lspPort>:30003
+  --user <FRC_UID>:<FRC_GID>
   --memory=<lspMemoryLimit>
   frc-lsp:v1
 ```
@@ -730,8 +826,12 @@ Patch behavior:
   - app name, default `AdvantageScopeLite`
 - Endpoint can arrive by `postMessage`.
 - Query params can override for smoke tests.
-- If no endpoint is injected, fallback to upstream Lite hostname/5810 behavior so standalone local AS testing remains possible.
+- Embedded V1 iframes load AS Lite as `/scope/?frcEndpoint=postMessage`. In this mode, the patch must defer `checkLiveAutoStart()` until the endpoint message arrives and must not fallback to hostname/5810 before that message.
+- Standalone AS Lite without `frcEndpoint=postMessage` falls back to upstream Lite hostname/5810 behavior so local AS testing remains possible.
+- Query-param endpoint override is allowed for smoke tests and should start immediately without waiting for postMessage.
+- The patch must reach both the HTTP alive probe path (`connectOnAlive()`) and the WebSocket dial path (`ws_connect()`).
 - The patched AS Lite sends an acknowledgement message to the parent when it has accepted config.
+- If an embedded iframe does not receive endpoint config within 10 seconds, it should show a disconnected/error state rather than silently connecting to the wrong host.
 
 Parent-to-iframe message:
 
@@ -778,6 +878,21 @@ bun run verify:ascope
 - Confirms the injected WebSocket URL is dialed.
 
 Submodule bumps must run AS Lite verification before merge.
+
+### 11.3 Sub-path hosting contract
+
+AS Lite was only proven at the web root in the MVP. V1 serves it from `/scope/`, so V1-6 must verify sub-path hosting before relying on it.
+
+The control plane must serve all AS Lite runtime assets under `/scope/`, including:
+
+- `/scope/`
+- `/scope/assets`
+- `/scope/assets/<name>/<file>`
+- `/scope/bundles/**`
+- `/scope/www/**`
+- any fonts, wasm, images, models, or docs assets referenced by the bundle
+
+If any upstream HTML or bundle path is root-absolute, V1-6 must either add a safe rewrite in the control plane or include a small `<base>`/path patch in the AS Lite patch series. The chosen fix must be covered by `verify:ascope`.
 
 ---
 
@@ -838,7 +953,7 @@ Create/delete/rename:
 The iframe source is shared:
 
 ```
-/scope/
+/scope/?frcEndpoint=postMessage
 ```
 
 The parent sends the per-workspace endpoint after iframe load:
@@ -975,8 +1090,9 @@ Idle:
 | Gradle build timeout | Run timer exceeds limit | Run status failed with timeout log | Stop sim process, leave files untouched |
 | Build queue saturated | Queue depth above threshold | Student sees queued status and position | Operator can raise/lower concurrency |
 | NT4 proxy target unavailable | Alive check fails or WS upstream error | AS Lite status shows reconnecting/unavailable | Ensure/restart sim container |
+| JDT LS data corrupted | Repeated LSP crash, stale lock, or diagnostics never settle after restart | Editor still works; LSP status shows unavailable or degraded | Operator runs `reset-lsp-data`; data regenerates from project sources |
 | Control plane crash | Process exit | Browser disconnects; containers may continue | Restart control plane, reload leases from Docker labels and SQLite |
-| Host disk full | File writes or logs fail | Save/run blocked with clear error | Operator frees disk; app retries save |
+| Host disk full | File writes or logs fail | Save/run blocked with clear error | Operator prunes run logs and regenerable `home/` or `jdtls-data/` caches for stopped workspaces; never delete `project/` |
 | AS Lite patch drift | Build or smoke test fails after submodule bump | No release | Fix patch before bump lands |
 | Bad path request | Contract validation fails | 400/403, no filesystem write | No recovery needed |
 
@@ -1060,6 +1176,7 @@ Deliverables:
 - MVP source moved under `mvp/`.
 - Root `package.json` converted to Bun workspaces.
 - `apps/control`, `apps/web`, `packages/contracts`, and script placeholders created.
+- `templates/wpilib-java-command/` extracted, committed, and documented with WPILib/GradleRIO provenance.
 - `README.md` updated with V1 status and MVP archive pointer.
 - `AGENTS.md` stack rule updated for V1 Bun usage.
 
@@ -1124,6 +1241,7 @@ Deliverables:
 - Container lease table.
 - Docker CLI orchestration through Bun.
 - Loopback port allocation.
+- UID/GID ownership strategy for Linux and Docker Desktop.
 - Sim status endpoint.
 
 Definition of done:
@@ -1131,6 +1249,7 @@ Definition of done:
 - Opening Alice's workspace creates/starts Alice's sim container with Alice's project bind-mounted.
 - Stopping/removing the container does not delete Alice's project.
 - Control-plane restart rediscovers the managed container from labels and SQLite.
+- Files created by Gradle in the bind mount can be read and deleted by the control plane.
 
 ### V1-5: Run queue and log streaming
 
@@ -1154,6 +1273,7 @@ Deliverables:
 
 - AS Lite source patch for endpoint injection.
 - Build script applies patch and stages AS Lite.
+- Sub-path smoke serving the AS Lite bundle from `/scope/`.
 - Control-plane `/scope/` static serving.
 - `/u/:workspaceSlug/sim/alive` and `/u/:workspaceSlug/sim/nt4` proxy routes.
 - Web shell iframe postMessage config.
@@ -1162,6 +1282,8 @@ Definition of done:
 
 - Alice and Bob AS Lite iframes show their own NT4 streams.
 - The AS Lite smoke test proves injected endpoint usage.
+- The patch verifies both alive-probe and WebSocket endpoint paths after a clean submodule rebuild.
+- Embedded mode defers auto-start until postMessage config arrives; standalone mode still supports hostname/5810 fallback.
 - Submodule patch application is repeatable from a clean checkout.
 
 ### V1-7: V1 LSP container and project-wide Java LSP
@@ -1179,6 +1301,7 @@ Definition of done:
 - Alice and Bob both get hover/completion/diagnostics in separate workspaces.
 - Creating a new Java class appears in completions or diagnostics without restarting the whole app.
 - Breaking Bob's project does not affect Alice's LSP.
+- Files created by JDT LS under `jdtls-data/` and `home/` can be read and deleted by the control plane; `reset-lsp-data` succeeds against a populated LSP container.
 
 ### V1-8: Idle teardown, recovery, and operator controls
 
@@ -1188,6 +1311,7 @@ Deliverables:
 - Idle stop/remove policy.
 - Operator status page/API.
 - Restart sim/LSP actions.
+- `reset-lsp-data` endpoint and operator status hook.
 - Cleanup script for old stopped containers.
 
 Definition of done:
@@ -1195,6 +1319,7 @@ Definition of done:
 - Idle containers stop after configured timeout.
 - Returning user keeps files and gets new containers.
 - Operator can restart one student's LSP without affecting another student.
+- Operator can recover Bob's stuck LSP via `reset-lsp-data` without affecting Alice or deleting Bob's project.
 
 ### V1-9: Resource tuning and classroom runbook
 
@@ -1202,7 +1327,7 @@ Deliverables:
 
 - Configurable memory/concurrency limits.
 - `verify:v1:two-user` and a 3-user classroom smoke script.
-- Runbook for setup, start, stop, backup, restore, and common failures.
+- Runbook for setup, start, stop, backup, restore, cache cleanup, and common failures. Backups include `project/` only and exclude regenerable `home/`, `jdtls-data/`, and `logs/`.
 - Host sizing notes updated with real measurements.
 
 Definition of done:
@@ -1256,6 +1381,7 @@ Resolve before or during the named task:
 - **AS Lite upstream patchability:** resolve in V1-6. If source patch is larger than expected, document the patch surface and keep it isolated.
 - **Roster prewarm:** resolve after V1-8 measurements. Do not build anonymous prewarm pools before evidence says they matter.
 - **Admin protection:** decide token vs localhost-only in V1-8 based on how the classroom host is accessed.
+- **Linux target UID/GID:** required by V1-4. Confirm the host user that owns `data/` before building/running V1 images on native Linux.
 
 ---
 

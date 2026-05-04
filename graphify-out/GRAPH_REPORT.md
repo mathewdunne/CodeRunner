@@ -1,7 +1,7 @@
-# Graph Report - FRC-Programming-Training-Sim  (2026-05-03)
+# Graph Report - FRC-Programming-Training-Sim  (2026-05-04)
 
 ## Corpus Check
-- 18 files · ~22,352 words
+- 18 files · ~29,572 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
