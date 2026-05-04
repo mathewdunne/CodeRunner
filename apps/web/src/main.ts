@@ -22,6 +22,7 @@ if (!consoleEl || !editorEl || !statusEl) {
 const consoleNode = consoleEl;
 const runButton = runEl;
 const statusNode = statusEl;
+const sessionUser = currentSessionUser();
 
 function appendConsole(line: string): void {
   const ts = new Date().toTimeString().slice(0, 8);
@@ -39,7 +40,7 @@ function setStatus(status: Status): void {
 }
 
 async function loadRobotJava(): Promise<string> {
-  const res = await fetch("/file");
+  const res = await fetch(sessionPath("/file"));
   if (!res.ok) {
     throw new Error(`Failed to load Robot.java: ${res.status} ${res.statusText}`);
   }
@@ -47,7 +48,7 @@ async function loadRobotJava(): Promise<string> {
 }
 
 const initial = await loadRobotJava();
-const robotFileUri = "file:///workspace/project/src/main/java/frc/robot/Robot.java";
+const robotFileUri = projectFileUri(sessionUser);
 
 const model = monaco.editor.createModel(
   initial,
@@ -68,8 +69,25 @@ const editor = monaco.editor.create(editorEl, {
 });
 
 function javaLanguageServerUrl(): string {
+  const configured = envValue("VITE_LSP_URL");
+  if (configured) {
+    return configured;
+  }
+
+  const portMap = parsePortMap(envValue("VITE_SPIKE_LSP_PORTS"));
+  const mappedPort = portMap.get(sessionUser);
+  if (mappedPort !== undefined) {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${protocol}//${window.location.hostname}:${mappedPort}/jdtls`;
+  }
+
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
   return `${protocol}//${window.location.hostname}:30003/jdtls`;
+}
+
+const scopeFrame = document.getElementById("scope-frame");
+if (scopeFrame instanceof HTMLIFrameElement) {
+  scopeFrame.src = advantageScopeUrl(sessionUser);
 }
 
 void startJavaLsp({
@@ -84,7 +102,7 @@ let activeRunSocket: WebSocket | undefined;
 
 async function saveRobotJava(contents: string): Promise<void> {
   setStatus("saving");
-  const res = await fetch("/file", {
+  const res = await fetch(sessionPath("/file"), {
     method: "POST",
     headers: { "content-type": "text/plain; charset=utf-8" },
     body: contents,
@@ -162,7 +180,7 @@ function handleRunMessage(message: RunMessage): void {
 
 function runWebSocketUrl(): string {
   const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return `${protocol}//${window.location.host}/run`;
+  return `${protocol}//${window.location.host}${sessionPath("/run")}`;
 }
 
 editor.onDidChangeModelContent(() => {
@@ -209,4 +227,76 @@ runButton.addEventListener("click", () => {
 });
 
 appendConsole("ready");
+appendConsole(`session: ${sessionUser}`);
 setStatus("idle");
+
+function currentSessionUser(): string {
+  const user = new URLSearchParams(window.location.search).get("user")?.trim();
+  return user && /^[a-zA-Z0-9_-]{1,32}$/.test(user) ? user : "default";
+}
+
+function sessionPath(path: string): string {
+  const params = new URLSearchParams();
+  if (sessionUser !== "default") {
+    params.set("user", sessionUser);
+  }
+  const query = params.toString();
+  return query.length > 0 ? `${path}?${query}` : path;
+}
+
+function envValue(name: string): string | undefined {
+  const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
+  const value = env?.[name]?.trim();
+  return value && value.length > 0 ? value : undefined;
+}
+
+function parsePortMap(value: string | undefined): Map<string, number> {
+  const map = new Map<string, number>();
+  if (!value) return map;
+
+  for (const entry of value.split(",")) {
+    const [rawUser, rawPort] = entry.split("=", 2);
+    const user = rawUser?.trim();
+    const port = Number(rawPort?.trim());
+    if (user && Number.isInteger(port) && port > 0) {
+      map.set(user, port);
+    }
+  }
+
+  return map;
+}
+
+function projectFileUri(user: string): string {
+  const projectRootMap = parseStringMap(envValue("VITE_SPIKE_PROJECT_ROOTS"));
+  const root = projectRootMap.get(user) ?? "/workspace/project";
+  return `file://${root}/src/main/java/frc/robot/Robot.java`;
+}
+
+function parseStringMap(value: string | undefined): Map<string, string> {
+  const map = new Map<string, string>();
+  if (!value) return map;
+
+  for (const entry of value.split(",")) {
+    const [rawUser, rawValue] = entry.split("=", 2);
+    const user = rawUser?.trim();
+    const mapped = rawValue?.trim();
+    if (user && mapped) {
+      map.set(user, mapped);
+    }
+  }
+
+  return map;
+}
+
+function advantageScopeUrl(user: string): string {
+  const baseUrl = envValue("VITE_ASCOPE_URL") ?? "http://localhost:8080";
+  const nt4ProxyOrigin = envValue("VITE_NT4_PROXY_ORIGIN");
+  if (!nt4ProxyOrigin || user === "default") {
+    return baseUrl;
+  }
+
+  const url = new URL(baseUrl);
+  url.searchParams.set("nt4Origin", nt4ProxyOrigin);
+  url.searchParams.set("nt4Path", `/sim/${encodeURIComponent(user)}/nt4`);
+  return url.toString();
+}

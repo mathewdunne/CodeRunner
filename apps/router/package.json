@@ -1,0 +1,20 @@
+{
+  "name": "@frc-sim/router",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Disposable multi-tenancy spike router for NT4 WebSocket demuxing.",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ws": "8.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/ws": "8.18.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

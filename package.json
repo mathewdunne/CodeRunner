@@ -13,9 +13,13 @@
   "scripts": {
     "build:ascope": "tsx scripts/build-ascope-lite.ts",
     "dev:mvp": "tsx scripts/dev-mvp.ts",
+    "dev:spike:multi": "tsx scripts/dev-spike-multi-tenancy.ts",
     "dev:lsp": "npm run dev --workspace apps/lsp",
+    "dev:router": "npm run dev --workspace apps/router",
     "dev:server": "npm run dev --workspace apps/server",
+    "patch:ascope:nt4-proxy": "tsx scripts/patch-ascope-lite-nt4-proxy.ts",
     "serve:ascope": "tsx scripts/serve-ascope-lite.ts",
+    "spike:multi": "tsx scripts/spike-multi-tenancy.ts",
     "dev:web": "npm run dev --workspace apps/web",
     "typecheck": "tsc --noEmit"
   },

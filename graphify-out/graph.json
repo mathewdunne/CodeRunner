@@ -54,7 +54,7 @@
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L1",
       "id": "apps_lsp_src_main_ts",
-      "community": 9,
+      "community": 11,
       "norm_label": "main.ts"
     },
     {
@@ -63,7 +63,7 @@
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L70",
       "id": "src_main_launchlanguageserver",
-      "community": 9,
+      "community": 11,
       "norm_label": "launchlanguageserver()"
     },
     {
@@ -72,7 +72,7 @@
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L109",
       "id": "src_main_aswebsocket",
-      "community": 9,
+      "community": 11,
       "norm_label": "aswebsocket()"
     },
     {
@@ -81,8 +81,71 @@
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L133",
       "id": "src_main_handleupgrade",
-      "community": 9,
+      "community": 11,
       "norm_label": "handleupgrade()"
+    },
+    {
+      "label": "main.ts",
+      "file_type": "code",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L1",
+      "id": "apps_router_src_main_ts",
+      "community": 9,
+      "norm_label": "main.ts"
+    },
+    {
+      "label": "parseSessions()",
+      "file_type": "code",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L17",
+      "id": "src_main_parsesessions",
+      "community": 9,
+      "norm_label": "parsesessions()"
+    },
+    {
+      "label": "sessionFromPath()",
+      "file_type": "code",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L36",
+      "id": "src_main_sessionfrompath",
+      "community": 9,
+      "norm_label": "sessionfrompath()"
+    },
+    {
+      "label": "nt4HttpUrl()",
+      "file_type": "code",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L44",
+      "id": "src_main_nt4httpurl",
+      "community": 9,
+      "norm_label": "nt4httpurl()"
+    },
+    {
+      "label": "nt4WsUrl()",
+      "file_type": "code",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L48",
+      "id": "src_main_nt4wsurl",
+      "community": 9,
+      "norm_label": "nt4wsurl()"
+    },
+    {
+      "label": "requestedProtocols()",
+      "file_type": "code",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L52",
+      "id": "src_main_requestedprotocols",
+      "community": 9,
+      "norm_label": "requestedprotocols()"
+    },
+    {
+      "label": "pipeWebSockets()",
+      "file_type": "code",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L58",
+      "id": "src_main_pipewebsockets",
+      "community": 9,
+      "norm_label": "pipewebsockets()"
     },
     {
       "label": "main.ts",
@@ -90,250 +153,277 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L1",
       "id": "apps_server_src_main_ts",
-      "community": 0,
+      "community": 1,
       "norm_label": "main.ts"
     },
     {
       "label": "docker()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L36",
+      "source_location": "L42",
       "id": "src_main_docker",
-      "community": 0,
+      "community": 1,
       "norm_label": "docker()"
     },
     {
       "label": "dockerExec()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L43",
+      "source_location": "L49",
       "id": "src_main_dockerexec",
-      "community": 0,
+      "community": 1,
       "norm_label": "dockerexec()"
+    },
+    {
+      "label": "parseSessionContainers()",
+      "file_type": "code",
+      "source_file": "apps\\server\\src\\main.ts",
+      "source_location": "L53",
+      "id": "src_main_parsesessioncontainers",
+      "community": 1,
+      "norm_label": "parsesessioncontainers()"
+    },
+    {
+      "label": "userFromUrl()",
+      "file_type": "code",
+      "source_file": "apps\\server\\src\\main.ts",
+      "source_location": "L68",
+      "id": "src_main_userfromurl",
+      "community": 1,
+      "norm_label": "userfromurl()"
+    },
+    {
+      "label": "sessionFromUrl()",
+      "file_type": "code",
+      "source_file": "apps\\server\\src\\main.ts",
+      "source_location": "L73",
+      "id": "src_main_sessionfromurl",
+      "community": 1,
+      "norm_label": "sessionfromurl()"
     },
     {
       "label": "collectProcess()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L47",
+      "source_location": "L87",
       "id": "src_main_collectprocess",
-      "community": 0,
+      "community": 1,
       "norm_label": "collectprocess()"
     },
     {
       "label": "readRobotFile()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L67",
+      "source_location": "L107",
       "id": "src_main_readrobotfile",
-      "community": 0,
+      "community": 1,
       "norm_label": "readrobotfile()"
     },
     {
       "label": "writeRobotFile()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L71",
+      "source_location": "L111",
       "id": "src_main_writerobotfile",
-      "community": 0,
+      "community": 1,
       "norm_label": "writerobotfile()"
     },
     {
       "label": "quoteShell()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L85",
+      "source_location": "L125",
       "id": "src_main_quoteshell",
-      "community": 0,
+      "community": 1,
       "norm_label": "quoteshell()"
     },
     {
       "label": "WebSocketTextPeer",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L115",
+      "source_location": "L165",
       "id": "src_main_websockettextpeer",
-      "community": 0,
+      "community": 1,
       "norm_label": "websockettextpeer"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L120",
+      "source_location": "L170",
       "id": "src_main_websockettextpeer_constructor",
-      "community": 0,
+      "community": 1,
       "norm_label": ".constructor()"
     },
     {
       "label": ".closed()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L134",
+      "source_location": "L184",
       "id": "src_main_websockettextpeer_closed",
-      "community": 0,
+      "community": 1,
       "norm_label": ".closed()"
     },
     {
       "label": ".sendJson()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L138",
+      "source_location": "L188",
       "id": "src_main_websockettextpeer_sendjson",
-      "community": 0,
+      "community": 1,
       "norm_label": ".sendjson()"
     },
     {
       "label": ".sendText()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L142",
+      "source_location": "L192",
       "id": "src_main_websockettextpeer_sendtext",
-      "community": 0,
+      "community": 1,
       "norm_label": ".sendtext()"
     },
     {
       "label": ".close()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L149",
+      "source_location": "L199",
       "id": "src_main_websockettextpeer_close",
-      "community": 0,
+      "community": 1,
       "norm_label": ".close()"
     },
     {
       "label": ".onClose()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L155",
+      "source_location": "L205",
       "id": "src_main_websockettextpeer_onclose",
-      "community": 0,
+      "community": 1,
       "norm_label": ".onclose()"
     },
     {
       "label": ".markClosed()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L159",
+      "source_location": "L209",
       "id": "src_main_websockettextpeer_markclosed",
-      "community": 0,
+      "community": 1,
       "norm_label": ".markclosed()"
     },
     {
       "label": "makeTextFrameHeader()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L168",
+      "source_location": "L218",
       "id": "src_main_maketextframeheader",
-      "community": 0,
+      "community": 1,
       "norm_label": "maketextframeheader()"
     },
     {
       "label": "acceptWebSocket()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L186",
+      "source_location": "L236",
       "id": "src_main_acceptwebsocket",
-      "community": 0,
+      "community": 1,
       "norm_label": "acceptwebsocket()"
     },
     {
       "label": "LineSplitter",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L211",
+      "source_location": "L261",
       "id": "src_main_linesplitter",
-      "community": 0,
+      "community": 1,
       "norm_label": "linesplitter"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L215",
+      "source_location": "L265",
       "id": "src_main_linesplitter_constructor",
-      "community": 0,
+      "community": 1,
       "norm_label": ".constructor()"
     },
     {
       "label": ".push()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L219",
+      "source_location": "L269",
       "id": "src_main_linesplitter_push",
-      "community": 0,
+      "community": 1,
       "norm_label": ".push()"
     },
     {
       "label": ".flush()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L228",
+      "source_location": "L278",
       "id": "src_main_linesplitter_flush",
-      "community": 0,
+      "community": 1,
       "norm_label": ".flush()"
     },
     {
       "label": "spawnDockerStep()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L236",
+      "source_location": "L286",
       "id": "src_main_spawndockerstep",
-      "community": 0,
+      "community": 1,
       "norm_label": "spawndockerstep()"
     },
     {
       "label": "spawnRunStep()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L264",
+      "source_location": "L314",
       "id": "src_main_spawnrunstep",
-      "community": 0,
+      "community": 1,
       "norm_label": "spawnrunstep()"
     },
     {
       "label": "spawnDockerLogs()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L272",
+      "source_location": "L322",
       "id": "src_main_spawndockerlogs",
-      "community": 0,
+      "community": 1,
       "norm_label": "spawndockerlogs()"
     },
     {
       "label": "killChild()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L280",
+      "source_location": "L331",
       "id": "src_main_killchild",
-      "community": 0,
+      "community": 1,
       "norm_label": "killchild()"
     },
     {
       "label": "killChildren()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L288",
+      "source_location": "L339",
       "id": "src_main_killchildren",
-      "community": 0,
+      "community": 1,
       "norm_label": "killchildren()"
     },
     {
       "label": "delay()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L294",
+      "source_location": "L345",
       "id": "src_main_delay",
-      "community": 0,
+      "community": 1,
       "norm_label": "delay()"
     },
     {
       "label": "handleRun()",
       "file_type": "code",
       "source_file": "apps\\server\\src\\main.ts",
-      "source_location": "L300",
+      "source_location": "L351",
       "id": "src_main_handlerun",
-      "community": 0,
+      "community": 1,
       "norm_label": "handlerun()"
     },
     {
@@ -342,7 +432,7 @@
       "source_file": "apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "apps_web_vite_config_ts",
-      "community": 13,
+      "community": 16,
       "norm_label": "vite.config.ts"
     },
     {
@@ -646,7 +736,7 @@
       "label": "appendConsole()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
-      "source_location": "L26",
+      "source_location": "L27",
       "id": "src_main_appendconsole",
       "community": 2,
       "norm_label": "appendconsole()"
@@ -655,7 +745,7 @@
       "label": "setStatus()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
-      "source_location": "L36",
+      "source_location": "L37",
       "id": "src_main_setstatus",
       "community": 2,
       "norm_label": "setstatus()"
@@ -664,7 +754,7 @@
       "label": "loadRobotJava()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
-      "source_location": "L41",
+      "source_location": "L42",
       "id": "src_main_loadrobotjava",
       "community": 2,
       "norm_label": "loadrobotjava()"
@@ -673,7 +763,7 @@
       "label": "javaLanguageServerUrl()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
-      "source_location": "L70",
+      "source_location": "L71",
       "id": "src_main_javalanguageserverurl",
       "community": 2,
       "norm_label": "javalanguageserverurl()"
@@ -682,7 +772,7 @@
       "label": "saveRobotJava()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
-      "source_location": "L85",
+      "source_location": "L103",
       "id": "src_main_saverobotjava",
       "community": 2,
       "norm_label": "saverobotjava()"
@@ -691,7 +781,7 @@
       "label": "scheduleSave()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
-      "source_location": "L98",
+      "source_location": "L116",
       "id": "src_main_schedulesave",
       "community": 2,
       "norm_label": "schedulesave()"
@@ -700,7 +790,7 @@
       "label": "flushSave()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
-      "source_location": "L112",
+      "source_location": "L130",
       "id": "src_main_flushsave",
       "community": 2,
       "norm_label": "flushsave()"
@@ -709,7 +799,7 @@
       "label": "parseRunMessage()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
-      "source_location": "L131",
+      "source_location": "L149",
       "id": "src_main_parserunmessage",
       "community": 2,
       "norm_label": "parserunmessage()"
@@ -718,7 +808,7 @@
       "label": "handleRunMessage()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
-      "source_location": "L141",
+      "source_location": "L159",
       "id": "src_main_handlerunmessage",
       "community": 2,
       "norm_label": "handlerunmessage()"
@@ -727,10 +817,73 @@
       "label": "runWebSocketUrl()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.ts",
-      "source_location": "L163",
+      "source_location": "L181",
       "id": "src_main_runwebsocketurl",
       "community": 2,
       "norm_label": "runwebsocketurl()"
+    },
+    {
+      "label": "currentSessionUser()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L233",
+      "id": "src_main_currentsessionuser",
+      "community": 2,
+      "norm_label": "currentsessionuser()"
+    },
+    {
+      "label": "sessionPath()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L238",
+      "id": "src_main_sessionpath",
+      "community": 2,
+      "norm_label": "sessionpath()"
+    },
+    {
+      "label": "envValue()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L247",
+      "id": "src_main_envvalue",
+      "community": 2,
+      "norm_label": "envvalue()"
+    },
+    {
+      "label": "parsePortMap()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L253",
+      "id": "src_main_parseportmap",
+      "community": 2,
+      "norm_label": "parseportmap()"
+    },
+    {
+      "label": "projectFileUri()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L269",
+      "id": "src_main_projectfileuri",
+      "community": 2,
+      "norm_label": "projectfileuri()"
+    },
+    {
+      "label": "parseStringMap()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L275",
+      "id": "src_main_parsestringmap",
+      "community": 2,
+      "norm_label": "parsestringmap()"
+    },
+    {
+      "label": "advantageScopeUrl()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L291",
+      "id": "src_main_advantagescopeurl",
+      "community": 2,
+      "norm_label": "advantagescopeurl()"
     },
     {
       "label": "monaco-setup.ts",
@@ -837,7 +990,7 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
       "id": "containers_sim_project_src_main_java_frc_robot_main_java",
-      "community": 10,
+      "community": 12,
       "norm_label": "main.java"
     },
     {
@@ -846,7 +999,7 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L5",
       "id": "robot_main_main",
-      "community": 10,
+      "community": 12,
       "norm_label": "main"
     },
     {
@@ -855,7 +1008,7 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L6",
       "id": "robot_main_main_main",
-      "community": 10,
+      "community": 12,
       "norm_label": ".main()"
     },
     {
@@ -909,7 +1062,7 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
       "id": "containers_sim_project_src_main_java_frc_robot_robotcontainer_java",
-      "community": 11,
+      "community": 13,
       "norm_label": "robotcontainer.java"
     },
     {
@@ -918,7 +1071,7 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L3",
       "id": "robot_robotcontainer_robotcontainer",
-      "community": 11,
+      "community": 13,
       "norm_label": "robotcontainer"
     },
     {
@@ -927,7 +1080,7 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L4",
       "id": "robot_robotcontainer_robotcontainer_robotcontainer",
-      "community": 11,
+      "community": 13,
       "norm_label": ".robotcontainer()"
     },
     {
@@ -1044,7 +1197,7 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L1",
       "id": "scripts_dev_mvp_ts",
-      "community": 8,
+      "community": 10,
       "norm_label": "dev-mvp.ts"
     },
     {
@@ -1053,7 +1206,7 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L12",
       "id": "scripts_dev_mvp_runcommand",
-      "community": 8,
+      "community": 10,
       "norm_label": "runcommand()"
     },
     {
@@ -1062,7 +1215,7 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L40",
       "id": "scripts_dev_mvp_ensurecontainer",
-      "community": 8,
+      "community": 10,
       "norm_label": "ensurecontainer()"
     },
     {
@@ -1071,7 +1224,7 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L82",
       "id": "scripts_dev_mvp_ensuresimcontainer",
-      "community": 8,
+      "community": 10,
       "norm_label": "ensuresimcontainer()"
     },
     {
@@ -1080,7 +1233,7 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L91",
       "id": "scripts_dev_mvp_ensurelspcontainer",
-      "community": 8,
+      "community": 10,
       "norm_label": "ensurelspcontainer()"
     },
     {
@@ -1089,7 +1242,7 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L100",
       "id": "scripts_dev_mvp_startprocess",
-      "community": 8,
+      "community": 10,
       "norm_label": "startprocess()"
     },
     {
@@ -1098,8 +1251,44 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L131",
       "id": "scripts_dev_mvp_shutdown",
-      "community": 8,
+      "community": 10,
       "norm_label": "shutdown()"
+    },
+    {
+      "label": "dev-spike-multi-tenancy.ts",
+      "file_type": "code",
+      "source_file": "scripts\\dev-spike-multi-tenancy.ts",
+      "source_location": "L1",
+      "id": "scripts_dev_spike_multi_tenancy_ts",
+      "community": 14,
+      "norm_label": "dev-spike-multi-tenancy.ts"
+    },
+    {
+      "label": "startProcess()",
+      "file_type": "code",
+      "source_file": "scripts\\dev-spike-multi-tenancy.ts",
+      "source_location": "L11",
+      "id": "scripts_dev_spike_multi_tenancy_startprocess",
+      "community": 14,
+      "norm_label": "startprocess()"
+    },
+    {
+      "label": "shutdown()",
+      "file_type": "code",
+      "source_file": "scripts\\dev-spike-multi-tenancy.ts",
+      "source_location": "L51",
+      "id": "scripts_dev_spike_multi_tenancy_shutdown",
+      "community": 14,
+      "norm_label": "shutdown()"
+    },
+    {
+      "label": "patch-ascope-lite-nt4-proxy.ts",
+      "file_type": "code",
+      "source_file": "scripts\\patch-ascope-lite-nt4-proxy.ts",
+      "source_location": "L1",
+      "id": "scripts_patch_ascope_lite_nt4_proxy_ts",
+      "community": 17,
+      "norm_label": "patch-ascope-lite-nt4-proxy.ts"
     },
     {
       "label": "serve-ascope-lite.ts",
@@ -1107,7 +1296,7 @@
       "source_file": "scripts\\serve-ascope-lite.ts",
       "source_location": "L1",
       "id": "scripts_serve_ascope_lite_ts",
-      "community": 12,
+      "community": 15,
       "norm_label": "serve-ascope-lite.ts"
     },
     {
@@ -1116,8 +1305,116 @@
       "source_file": "scripts\\serve-ascope-lite.ts",
       "source_location": "L29",
       "id": "scripts_serve_ascope_lite_buildassetmanifest",
-      "community": 12,
+      "community": 15,
       "norm_label": "buildassetmanifest()"
+    },
+    {
+      "label": "spike-multi-tenancy.ts",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L1",
+      "id": "scripts_spike_multi_tenancy_ts",
+      "community": 5,
+      "norm_label": "spike-multi-tenancy.ts"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L32",
+      "id": "scripts_spike_multi_tenancy_run",
+      "community": 5,
+      "norm_label": "run()"
+    },
+    {
+      "label": "containerState()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L47",
+      "id": "scripts_spike_multi_tenancy_containerstate",
+      "community": 5,
+      "norm_label": "containerstate()"
+    },
+    {
+      "label": "ensureContainer()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L52",
+      "id": "scripts_spike_multi_tenancy_ensurecontainer",
+      "community": 5,
+      "norm_label": "ensurecontainer()"
+    },
+    {
+      "label": "up()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L68",
+      "id": "scripts_spike_multi_tenancy_up",
+      "community": 5,
+      "norm_label": "up()"
+    },
+    {
+      "label": "down()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L76",
+      "id": "scripts_spike_multi_tenancy_down",
+      "community": 5,
+      "norm_label": "down()"
+    },
+    {
+      "label": "printEnv()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L87",
+      "id": "scripts_spike_multi_tenancy_printenv",
+      "community": 5,
+      "norm_label": "printenv()"
+    },
+    {
+      "label": "dockerStats()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L97",
+      "id": "scripts_spike_multi_tenancy_dockerstats",
+      "community": 5,
+      "norm_label": "dockerstats()"
+    },
+    {
+      "label": "parseMiB()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L105",
+      "id": "scripts_spike_multi_tenancy_parsemib",
+      "community": 5,
+      "norm_label": "parsemib()"
+    },
+    {
+      "label": "stats()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L122",
+      "id": "scripts_spike_multi_tenancy_stats",
+      "community": 5,
+      "norm_label": "stats()"
+    },
+    {
+      "label": "lifecycle()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L145",
+      "id": "scripts_spike_multi_tenancy_lifecycle",
+      "community": 5,
+      "norm_label": "lifecycle()"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L168",
+      "id": "scripts_spike_multi_tenancy_main",
+      "community": 5,
+      "norm_label": "main()"
     },
     {
       "label": "LSP WebSocket Bridge (apps/lsp/src/main.ts)",
@@ -1128,9 +1425,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "lsp_main_lspbridge",
       "community": 6,
-      "norm_label": "lsp websocket bridge (apps/lsp/src/main.ts)"
+      "norm_label": "lsp websocket bridge (apps/lsp/src/main.ts)",
+      "id": "lsp_main_lspbridge"
     },
     {
       "label": "launchLanguageServer()",
@@ -1141,9 +1438,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "lsp_main_launchlanguageserver",
       "community": 6,
-      "norm_label": "launchlanguageserver()"
+      "norm_label": "launchlanguageserver()",
+      "id": "lsp_main_launchlanguageserver"
     },
     {
       "label": "handleUpgrade()",
@@ -1154,9 +1451,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "lsp_main_handleupgrade",
       "community": 6,
-      "norm_label": "handleupgrade()"
+      "norm_label": "handleupgrade()",
+      "id": "lsp_main_handleupgrade"
     },
     {
       "label": "asWebSocket()",
@@ -1167,9 +1464,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "lsp_main_aswebsocket",
       "community": 6,
-      "norm_label": "aswebsocket()"
+      "norm_label": "aswebsocket()",
+      "id": "lsp_main_aswebsocket"
     },
     {
       "label": "Eclipse JDT LS Process",
@@ -1180,9 +1477,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "lsp_main_eclipsejdtls",
       "community": 6,
-      "norm_label": "eclipse jdt ls process"
+      "norm_label": "eclipse jdt ls process",
+      "id": "lsp_main_eclipsejdtls"
     },
     {
       "label": "MVP Backend Service (apps/server/src/main.ts)",
@@ -1193,9 +1490,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_backendservice",
-      "community": 1,
-      "norm_label": "mvp backend service (apps/server/src/main.ts)"
+      "community": 0,
+      "norm_label": "mvp backend service (apps/server/src/main.ts)",
+      "id": "server_main_backendservice"
     },
     {
       "label": "handleRun()",
@@ -1206,9 +1503,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_handlerun",
-      "community": 1,
-      "norm_label": "handlerun()"
+      "community": 0,
+      "norm_label": "handlerun()",
+      "id": "server_main_handlerun"
     },
     {
       "label": "WebSocketTextPeer class",
@@ -1219,9 +1516,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_websockettextpeer",
-      "community": 1,
-      "norm_label": "websockettextpeer class"
+      "community": 0,
+      "norm_label": "websockettextpeer class",
+      "id": "server_main_websockettextpeer"
     },
     {
       "label": "LineSplitter class",
@@ -1232,9 +1529,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_linesplitter",
-      "community": 1,
-      "norm_label": "linesplitter class"
+      "community": 0,
+      "norm_label": "linesplitter class",
+      "id": "server_main_linesplitter"
     },
     {
       "label": "spawnDockerStep()",
@@ -1245,9 +1542,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_spawndockerstep",
-      "community": 1,
-      "norm_label": "spawndockerstep()"
+      "community": 0,
+      "norm_label": "spawndockerstep()",
+      "id": "server_main_spawndockerstep"
     },
     {
       "label": "spawnDockerLogs()",
@@ -1258,9 +1555,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_spawndockerlogs",
-      "community": 1,
-      "norm_label": "spawndockerlogs()"
+      "community": 0,
+      "norm_label": "spawndockerlogs()",
+      "id": "server_main_spawndockerlogs"
     },
     {
       "label": "readRobotFile()",
@@ -1271,9 +1568,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_readrobotfile",
-      "community": 1,
-      "norm_label": "readrobotfile()"
+      "community": 0,
+      "norm_label": "readrobotfile()",
+      "id": "server_main_readrobotfile"
     },
     {
       "label": "writeRobotFile()",
@@ -1284,9 +1581,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_writerobotfile",
-      "community": 1,
-      "norm_label": "writerobotfile()"
+      "community": 0,
+      "norm_label": "writerobotfile()",
+      "id": "server_main_writerobotfile"
     },
     {
       "label": "docker() helper",
@@ -1297,9 +1594,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_docker",
-      "community": 1,
-      "norm_label": "docker() helper"
+      "community": 0,
+      "norm_label": "docker() helper",
+      "id": "server_main_docker"
     },
     {
       "label": "dockerExec() helper",
@@ -1310,9 +1607,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_dockerexec",
-      "community": 1,
-      "norm_label": "dockerexec() helper"
+      "community": 0,
+      "norm_label": "dockerexec() helper",
+      "id": "server_main_dockerexec"
     },
     {
       "label": "acceptWebSocket()",
@@ -1323,9 +1620,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "server_main_acceptwebsocket",
-      "community": 1,
-      "norm_label": "acceptwebsocket()"
+      "community": 0,
+      "norm_label": "acceptwebsocket()",
+      "id": "server_main_acceptwebsocket"
     },
     {
       "label": "Vite Config (apps/web/vite.config.ts)",
@@ -1336,9 +1633,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_viteconfig",
-      "community": 1,
-      "norm_label": "vite config (apps/web/vite.config.ts)"
+      "community": 0,
+      "norm_label": "vite config (apps/web/vite.config.ts)",
+      "id": "web_viteconfig"
     },
     {
       "label": "startJavaLsp()",
@@ -1349,9 +1646,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_javalsp_startjavalsp",
       "community": 6,
-      "norm_label": "startjavalsp()"
+      "norm_label": "startjavalsp()",
+      "id": "web_javalsp_startjavalsp"
     },
     {
       "label": "BrowserLspClient class",
@@ -1362,9 +1659,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_javalsp_browserlspclient",
       "community": 6,
-      "norm_label": "browserlspclient class"
+      "norm_label": "browserlspclient class",
+      "id": "web_javalsp_browserlspclient"
     },
     {
       "label": "registerSemanticTokensProvider()",
@@ -1375,9 +1672,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_javalsp_registersemantictokens",
       "community": 6,
-      "norm_label": "registersemantictokensprovider()"
+      "norm_label": "registersemantictokensprovider()",
+      "id": "web_javalsp_registersemantictokens"
     },
     {
       "label": "handleDiagnostics()",
@@ -1388,9 +1685,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_javalsp_handlediagnostics",
       "community": 6,
-      "norm_label": "handlediagnostics()"
+      "norm_label": "handlediagnostics()",
+      "id": "web_javalsp_handlediagnostics"
     },
     {
       "label": "Web Shell Entry (apps/web/src/main.ts)",
@@ -1401,9 +1698,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_main_entry",
-      "community": 1,
-      "norm_label": "web shell entry (apps/web/src/main.ts)"
+      "community": 0,
+      "norm_label": "web shell entry (apps/web/src/main.ts)",
+      "id": "web_main_entry"
     },
     {
       "label": "loadRobotJava()",
@@ -1414,9 +1711,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_main_loadrobotjava",
-      "community": 1,
-      "norm_label": "loadrobotjava()"
+      "community": 0,
+      "norm_label": "loadrobotjava()",
+      "id": "web_main_loadrobotjava"
     },
     {
       "label": "saveRobotJava()",
@@ -1427,9 +1724,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_main_saverobotjava",
-      "community": 1,
-      "norm_label": "saverobotjava()"
+      "community": 0,
+      "norm_label": "saverobotjava()",
+      "id": "web_main_saverobotjava"
     },
     {
       "label": "scheduleSave()",
@@ -1440,9 +1737,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_main_schedulesave",
-      "community": 1,
-      "norm_label": "schedulesave()"
+      "community": 0,
+      "norm_label": "schedulesave()",
+      "id": "web_main_schedulesave"
     },
     {
       "label": "flushSave()",
@@ -1453,9 +1750,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_main_flushsave",
-      "community": 1,
-      "norm_label": "flushsave()"
+      "community": 0,
+      "norm_label": "flushsave()",
+      "id": "web_main_flushsave"
     },
     {
       "label": "handleRunMessage()",
@@ -1466,9 +1763,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_main_handlerunmessage",
-      "community": 1,
-      "norm_label": "handlerunmessage()"
+      "community": 0,
+      "norm_label": "handlerunmessage()",
+      "id": "web_main_handlerunmessage"
     },
     {
       "label": "setupMonaco()",
@@ -1479,9 +1776,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_monacosetup_setupmonaco",
-      "community": 5,
-      "norm_label": "setupmonaco()"
+      "community": 0,
+      "norm_label": "setupmonaco()",
+      "id": "web_monacosetup_setupmonaco"
     },
     {
       "label": "registerDefaultDarkModernTheme()",
@@ -1492,9 +1789,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_vscodemod_registerdefaultdarkmodern",
-      "community": 5,
-      "norm_label": "registerdefaultdarkmoderntheme()"
+      "community": 0,
+      "norm_label": "registerdefaultdarkmoderntheme()",
+      "id": "web_vscodemod_registerdefaultdarkmodern"
     },
     {
       "label": "VS Code Dark Modern Token Colors",
@@ -1505,9 +1802,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "web_vscodemod_vscodetokencolors",
-      "community": 5,
-      "norm_label": "vs code dark modern token colors"
+      "community": 0,
+      "norm_label": "vs code dark modern token colors",
+      "id": "web_vscodemod_vscodetokencolors"
     },
     {
       "label": "Robot.java (sim project source of truth)",
@@ -1518,9 +1815,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "robot_java",
-      "community": 1,
-      "norm_label": "robot.java (sim project source of truth)"
+      "community": 0,
+      "norm_label": "robot.java (sim project source of truth)",
+      "id": "robot_java"
     },
     {
       "label": "Main.java (WPILib entry point)",
@@ -1531,9 +1828,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "main_java",
-      "community": 1,
-      "norm_label": "main.java (wpilib entry point)"
+      "community": 0,
+      "norm_label": "main.java (wpilib entry point)",
+      "id": "main_java"
     },
     {
       "label": "RobotContainer.java",
@@ -1544,9 +1841,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "robotcontainer_java",
-      "community": 1,
-      "norm_label": "robotcontainer.java"
+      "community": 0,
+      "norm_label": "robotcontainer.java",
+      "id": "robotcontainer_java"
     },
     {
       "label": "build-ascope-lite.ts script",
@@ -1557,9 +1854,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "scripts_buildascope",
-      "community": 5,
-      "norm_label": "build-ascope-lite.ts script"
+      "community": 8,
+      "norm_label": "build-ascope-lite.ts script",
+      "id": "scripts_buildascope"
     },
     {
       "label": "dev-mvp.ts orchestration script",
@@ -1570,9 +1867,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "scripts_devmvp",
-      "community": 1,
-      "norm_label": "dev-mvp.ts orchestration script"
+      "community": 0,
+      "norm_label": "dev-mvp.ts orchestration script",
+      "id": "scripts_devmvp"
     },
     {
       "label": "serve-ascope-lite.ts script",
@@ -1583,9 +1880,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "scripts_serveascope",
-      "community": 5,
-      "norm_label": "serve-ascope-lite.ts script"
+      "community": 8,
+      "norm_label": "serve-ascope-lite.ts script",
+      "id": "scripts_serveascope"
     },
     {
       "label": "Project-MVP.md (MVP Spec)",
@@ -1596,9 +1893,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "project_mvp_doc",
-      "community": 5,
-      "norm_label": "project-mvp.md (mvp spec)"
+      "community": 8,
+      "norm_label": "project-mvp.md (mvp spec)",
+      "id": "project_mvp_doc"
     },
     {
       "label": "README.md",
@@ -1609,9 +1906,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "readme_doc",
-      "community": 5,
-      "norm_label": "readme.md"
+      "community": 8,
+      "norm_label": "readme.md",
+      "id": "readme_doc"
     },
     {
       "label": "Spike-Multi-Tenancy.md",
@@ -1622,9 +1919,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "spike_multitenancy_doc",
-      "community": 5,
-      "norm_label": "spike-multi-tenancy.md"
+      "community": 8,
+      "norm_label": "spike-multi-tenancy.md",
+      "id": "spike_multitenancy_doc"
     },
     {
       "label": "Web Shell index.html",
@@ -1635,9 +1932,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "index_html",
-      "community": 14,
-      "norm_label": "web shell index.html"
+      "community": 18,
+      "norm_label": "web shell index.html",
+      "id": "index_html"
     },
     {
       "label": "Decision 001: Sim Container Architecture",
@@ -1648,9 +1945,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "dec001_sim_container",
-      "community": 1,
-      "norm_label": "decision 001: sim container architecture"
+      "community": 0,
+      "norm_label": "decision 001: sim container architecture",
+      "id": "dec001_sim_container"
     },
     {
       "label": "Decision 002: AdvantageScope Lite Hosting",
@@ -1661,9 +1958,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "dec002_ascope_hosting",
-      "community": 5,
-      "norm_label": "decision 002: advantagescope lite hosting"
+      "community": 8,
+      "norm_label": "decision 002: advantagescope lite hosting",
+      "id": "dec002_ascope_hosting"
     },
     {
       "label": "Decision 003: Minimal Web Shell",
@@ -1674,9 +1971,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "dec003_web_shell",
-      "community": 5,
-      "norm_label": "decision 003: minimal web shell"
+      "community": 0,
+      "norm_label": "decision 003: minimal web shell",
+      "id": "dec003_web_shell"
     },
     {
       "label": "Decision 004: Backend Wiring for Save and Run",
@@ -1687,9 +1984,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "dec004_backend_wiring",
-      "community": 1,
-      "norm_label": "decision 004: backend wiring for save and run"
+      "community": 0,
+      "norm_label": "decision 004: backend wiring for save and run",
+      "id": "dec004_backend_wiring"
     },
     {
       "label": "Decision 005: Java LSP MVP Integration",
@@ -1700,9 +1997,9 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "id": "dec005_java_lsp",
       "community": 6,
-      "norm_label": "decision 005: java lsp mvp integration"
+      "norm_label": "decision 005: java lsp mvp integration",
+      "id": "dec005_java_lsp"
     },
     {
       "label": "Rationale: Headless sim via omission (no SimGUI/DriverStation)",
@@ -1714,9 +2011,9 @@
       "author": null,
       "contributor": null,
       "rationale": "GradleRIO 2026 makes SimGUI and DriverStation sim opt-in; removing those lines from build.gradle avoids needing an X server or DISPLAY env var.",
-      "id": "rationale_headless_sim",
-      "community": 1,
-      "norm_label": "rationale: headless sim via omission (no simgui/driverstation)"
+      "community": 0,
+      "norm_label": "rationale: headless sim via omission (no simgui/driverstation)",
+      "id": "rationale_headless_sim"
     },
     {
       "label": "Rationale: AS Lite reads window.location.hostname for NT4",
@@ -1728,9 +2025,9 @@
       "author": null,
       "contributor": null,
       "rationale": "When ASCOPE_DISTRIBUTION=LITE, AS Lite hardcodes window.location.hostname:5810 for NT4, so serving on localhost:8080 with sim on localhost:5810 works with zero source patches.",
-      "id": "rationale_aslite_hostname",
-      "community": 5,
-      "norm_label": "rationale: as lite reads window.location.hostname for nt4"
+      "community": 8,
+      "norm_label": "rationale: as lite reads window.location.hostname for nt4",
+      "id": "rationale_aslite_hostname"
     },
     {
       "label": "Rationale: Custom WebSocket sender without @fastify/websocket",
@@ -1742,9 +2039,9 @@
       "author": null,
       "contributor": null,
       "rationale": "The /run socket is server-to-client text streaming only; the backend implements WebSocket handshake and unmasked text frames directly on Node HTTP upgrade event, avoiding a dependency.",
-      "id": "rationale_custom_ws",
-      "community": 1,
-      "norm_label": "rationale: custom websocket sender without @fastify/websocket"
+      "community": 0,
+      "norm_label": "rationale: custom websocket sender without @fastify/websocket",
+      "id": "rationale_custom_ws"
     },
     {
       "label": "Rationale: Plain Monaco client with direct LSP requests instead of TypeFox wrappers",
@@ -1756,9 +2053,9 @@
       "author": null,
       "contributor": null,
       "rationale": "TypeFox MonacoVscodeApiWrapper caused unreliable browser behavior; a small direct LSP adapter in java-lsp.ts is simpler and more debuggable for MVP scope.",
-      "id": "rationale_plain_monaco_lsp",
       "community": 6,
-      "norm_label": "rationale: plain monaco client with direct lsp requests instead of typefox wrappers"
+      "norm_label": "rationale: plain monaco client with direct lsp requests instead of typefox wrappers",
+      "id": "rationale_plain_monaco_lsp"
     },
     {
       "label": "Rationale: No Cross-Origin-Embedder-Policy headers (AS Lite iframe)",
@@ -1770,9 +2067,9 @@
       "author": null,
       "contributor": null,
       "rationale": "Adding COEP caused Chrome to reject the AS Lite iframe from localhost:8080, so cross-origin isolation headers were deliberately left off the Vite dev server.",
-      "id": "rationale_no_coep",
       "community": 6,
-      "norm_label": "rationale: no cross-origin-embedder-policy headers (as lite iframe)"
+      "norm_label": "rationale: no cross-origin-embedder-policy headers (as lite iframe)",
+      "id": "rationale_no_coep"
     },
     {
       "label": "Rationale: AS Lite embedded via iframe, not bundled into web app",
@@ -1784,9 +2081,9 @@
       "author": null,
       "contributor": null,
       "rationale": "iframe sandboxes AS Lite's WebGL/wasm/asset loading, avoids coupling build pipelines, and auto-connects to NT4 via window.location.hostname.",
-      "id": "rationale_ascope_iframe",
-      "community": 5,
-      "norm_label": "rationale: as lite embedded via iframe, not bundled into web app"
+      "community": 0,
+      "norm_label": "rationale: as lite embedded via iframe, not bundled into web app",
+      "id": "rationale_ascope_iframe"
     },
     {
       "label": "Rationale: tini as PID 1 in sim container to reap zombie processes",
@@ -1798,9 +2095,9 @@
       "author": null,
       "contributor": null,
       "rationale": "Without an init reaper, stopped sim PIDs remained as zombies and caused every rebuild to wait for the 10-second hard-kill path.",
-      "id": "rationale_tini_pid1",
-      "community": 1,
-      "norm_label": "rationale: tini as pid 1 in sim container to reap zombie processes"
+      "community": 0,
+      "norm_label": "rationale: tini as pid 1 in sim container to reap zombie processes",
+      "id": "rationale_tini_pid1"
     },
     {
       "label": "Rationale: Single-stage Dockerfile to preserve Gradle cache",
@@ -1812,9 +2109,9 @@
       "author": null,
       "contributor": null,
       "rationale": "Multi-stage builds would lose ~/.gradle/caches; baking the cache in a single stage is necessary so container startup does not re-download WPILib jars.",
-      "id": "rationale_single_stage_dockerfile",
-      "community": 1,
-      "norm_label": "rationale: single-stage dockerfile to preserve gradle cache"
+      "community": 0,
+      "norm_label": "rationale: single-stage dockerfile to preserve gradle cache",
+      "id": "rationale_single_stage_dockerfile"
     },
     {
       "label": "NT4 Routing under Multi-Tenancy (spike question)",
@@ -1826,9 +2123,9 @@
       "author": null,
       "contributor": null,
       "rationale": "AS Lite hardcodes window.location.hostname:5810; multi-tenant options include port-per-user, subdomain-per-user, WS proxy demux by path, or patching AS Lite to read endpoint from URL param.",
-      "id": "concept_nt4_routing_multitenancy",
-      "community": 5,
-      "norm_label": "nt4 routing under multi-tenancy (spike question)"
+      "community": 8,
+      "norm_label": "nt4 routing under multi-tenancy (spike question)",
+      "id": "concept_nt4_routing_multitenancy"
     },
     {
       "label": "Shared vs. Per-user JDT LS topology (spike question)",
@@ -1840,9 +2137,9 @@
       "author": null,
       "contributor": null,
       "rationale": "Eclipse JDT LS supports multiple workspaces in one process. Shared instance saves ~1.5 GB RAM per student if it works with correct per-browser routing and failure isolation.",
-      "id": "concept_shared_jdtls",
-      "community": 5,
-      "norm_label": "shared vs. per-user jdt ls topology (spike question)"
+      "community": 8,
+      "norm_label": "shared vs. per-user jdt ls topology (spike question)",
+      "id": "concept_shared_jdtls"
     }
   ],
   "links": [
@@ -1852,9 +2149,9 @@
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L70",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_lsp_src_main_ts",
-      "target": "src_main_launchlanguageserver",
-      "confidence_score": 1.0
+      "target": "src_main_launchlanguageserver"
     },
     {
       "relation": "contains",
@@ -1862,9 +2159,9 @@
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L109",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_lsp_src_main_ts",
-      "target": "src_main_aswebsocket",
-      "confidence_score": 1.0
+      "target": "src_main_aswebsocket"
     },
     {
       "relation": "contains",
@@ -1872,9 +2169,69 @@
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L133",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_lsp_src_main_ts",
-      "target": "src_main_handleupgrade",
-      "confidence_score": 1.0
+      "target": "src_main_handleupgrade"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_router_src_main_ts",
+      "target": "src_main_parsesessions"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L36",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_router_src_main_ts",
+      "target": "src_main_sessionfrompath"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_router_src_main_ts",
+      "target": "src_main_nt4httpurl"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_router_src_main_ts",
+      "target": "src_main_nt4wsurl"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_router_src_main_ts",
+      "target": "src_main_requestedprotocols"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\router\\src\\main.ts",
+      "source_location": "L58",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_router_src_main_ts",
+      "target": "src_main_pipewebsockets"
     },
     {
       "relation": "contains",
@@ -1882,9 +2239,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_docker",
-      "confidence_score": 1.0
+      "target": "src_main_docker"
     },
     {
       "relation": "contains",
@@ -1892,9 +2249,39 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L43",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_dockerexec",
-      "confidence_score": 1.0
+      "target": "src_main_dockerexec"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\server\\src\\main.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_server_src_main_ts",
+      "target": "src_main_parsesessioncontainers"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\server\\src\\main.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_server_src_main_ts",
+      "target": "src_main_userfromurl"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\server\\src\\main.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_server_src_main_ts",
+      "target": "src_main_sessionfromurl"
     },
     {
       "relation": "contains",
@@ -1902,9 +2289,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L47",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_collectprocess",
-      "confidence_score": 1.0
+      "target": "src_main_collectprocess"
     },
     {
       "relation": "contains",
@@ -1912,9 +2299,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L67",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_readrobotfile",
-      "confidence_score": 1.0
+      "target": "src_main_readrobotfile"
     },
     {
       "relation": "contains",
@@ -1922,9 +2309,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L71",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_writerobotfile",
-      "confidence_score": 1.0
+      "target": "src_main_writerobotfile"
     },
     {
       "relation": "contains",
@@ -1932,9 +2319,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L85",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_quoteshell",
-      "confidence_score": 1.0
+      "target": "src_main_quoteshell"
     },
     {
       "relation": "contains",
@@ -1942,9 +2329,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L115",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_websockettextpeer",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer"
     },
     {
       "relation": "contains",
@@ -1952,9 +2339,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L168",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_maketextframeheader",
-      "confidence_score": 1.0
+      "target": "src_main_maketextframeheader"
     },
     {
       "relation": "contains",
@@ -1962,9 +2349,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L186",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_acceptwebsocket",
-      "confidence_score": 1.0
+      "target": "src_main_acceptwebsocket"
     },
     {
       "relation": "contains",
@@ -1972,9 +2359,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L211",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_linesplitter",
-      "confidence_score": 1.0
+      "target": "src_main_linesplitter"
     },
     {
       "relation": "contains",
@@ -1982,9 +2369,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L236",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_spawndockerstep",
-      "confidence_score": 1.0
+      "target": "src_main_spawndockerstep"
     },
     {
       "relation": "contains",
@@ -1992,9 +2379,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L264",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_spawnrunstep",
-      "confidence_score": 1.0
+      "target": "src_main_spawnrunstep"
     },
     {
       "relation": "contains",
@@ -2002,9 +2389,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L272",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_spawndockerlogs",
-      "confidence_score": 1.0
+      "target": "src_main_spawndockerlogs"
     },
     {
       "relation": "contains",
@@ -2012,9 +2399,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L280",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_killchild",
-      "confidence_score": 1.0
+      "target": "src_main_killchild"
     },
     {
       "relation": "contains",
@@ -2022,9 +2409,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L288",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_killchildren",
-      "confidence_score": 1.0
+      "target": "src_main_killchildren"
     },
     {
       "relation": "contains",
@@ -2032,9 +2419,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L294",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_delay",
-      "confidence_score": 1.0
+      "target": "src_main_delay"
     },
     {
       "relation": "contains",
@@ -2042,9 +2429,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L300",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_server_src_main_ts",
-      "target": "src_main_handlerun",
-      "confidence_score": 1.0
+      "target": "src_main_handlerun"
     },
     {
       "relation": "calls",
@@ -2053,9 +2440,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L44",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_dockerexec",
-      "target": "src_main_docker",
-      "confidence_score": 1.0
+      "target": "src_main_docker"
     },
     {
       "relation": "calls",
@@ -2064,9 +2451,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L242",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_spawndockerstep",
-      "target": "src_main_docker",
-      "confidence_score": 1.0
+      "target": "src_main_docker"
     },
     {
       "relation": "calls",
@@ -2075,9 +2462,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L68",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_readrobotfile",
-      "target": "src_main_dockerexec",
-      "confidence_score": 1.0
+      "target": "src_main_dockerexec"
     },
     {
       "relation": "calls",
@@ -2086,9 +2473,20 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L72",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_writerobotfile",
-      "target": "src_main_dockerexec",
-      "confidence_score": 1.0
+      "target": "src_main_dockerexec"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\server\\src\\main.ts",
+      "source_location": "L74",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_sessionfromurl",
+      "target": "src_main_userfromurl"
     },
     {
       "relation": "calls",
@@ -2097,9 +2495,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L68",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_readrobotfile",
-      "target": "src_main_collectprocess",
-      "confidence_score": 1.0
+      "target": "src_main_collectprocess"
     },
     {
       "relation": "calls",
@@ -2108,9 +2506,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L80",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_writerobotfile",
-      "target": "src_main_collectprocess",
-      "confidence_score": 1.0
+      "target": "src_main_collectprocess"
     },
     {
       "relation": "calls",
@@ -2119,9 +2517,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L77",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_writerobotfile",
-      "target": "src_main_quoteshell",
-      "confidence_score": 1.0
+      "target": "src_main_quoteshell"
     },
     {
       "relation": "method",
@@ -2129,9 +2527,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L120",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer",
-      "target": "src_main_websockettextpeer_constructor",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_constructor"
     },
     {
       "relation": "method",
@@ -2139,9 +2537,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L134",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer",
-      "target": "src_main_websockettextpeer_closed",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_closed"
     },
     {
       "relation": "method",
@@ -2149,9 +2547,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L138",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer",
-      "target": "src_main_websockettextpeer_sendjson",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_sendjson"
     },
     {
       "relation": "method",
@@ -2159,9 +2557,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L142",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer",
-      "target": "src_main_websockettextpeer_sendtext",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_sendtext"
     },
     {
       "relation": "method",
@@ -2169,9 +2567,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L149",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer",
-      "target": "src_main_websockettextpeer_close",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_close"
     },
     {
       "relation": "method",
@@ -2179,9 +2577,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L155",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer",
-      "target": "src_main_websockettextpeer_onclose",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_onclose"
     },
     {
       "relation": "method",
@@ -2189,9 +2587,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L159",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer",
-      "target": "src_main_websockettextpeer_markclosed",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_markclosed"
     },
     {
       "relation": "calls",
@@ -2200,9 +2598,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L139",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer_sendjson",
-      "target": "src_main_websockettextpeer_sendtext",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_sendtext"
     },
     {
       "relation": "calls",
@@ -2211,9 +2609,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L372",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_handlerun",
-      "target": "src_main_websockettextpeer_sendjson",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_sendjson"
     },
     {
       "relation": "calls",
@@ -2222,9 +2620,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L145",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer_sendtext",
-      "target": "src_main_maketextframeheader",
-      "confidence_score": 1.0
+      "target": "src_main_maketextframeheader"
     },
     {
       "relation": "calls",
@@ -2233,9 +2631,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L151",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer_close",
-      "target": "src_main_websockettextpeer_markclosed",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_markclosed"
     },
     {
       "relation": "calls",
@@ -2244,9 +2642,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L385",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_handlerun",
-      "target": "src_main_websockettextpeer_close",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_close"
     },
     {
       "relation": "calls",
@@ -2255,9 +2653,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L156",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_websockettextpeer_onclose",
-      "target": "src_main_linesplitter_push",
-      "confidence_score": 1.0
+      "target": "src_main_linesplitter_push"
     },
     {
       "relation": "calls",
@@ -2266,9 +2664,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L313",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_handlerun",
-      "target": "src_main_websockettextpeer_onclose",
-      "confidence_score": 1.0
+      "target": "src_main_websockettextpeer_onclose"
     },
     {
       "relation": "method",
@@ -2276,9 +2674,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L215",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_linesplitter",
-      "target": "src_main_linesplitter_constructor",
-      "confidence_score": 1.0
+      "target": "src_main_linesplitter_constructor"
     },
     {
       "relation": "method",
@@ -2286,9 +2684,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L219",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_linesplitter",
-      "target": "src_main_linesplitter_push",
-      "confidence_score": 1.0
+      "target": "src_main_linesplitter_push"
     },
     {
       "relation": "method",
@@ -2296,9 +2694,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L228",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_linesplitter",
-      "target": "src_main_linesplitter_flush",
-      "confidence_score": 1.0
+      "target": "src_main_linesplitter_flush"
     },
     {
       "relation": "calls",
@@ -2307,9 +2705,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L269",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_spawnrunstep",
-      "target": "src_main_spawndockerstep",
-      "confidence_score": 1.0
+      "target": "src_main_spawndockerstep"
     },
     {
       "relation": "calls",
@@ -2318,9 +2716,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L277",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_spawndockerlogs",
-      "target": "src_main_spawndockerstep",
-      "confidence_score": 1.0
+      "target": "src_main_spawndockerstep"
     },
     {
       "relation": "calls",
@@ -2329,9 +2727,9 @@
       "source_file": "apps\\server\\src\\main.ts",
       "source_location": "L290",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_killchildren",
-      "target": "src_main_killchild",
-      "confidence_score": 1.0
+      "target": "src_main_killchild"
     },
     {
       "relation": "contains",
@@ -2339,9 +2737,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L156",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_startjavalsp",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_startjavalsp"
     },
     {
       "relation": "contains",
@@ -2349,9 +2747,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L258",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_registersemantictokensprovider",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_registersemantictokensprovider"
     },
     {
       "relation": "contains",
@@ -2359,9 +2757,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L298",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_browserlspclient",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient"
     },
     {
       "relation": "contains",
@@ -2369,9 +2767,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L383",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_initializeparams",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_initializeparams"
     },
     {
       "relation": "contains",
@@ -2379,9 +2777,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L434",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_tolspposition",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_tolspposition"
     },
     {
       "relation": "contains",
@@ -2389,9 +2787,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L441",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_tomonacorange",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_tomonacorange"
     },
     {
       "relation": "contains",
@@ -2399,9 +2797,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L450",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_handlediagnostics",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_handlediagnostics"
     },
     {
       "relation": "contains",
@@ -2409,9 +2807,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L471",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_completionitemstosuggestions",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_completionitemstosuggestions"
     },
     {
       "relation": "contains",
@@ -2419,9 +2817,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L501",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_completionitems",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_completionitems"
     },
     {
       "relation": "contains",
@@ -2429,9 +2827,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L511",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_semantictokensprovider",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_semantictokensprovider"
     },
     {
       "relation": "contains",
@@ -2439,9 +2837,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L525",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_hovertomonaco",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_hovertomonaco"
     },
     {
       "relation": "contains",
@@ -2449,9 +2847,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L542",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_hovercontentstomarkdown",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_hovercontentstomarkdown"
     },
     {
       "relation": "contains",
@@ -2459,9 +2857,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L557",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_documentationtomarkdown",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_documentationtomarkdown"
     },
     {
       "relation": "contains",
@@ -2469,9 +2867,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L569",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_tomarkerseverity",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_tomarkerseverity"
     },
     {
       "relation": "contains",
@@ -2479,9 +2877,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L584",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_tocompletionitemkind",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_tocompletionitemkind"
     },
     {
       "relation": "contains",
@@ -2489,9 +2887,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L633",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "contains",
@@ -2499,9 +2897,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L637",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_islspdiagnostic",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_islspdiagnostic"
     },
     {
       "relation": "contains",
@@ -2509,9 +2907,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L645",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_isrange",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isrange"
     },
     {
       "relation": "contains",
@@ -2519,9 +2917,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L653",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_isposition",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isposition"
     },
     {
       "relation": "contains",
@@ -2529,9 +2927,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L661",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_iscompletionitem",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_iscompletionitem"
     },
     {
       "relation": "contains",
@@ -2539,9 +2937,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L665",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_issemantictokensprovider",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_issemantictokensprovider"
     },
     {
       "relation": "contains",
@@ -2549,9 +2947,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L673",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_issemantictokenslegend",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_issemantictokenslegend"
     },
     {
       "relation": "contains",
@@ -2559,9 +2957,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L683",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_java_lsp_ts",
-      "target": "src_java_lsp_issemantictokens",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_issemantictokens"
     },
     {
       "relation": "imports_from",
@@ -2570,9 +2968,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "apps_web_src_java_lsp_ts",
-      "confidence_score": 1.0
+      "target": "apps_web_src_java_lsp_ts"
     },
     {
       "relation": "calls",
@@ -2581,9 +2979,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L162",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_startjavalsp",
-      "target": "src_java_lsp_browserlspclient_open",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_open"
     },
     {
       "relation": "calls",
@@ -2592,9 +2990,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L163",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_startjavalsp",
-      "target": "src_java_lsp_browserlspclient_request",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_request"
     },
     {
       "relation": "calls",
@@ -2603,9 +3001,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L163",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_startjavalsp",
-      "target": "src_java_lsp_initializeparams",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_initializeparams"
     },
     {
       "relation": "calls",
@@ -2614,9 +3012,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L164",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_startjavalsp",
-      "target": "src_java_lsp_browserlspclient_notify",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_notify"
     },
     {
       "relation": "calls",
@@ -2625,9 +3023,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L175",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_startjavalsp",
-      "target": "src_java_lsp_registersemantictokensprovider",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_registersemantictokensprovider"
     },
     {
       "relation": "calls",
@@ -2636,9 +3034,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L189",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_startjavalsp",
-      "target": "src_java_lsp_browserlspclient_onnotification",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_onnotification"
     },
     {
       "relation": "imports",
@@ -2647,9 +3045,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_java_lsp_startjavalsp",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_startjavalsp"
     },
     {
       "relation": "calls",
@@ -2658,9 +3056,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L263",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_registersemantictokensprovider",
-      "target": "src_java_lsp_semantictokensprovider",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_semantictokensprovider"
     },
     {
       "relation": "method",
@@ -2668,9 +3066,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L304",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_browserlspclient",
-      "target": "src_java_lsp_browserlspclient_constructor",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_constructor"
     },
     {
       "relation": "method",
@@ -2678,9 +3076,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L306",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_browserlspclient",
-      "target": "src_java_lsp_browserlspclient_open",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_open"
     },
     {
       "relation": "method",
@@ -2688,9 +3086,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L331",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_browserlspclient",
-      "target": "src_java_lsp_browserlspclient_request",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_request"
     },
     {
       "relation": "method",
@@ -2698,9 +3096,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L339",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_browserlspclient",
-      "target": "src_java_lsp_browserlspclient_notify",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_notify"
     },
     {
       "relation": "method",
@@ -2708,9 +3106,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L343",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_browserlspclient",
-      "target": "src_java_lsp_browserlspclient_onnotification",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_onnotification"
     },
     {
       "relation": "method",
@@ -2718,9 +3116,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L347",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_browserlspclient",
-      "target": "src_java_lsp_browserlspclient_close",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_close"
     },
     {
       "relation": "method",
@@ -2728,9 +3126,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L351",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_browserlspclient",
-      "target": "src_java_lsp_browserlspclient_send",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_send"
     },
     {
       "relation": "method",
@@ -2738,9 +3136,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L358",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_browserlspclient",
-      "target": "src_java_lsp_browserlspclient_handlemessage",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_handlemessage"
     },
     {
       "relation": "calls",
@@ -2749,9 +3147,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L333",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_browserlspclient_request",
-      "target": "src_java_lsp_browserlspclient_send",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_send"
     },
     {
       "relation": "calls",
@@ -2760,9 +3158,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L340",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_browserlspclient_notify",
-      "target": "src_java_lsp_browserlspclient_send",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_browserlspclient_send"
     },
     {
       "relation": "calls",
@@ -2771,9 +3169,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L538",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_hovertomonaco",
-      "target": "src_java_lsp_tomonacorange",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_tomonacorange"
     },
     {
       "relation": "calls",
@@ -2782,9 +3180,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L451",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_handlediagnostics",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2793,9 +3191,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L476",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_completionitemstosuggestions",
-      "target": "src_java_lsp_completionitems",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_completionitems"
     },
     {
       "relation": "calls",
@@ -2804,9 +3202,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L505",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_completionitems",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2815,9 +3213,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L512",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_semantictokensprovider",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2826,9 +3224,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L518",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_semantictokensprovider",
-      "target": "src_java_lsp_issemantictokensprovider",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_issemantictokensprovider"
     },
     {
       "relation": "calls",
@@ -2837,9 +3235,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L526",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_hovertomonaco",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2848,9 +3246,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L531",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_hovertomonaco",
-      "target": "src_java_lsp_hovercontentstomarkdown",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_hovercontentstomarkdown"
     },
     {
       "relation": "calls",
@@ -2859,9 +3257,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L639",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_islspdiagnostic",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2870,9 +3268,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L647",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_isrange",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2881,9 +3279,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L655",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_isposition",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2892,9 +3290,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L662",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_iscompletionitem",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2903,9 +3301,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L667",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_issemantictokensprovider",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2914,9 +3312,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L675",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_issemantictokenslegend",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2925,9 +3323,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L685",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_issemantictokens",
-      "target": "src_java_lsp_isobject",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isobject"
     },
     {
       "relation": "calls",
@@ -2936,9 +3334,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L640",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_islspdiagnostic",
-      "target": "src_java_lsp_isrange",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isrange"
     },
     {
       "relation": "calls",
@@ -2947,9 +3345,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L648",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_isrange",
-      "target": "src_java_lsp_isposition",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_isposition"
     },
     {
       "relation": "calls",
@@ -2958,9 +3356,9 @@
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L668",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_java_lsp_issemantictokensprovider",
-      "target": "src_java_lsp_issemantictokenslegend",
-      "confidence_score": 1.0
+      "target": "src_java_lsp_issemantictokenslegend"
     },
     {
       "relation": "imports_from",
@@ -2969,9 +3367,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "apps_web_src_monaco_setup_ts",
-      "confidence_score": 1.0
+      "target": "apps_web_src_monaco_setup_ts"
     },
     {
       "relation": "imports",
@@ -2980,9 +3378,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_monaco_setup_setupmonaco",
-      "confidence_score": 1.0
+      "target": "src_monaco_setup_setupmonaco"
     },
     {
       "relation": "imports_from",
@@ -2991,9 +3389,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "apps_web_src_vscode_dark_modern_ts",
-      "confidence_score": 1.0
+      "target": "apps_web_src_vscode_dark_modern_ts"
     },
     {
       "relation": "contains",
@@ -3001,9 +3399,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_main_appendconsole",
-      "confidence_score": 1.0
+      "target": "src_main_appendconsole"
     },
     {
       "relation": "contains",
@@ -3011,9 +3409,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L36",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_main_setstatus",
-      "confidence_score": 1.0
+      "target": "src_main_setstatus"
     },
     {
       "relation": "contains",
@@ -3021,9 +3419,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_main_loadrobotjava",
-      "confidence_score": 1.0
+      "target": "src_main_loadrobotjava"
     },
     {
       "relation": "contains",
@@ -3031,9 +3429,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L70",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_main_javalanguageserverurl",
-      "confidence_score": 1.0
+      "target": "src_main_javalanguageserverurl"
     },
     {
       "relation": "contains",
@@ -3041,9 +3439,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L85",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_main_saverobotjava",
-      "confidence_score": 1.0
+      "target": "src_main_saverobotjava"
     },
     {
       "relation": "contains",
@@ -3051,9 +3449,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L98",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_main_schedulesave",
-      "confidence_score": 1.0
+      "target": "src_main_schedulesave"
     },
     {
       "relation": "contains",
@@ -3061,9 +3459,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L112",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_main_flushsave",
-      "confidence_score": 1.0
+      "target": "src_main_flushsave"
     },
     {
       "relation": "contains",
@@ -3071,9 +3469,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L131",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_main_parserunmessage",
-      "confidence_score": 1.0
+      "target": "src_main_parserunmessage"
     },
     {
       "relation": "contains",
@@ -3081,9 +3479,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L141",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_main_handlerunmessage",
-      "confidence_score": 1.0
+      "target": "src_main_handlerunmessage"
     },
     {
       "relation": "contains",
@@ -3091,9 +3489,79 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L163",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_main_ts",
-      "target": "src_main_runwebsocketurl",
-      "confidence_score": 1.0
+      "target": "src_main_runwebsocketurl"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L233",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_ts",
+      "target": "src_main_currentsessionuser"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L238",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_ts",
+      "target": "src_main_sessionpath"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L247",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_ts",
+      "target": "src_main_envvalue"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L253",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_ts",
+      "target": "src_main_parseportmap"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L269",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_ts",
+      "target": "src_main_projectfileuri"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L275",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_ts",
+      "target": "src_main_parsestringmap"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L291",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_ts",
+      "target": "src_main_advantagescopeurl"
     },
     {
       "relation": "calls",
@@ -3102,9 +3570,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L148",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_handlerunmessage",
-      "target": "src_main_appendconsole",
-      "confidence_score": 1.0
+      "target": "src_main_appendconsole"
     },
     {
       "relation": "calls",
@@ -3113,9 +3581,9 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L86",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_saverobotjava",
-      "target": "src_main_setstatus",
-      "confidence_score": 1.0
+      "target": "src_main_setstatus"
     },
     {
       "relation": "calls",
@@ -3124,9 +3592,53 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L144",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_handlerunmessage",
-      "target": "src_main_setstatus",
-      "confidence_score": 1.0
+      "target": "src_main_setstatus"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_loadrobotjava",
+      "target": "src_main_sessionpath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L72",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_javalanguageserverurl",
+      "target": "src_main_envvalue"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_javalanguageserverurl",
+      "target": "src_main_parseportmap"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L105",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_saverobotjava",
+      "target": "src_main_sessionpath"
     },
     {
       "relation": "calls",
@@ -3135,9 +3647,53 @@
       "source_file": "apps\\web\\src\\main.ts",
       "source_location": "L116",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_main_flushsave",
-      "target": "src_main_saverobotjava",
-      "confidence_score": 1.0
+      "target": "src_main_saverobotjava"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L183",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_runwebsocketurl",
+      "target": "src_main_sessionpath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L270",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_projectfileuri",
+      "target": "src_main_envvalue"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L292",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_advantagescopeurl",
+      "target": "src_main_envvalue"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.ts",
+      "source_location": "L270",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_main_projectfileuri",
+      "target": "src_main_parsestringmap"
     },
     {
       "relation": "imports_from",
@@ -3146,9 +3702,9 @@
       "source_file": "apps\\web\\src\\monaco-setup.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_monaco_setup_ts",
-      "target": "apps_web_src_vscode_dark_modern_ts",
-      "confidence_score": 1.0
+      "target": "apps_web_src_vscode_dark_modern_ts"
     },
     {
       "relation": "imports",
@@ -3157,9 +3713,9 @@
       "source_file": "apps\\web\\src\\monaco-setup.ts",
       "source_location": "L2",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_monaco_setup_ts",
-      "target": "src_vscode_dark_modern_registerdefaultdarkmoderntheme",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_registerdefaultdarkmoderntheme"
     },
     {
       "relation": "contains",
@@ -3167,9 +3723,9 @@
       "source_file": "apps\\web\\src\\monaco-setup.ts",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_monaco_setup_ts",
-      "target": "src_monaco_setup_setupmonaco",
-      "confidence_score": 1.0
+      "target": "src_monaco_setup_setupmonaco"
     },
     {
       "relation": "calls",
@@ -3188,9 +3744,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L775",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_vscode_dark_modern_ts",
-      "target": "src_vscode_dark_modern_registerdefaultdarkmoderntheme",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_registerdefaultdarkmoderntheme"
     },
     {
       "relation": "contains",
@@ -3198,9 +3754,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L788",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_vscode_dark_modern_ts",
-      "target": "src_vscode_dark_modern_vscodetextmaterules",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_vscodetextmaterules"
     },
     {
       "relation": "contains",
@@ -3208,9 +3764,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L804",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_vscode_dark_modern_ts",
-      "target": "src_vscode_dark_modern_semanticfallbackrules",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_semanticfallbackrules"
     },
     {
       "relation": "contains",
@@ -3218,9 +3774,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L816",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_vscode_dark_modern_ts",
-      "target": "src_vscode_dark_modern_directsemanticrules",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_directsemanticrules"
     },
     {
       "relation": "contains",
@@ -3228,9 +3784,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L828",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_vscode_dark_modern_ts",
-      "target": "src_vscode_dark_modern_findtextmatesettings",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_findtextmatesettings"
     },
     {
       "relation": "contains",
@@ -3238,9 +3794,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L844",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_vscode_dark_modern_ts",
-      "target": "src_vscode_dark_modern_textmatescopematches",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_textmatescopematches"
     },
     {
       "relation": "contains",
@@ -3248,9 +3804,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L848",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_vscode_dark_modern_ts",
-      "target": "src_vscode_dark_modern_torule",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_torule"
     },
     {
       "relation": "contains",
@@ -3258,9 +3814,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L866",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "apps_web_src_vscode_dark_modern_ts",
-      "target": "src_vscode_dark_modern_colorformonacotokenrule",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_colorformonacotokenrule"
     },
     {
       "relation": "calls",
@@ -3269,9 +3825,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L780",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_vscode_dark_modern_registerdefaultdarkmoderntheme",
-      "target": "src_vscode_dark_modern_vscodetextmaterules",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_vscodetextmaterules"
     },
     {
       "relation": "calls",
@@ -3280,9 +3836,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L781",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_vscode_dark_modern_registerdefaultdarkmoderntheme",
-      "target": "src_vscode_dark_modern_semanticfallbackrules",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_semanticfallbackrules"
     },
     {
       "relation": "calls",
@@ -3291,9 +3847,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L782",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_vscode_dark_modern_registerdefaultdarkmoderntheme",
-      "target": "src_vscode_dark_modern_directsemanticrules",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_directsemanticrules"
     },
     {
       "relation": "calls",
@@ -3302,9 +3858,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L796",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_vscode_dark_modern_vscodetextmaterules",
-      "target": "src_vscode_dark_modern_torule",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_torule"
     },
     {
       "relation": "calls",
@@ -3313,9 +3869,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L808",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_vscode_dark_modern_semanticfallbackrules",
-      "target": "src_vscode_dark_modern_findtextmatesettings",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_findtextmatesettings"
     },
     {
       "relation": "calls",
@@ -3324,9 +3880,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L809",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_vscode_dark_modern_semanticfallbackrules",
-      "target": "src_vscode_dark_modern_torule",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_torule"
     },
     {
       "relation": "calls",
@@ -3335,9 +3891,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L821",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_vscode_dark_modern_directsemanticrules",
-      "target": "src_vscode_dark_modern_torule",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_torule"
     },
     {
       "relation": "calls",
@@ -3346,9 +3902,9 @@
       "source_file": "apps\\web\\src\\vscode-dark-modern.ts",
       "source_location": "L852",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "src_vscode_dark_modern_torule",
-      "target": "src_vscode_dark_modern_colorformonacotokenrule",
-      "confidence_score": 1.0
+      "target": "src_vscode_dark_modern_colorformonacotokenrule"
     },
     {
       "relation": "contains",
@@ -3356,9 +3912,9 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L5",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "containers_sim_project_src_main_java_frc_robot_main_java",
-      "target": "robot_main_main",
-      "confidence_score": 1.0
+      "target": "robot_main_main"
     },
     {
       "relation": "method",
@@ -3366,9 +3922,9 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L8",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "robot_main_main",
-      "target": "robot_main_main_main",
-      "confidence_score": 1.0
+      "target": "robot_main_main_main"
     },
     {
       "relation": "imports",
@@ -3377,9 +3933,9 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L10",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "containers_sim_project_src_main_java_frc_robot_robot_java",
-      "target": "timedrobot",
-      "confidence_score": 1.0
+      "target": "timedrobot"
     },
     {
       "relation": "contains",
@@ -3387,9 +3943,9 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "containers_sim_project_src_main_java_frc_robot_robot_java",
-      "target": "robot_robot_robot",
-      "confidence_score": 1.0
+      "target": "robot_robot_robot"
     },
     {
       "relation": "extends",
@@ -3397,9 +3953,9 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L14",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "robot_robot_robot",
-      "target": "timedrobot",
-      "confidence_score": 1.0
+      "target": "timedrobot"
     },
     {
       "relation": "method",
@@ -3407,9 +3963,9 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L30",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "robot_robot_robot",
-      "target": "robot_robot_robot_robotinit",
-      "confidence_score": 1.0
+      "target": "robot_robot_robot_robotinit"
     },
     {
       "relation": "method",
@@ -3417,9 +3973,9 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L35",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "robot_robot_robot",
-      "target": "robot_robot_robot_robotperiodic",
-      "confidence_score": 1.0
+      "target": "robot_robot_robot_robotperiodic"
     },
     {
       "relation": "calls",
@@ -3438,9 +3994,9 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L3",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "containers_sim_project_src_main_java_frc_robot_robotcontainer_java",
-      "target": "robot_robotcontainer_robotcontainer",
-      "confidence_score": 1.0
+      "target": "robot_robotcontainer_robotcontainer"
     },
     {
       "relation": "method",
@@ -3448,9 +4004,9 @@
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L4",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "robot_robotcontainer_robotcontainer",
-      "target": "robot_robotcontainer_robotcontainer_robotcontainer",
-      "confidence_score": 1.0
+      "target": "robot_robotcontainer_robotcontainer_robotcontainer"
     },
     {
       "relation": "contains",
@@ -3458,9 +4014,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L26",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_run",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_run"
     },
     {
       "relation": "contains",
@@ -3468,9 +4024,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L41",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_ensuresubmodule",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_ensuresubmodule"
     },
     {
       "relation": "contains",
@@ -3478,9 +4034,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L49",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_ensureemscripten",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_ensureemscripten"
     },
     {
       "relation": "contains",
@@ -3488,9 +4044,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L65",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_envwithemsdk",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_envwithemsdk"
     },
     {
       "relation": "contains",
@@ -3498,9 +4054,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L76",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_npminstallsubmodule",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_npminstallsubmodule"
     },
     {
       "relation": "contains",
@@ -3508,9 +4064,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L82",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_compilelite",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_compilelite"
     },
     {
       "relation": "contains",
@@ -3518,9 +4074,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L89",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_compilewasm",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_compilewasm"
     },
     {
       "relation": "contains",
@@ -3528,9 +4084,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_listgitsymlinksunder",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_listgitsymlinksunder"
     },
     {
       "relation": "contains",
@@ -3538,9 +4094,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L122",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_resolvesymlinksindist",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_resolvesymlinksindist"
     },
     {
       "relation": "contains",
@@ -3548,9 +4104,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L146",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_stagebundle",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_stagebundle"
     },
     {
       "relation": "contains",
@@ -3558,9 +4114,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L157",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
-      "target": "scripts_build_ascope_lite_main",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_main"
     },
     {
       "relation": "calls",
@@ -3569,9 +4125,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L79",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_npminstallsubmodule",
-      "target": "scripts_build_ascope_lite_run",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_run"
     },
     {
       "relation": "calls",
@@ -3580,9 +4136,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L83",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_compilelite",
-      "target": "scripts_build_ascope_lite_run",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_run"
     },
     {
       "relation": "calls",
@@ -3591,9 +4147,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L90",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_compilewasm",
-      "target": "scripts_build_ascope_lite_run",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_run"
     },
     {
       "relation": "calls",
@@ -3602,9 +4158,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L158",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_main",
-      "target": "scripts_build_ascope_lite_ensuresubmodule",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_ensuresubmodule"
     },
     {
       "relation": "calls",
@@ -3613,9 +4169,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L159",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_main",
-      "target": "scripts_build_ascope_lite_ensureemscripten",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_ensureemscripten"
     },
     {
       "relation": "calls",
@@ -3624,9 +4180,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L92",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_compilewasm",
-      "target": "scripts_build_ascope_lite_envwithemsdk",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_envwithemsdk"
     },
     {
       "relation": "calls",
@@ -3635,9 +4191,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L164",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_main",
-      "target": "scripts_build_ascope_lite_npminstallsubmodule",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_npminstallsubmodule"
     },
     {
       "relation": "calls",
@@ -3646,9 +4202,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L165",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_main",
-      "target": "scripts_build_ascope_lite_compilelite",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_compilelite"
     },
     {
       "relation": "calls",
@@ -3657,9 +4213,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L166",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_main",
-      "target": "scripts_build_ascope_lite_compilewasm",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_compilewasm"
     },
     {
       "relation": "calls",
@@ -3668,9 +4224,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L123",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_resolvesymlinksindist",
-      "target": "scripts_build_ascope_lite_listgitsymlinksunder",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_listgitsymlinksunder"
     },
     {
       "relation": "calls",
@@ -3679,9 +4235,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L154",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_stagebundle",
-      "target": "scripts_build_ascope_lite_resolvesymlinksindist",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_resolvesymlinksindist"
     },
     {
       "relation": "calls",
@@ -3690,9 +4246,9 @@
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L167",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_main",
-      "target": "scripts_build_ascope_lite_stagebundle",
-      "confidence_score": 1.0
+      "target": "scripts_build_ascope_lite_stagebundle"
     },
     {
       "relation": "contains",
@@ -3700,9 +4256,9 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L12",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_dev_mvp_ts",
-      "target": "scripts_dev_mvp_runcommand",
-      "confidence_score": 1.0
+      "target": "scripts_dev_mvp_runcommand"
     },
     {
       "relation": "contains",
@@ -3710,9 +4266,9 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L40",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_dev_mvp_ts",
-      "target": "scripts_dev_mvp_ensurecontainer",
-      "confidence_score": 1.0
+      "target": "scripts_dev_mvp_ensurecontainer"
     },
     {
       "relation": "contains",
@@ -3720,9 +4276,9 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L82",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_dev_mvp_ts",
-      "target": "scripts_dev_mvp_ensuresimcontainer",
-      "confidence_score": 1.0
+      "target": "scripts_dev_mvp_ensuresimcontainer"
     },
     {
       "relation": "contains",
@@ -3730,9 +4286,9 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L91",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_dev_mvp_ts",
-      "target": "scripts_dev_mvp_ensurelspcontainer",
-      "confidence_score": 1.0
+      "target": "scripts_dev_mvp_ensurelspcontainer"
     },
     {
       "relation": "contains",
@@ -3740,9 +4296,9 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L100",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_dev_mvp_ts",
-      "target": "scripts_dev_mvp_startprocess",
-      "confidence_score": 1.0
+      "target": "scripts_dev_mvp_startprocess"
     },
     {
       "relation": "contains",
@@ -3750,9 +4306,9 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L131",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_dev_mvp_ts",
-      "target": "scripts_dev_mvp_shutdown",
-      "confidence_score": 1.0
+      "target": "scripts_dev_mvp_shutdown"
     },
     {
       "relation": "calls",
@@ -3761,9 +4317,9 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L47",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_dev_mvp_ensurecontainer",
-      "target": "scripts_dev_mvp_runcommand",
-      "confidence_score": 1.0
+      "target": "scripts_dev_mvp_runcommand"
     },
     {
       "relation": "calls",
@@ -3772,9 +4328,9 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L83",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_dev_mvp_ensuresimcontainer",
-      "target": "scripts_dev_mvp_ensurecontainer",
-      "confidence_score": 1.0
+      "target": "scripts_dev_mvp_ensurecontainer"
     },
     {
       "relation": "calls",
@@ -3783,9 +4339,29 @@
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L92",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_dev_mvp_ensurelspcontainer",
-      "target": "scripts_dev_mvp_ensurecontainer",
-      "confidence_score": 1.0
+      "target": "scripts_dev_mvp_ensurecontainer"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\dev-spike-multi-tenancy.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_dev_spike_multi_tenancy_ts",
+      "target": "scripts_dev_spike_multi_tenancy_startprocess"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\dev-spike-multi-tenancy.ts",
+      "source_location": "L51",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_dev_spike_multi_tenancy_ts",
+      "target": "scripts_dev_spike_multi_tenancy_shutdown"
     },
     {
       "relation": "contains",
@@ -3793,9 +4369,284 @@
       "source_file": "scripts\\serve-ascope-lite.ts",
       "source_location": "L29",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "scripts_serve_ascope_lite_ts",
-      "target": "scripts_serve_ascope_lite_buildassetmanifest",
-      "confidence_score": 1.0
+      "target": "scripts_serve_ascope_lite_buildassetmanifest"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_run"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_containerstate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_ensurecontainer"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_up"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L76",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_down"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L87",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_printenv"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L97",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_dockerstats"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L105",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_parsemib"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L122",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_stats"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L145",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_lifecycle"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L168",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ts",
+      "target": "scripts_spike_multi_tenancy_main"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_containerstate",
+      "target": "scripts_spike_multi_tenancy_run"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L60",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ensurecontainer",
+      "target": "scripts_spike_multi_tenancy_run"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L81",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_down",
+      "target": "scripts_spike_multi_tenancy_run"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L98",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_dockerstats",
+      "target": "scripts_spike_multi_tenancy_run"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L147",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_lifecycle",
+      "target": "scripts_spike_multi_tenancy_run"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_ensurecontainer",
+      "target": "scripts_spike_multi_tenancy_containerstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_down",
+      "target": "scripts_spike_multi_tenancy_containerstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L70",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_up",
+      "target": "scripts_spike_multi_tenancy_ensurecontainer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_up",
+      "target": "scripts_spike_multi_tenancy_printenv"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L171",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_main",
+      "target": "scripts_spike_multi_tenancy_up"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L174",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_main",
+      "target": "scripts_spike_multi_tenancy_down"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L129",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_stats",
+      "target": "scripts_spike_multi_tenancy_dockerstats"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L131",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_stats",
+      "target": "scripts_spike_multi_tenancy_parsemib"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L177",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_main",
+      "target": "scripts_spike_multi_tenancy_stats"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\spike-multi-tenancy.ts",
+      "source_location": "L180",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_spike_multi_tenancy_main",
+      "target": "scripts_spike_multi_tenancy_lifecycle"
     },
     {
       "relation": "calls",

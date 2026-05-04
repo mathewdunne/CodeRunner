@@ -5,7 +5,8 @@ import type { IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
 import { URL } from "node:url";
 
-const containerName = process.env.SIM_CONTAINER ?? "frc-sim-mvp";
+const defaultContainerName = process.env.SIM_CONTAINER ?? "frc-sim-mvp";
+const sessionContainers = parseSessionContainers(process.env.SIM_SESSION_CONTAINERS);
 const robotFile = "/workspace/project/src/main/java/frc/robot/Robot.java";
 const port = Number(process.env.PORT ?? 4000);
 const host = process.env.HOST ?? "127.0.0.1";
@@ -22,7 +23,12 @@ type ActiveRun = {
   cancel: () => void;
 };
 
-let activeRun: ActiveRun | null = null;
+type Session = {
+  user: string;
+  containerName: string;
+};
+
+const activeRuns = new Map<string, ActiveRun>();
 
 const app = Fastify({
   logger: { level: process.env.LOG_LEVEL ?? "info" },
@@ -42,6 +48,40 @@ function docker(args: string[]): ChildProcessWithoutNullStreams {
 
 function dockerExec(args: string[]): ChildProcessWithoutNullStreams {
   return docker(["exec", ...args]);
+}
+
+function parseSessionContainers(value: string | undefined): Map<string, string> {
+  const sessions = new Map<string, string>();
+  if (!value) return sessions;
+
+  for (const entry of value.split(",")) {
+    const [rawUser, rawContainer] = entry.split("=", 2);
+    const user = rawUser?.trim();
+    const container = rawContainer?.trim();
+    if (!user || !container) continue;
+    sessions.set(user, container);
+  }
+
+  return sessions;
+}
+
+function userFromUrl(rawUrl: string | undefined, hostHeader: string | undefined): string {
+  const url = new URL(rawUrl ?? "/", `http://${hostHeader ?? "localhost"}`);
+  return url.searchParams.get("user")?.trim() || "default";
+}
+
+function sessionFromUrl(rawUrl: string | undefined, hostHeader: string | undefined): Session | null {
+  const user = userFromUrl(rawUrl, hostHeader);
+  if (!/^[a-zA-Z0-9_-]{1,32}$/.test(user)) {
+    return null;
+  }
+
+  if (sessionContainers.size === 0) {
+    return { user, containerName: defaultContainerName };
+  }
+
+  const containerName = sessionContainers.get(user);
+  return containerName ? { user, containerName } : null;
 }
 
 function collectProcess(child: ChildProcessWithoutNullStreams): Promise<string> {
@@ -64,11 +104,11 @@ function collectProcess(child: ChildProcessWithoutNullStreams): Promise<string> 
   });
 }
 
-async function readRobotFile(): Promise<string> {
+async function readRobotFile(containerName: string): Promise<string> {
   return collectProcess(dockerExec([containerName, "cat", robotFile]));
 }
 
-async function writeRobotFile(contents: string): Promise<void> {
+async function writeRobotFile(containerName: string, contents: string): Promise<void> {
   const child = dockerExec([
     "-i",
     containerName,
@@ -89,25 +129,35 @@ function quoteShell(value: string): string {
 app.get("/health", async () => ({ ok: true }));
 
 app.get("/file", async (_req, reply) => {
+  const session = sessionFromUrl(_req.raw.url, _req.headers.host);
+  if (!session) {
+    return reply.code(404).send("Unknown simulator session");
+  }
+
   try {
     reply.type("text/plain; charset=utf-8");
-    return await readRobotFile();
+    return await readRobotFile(session.containerName);
   } catch (err) {
-    app.log.error(err, "Failed to read Robot.java from sim container");
+    app.log.error(err, `Failed to read Robot.java from ${session.containerName}`);
     return reply.code(500).send("Failed to read Robot.java from sim container");
   }
 });
 
 app.post("/file", async (req, reply) => {
+  const session = sessionFromUrl(req.raw.url, req.headers.host);
+  if (!session) {
+    return reply.code(404).send({ error: "Unknown simulator session" });
+  }
+
   if (typeof req.body !== "string") {
     return reply.code(400).send({ error: "Expected text/plain request body" });
   }
 
   try {
-    await writeRobotFile(req.body);
+    await writeRobotFile(session.containerName, req.body);
     return reply.code(204).send();
   } catch (err) {
-    app.log.error(err, "Failed to write Robot.java to sim container");
+    app.log.error(err, `Failed to write Robot.java to ${session.containerName}`);
     return reply.code(500).send({ error: "Failed to write Robot.java to sim container" });
   }
 });
@@ -270,6 +320,7 @@ function spawnRunStep(
 }
 
 function spawnDockerLogs(
+  containerName: string,
   since: string,
   peer: WebSocketTextPeer,
   onLine: (line: string) => void,
@@ -297,24 +348,25 @@ function delay(ms: number): Promise<void> {
   });
 }
 
-async function handleRun(peer: WebSocketTextPeer): Promise<void> {
-  activeRun?.cancel();
+async function handleRun(peer: WebSocketTextPeer, session: Session): Promise<void> {
+  const activeRunKey = session.containerName;
+  activeRuns.get(activeRunKey)?.cancel();
 
   const currentChildren = new Set<ChildProcessWithoutNullStreams>();
   let canceled = false;
-  const session: ActiveRun = {
+  const activeRunSession: ActiveRun = {
     cancel: () => {
       canceled = true;
       killChildren(currentChildren);
       peer.close();
     },
   };
-  activeRun = session;
+  activeRuns.set(activeRunKey, activeRunSession);
   peer.onClose(() => {
     canceled = true;
     killChildren(currentChildren);
-    if (activeRun === session) {
-      activeRun = null;
+    if (activeRuns.get(activeRunKey) === activeRunSession) {
+      activeRuns.delete(activeRunKey);
     }
   });
 
@@ -336,7 +388,7 @@ async function handleRun(peer: WebSocketTextPeer): Promise<void> {
     since: string,
     onLine: (line: string) => void,
   ): Promise<{ code: number | null; signal: NodeJS.Signals | null }> => {
-    const logs = spawnDockerLogs(since, peer, onLine);
+    const logs = spawnDockerLogs(session.containerName, since, peer, onLine);
     const waitForSimExitScript = `
 pid="$(cat /workspace/sim.pid 2>/dev/null || true)"
 if [ -z "$pid" ]; then
@@ -352,7 +404,7 @@ while [ -r "/proc/$pid/stat" ]; do
 done
 `;
     const watcher = spawnRunStep([
-      containerName,
+      session.containerName,
       "sh",
       "-lc",
       waitForSimExitScript,
@@ -371,11 +423,11 @@ done
   try {
     peer.sendJson({ type: "status", status: "building" });
 
-    await runStep([containerName, "/usr/local/bin/stop-sim.sh"], "stdout");
+    await runStep([session.containerName, "/usr/local/bin/stop-sim.sh"], "stdout");
 
     const logStart = new Date(Date.now() - 1000).toISOString();
     const start = await runStep([
-      containerName,
+      session.containerName,
       "/usr/local/bin/start-sim.sh",
     ], "sim");
 
@@ -417,8 +469,8 @@ done
       peer.close();
     }
   } finally {
-    if (activeRun === session) {
-      activeRun = null;
+    if (activeRuns.get(activeRunKey) === activeRunSession) {
+      activeRuns.delete(activeRunKey);
     }
   }
 }
@@ -430,19 +482,29 @@ app.server.on("upgrade", (req, socket, head) => {
     return;
   }
 
+  const session = sessionFromUrl(req.url, req.headers.host);
+  if (!session) {
+    socket.destroy();
+    return;
+  }
+
   if (head.length > 0) {
     socket.unshift(head);
   }
 
   const peer = acceptWebSocket(req, socket);
   if (!peer) return;
-  void handleRun(peer);
+  void handleRun(peer, session);
 });
 
 try {
   const address = await app.listen({ host, port });
   app.log.info(`MVP backend available at ${address}`);
-  app.log.info(`Using sim container ${containerName}`);
+  if (sessionContainers.size === 0) {
+    app.log.info(`Using sim container ${defaultContainerName}`);
+  } else {
+    app.log.info(`Using sim sessions: ${Array.from(sessionContainers).map(([user, name]) => `${user}=${name}`).join(", ")}`);
+  }
 } catch (err) {
   app.log.error(err);
   process.exit(1);
