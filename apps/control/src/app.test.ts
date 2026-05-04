@@ -17,18 +17,34 @@ async function createTemplate(root: string): Promise<string> {
   const templateDir = join(root, "template");
   await mkdir(join(templateDir, "src", "main", "java", "frc", "robot"), { recursive: true });
   await mkdir(join(templateDir, ".wpilib"), { recursive: true });
+  await mkdir(join(templateDir, "gradle", "wrapper"), { recursive: true });
   await writeFile(join(templateDir, "build.gradle"), "plugins {}\n", "utf8");
   await writeFile(join(templateDir, "src", "main", "java", "frc", "robot", "Robot.java"), "package frc.robot;\n", "utf8");
   await writeFile(join(templateDir, ".wpilib", "wpilib_preferences.json"), "{}\n", "utf8");
+  await writeFile(join(templateDir, "gradle", "wrapper", "gradle-wrapper.jar"), "hidden\n", "utf8");
   return templateDir;
+}
+
+async function createWebDist(root: string): Promise<string> {
+  const webDistDir = join(root, "web-dist");
+  await mkdir(join(webDistDir, "assets"), { recursive: true });
+  await writeFile(
+    join(webDistDir, "index.html"),
+    '<!doctype html><html><head><script type="module" src="./assets/app.js"></script></head><body>V1 test shell</body></html>',
+    "utf8",
+  );
+  await writeFile(join(webDistDir, "assets", "app.js"), "console.log('v1 shell');\n", "utf8");
+  return webDistDir;
 }
 
 async function withApp<T>(fn: (app: ControlApp, root: string) => Promise<T>): Promise<T> {
   const root = await mkdtemp(join(tmpdir(), "frc-v1-control-"));
   const templateDir = await createTemplate(root);
+  const webDistDir = await createWebDist(root);
   const app = await createApp({
     dataDir: join(root, "data"),
     templateDir,
+    webDistDir,
     sessionSecret: "test-session-secret",
   });
 
@@ -110,7 +126,7 @@ describe("V1-1 session skeleton", () => {
         }),
       );
       expect(workspace.status).toBe(200);
-      expect(await workspace.text()).toContain("alice");
+      expect(await workspace.text()).toContain("V1 test shell");
     });
   });
 
@@ -147,6 +163,100 @@ describe("V1-1 session skeleton", () => {
       const secondAlice = await login(app, "alice");
       expect(secondAlice.status).toBe(409);
       expect(await secondAlice.text()).toContain("already taken");
+    });
+  });
+});
+
+describe("V1-2 routing and shell APIs", () => {
+  test("serves the Vite shell and workspace-prefixed assets after auth", async () => {
+    await withApp(async (app) => {
+      const response = await login(app, "alice");
+      const cookie = cookieFrom(response);
+
+      const shell = await app.fetch(
+        new Request("http://localhost/u/alice/", {
+          headers: { cookie },
+        }),
+      );
+      expect(shell.status).toBe(200);
+      expect(await shell.text()).toContain("V1 test shell");
+
+      const asset = await app.fetch(
+        new Request("http://localhost/u/alice/assets/app.js", {
+          headers: { cookie },
+        }),
+      );
+      expect(asset.status).toBe(200);
+      expect(asset.headers.get("content-type")).toContain("text/javascript");
+      expect(await asset.text()).toContain("v1 shell");
+    });
+  });
+
+  test("returns session, project tree, and heartbeat for the signed workspace", async () => {
+    await withApp(async (app) => {
+      const response = await login(app, "alice");
+      const cookie = cookieFrom(response);
+
+      const session = await app.fetch(
+        new Request("http://localhost/u/alice/api/session", {
+          headers: { cookie },
+        }),
+      );
+      expect(session.status).toBe(200);
+      expect(await session.json()).toMatchObject({
+        user: { displayName: "alice" },
+        workspace: { slug: "alice" },
+      });
+
+      const tree = await app.fetch(
+        new Request("http://localhost/u/alice/api/project/tree", {
+          headers: { cookie },
+        }),
+      );
+      expect(tree.status).toBe(200);
+      const treeText = JSON.stringify(await tree.json());
+      expect(treeText).toContain("Robot.java");
+      expect(treeText).not.toContain("gradle-wrapper.jar");
+
+      const heartbeat = await app.fetch(
+        new Request("http://localhost/u/alice/api/heartbeat", {
+          method: "POST",
+          headers: {
+            cookie,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ closing: true }),
+        }),
+      );
+      expect(heartbeat.status).toBe(200);
+      expect(await heartbeat.json()).toEqual({ ok: true, closing: true });
+    });
+  });
+
+  test("rejects API access to another workspace", async () => {
+    await withApp(async (app) => {
+      const alice = await login(app, "alice");
+      const aliceCookie = cookieFrom(alice);
+      const bob = await login(app, "bob");
+      const bobCookie = cookieFrom(bob);
+
+      const aliceAsBob = await app.fetch(
+        new Request("http://localhost/u/bob/api/session", {
+          headers: { cookie: aliceCookie },
+        }),
+      );
+      expect(aliceAsBob.status).toBe(403);
+
+      const bobSession = await app.fetch(
+        new Request("http://localhost/u/bob/api/session", {
+          headers: { cookie: bobCookie },
+        }),
+      );
+      expect(bobSession.status).toBe(200);
+      expect(await bobSession.json()).toMatchObject({
+        user: { displayName: "bob" },
+        workspace: { slug: "bob" },
+      });
     });
   });
 });

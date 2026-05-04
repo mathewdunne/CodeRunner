@@ -1,12 +1,12 @@
 # Graph Report - FRC-Programming-Training-Sim  (2026-05-04)
 
 ## Corpus Check
-- 37 files · ~36,210 words
+- 37 files · ~37,628 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 301 nodes · 553 edges · 20 communities detected
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 14 edges (avg confidence: 0.83)
+- 317 nodes · 579 edges · 19 communities detected
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 16 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -28,8 +28,7 @@
 - [[_COMMUNITY_Community 15|Community 15]]
 - [[_COMMUNITY_Community 16|Community 16]]
 - [[_COMMUNITY_Community 17|Community 17]]
-- [[_COMMUNITY_Community 18|Community 18]]
-- [[_COMMUNITY_Community 28|Community 28]]
+- [[_COMMUNITY_Community 27|Community 27]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `AppStorage` - 15 edges
@@ -44,27 +43,27 @@
 10. `Robot.java (sim project source of truth)` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Shared vs. Per-user JDT LS topology (spike question)` --conceptually_related_to--> `LSP WebSocket Bridge (mvp/apps/lsp/src/main.ts)`  [INFERRED]
-  mvp/Spike-Multi-Tenancy.md → mvp/apps/lsp/src/main.ts
-- `Decision 002: AdvantageScope Lite Hosting` --references--> `build-ascope-lite.ts script`  [EXTRACTED]
-  mvp/docs/decisions/002-advantagescope-lite-hosting.md → mvp/scripts/build-ascope-lite.ts
+- `readProjectTreeNode()` --calls--> `getProjectPathAccess()`  [INFERRED]
+  apps\control\src\app.ts → packages\contracts\src\index.ts
 - `createApp()` --calls--> `createStorage()`  [INFERRED]
   apps\control\src\app.ts → apps\control\src\storage.ts
-- `Decision 005: Java LSP MVP Integration` --references--> `LSP WebSocket Bridge (mvp/apps/lsp/src/main.ts)`  [EXTRACTED]
-  mvp/docs/decisions/005-java-lsp.md → mvp/apps/lsp/src/main.ts
-- `Decision 004: Backend Wiring for Save and Run` --references--> `MVP Backend Service (mvp/apps/server/src/main.ts)`  [EXTRACTED]
-  mvp/docs/decisions/004-backend-wiring.md → mvp/apps/server/src/main.ts
+- `withApp()` --calls--> `createApp()`  [INFERRED]
+  apps\control\src\app.test.ts → apps\control\src\app.ts
+- `authFromRequest()` --calls--> `parseSignedSessionCookie()`  [INFERRED]
+  apps\control\src\app.ts → apps\control\src\cookies.ts
+- `workspaceSlugFromLocation()` --calls--> `isWorkspaceSlug()`  [INFERRED]
+  apps\web\src\main.tsx → packages\contracts\src\index.ts
 
 ## Hyperedges (group relationships)
 - **Edit-Save-Run-Sim Loop (core MVP end-to-end flow)** — web_main_entry, server_main_backendservice, robot_java, server_main_handlerun [EXTRACTED 1.00]
 - **Java LSP Intelligence Stack (browser to JDT LS)** — web_javalsp_startjavalsp, web_javalsp_browserlspclient, lsp_main_lspbridge, lsp_main_eclipsejdtls [EXTRACTED 1.00]
 - **AdvantageScope Lite NT4 Hosting and Display** — scripts_buildascope, scripts_serveascope, rationale_aslite_hostname, index_html [EXTRACTED 0.95]
 
-## Communities (29 total, 6 thin omitted)
+## Communities (28 total, 6 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.05
-Nodes (46): NT4 Routing under Multi-Tenancy (spike question), Shared vs. Per-user JDT LS topology (spike question), Decision 001: Sim Container Architecture, Decision 002: AdvantageScope Lite Hosting, Decision 003: Minimal Web Shell, Decision 004: Backend Wiring for Save and Run, Decision 005: Java LSP MVP Integration, Eclipse JDT LS Process (+38 more)
+Nodes (47): NT4 Routing under Multi-Tenancy (spike question), Shared vs. Per-user JDT LS topology (spike question), Decision 001: Sim Container Architecture, Decision 002: AdvantageScope Lite Hosting, Decision 003: Minimal Web Shell, Decision 004: Backend Wiring for Save and Run, Decision 005: Java LSP MVP Integration, Eclipse JDT LS Process (+39 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.15
@@ -75,20 +74,20 @@ Cohesion: 0.14
 Nodes (20): acceptWebSocket(), collectProcess(), delay(), docker(), dockerExec(), handleRun(), killChild(), killChildren() (+12 more)
 
 ### Community 3 - "Community 3"
+Cohesion: 0.17
+Nodes (26): advantageScopeUrl(), appendConsole(), currentSessionUser(), envValue(), flushSave(), handleRunMessage(), javaLanguageServerUrl(), loadRobotJava() (+18 more)
+
+### Community 4 - "Community 4"
+Cohesion: 0.11
+Nodes (22): authFromRequest(), contentTypeFor(), escapeHtml(), htmlResponse(), isInsideDirectory(), loginPage(), notFound(), projectTreeResponse() (+14 more)
+
+### Community 5 - "Community 5"
 Cohesion: 0.13
 Nodes (13): loadControlConfig(), applyMigrations(), ensureMigrationTable(), listAppliedMigrations(), loadMigrations(), migrationStatus(), verifyAppliedMigrationChecksums(), AppStorage (+5 more)
 
-### Community 4 - "Community 4"
-Cohesion: 0.17
-Nodes (14): authFromRequest(), escapeHtml(), htmlResponse(), loginPage(), redirect(), resolveWorkspaceRequest(), workspacePage(), base64Url() (+6 more)
-
-### Community 5 - "Community 5"
-Cohesion: 0.27
-Nodes (17): advantageScopeUrl(), appendConsole(), currentSessionUser(), envValue(), flushSave(), handleRunMessage(), javaLanguageServerUrl(), loadRobotJava() (+9 more)
-
 ### Community 6 - "Community 6"
-Cohesion: 0.4
-Nodes (9): setupMonaco(), colorForMonacoTokenRule(), directSemanticRules(), findTextMateSettings(), registerDefaultDarkModernTheme(), semanticFallbackRules(), textMateScopeMatches(), toRule() (+1 more)
+Cohesion: 0.21
+Nodes (9): getProjectPathAccess(), isProjectPath(), isWorkspaceSlug(), matchesPathOrChild(), parseProjectPath(), App(), fetchJson(), loadWorkspace() (+1 more)
 
 ### Community 7 - "Community 7"
 Cohesion: 0.44
@@ -99,22 +98,18 @@ Cohesion: 0.47
 Nodes (11): containerState(), dockerStats(), down(), ensureContainer(), lifecycle(), main(), parseMiB(), printEnv() (+3 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.29
-Nodes (6): getProjectPathAccess(), isProjectPath(), isWorkspaceSlug(), matchesPathOrChild(), parseProjectPath(), App()
+Cohesion: 0.31
+Nodes (4): createApp(), createTemplate(), createWebDist(), withApp()
 
 ### Community 10 - "Community 10"
-Cohesion: 0.32
-Nodes (3): createApp(), createTemplate(), withApp()
-
-### Community 11 - "Community 11"
 Cohesion: 0.43
 Nodes (6): nt4HttpUrl(), nt4WsUrl(), parseSessions(), pipeWebSockets(), requestedProtocols(), sessionFromPath()
 
-### Community 12 - "Community 12"
+### Community 11 - "Community 11"
 Cohesion: 0.54
 Nodes (6): ensureContainer(), ensureLspContainer(), ensureSimContainer(), runCommand(), shutdown(), startProcess()
 
-### Community 14 - "Community 14"
+### Community 13 - "Community 13"
 Cohesion: 0.6
 Nodes (3): asWebSocket(), handleUpgrade(), launchLanguageServer()
 
@@ -126,13 +121,17 @@ Nodes (3): asWebSocket(), handleUpgrade(), launchLanguageServer()
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AppStorage` connect `Community 3` to `Community 4`?**
-  _High betweenness centrality (0.015) - this node is a cross-community bridge._
+- **Why does `AppStorage` connect `Community 5` to `Community 4`?**
+  _High betweenness centrality (0.023) - this node is a cross-community bridge._
+- **Why does `readProjectTreeNode()` connect `Community 4` to `Community 6`?**
+  _High betweenness centrality (0.019) - this node is a cross-community bridge._
+- **Why does `getProjectPathAccess()` connect `Community 6` to `Community 4`?**
+  _High betweenness centrality (0.018) - this node is a cross-community bridge._
 - **What connects `Eclipse JDT LS Process`, `LineSplitter class`, `Vite Config (mvp/apps/web/vite.config.ts)` to the rest of the system?**
   _10 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.05 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.14 - nodes in this community are weakly interconnected._
-- **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.13 - nodes in this community are weakly interconnected._
+- **Should `Community 4` be split into smaller, more focused modules?**
+  _Cohesion score 0.11 - nodes in this community are weakly interconnected._

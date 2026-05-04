@@ -1,4 +1,19 @@
-import { displayNameSchema, workspaceSlugSchema, type UserId, type WorkspaceSlug } from "@frc-sim/contracts";
+import { readdir, readFile } from "node:fs/promises";
+import { extname, isAbsolute, relative, resolve } from "node:path";
+import {
+  displayNameSchema,
+  getProjectPathAccess,
+  heartbeatRequestSchema,
+  projectPathSchema,
+  workspaceSlugSchema,
+  type HeartbeatResponse,
+  type ProjectPathAccess,
+  type ProjectTreeNode,
+  type ProjectTreeResponse,
+  type SessionResponse,
+  type UserId,
+  type WorkspaceSlug,
+} from "@frc-sim/contracts";
 import type { ControlConfigInput } from "./config";
 import {
   parseSignedSessionCookie,
@@ -23,6 +38,12 @@ function redirect(location: string, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
   headers.set("location", location);
   return new Response(null, { ...init, status: init.status ?? 303, headers });
+}
+
+function jsonResponse(data: unknown, init: ResponseInit = {}): Response {
+  const headers = new Headers(init.headers);
+  headers.set("content-type", "application/json; charset=utf-8");
+  return new Response(JSON.stringify(data), { ...init, headers });
 }
 
 function escapeHtml(value: string): string {
@@ -65,45 +86,6 @@ function loginPage(error: string | null = null, init: ResponseInit = {}): Respon
 </html>`, init);
 }
 
-function workspacePage(auth: AuthContext): Response {
-  const displayName = escapeHtml(auth.user.display_name);
-  const workspaceSlug = escapeHtml(auth.workspace.slug);
-  const workspaceId = escapeHtml(auth.workspace.id);
-  const projectPath = escapeHtml(auth.workspace.project_path);
-
-  return htmlResponse(`<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>${displayName} - FRC Web Simulator V1</title>
-    <style>
-      body { margin: 0; font-family: system-ui, sans-serif; background: #0f1720; color: #f8fafc; }
-      header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid #263241; }
-      main { padding: 1.25rem; display: grid; gap: 0.75rem; }
-      dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.45rem 0.8rem; }
-      dt { color: #aeb8c4; }
-      dd { margin: 0; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-      button { font: inherit; padding: 0.5rem 0.7rem; border-radius: 0.35rem; border: 1px solid #52606d; background: #17212f; color: #f8fafc; cursor: pointer; }
-    </style>
-  </head>
-  <body>
-    <header>
-      <strong>FRC Web Simulator V1</strong>
-      <form method="post" action="/logout"><button type="submit">Logout</button></form>
-    </header>
-    <main>
-      <h1>${displayName}</h1>
-      <dl>
-        <dt>Workspace slug</dt><dd>${workspaceSlug}</dd>
-        <dt>Workspace ID</dt><dd>${workspaceId}</dd>
-        <dt>Project path</dt><dd>${projectPath}</dd>
-      </dl>
-    </main>
-  </body>
-</html>`);
-}
-
 function notFound(): Response {
   return new Response("Not found", { status: 404 });
 }
@@ -142,7 +124,14 @@ function authFromRequest(storage: AppStorage, request: Request): AuthContext | n
   return auth;
 }
 
-function resolveWorkspaceRequest(storage: AppStorage, request: Request, slug: string): Response | AuthContext {
+type WorkspaceRequestKind = "page" | "api";
+
+function resolveWorkspaceRequest(
+  storage: AppStorage,
+  request: Request,
+  slug: string,
+  kind: WorkspaceRequestKind,
+): Response | AuthContext {
   const parsedSlug = workspaceSlugSchema.safeParse(slug);
   if (!parsedSlug.success) {
     return new Response("Invalid workspace slug", { status: 400 });
@@ -150,7 +139,7 @@ function resolveWorkspaceRequest(storage: AppStorage, request: Request, slug: st
 
   const auth = authFromRequest(storage, request);
   if (!auth) {
-    return redirect("/");
+    return kind === "api" ? new Response("Unauthorized", { status: 401 }) : redirect("/");
   }
 
   const workspace = storage.findWorkspaceBySlug(parsedSlug.data as WorkspaceSlug);
@@ -161,6 +150,173 @@ function resolveWorkspaceRequest(storage: AppStorage, request: Request, slug: st
   return auth;
 }
 
+function sessionResponse(auth: AuthContext): SessionResponse {
+  return {
+    user: {
+      id: auth.user.id,
+      displayName: auth.user.display_name,
+      slug: auth.user.slug,
+    },
+    workspace: {
+      id: auth.workspace.id,
+      slug: auth.workspace.slug,
+    },
+  };
+}
+
+function sortProjectNodes(left: ProjectTreeNode, right: ProjectTreeNode): number {
+  if (left.kind !== right.kind) {
+    return left.kind === "directory" ? -1 : 1;
+  }
+
+  return left.name.localeCompare(right.name);
+}
+
+async function readProjectTreeNode(projectRoot: string, relativePath: string): Promise<ProjectTreeNode | null> {
+  const absolutePath = relativePath ? resolve(projectRoot, ...relativePath.split("/")) : projectRoot;
+  const entries = await readdir(absolutePath, { withFileTypes: true });
+  const children: ProjectTreeNode[] = [];
+
+  for (const entry of entries) {
+    const childPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
+    const access = getProjectPathAccess(childPath);
+    if (access === "blocked") {
+      continue;
+    }
+
+    if (entry.isDirectory()) {
+      const child = await readProjectTreeNode(projectRoot, childPath);
+      if (child && ((child.children?.length ?? 0) > 0 || access !== "outside-allowlist")) {
+        children.push(child);
+      }
+      continue;
+    }
+
+    if (entry.isFile()) {
+      children.push({
+        name: entry.name,
+        path: childPath,
+        kind: "file",
+        access,
+      });
+    }
+  }
+
+  children.sort(sortProjectNodes);
+
+  if (!relativePath) {
+    return {
+      name: "project",
+      path: "",
+      kind: "directory",
+      access: "root",
+      children,
+    };
+  }
+
+  const access = getProjectPathAccess(relativePath);
+  return {
+    name: relativePath.split("/").at(-1) ?? relativePath,
+    path: relativePath,
+    kind: "directory",
+    access,
+    children,
+  };
+}
+
+async function projectTreeResponse(auth: AuthContext): Promise<ProjectTreeResponse> {
+  const tree = await readProjectTreeNode(auth.workspace.project_path, "");
+  if (!tree) {
+    throw new Error(`Failed to read project tree for workspace ${auth.workspace.id}.`);
+  }
+
+  return {
+    workspace: {
+      id: auth.workspace.id,
+      slug: auth.workspace.slug,
+    },
+    tree,
+  };
+}
+
+async function readHeartbeatRequest(request: Request): Promise<HeartbeatResponse> {
+  const text = await request.text();
+  const input = text.trim() ? JSON.parse(text) : {};
+  const parsed = heartbeatRequestSchema.parse(input);
+  return { ok: true, closing: parsed.closing ?? false };
+}
+
+function contentTypeFor(path: string): string {
+  switch (extname(path).toLowerCase()) {
+    case ".css":
+      return "text/css; charset=utf-8";
+    case ".html":
+      return "text/html; charset=utf-8";
+    case ".js":
+    case ".mjs":
+      return "text/javascript; charset=utf-8";
+    case ".json":
+      return "application/json; charset=utf-8";
+    case ".svg":
+      return "image/svg+xml";
+    case ".wasm":
+      return "application/wasm";
+    default:
+      return "application/octet-stream";
+  }
+}
+
+function isInsideDirectory(root: string, target: string): boolean {
+  const relativePath = relative(root, target);
+  return relativePath === "" || (!relativePath.startsWith("..") && !isAbsolute(relativePath));
+}
+
+async function staticFileResponse(root: string, path: string): Promise<Response> {
+  const target = resolve(root, path);
+  if (!isInsideDirectory(root, target)) {
+    return new Response("Static asset path is outside the web shell.", { status: 403 });
+  }
+
+  const file = Bun.file(target);
+  if (!(await file.exists())) {
+    return notFound();
+  }
+
+  return new Response(file, {
+    headers: {
+      "content-type": contentTypeFor(target),
+    },
+  });
+}
+
+async function webShellResponse(storage: AppStorage): Promise<Response> {
+  try {
+    const indexHtml = await readFile(resolve(storage.config.webDistDir, "index.html"), "utf8");
+    return htmlResponse(indexHtml);
+  } catch {
+    return htmlResponse(
+      "The V1 web shell has not been built yet. Run `bun run build:web` before starting the control plane.",
+      { status: 503 },
+    );
+  }
+}
+
+async function webAssetResponse(storage: AppStorage, rawPath: string): Promise<Response> {
+  let assetPath: string;
+  try {
+    assetPath = decodeURIComponent(rawPath);
+  } catch {
+    return new Response("Invalid static asset path.", { status: 400 });
+  }
+
+  const parsed = projectPathSchema.safeParse(assetPath);
+  if (!parsed.success) {
+    return new Response("Invalid static asset path.", { status: 400 });
+  }
+
+  return staticFileResponse(storage.config.webDistDir, parsed.data);
+}
+
 export async function createApp(configInput: ControlConfigInput = {}): Promise<ControlApp> {
   const storage = await createStorage(configInput);
 
@@ -168,7 +324,7 @@ export async function createApp(configInput: ControlConfigInput = {}): Promise<C
     const url = new URL(request.url);
 
     if (url.pathname === "/healthz") {
-      return Response.json({ ok: true, service: "control", version: "v1-1" });
+      return Response.json({ ok: true, service: "control", version: "v1-2" });
     }
 
     if (url.pathname === "/" && request.method === "GET") {
@@ -214,15 +370,49 @@ export async function createApp(configInput: ControlConfigInput = {}): Promise<C
       });
     }
 
-    const workspaceMatch = /^\/u\/([^/]+)\/?$/.exec(url.pathname);
-    if (workspaceMatch && request.method === "GET") {
+    const workspaceMatch = /^\/u\/([^/]+)(\/.*)?$/.exec(url.pathname);
+    if (workspaceMatch) {
       const slug = workspaceMatch[1] ?? "";
-      const auth = resolveWorkspaceRequest(storage, request, slug);
+      const suffix = workspaceMatch[2] ?? "";
+      if (suffix === "") {
+        return redirect(`/u/${slug}/`);
+      }
+
+      const isApiRequest = suffix.startsWith("/api/");
+      const auth = resolveWorkspaceRequest(storage, request, slug, isApiRequest ? "api" : "page");
       if (auth instanceof Response) {
         return auth;
       }
 
-      return workspacePage(auth);
+      if (suffix === "/" && request.method === "GET") {
+        return webShellResponse(storage);
+      }
+
+      if (suffix.startsWith("/assets/") && request.method === "GET") {
+        return webAssetResponse(storage, `assets/${suffix.slice("/assets/".length)}`);
+      }
+
+      if (suffix === "/api/session" && request.method === "GET") {
+        return jsonResponse(sessionResponse(auth));
+      }
+
+      if (suffix === "/api/project/tree" && request.method === "GET") {
+        try {
+          return jsonResponse(await projectTreeResponse(auth));
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unable to read project tree.";
+          return jsonResponse({ error: message }, { status: 500 });
+        }
+      }
+
+      if (suffix === "/api/heartbeat" && request.method === "POST") {
+        try {
+          return jsonResponse(await readHeartbeatRequest(request));
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Invalid heartbeat request.";
+          return jsonResponse({ error: message }, { status: 400 });
+        }
+      }
     }
 
     return notFound();

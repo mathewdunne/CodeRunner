@@ -6,6 +6,7 @@ export type ControlConfig = {
   dbPath: string;
   templateDir: string;
   migrationsDir: string;
+  webDistDir: string;
   sessionSecret: string;
 };
 
@@ -28,6 +29,7 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
         Bun.env.FRC_MIGRATIONS_DIR ??
         fileURLToPath(new URL("../migrations", import.meta.url)),
     ),
+    webDistDir: resolve(input.webDistDir ?? Bun.env.FRC_WEB_DIST_DIR ?? resolve(repoRoot, "apps", "web", "dist")),
     sessionSecret:
       input.sessionSecret ??
       Bun.env.FRC_SESSION_SECRET ??

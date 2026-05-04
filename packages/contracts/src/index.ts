@@ -154,6 +154,49 @@ export const heartbeatRequestSchema = z.object({
   closing: z.boolean().optional(),
 });
 
+export type ProjectTreeNode = {
+  name: string;
+  path: string;
+  kind: "file" | "directory";
+  access: ProjectPathAccess | "root";
+  children?: ProjectTreeNode[] | undefined;
+};
+
+export const projectTreeNodeSchema: z.ZodType<ProjectTreeNode> = z.lazy(() =>
+  z.object({
+    name: z.string(),
+    path: z.string(),
+    kind: z.enum(["file", "directory"]),
+    access: z.enum(["editable", "readonly", "blocked", "outside-allowlist", "root"]),
+    children: z.array(projectTreeNodeSchema).optional(),
+  }),
+);
+
+export const sessionResponseSchema = z.object({
+  user: z.object({
+    id: userIdSchema,
+    displayName: z.string(),
+    slug: workspaceSlugSchema,
+  }),
+  workspace: z.object({
+    id: workspaceIdSchema,
+    slug: workspaceSlugSchema,
+  }),
+});
+
+export const projectTreeResponseSchema = z.object({
+  workspace: z.object({
+    id: workspaceIdSchema,
+    slug: workspaceSlugSchema,
+  }),
+  tree: projectTreeNodeSchema,
+});
+
+export const heartbeatResponseSchema = z.object({
+  ok: z.literal(true),
+  closing: z.boolean(),
+});
+
 export const runClientMessageSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("start") }),
   z.object({ type: z.literal("stop") }),
@@ -196,5 +239,8 @@ export type WriteFileRequest = z.infer<typeof writeFileRequestSchema>;
 export type CreateFileRequest = z.infer<typeof createFileRequestSchema>;
 export type RenameFileRequest = z.infer<typeof renameFileRequestSchema>;
 export type HeartbeatRequest = z.infer<typeof heartbeatRequestSchema>;
+export type SessionResponse = z.infer<typeof sessionResponseSchema>;
+export type ProjectTreeResponse = z.infer<typeof projectTreeResponseSchema>;
+export type HeartbeatResponse = z.infer<typeof heartbeatResponseSchema>;
 export type RunClientMessage = z.infer<typeof runClientMessageSchema>;
 export type RunServerMessage = z.infer<typeof runServerMessageSchema>;
