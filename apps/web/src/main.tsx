@@ -14,6 +14,7 @@ import {
   type RunServerMessage,
   type SessionResponse,
 } from "@frc-sim/contracts";
+import { runFlushBlockers } from "./save-before-run";
 import "./style.css";
 
 self.MonacoEnvironment = {
@@ -237,11 +238,11 @@ function App() {
   }, []);
 
   const saveFile = useCallback(
-    async (path: string) => {
+    async (path: string): Promise<boolean> => {
       const modelState = modelStatesRef.current.get(path);
       const openFile = openFilesRef.current.find((file) => file.path === path);
       if (!modelState || !openFile || openFile.access !== "editable") {
-        return;
+        return true;
       }
 
       if (modelState.saveTimer !== null) {
@@ -270,12 +271,14 @@ function App() {
         if (changedDuringSave) {
           scheduleSave(path);
         }
+        return !changedDuringSave;
       } catch (error) {
         updateOpenFile(path, {
           dirty: true,
           saving: false,
           error: error instanceof Error ? error.message : "Save failed.",
         });
+        return false;
       }
     },
     [apiUrl, applyTree, scheduleSave, updateOpenFile],
@@ -686,9 +689,19 @@ function App() {
   );
 
   const startRun = useCallback(async () => {
-    const dirtyEditableFiles = openFilesRef.current.filter((file) => file.access === "editable" && (file.dirty || file.saving));
     clearConsole("Starting run...");
-    await Promise.all(dirtyEditableFiles.map((file) => saveFile(file.path)));
+    const dirtyEditableFiles = openFilesRef.current.filter((file) => file.access === "editable" && (file.dirty || file.saving));
+    const saveResults = await Promise.all(dirtyEditableFiles.map((file) => saveFile(file.path)));
+    const blockers = runFlushBlockers(openFilesRef.current);
+    if (saveResults.some((ok) => !ok) || blockers.length > 0) {
+      setRunStatus("error");
+      logLine(
+        blockers[0]
+          ? `Run blocked until ${blockers[0].path} saves successfully.`
+          : "Run blocked until pending saves complete.",
+      );
+      return;
+    }
 
     const socket = runSocketRef.current;
     if (socket?.readyState === WebSocket.OPEN) {

@@ -354,6 +354,22 @@ export class AppStorage {
     return rows.map((row) => row.sim_port);
   }
 
+  clearReservedSimPort(workspaceId: WorkspaceId, port: number): void {
+    const timestamp = nowIso();
+    this.db
+      .query(
+        `
+          UPDATE container_leases
+          SET sim_port = NULL,
+              state = ?,
+              last_used_at = ?
+          WHERE workspace_id = ?
+            AND sim_port = ?
+        `,
+      )
+      .run("error", timestamp, workspaceId, port);
+  }
+
   upsertSimLease(input: {
     workspaceId: WorkspaceId;
     containerName: string | null;

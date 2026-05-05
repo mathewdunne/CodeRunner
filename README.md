@@ -41,6 +41,7 @@ mvp/                           Archived MVP implementation and docs
 | `bun test` | Run Bun tests |
 | `bun run build:web` | Build the static Vite shell into `apps/web/dist/` |
 | `bun run docker:build:sim` | Build the mounted-project V1 sim image as `frc-sim:v1` |
+| `bun run verify:v1:two-user` | Run the real-Docker Alice/Bob V1 sim smoke |
 | `bun run migrate` | Apply pending SQLite migrations |
 | `bun run migrate:status` | Show SQLite migration status |
 | `bun run dev:control` | Start the V1-5 Bun control plane on `:4000` |

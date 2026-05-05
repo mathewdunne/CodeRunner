@@ -17,7 +17,7 @@ if [[ ! -d /workspace/project ]]; then
 elif [[ ! -f /workspace/project/build.gradle || ! -f /workspace/project/gradlew ]]; then
   echo "Mounted project is missing build.gradle or gradlew." | tee -a "$SIM_LOG_FILE" >&2
 else
-  /usr/local/bin/start-sim.sh || true
+  echo "Sim container ready. Waiting for a queued run request." | tee -a "$SIM_LOG_FILE"
 fi
 
 exec tail -n +1 -F "$SIM_LOG_FILE" 2>/dev/null

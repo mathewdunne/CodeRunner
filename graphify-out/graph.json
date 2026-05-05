@@ -54,7 +54,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L1",
       "id": "apps_control_src_app_test_ts",
-      "community": 10,
+      "community": 7,
       "norm_label": "app.test.ts"
     },
     {
@@ -63,7 +63,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L10",
       "id": "src_app_test_exists",
-      "community": 10,
+      "community": 7,
       "norm_label": "exists()"
     },
     {
@@ -72,7 +72,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L19",
       "id": "src_app_test_createtemplate",
-      "community": 10,
+      "community": 7,
       "norm_label": "createtemplate()"
     },
     {
@@ -81,7 +81,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L31",
       "id": "src_app_test_createwebdist",
-      "community": 10,
+      "community": 7,
       "norm_label": "createwebdist()"
     },
     {
@@ -90,7 +90,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L43",
       "id": "src_app_test_withapp",
-      "community": 10,
+      "community": 7,
       "norm_label": "withapp()"
     },
     {
@@ -99,7 +99,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L75",
       "id": "src_app_test_ok",
-      "community": 10,
+      "community": 7,
       "norm_label": "ok()"
     },
     {
@@ -108,7 +108,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L79",
       "id": "src_app_test_missing",
-      "community": 10,
+      "community": 7,
       "norm_label": "missing()"
     },
     {
@@ -117,7 +117,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L83",
       "id": "src_app_test_dockerinspect",
-      "community": 10,
+      "community": 7,
       "norm_label": "dockerinspect()"
     },
     {
@@ -126,70 +126,70 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L106",
       "id": "src_app_test_createfakedocker",
-      "community": 10,
+      "community": 7,
       "norm_label": "createfakedocker()"
     },
     {
       "label": "waitFor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L174",
+      "source_location": "L179",
       "id": "src_app_test_waitfor",
-      "community": 10,
+      "community": 7,
       "norm_label": "waitfor()"
     },
     {
       "label": "login()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L184",
+      "source_location": "L189",
       "id": "src_app_test_login",
-      "community": 10,
+      "community": 7,
       "norm_label": "login()"
     },
     {
       "label": "cookieFrom()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L201",
+      "source_location": "L206",
       "id": "src_app_test_cookiefrom",
-      "community": 10,
+      "community": 7,
       "norm_label": "cookiefrom()"
     },
     {
       "label": "workspaceProjectPath()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L207",
+      "source_location": "L212",
       "id": "src_app_test_workspaceprojectpath",
-      "community": 10,
+      "community": 7,
       "norm_label": "workspaceprojectpath()"
     },
     {
       "label": "workspaceBySlug()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L215",
+      "source_location": "L220",
       "id": "src_app_test_workspacebyslug",
-      "community": 10,
+      "community": 7,
       "norm_label": "workspacebyslug()"
     },
     {
       "label": "tryCreateSymlink()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L221",
+      "source_location": "L226",
       "id": "src_app_test_trycreatesymlink",
-      "community": 10,
+      "community": 7,
       "norm_label": "trycreatesymlink()"
     },
     {
       "label": "createControlledRunCommands()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L902",
+      "source_location": "L967",
       "id": "src_app_test_createcontrolledruncommands",
-      "community": 10,
+      "community": 7,
       "norm_label": "createcontrolledruncommands()"
     },
     {
@@ -576,7 +576,7 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L686",
       "id": "src_app_createapp",
-      "community": 10,
+      "community": 7,
       "norm_label": "createapp()"
     },
     {
@@ -592,7 +592,7 @@
       "label": "parsePortRange()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L33",
+      "source_location": "L35",
       "id": "src_config_parseportrange",
       "community": 2,
       "norm_label": "parseportrange()"
@@ -601,7 +601,7 @@
       "label": "parseBoolean()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L56",
+      "source_location": "L58",
       "id": "src_config_parseboolean",
       "community": 2,
       "norm_label": "parseboolean()"
@@ -610,7 +610,7 @@
       "label": "parsePositiveInteger()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L66",
+      "source_location": "L68",
       "id": "src_config_parsepositiveinteger",
       "community": 2,
       "norm_label": "parsepositiveinteger()"
@@ -619,7 +619,7 @@
       "label": "defaultContainerUser()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L74",
+      "source_location": "L76",
       "id": "src_config_defaultcontaineruser",
       "community": 2,
       "norm_label": "defaultcontaineruser()"
@@ -628,7 +628,7 @@
       "label": "loadControlConfig()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L90",
+      "source_location": "L92",
       "id": "src_config_loadcontrolconfig",
       "community": 2,
       "norm_label": "loadcontrolconfig()"
@@ -670,10 +670,19 @@
       "norm_label": "dockererror()"
     },
     {
-      "label": "simContainerName()",
+      "label": "dockerPortBindError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
       "source_location": "L67",
+      "id": "src_containers_dockerportbinderror",
+      "community": 6,
+      "norm_label": "dockerportbinderror()"
+    },
+    {
+      "label": "simContainerName()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L72",
       "id": "src_containers_simcontainername",
       "community": 6,
       "norm_label": "simcontainername()"
@@ -682,7 +691,7 @@
       "label": "workspaceHomePath()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L71",
+      "source_location": "L76",
       "id": "src_containers_workspacehomepath",
       "community": 6,
       "norm_label": "workspacehomepath()"
@@ -691,7 +700,7 @@
       "label": "isLoopbackHost()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L75",
+      "source_location": "L80",
       "id": "src_containers_isloopbackhost",
       "community": 6,
       "norm_label": "isloopbackhost()"
@@ -700,7 +709,7 @@
       "label": "publishedSimPort()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L79",
+      "source_location": "L84",
       "id": "src_containers_publishedsimport",
       "community": 6,
       "norm_label": "publishedsimport()"
@@ -709,7 +718,7 @@
       "label": "containerRuntimeState()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L95",
+      "source_location": "L100",
       "id": "src_containers_containerruntimestate",
       "community": 6,
       "norm_label": "containerruntimestate()"
@@ -718,7 +727,7 @@
       "label": "labelsMatch()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L102",
+      "source_location": "L107",
       "id": "src_containers_labelsmatch",
       "community": 6,
       "norm_label": "labelsmatch()"
@@ -727,7 +736,7 @@
       "label": "statusFromLease()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L112",
+      "source_location": "L117",
       "id": "src_containers_statusfromlease",
       "community": 6,
       "norm_label": "statusfromlease()"
@@ -736,7 +745,7 @@
       "label": "portIsFree()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L129",
+      "source_location": "L134",
       "id": "src_containers_portisfree",
       "community": 6,
       "norm_label": "portisfree()"
@@ -745,7 +754,7 @@
       "label": "ContainerOrchestrator",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L151",
+      "source_location": "L156",
       "id": "src_containers_containerorchestrator",
       "community": 6,
       "norm_label": "containerorchestrator"
@@ -754,7 +763,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L155",
+      "source_location": "L161",
       "id": "src_containers_containerorchestrator_constructor",
       "community": 6,
       "norm_label": ".constructor()"
@@ -763,7 +772,7 @@
       "label": ".startSimContainer()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L162",
+      "source_location": "L168",
       "id": "src_containers_containerorchestrator_startsimcontainer",
       "community": 6,
       "norm_label": ".startsimcontainer()"
@@ -772,7 +781,7 @@
       "label": ".containersStatus()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L172",
+      "source_location": "L178",
       "id": "src_containers_containerorchestrator_containersstatus",
       "community": 6,
       "norm_label": ".containersstatus()"
@@ -781,7 +790,7 @@
       "label": ".ensureSimContainer()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L182",
+      "source_location": "L188",
       "id": "src_containers_containerorchestrator_ensuresimcontainer",
       "community": 6,
       "norm_label": ".ensuresimcontainer()"
@@ -790,7 +799,7 @@
       "label": ".runDocker()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L197",
+      "source_location": "L203",
       "id": "src_containers_containerorchestrator_rundocker",
       "community": 6,
       "norm_label": ".rundocker()"
@@ -799,7 +808,7 @@
       "label": ".inspectContainer()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L205",
+      "source_location": "L211",
       "id": "src_containers_containerorchestrator_inspectcontainer",
       "community": 6,
       "norm_label": ".inspectcontainer()"
@@ -808,7 +817,7 @@
       "label": ".listManagedSimContainerNames()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L215",
+      "source_location": "L221",
       "id": "src_containers_containerorchestrator_listmanagedsimcontainernames",
       "community": 6,
       "norm_label": ".listmanagedsimcontainernames()"
@@ -817,7 +826,7 @@
       "label": ".findManagedSimContainer()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L243",
+      "source_location": "L249",
       "id": "src_containers_containerorchestrator_findmanagedsimcontainer",
       "community": 6,
       "norm_label": ".findmanagedsimcontainer()"
@@ -826,25 +835,43 @@
       "label": ".ensureSimImage()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L263",
+      "source_location": "L269",
       "id": "src_containers_containerorchestrator_ensuresimimage",
       "community": 6,
       "norm_label": ".ensuresimimage()"
     },
     {
+      "label": ".withPortReservationLock()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L276",
+      "id": "src_containers_containerorchestrator_withportreservationlock",
+      "community": 6,
+      "norm_label": ".withportreservationlock()"
+    },
+    {
       "label": ".allocateSimPort()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L270",
+      "source_location": "L291",
       "id": "src_containers_containerorchestrator_allocatesimport",
       "community": 6,
       "norm_label": ".allocatesimport()"
     },
     {
+      "label": ".reserveSimPort()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L325",
+      "id": "src_containers_containerorchestrator_reservesimport",
+      "community": 6,
+      "norm_label": ".reservesimport()"
+    },
+    {
       "label": ".adoptContainer()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L297",
+      "source_location": "L339",
       "id": "src_containers_containerorchestrator_adoptcontainer",
       "community": 6,
       "norm_label": ".adoptcontainer()"
@@ -853,7 +880,7 @@
       "label": ".createSimContainer()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L345",
+      "source_location": "L387",
       "id": "src_containers_containerorchestrator_createsimcontainer",
       "community": 6,
       "norm_label": ".createsimcontainer()"
@@ -862,7 +889,7 @@
       "label": ".ensureSimContainerInner()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L403",
+      "source_location": "L445",
       "id": "src_containers_containerorchestrator_ensuresimcontainerinner",
       "community": 6,
       "norm_label": ".ensuresimcontainerinner()"
@@ -871,7 +898,7 @@
       "label": ".recordSimError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\containers.ts",
-      "source_location": "L417",
+      "source_location": "L474",
       "id": "src_containers_containerorchestrator_recordsimerror",
       "community": 6,
       "norm_label": ".recordsimerror()"
@@ -945,7 +972,7 @@
       "source_file": "apps\\control\\src\\main.ts",
       "source_location": "L1",
       "id": "apps_control_src_main_ts",
-      "community": 10,
+      "community": 7,
       "norm_label": "main.ts"
     },
     {
@@ -1026,205 +1053,232 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L1",
       "id": "apps_control_src_runs_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "runs.ts"
     },
     {
       "label": "randomRunId()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L50",
+      "source_location": "L53",
       "id": "src_runs_randomrunid",
-      "community": 7,
+      "community": 8,
       "norm_label": "randomrunid()"
     },
     {
       "label": "runLogPath()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L54",
+      "source_location": "L57",
       "id": "src_runs_runlogpath",
-      "community": 7,
+      "community": 8,
       "norm_label": "runlogpath()"
     },
     {
       "label": "lineLooksReady()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L58",
+      "source_location": "L61",
       "id": "src_runs_linelooksready",
-      "community": 7,
+      "community": 8,
       "norm_label": "linelooksready()"
     },
     {
       "label": "dockerRunScript()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L62",
+      "source_location": "L65",
       "id": "src_runs_dockerrunscript",
-      "community": 7,
+      "community": 8,
       "norm_label": "dockerrunscript()"
     },
     {
       "label": "defaultRunCommandFactory()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L76",
+      "source_location": "L79",
       "id": "src_runs_defaultruncommandfactory",
-      "community": 7,
+      "community": 8,
       "norm_label": "defaultruncommandfactory()"
     },
     {
       "label": "consumeLines()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L96",
+      "source_location": "L99",
       "id": "src_runs_consumelines",
-      "community": 7,
+      "community": 8,
       "norm_label": "consumelines()"
     },
     {
       "label": "RunManager",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L132",
+      "source_location": "L135",
       "id": "src_runs_runmanager",
-      "community": 7,
+      "community": 8,
       "norm_label": "runmanager"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L138",
+      "source_location": "L141",
       "id": "src_runs_runmanager_constructor",
-      "community": 7,
+      "community": 8,
       "norm_label": ".constructor()"
     },
     {
       "label": ".connect()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L146",
+      "source_location": "L149",
       "id": "src_runs_runmanager_connect",
-      "community": 7,
+      "community": 8,
       "norm_label": ".connect()"
     },
     {
       "label": ".disconnect()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L168",
+      "source_location": "L171",
       "id": "src_runs_runmanager_disconnect",
-      "community": 7,
+      "community": 8,
       "norm_label": ".disconnect()"
     },
     {
       "label": ".queueDepth()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L173",
+      "source_location": "L176",
       "id": "src_runs_runmanager_queuedepth",
-      "community": 7,
+      "community": 8,
       "norm_label": ".queuedepth()"
     },
     {
       "label": ".start()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L177",
+      "source_location": "L180",
       "id": "src_runs_runmanager_start",
-      "community": 7,
+      "community": 8,
       "norm_label": ".start()"
     },
     {
       "label": ".stopWorkspace()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L209",
+      "source_location": "L215",
       "id": "src_runs_runmanager_stopworkspace",
-      "community": 7,
+      "community": 8,
       "norm_label": ".stopworkspace()"
     },
     {
       "label": ".cancelWorkspace()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L213",
+      "source_location": "L219",
       "id": "src_runs_runmanager_cancelworkspace",
-      "community": 7,
+      "community": 8,
       "norm_label": ".cancelworkspace()"
     },
     {
       "label": ".pump()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L235",
+      "source_location": "L241",
       "id": "src_runs_runmanager_pump",
-      "community": 7,
+      "community": 8,
       "norm_label": ".pump()"
     },
     {
       "label": ".runJob()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L247",
+      "source_location": "L254",
       "id": "src_runs_runmanager_runjob",
-      "community": 7,
+      "community": 8,
       "norm_label": ".runjob()"
+    },
+    {
+      "label": ".armReadinessTimeout()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L304",
+      "id": "src_runs_runmanager_armreadinesstimeout",
+      "community": 8,
+      "norm_label": ".armreadinesstimeout()"
+    },
+    {
+      "label": ".timeoutBeforeReadiness()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L311",
+      "id": "src_runs_runmanager_timeoutbeforereadiness",
+      "community": 8,
+      "norm_label": ".timeoutbeforereadiness()"
     },
     {
       "label": ".recordLog()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L293",
+      "source_location": "L326",
       "id": "src_runs_runmanager_recordlog",
-      "community": 7,
+      "community": 8,
       "norm_label": ".recordlog()"
+    },
+    {
+      "label": ".releaseBuildSlot()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L340",
+      "id": "src_runs_runmanager_releasebuildslot",
+      "community": 8,
+      "norm_label": ".releasebuildslot()"
     },
     {
       "label": ".setJobState()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L306",
+      "source_location": "L354",
       "id": "src_runs_runmanager_setjobstate",
-      "community": 7,
+      "community": 8,
       "norm_label": ".setjobstate()"
     },
     {
       "label": ".finishJob()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L334",
+      "source_location": "L382",
       "id": "src_runs_runmanager_finishjob",
-      "community": 7,
+      "community": 8,
       "norm_label": ".finishjob()"
     },
     {
       "label": ".sendCurrentStatus()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L343",
+      "source_location": "L396",
       "id": "src_runs_runmanager_sendcurrentstatus",
-      "community": 7,
+      "community": 8,
       "norm_label": ".sendcurrentstatus()"
     },
     {
       "label": ".updateQueuePositions()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L356",
+      "source_location": "L409",
       "id": "src_runs_runmanager_updatequeuepositions",
-      "community": 7,
+      "community": 8,
       "norm_label": ".updatequeuepositions()"
     },
     {
       "label": ".broadcast()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\runs.ts",
-      "source_location": "L366",
+      "source_location": "L419",
       "id": "src_runs_runmanager_broadcast",
-      "community": 7,
+      "community": 8,
       "norm_label": ".broadcast()"
     },
     {
@@ -1444,10 +1498,19 @@
       "norm_label": ".listleasedsimports()"
     },
     {
-      "label": ".upsertSimLease()",
+      "label": ".clearReservedSimPort()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L357",
+      "id": "src_storage_appstorage_clearreservedsimport",
+      "community": 2,
+      "norm_label": ".clearreservedsimport()"
+    },
+    {
+      "label": ".upsertSimLease()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L373",
       "id": "src_storage_appstorage_upsertsimlease",
       "community": 2,
       "norm_label": ".upsertsimlease()"
@@ -1456,7 +1519,7 @@
       "label": ".createRunJob()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L392",
+      "source_location": "L408",
       "id": "src_storage_appstorage_createrunjob",
       "community": 2,
       "norm_label": ".createrunjob()"
@@ -1465,7 +1528,7 @@
       "label": ".getRunJob()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L421",
+      "source_location": "L437",
       "id": "src_storage_appstorage_getrunjob",
       "community": 2,
       "norm_label": ".getrunjob()"
@@ -1474,7 +1537,7 @@
       "label": ".updateRunJob()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L425",
+      "source_location": "L441",
       "id": "src_storage_appstorage_updaterunjob",
       "community": 2,
       "norm_label": ".updaterunjob()"
@@ -1483,7 +1546,7 @@
       "label": "createStorage()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L466",
+      "source_location": "L482",
       "id": "src_storage_createstorage",
       "community": 2,
       "norm_label": "createstorage()"
@@ -1503,125 +1566,260 @@
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L1",
       "id": "apps_web_src_main_tsx",
-      "community": 8,
+      "community": 9,
       "norm_label": "main.tsx"
     },
     {
       "label": "getWorker()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L20",
+      "source_location": "L21",
       "id": "src_main_getworker",
-      "community": 8,
+      "community": 9,
       "norm_label": "getworker()"
     },
     {
       "label": "workspaceSlugFromLocation()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L46",
+      "source_location": "L47",
       "id": "src_main_workspaceslugfromlocation",
-      "community": 8,
+      "community": 9,
       "norm_label": "workspaceslugfromlocation()"
     },
     {
       "label": "fileName()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L52",
+      "source_location": "L53",
       "id": "src_main_filename",
-      "community": 8,
+      "community": 9,
       "norm_label": "filename()"
     },
     {
       "label": "parentPath()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L57",
+      "source_location": "L58",
       "id": "src_main_parentpath",
-      "community": 8,
+      "community": 9,
       "norm_label": "parentpath()"
     },
     {
       "label": "languageFor()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L61",
+      "source_location": "L62",
       "id": "src_main_languagefor",
-      "community": 8,
+      "community": 9,
       "norm_label": "languagefor()"
     },
     {
       "label": "modelUriFor()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L74",
+      "source_location": "L75",
       "id": "src_main_modelurifor",
-      "community": 8,
+      "community": 9,
       "norm_label": "modelurifor()"
     },
     {
       "label": "fetchJson()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L78",
+      "source_location": "L79",
       "id": "src_main_fetchjson",
-      "community": 8,
+      "community": 9,
       "norm_label": "fetchjson()"
     },
     {
       "label": "canOpen()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L98",
+      "source_location": "L99",
       "id": "src_main_canopen",
-      "community": 8,
+      "community": 9,
       "norm_label": "canopen()"
     },
     {
       "label": "setTree()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L102",
+      "source_location": "L103",
       "id": "src_main_settree",
-      "community": 8,
+      "community": 9,
       "norm_label": "settree()"
     },
     {
       "label": "loadWorkspace()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L364",
+      "source_location": "L367",
       "id": "src_main_loadworkspace",
-      "community": 8,
+      "community": 9,
       "norm_label": "loadworkspace()"
     },
     {
       "label": "sendHeartbeat()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L403",
+      "source_location": "L406",
       "id": "src_main_sendheartbeat",
-      "community": 8,
+      "community": 9,
       "norm_label": "sendheartbeat()"
     },
     {
       "label": "refreshStatus()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L493",
+      "source_location": "L496",
       "id": "src_main_refreshstatus",
-      "community": 8,
+      "community": 9,
       "norm_label": "refreshstatus()"
     },
     {
       "label": "warnOnDirtyFiles()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L515",
+      "source_location": "L518",
       "id": "src_main_warnondirtyfiles",
-      "community": 8,
+      "community": 9,
       "norm_label": "warnondirtyfiles()"
+    },
+    {
+      "label": "save-before-run.test.ts",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\save-before-run.test.ts",
+      "source_location": "L1",
+      "id": "apps_web_src_save_before_run_test_ts",
+      "community": 9,
+      "norm_label": "save-before-run.test.ts"
+    },
+    {
+      "label": "file()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\save-before-run.test.ts",
+      "source_location": "L4",
+      "id": "src_save_before_run_test_file",
+      "community": 9,
+      "norm_label": "file()"
+    },
+    {
+      "label": "save-before-run.ts",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\save-before-run.ts",
+      "source_location": "L1",
+      "id": "apps_web_src_save_before_run_ts",
+      "community": 9,
+      "norm_label": "save-before-run.ts"
+    },
+    {
+      "label": "runFlushBlockers()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\save-before-run.ts",
+      "source_location": "L9",
+      "id": "src_save_before_run_runflushblockers",
+      "community": 9,
+      "norm_label": "runflushblockers()"
+    },
+    {
+      "label": "Main.java",
+      "file_type": "code",
+      "source_file": "data\\users\\ws_e380750c4506481e0065ec1244002809\\project\\src\\main\\java\\frc\\robot\\Main.java",
+      "source_location": "L1",
+      "id": "data_users_ws_e380750c4506481e0065ec1244002809_project_src_main_java_frc_robot_main_java",
+      "community": 14,
+      "norm_label": "main.java"
+    },
+    {
+      "label": "Main",
+      "file_type": "code",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
+      "source_location": "L5",
+      "id": "robot_main_main",
+      "community": 14,
+      "norm_label": "main"
+    },
+    {
+      "label": ".Main()",
+      "file_type": "code",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
+      "source_location": "L6",
+      "id": "robot_main_main_main",
+      "community": 14,
+      "norm_label": ".main()"
+    },
+    {
+      "label": "Robot.java",
+      "file_type": "code",
+      "source_file": "data\\users\\ws_e380750c4506481e0065ec1244002809\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L1",
+      "id": "data_users_ws_e380750c4506481e0065ec1244002809_project_src_main_java_frc_robot_robot_java",
+      "community": 10,
+      "norm_label": "robot.java"
+    },
+    {
+      "label": "Robot",
+      "file_type": "code",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L13",
+      "id": "robot_robot_robot",
+      "community": 10,
+      "norm_label": "robot"
+    },
+    {
+      "label": "TimedRobot",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "id": "timedrobot",
+      "community": 10,
+      "norm_label": "timedrobot"
+    },
+    {
+      "label": ".robotInit()",
+      "file_type": "code",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L29",
+      "id": "robot_robot_robot_robotinit",
+      "community": 8,
+      "norm_label": ".robotinit()"
+    },
+    {
+      "label": ".robotPeriodic()",
+      "file_type": "code",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L34",
+      "id": "robot_robot_robot_robotperiodic",
+      "community": 10,
+      "norm_label": ".robotperiodic()"
+    },
+    {
+      "label": "RobotContainer.java",
+      "file_type": "code",
+      "source_file": "data\\users\\ws_e380750c4506481e0065ec1244002809\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
+      "source_location": "L1",
+      "id": "data_users_ws_e380750c4506481e0065ec1244002809_project_src_main_java_frc_robot_robotcontainer_java",
+      "community": 15,
+      "norm_label": "robotcontainer.java"
+    },
+    {
+      "label": "RobotContainer",
+      "file_type": "code",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
+      "source_location": "L3",
+      "id": "robot_robotcontainer_robotcontainer",
+      "community": 15,
+      "norm_label": "robotcontainer"
+    },
+    {
+      "label": ".RobotContainer()",
+      "file_type": "code",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
+      "source_location": "L4",
+      "id": "robot_robotcontainer_robotcontainer_robotcontainer",
+      "community": 15,
+      "norm_label": ".robotcontainer()"
     },
     {
       "label": "main.ts",
@@ -1629,7 +1827,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_lsp_src_main_ts",
-      "community": 14,
+      "community": 16,
       "norm_label": "main.ts"
     },
     {
@@ -1638,7 +1836,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L70",
       "id": "src_main_launchlanguageserver",
-      "community": 14,
+      "community": 16,
       "norm_label": "launchlanguageserver()"
     },
     {
@@ -1647,7 +1845,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L109",
       "id": "src_main_aswebsocket",
-      "community": 14,
+      "community": 16,
       "norm_label": "aswebsocket()"
     },
     {
@@ -1656,7 +1854,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L133",
       "id": "src_main_handleupgrade",
-      "community": 14,
+      "community": 16,
       "norm_label": "handleupgrade()"
     },
     {
@@ -2565,26 +2763,8 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_main_java",
-      "community": 15,
+      "community": 14,
       "norm_label": "main.java"
-    },
-    {
-      "label": "Main",
-      "file_type": "code",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
-      "source_location": "L5",
-      "id": "robot_main_main",
-      "community": 15,
-      "norm_label": "main"
-    },
-    {
-      "label": ".Main()",
-      "file_type": "code",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
-      "source_location": "L6",
-      "id": "robot_main_main_main",
-      "community": 15,
-      "norm_label": ".main()"
     },
     {
       "label": "Robot.java",
@@ -2592,44 +2772,8 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_robot_java",
-      "community": 9,
+      "community": 10,
       "norm_label": "robot.java"
-    },
-    {
-      "label": "Robot",
-      "file_type": "code",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L13",
-      "id": "robot_robot_robot",
-      "community": 9,
-      "norm_label": "robot"
-    },
-    {
-      "label": "TimedRobot",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "id": "timedrobot",
-      "community": 9,
-      "norm_label": "timedrobot"
-    },
-    {
-      "label": ".robotInit()",
-      "file_type": "code",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L29",
-      "id": "robot_robot_robot_robotinit",
-      "community": 9,
-      "norm_label": ".robotinit()"
-    },
-    {
-      "label": ".robotPeriodic()",
-      "file_type": "code",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L34",
-      "id": "robot_robot_robot_robotperiodic",
-      "community": 9,
-      "norm_label": ".robotperiodic()"
     },
     {
       "label": "RobotContainer.java",
@@ -2637,26 +2781,8 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_robotcontainer_java",
-      "community": 16,
+      "community": 15,
       "norm_label": "robotcontainer.java"
-    },
-    {
-      "label": "RobotContainer",
-      "file_type": "code",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
-      "source_location": "L3",
-      "id": "robot_robotcontainer_robotcontainer",
-      "community": 16,
-      "norm_label": "robotcontainer"
-    },
-    {
-      "label": ".RobotContainer()",
-      "file_type": "code",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
-      "source_location": "L4",
-      "id": "robot_robotcontainer_robotcontainer_robotcontainer",
-      "community": 16,
-      "norm_label": ".robotcontainer()"
     },
     {
       "label": "build-ascope-lite.ts",
@@ -2664,7 +2790,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L1",
       "id": "mvp_scripts_build_ascope_lite_ts",
-      "community": 9,
+      "community": 10,
       "norm_label": "build-ascope-lite.ts"
     },
     {
@@ -2673,7 +2799,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L26",
       "id": "scripts_build_ascope_lite_run",
-      "community": 9,
+      "community": 10,
       "norm_label": "run()"
     },
     {
@@ -2682,7 +2808,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L41",
       "id": "scripts_build_ascope_lite_ensuresubmodule",
-      "community": 9,
+      "community": 10,
       "norm_label": "ensuresubmodule()"
     },
     {
@@ -2691,7 +2817,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L49",
       "id": "scripts_build_ascope_lite_ensureemscripten",
-      "community": 9,
+      "community": 10,
       "norm_label": "ensureemscripten()"
     },
     {
@@ -2700,7 +2826,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L65",
       "id": "scripts_build_ascope_lite_envwithemsdk",
-      "community": 9,
+      "community": 10,
       "norm_label": "envwithemsdk()"
     },
     {
@@ -2709,7 +2835,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L76",
       "id": "scripts_build_ascope_lite_npminstallsubmodule",
-      "community": 9,
+      "community": 10,
       "norm_label": "npminstallsubmodule()"
     },
     {
@@ -2718,7 +2844,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L82",
       "id": "scripts_build_ascope_lite_compilelite",
-      "community": 9,
+      "community": 10,
       "norm_label": "compilelite()"
     },
     {
@@ -2727,7 +2853,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L89",
       "id": "scripts_build_ascope_lite_compilewasm",
-      "community": 9,
+      "community": 10,
       "norm_label": "compilewasm()"
     },
     {
@@ -2736,7 +2862,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L102",
       "id": "scripts_build_ascope_lite_listgitsymlinksunder",
-      "community": 9,
+      "community": 10,
       "norm_label": "listgitsymlinksunder()"
     },
     {
@@ -2745,7 +2871,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L122",
       "id": "scripts_build_ascope_lite_resolvesymlinksindist",
-      "community": 9,
+      "community": 10,
       "norm_label": "resolvesymlinksindist()"
     },
     {
@@ -2754,7 +2880,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L146",
       "id": "scripts_build_ascope_lite_stagebundle",
-      "community": 9,
+      "community": 10,
       "norm_label": "stagebundle()"
     },
     {
@@ -2763,7 +2889,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L157",
       "id": "scripts_build_ascope_lite_main",
-      "community": 9,
+      "community": 10,
       "norm_label": "main()"
     },
     {
@@ -2997,7 +3123,7 @@
       "source_file": "packages\\contracts\\src\\index.test.ts",
       "source_location": "L1",
       "id": "packages_contracts_src_index_test_ts",
-      "community": 8,
+      "community": 9,
       "norm_label": "index.test.ts"
     },
     {
@@ -3006,7 +3132,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L1",
       "id": "packages_contracts_src_index_ts",
-      "community": 8,
+      "community": 9,
       "norm_label": "index.ts"
     },
     {
@@ -3015,7 +3141,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L23",
       "id": "src_index_isworkspaceslug",
-      "community": 8,
+      "community": 9,
       "norm_label": "isworkspaceslug()"
     },
     {
@@ -3024,7 +3150,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L35",
       "id": "src_index_projectpathissue",
-      "community": 8,
+      "community": 9,
       "norm_label": "projectpathissue()"
     },
     {
@@ -3033,7 +3159,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L82",
       "id": "src_index_parseprojectpath",
-      "community": 8,
+      "community": 9,
       "norm_label": "parseprojectpath()"
     },
     {
@@ -3042,7 +3168,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L86",
       "id": "src_index_isprojectpath",
-      "community": 8,
+      "community": 9,
       "norm_label": "isprojectpath()"
     },
     {
@@ -3051,7 +3177,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L92",
       "id": "src_index_matchespathorchild",
-      "community": 8,
+      "community": 9,
       "norm_label": "matchespathorchild()"
     },
     {
@@ -3060,7 +3186,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L96",
       "id": "src_index_getprojectpathaccess",
-      "community": 8,
+      "community": 9,
       "norm_label": "getprojectpathaccess()"
     },
     {
@@ -3109,12 +3235,120 @@
       "norm_label": "typecheck.ts"
     },
     {
+      "label": "verify-v1-two-user.ts",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L1",
+      "id": "scripts_verify_v1_two_user_ts",
+      "community": 7,
+      "norm_label": "verify-v1-two-user.ts"
+    },
+    {
+      "label": "assert()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L19",
+      "id": "scripts_verify_v1_two_user_assert",
+      "community": 7,
+      "norm_label": "assert()"
+    },
+    {
+      "label": "runCommand()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L25",
+      "id": "scripts_verify_v1_two_user_runcommand",
+      "community": 7,
+      "norm_label": "runcommand()"
+    },
+    {
+      "label": "waitFor()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L42",
+      "id": "scripts_verify_v1_two_user_waitfor",
+      "community": 7,
+      "norm_label": "waitfor()"
+    },
+    {
+      "label": "login()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L53",
+      "id": "scripts_verify_v1_two_user_login",
+      "community": 7,
+      "norm_label": "login()"
+    },
+    {
+      "label": "readProjectFile()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L72",
+      "id": "scripts_verify_v1_two_user_readprojectfile",
+      "community": 7,
+      "norm_label": "readprojectfile()"
+    },
+    {
+      "label": "writeProjectFile()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L84",
+      "id": "scripts_verify_v1_two_user_writeprojectfile",
+      "community": 7,
+      "norm_label": "writeprojectfile()"
+    },
+    {
+      "label": "connectRun()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L98",
+      "id": "scripts_verify_v1_two_user_connectrun",
+      "community": 7,
+      "norm_label": "connectrun()"
+    },
+    {
+      "label": "hasStatus()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L104",
+      "id": "scripts_verify_v1_two_user_hasstatus",
+      "community": 7,
+      "norm_label": "hasstatus()"
+    },
+    {
+      "label": "lastStatus()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L108",
+      "id": "scripts_verify_v1_two_user_laststatus",
+      "community": 7,
+      "norm_label": "laststatus()"
+    },
+    {
+      "label": "assertSimProcessAlive()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L114",
+      "id": "scripts_verify_v1_two_user_assertsimprocessalive",
+      "community": 7,
+      "norm_label": "assertsimprocessalive()"
+    },
+    {
+      "label": "removeManagedContainers()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L127",
+      "id": "scripts_verify_v1_two_user_removemanagedcontainers",
+      "community": 7,
+      "norm_label": "removemanagedcontainers()"
+    },
+    {
       "label": "Main.java",
       "file_type": "code",
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_main_java",
-      "community": 15,
+      "community": 14,
       "norm_label": "main.java"
     },
     {
@@ -3123,7 +3357,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_robot_java",
-      "community": 9,
+      "community": 10,
       "norm_label": "robot.java"
     },
     {
@@ -3132,7 +3366,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_robotcontainer_java",
-      "community": 16,
+      "community": 15,
       "norm_label": "robotcontainer.java"
     },
     {
@@ -3149,7 +3383,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L6",
-      "community": 8,
+      "community": 9,
       "norm_label": "app()",
       "id": "src_main_app"
     },
@@ -3167,7 +3401,7 @@
       "file_type": "code",
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L1",
-      "community": 9,
+      "community": 10,
       "norm_label": "build-ascope-lite.ts",
       "id": "scripts_build_ascope_lite_ts"
     },
@@ -3181,20 +3415,11 @@
       "id": "scripts_dev_v1_ts"
     },
     {
-      "label": "verify-v1-two-user.ts",
-      "file_type": "code",
-      "source_file": "scripts\\verify-v1-two-user.ts",
-      "source_location": "L1",
-      "community": 27,
-      "norm_label": "verify-v1-two-user.ts",
-      "id": "scripts_verify_v1_two_user_ts"
-    },
-    {
       "label": "main.ts",
       "file_type": "code",
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L1",
-      "community": 14,
+      "community": 16,
       "norm_label": "main.ts",
       "id": "apps_lsp_src_main_ts"
     },
@@ -3257,7 +3482,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
-      "community": 15,
+      "community": 14,
       "norm_label": "main.java",
       "id": "containers_sim_project_src_main_java_frc_robot_main_java"
     },
@@ -3266,7 +3491,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
-      "community": 9,
+      "community": 10,
       "norm_label": "robot.java",
       "id": "containers_sim_project_src_main_java_frc_robot_robot_java"
     },
@@ -3275,7 +3500,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
-      "community": 16,
+      "community": 15,
       "norm_label": "robotcontainer.java",
       "id": "containers_sim_project_src_main_java_frc_robot_robotcontainer_java"
     },
@@ -3302,7 +3527,7 @@
       "file_type": "code",
       "source_file": "scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
-      "community": 28,
+      "community": 27,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts",
       "id": "scripts_patch_ascope_lite_nt4_proxy_ts"
     },
@@ -3840,7 +4065,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 29,
+      "community": 28,
       "norm_label": "web shell index.html",
       "id": "index_html"
     },
@@ -5314,6 +5539,17 @@
       "target": "src_app_createapp"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "src_app_createapp"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "INFERRED",
@@ -5500,6 +5736,16 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "apps_control_src_containers_ts",
+      "target": "src_containers_dockerportbinderror"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
       "target": "src_containers_simcontainername"
     },
     {
@@ -5603,6 +5849,17 @@
       "confidence_score": 1.0,
       "source": "src_containers_containerorchestrator_rundocker",
       "target": "src_containers_dockererror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L461",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_ensuresimcontainerinner",
+      "target": "src_containers_dockerportbinderror"
     },
     {
       "relation": "calls",
@@ -5852,11 +6109,31 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L276",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_withportreservationlock"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
       "source_location": "L270",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_containers_containerorchestrator",
       "target": "src_containers_containerorchestrator_allocatesimport"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L325",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_reservesimport"
     },
     {
       "relation": "method",
@@ -6068,11 +6345,33 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L326",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_reservesimport",
+      "target": "src_containers_containerorchestrator_withportreservationlock"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
       "source_location": "L413",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_containers_containerorchestrator_ensuresimcontainerinner",
       "target": "src_containers_containerorchestrator_allocatesimport"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L457",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_ensuresimcontainerinner",
+      "target": "src_containers_containerorchestrator_reservesimport"
     },
     {
       "relation": "calls",
@@ -6622,11 +6921,41 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L304",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_armreadinesstimeout"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L311",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_timeoutbeforereadiness"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L293",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_runs_runmanager",
       "target": "src_runs_runmanager_recordlog"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L340",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_releasebuildslot"
     },
     {
       "relation": "method",
@@ -6815,6 +7144,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L351",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_releasebuildslot",
+      "target": "src_runs_runmanager_pump"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L249",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -6848,11 +7188,55 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L278",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_runjob",
+      "target": "src_runs_runmanager_armreadinesstimeout"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L285",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_runs_runmanager_runjob",
       "target": "src_runs_runmanager_recordlog"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L300",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_runjob",
+      "target": "src_runs_runmanager_releasebuildslot"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L317",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_timeoutbeforereadiness",
+      "target": "src_runs_runmanager_recordlog"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L323",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_timeoutbeforereadiness",
+      "target": "src_runs_runmanager_finishjob"
     },
     {
       "relation": "calls",
@@ -6875,6 +7259,28 @@
       "confidence_score": 1.0,
       "source": "src_runs_runmanager_recordlog",
       "target": "src_runs_runmanager_setjobstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L336",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_recordlog",
+      "target": "src_runs_runmanager_releasebuildslot"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L387",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_finishjob",
+      "target": "src_runs_runmanager_releasebuildslot"
     },
     {
       "relation": "calls",
@@ -7064,6 +7470,17 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_storage_appstorage_touchsession",
+      "target": "src_storage_nowiso"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L358",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage_clearreservedsimport",
       "target": "src_storage_nowiso"
     },
     {
@@ -7285,6 +7702,16 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L357",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_clearreservedsimport"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L344",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -7430,6 +7857,17 @@
       "confidence_score": 1.0,
       "source": "src_storage_appstorage_updaterunjob",
       "target": "src_storage_appstorage_getrunjob"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_save_before_run_runflushblockers"
     },
     {
       "relation": "contains",
@@ -7603,6 +8041,262 @@
       "confidence_score": 1.0,
       "source": "src_main_loadworkspace",
       "target": "src_main_fetchjson"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\save-before-run.test.ts",
+      "source_location": "L2",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_save_before_run_test_ts",
+      "target": "src_save_before_run_runflushblockers"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\save-before-run.test.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_save_before_run_test_ts",
+      "target": "src_save_before_run_test_file"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\save-before-run.ts",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_save_before_run_ts",
+      "target": "src_save_before_run_runflushblockers"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data\\users\\ws_e380750c4506481e0065ec1244002809\\project\\src\\main\\java\\frc\\robot\\Main.java",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "data_users_ws_e380750c4506481e0065ec1244002809_project_src_main_java_frc_robot_main_java",
+      "target": "robot_main_main"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
+      "source_location": "L8",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "robot_main_main",
+      "target": "robot_main_main_main"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "mvp_containers_sim_project_src_main_java_frc_robot_main_java",
+      "target": "robot_main_main"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "templates_wpilib_java_command_src_main_java_frc_robot_main_java",
+      "target": "robot_main_main"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "containers_sim_project_src_main_java_frc_robot_main_java",
+      "target": "robot_main_main"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "data\\users\\ws_e380750c4506481e0065ec1244002809\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "data_users_ws_e380750c4506481e0065ec1244002809_project_src_main_java_frc_robot_robot_java",
+      "target": "timedrobot"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data\\users\\ws_e380750c4506481e0065ec1244002809\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "data_users_ws_e380750c4506481e0065ec1244002809_project_src_main_java_frc_robot_robot_java",
+      "target": "robot_robot_robot"
+    },
+    {
+      "relation": "extends",
+      "confidence": "EXTRACTED",
+      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "robot_robot_robot",
+      "target": "timedrobot"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "robot_robot_robot",
+      "target": "robot_robot_robot_robotinit"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L35",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "robot_robot_robot",
+      "target": "robot_robot_robot_robotperiodic"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "mvp_containers_sim_project_src_main_java_frc_robot_robot_java",
+      "target": "robot_robot_robot"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L13",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "templates_wpilib_java_command_src_main_java_frc_robot_robot_java",
+      "target": "robot_robot_robot"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L14",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "containers_sim_project_src_main_java_frc_robot_robot_java",
+      "target": "robot_robot_robot"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "mvp_containers_sim_project_src_main_java_frc_robot_robot_java",
+      "target": "timedrobot"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L9",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "templates_wpilib_java_command_src_main_java_frc_robot_robot_java",
+      "target": "timedrobot"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L10",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "containers_sim_project_src_main_java_frc_robot_robot_java",
+      "target": "timedrobot"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L37",
+      "weight": 1.0,
+      "source": "robot_robot_robot_robotperiodic",
+      "target": "scripts_build_ascope_lite_run"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "data\\users\\ws_e380750c4506481e0065ec1244002809\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "data_users_ws_e380750c4506481e0065ec1244002809_project_src_main_java_frc_robot_robotcontainer_java",
+      "target": "robot_robotcontainer_robotcontainer"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
+      "source_location": "L4",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "robot_robotcontainer_robotcontainer",
+      "target": "robot_robotcontainer_robotcontainer_robotcontainer"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "mvp_containers_sim_project_src_main_java_frc_robot_robotcontainer_java",
+      "target": "robot_robotcontainer_robotcontainer"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "templates_wpilib_java_command_src_main_java_frc_robot_robotcontainer_java",
+      "target": "robot_robotcontainer_robotcontainer"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
+      "source_location": "L3",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "containers_sim_project_src_main_java_frc_robot_robotcontainer_java",
+      "target": "robot_robotcontainer_robotcontainer"
     },
     {
       "relation": "contains",
@@ -10183,190 +10877,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mvp_containers_sim_project_src_main_java_frc_robot_main_java",
-      "target": "robot_main_main"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
-      "source_location": "L8",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "robot_main_main",
-      "target": "robot_main_main_main"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "templates_wpilib_java_command_src_main_java_frc_robot_main_java",
-      "target": "robot_main_main"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
-      "source_location": "L5",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "containers_sim_project_src_main_java_frc_robot_main_java",
-      "target": "robot_main_main"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mvp_containers_sim_project_src_main_java_frc_robot_robot_java",
-      "target": "timedrobot"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mvp_containers_sim_project_src_main_java_frc_robot_robot_java",
-      "target": "robot_robot_robot"
-    },
-    {
-      "relation": "extends",
-      "confidence": "EXTRACTED",
-      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "robot_robot_robot",
-      "target": "timedrobot"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L30",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "robot_robot_robot",
-      "target": "robot_robot_robot_robotinit"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L35",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "robot_robot_robot",
-      "target": "robot_robot_robot_robotperiodic"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L13",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "templates_wpilib_java_command_src_main_java_frc_robot_robot_java",
-      "target": "robot_robot_robot"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L14",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "containers_sim_project_src_main_java_frc_robot_robot_java",
-      "target": "robot_robot_robot"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L9",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "templates_wpilib_java_command_src_main_java_frc_robot_robot_java",
-      "target": "timedrobot"
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L10",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "containers_sim_project_src_main_java_frc_robot_robot_java",
-      "target": "timedrobot"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
-      "source_location": "L37",
-      "weight": 1.0,
-      "source": "robot_robot_robot_robotperiodic",
-      "target": "scripts_build_ascope_lite_run"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "mvp_containers_sim_project_src_main_java_frc_robot_robotcontainer_java",
-      "target": "robot_robotcontainer_robotcontainer"
-    },
-    {
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
-      "source_location": "L4",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "robot_robotcontainer_robotcontainer",
-      "target": "robot_robotcontainer_robotcontainer_robotcontainer"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "templates_wpilib_java_command_src_main_java_frc_robot_robotcontainer_java",
-      "target": "robot_robotcontainer_robotcontainer"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
-      "source_location": "L3",
-      "weight": 1.0,
-      "confidence_score": 1.0,
-      "source": "containers_sim_project_src_main_java_frc_robot_robotcontainer_java",
-      "target": "robot_robotcontainer_robotcontainer"
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L26",
       "weight": 1.0,
@@ -11459,6 +11969,182 @@
       "confidence_score": 1.0,
       "source": "scripts_template_integrity_test_ts",
       "target": "scripts_template_integrity_test_expecttemplatefile"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L19",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_assert"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L25",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_runcommand"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_waitfor"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L53",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_login"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L72",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_readprojectfile"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L84",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_writeprojectfile"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L98",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_connectrun"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L104",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_hasstatus"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L108",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_laststatus"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L114",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_assertsimprocessalive"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L127",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_ts",
+      "target": "scripts_verify_v1_two_user_removemanagedcontainers"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L61",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_login",
+      "target": "scripts_verify_v1_two_user_assert"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_readprojectfile",
+      "target": "scripts_verify_v1_two_user_assert"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L95",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_writeprojectfile",
+      "target": "scripts_verify_v1_two_user_assert"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L116",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_assertsimprocessalive",
+      "target": "scripts_verify_v1_two_user_assert"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L117",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_assertsimprocessalive",
+      "target": "scripts_verify_v1_two_user_runcommand"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-v1-two-user.ts",
+      "source_location": "L133",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_verify_v1_two_user_removemanagedcontainers",
+      "target": "scripts_verify_v1_two_user_runcommand"
     },
     {
       "relation": "imports_from",

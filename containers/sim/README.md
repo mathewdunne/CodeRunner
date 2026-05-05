@@ -26,15 +26,16 @@ The control plane creates containers with:
 - labels `frc-sim.managed=true`, `frc-sim.version=v1`, `frc-sim.role=sim`, and `frc-sim.workspace=<workspaceId>`
 
 The image primes Gradle/WPILib dependencies into `/opt/frc-gradle-cache`. On first start with an empty mounted
-`/home/frc`, the entrypoint copies that cache into the workspace home before running Gradle. Sim logs and PID files
-also live under `/home/frc`, so generated cache/runtime files are outside the authoritative student project directory.
-Gradle build output still lands in the bind-mounted project, and the UID/GID strategy keeps those files readable and
-removable by the host control plane.
+`/home/frc`, the entrypoint copies that cache into the workspace home and then idles while tailing the sim log. Opening
+the IDE starts the container, but it does not start Gradle; only the control-plane run queue calls `start-sim.sh`. Sim
+logs and PID files also live under `/home/frc`, so generated cache/runtime files are outside the authoritative student
+project directory. Gradle build output still lands in the bind-mounted project, and the UID/GID strategy keeps those
+files readable and removable by the host control plane.
 
 ## Scripts
 
 - `/usr/local/bin/start-sim.sh` starts `./gradlew --no-daemon --console=plain simulateJava`.
 - `/usr/local/bin/stop-sim.sh` stops the saved Gradle/sim process group.
-- `/usr/local/bin/entrypoint.sh` starts the sim when the mounted project is valid, then tails `/home/frc/sim.log`.
+- `/usr/local/bin/entrypoint.sh` prepares the mounted home, validates the mounted project, and tails `/home/frc/sim.log`.
 
 The archived MVP sim image remains under `mvp/containers/sim/` for provenance.

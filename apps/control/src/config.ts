@@ -18,6 +18,8 @@ export type ControlConfig = {
   simMemoryLimit: string;
   simPortRange: PortRange;
   runConcurrency: number;
+  runBuildTimeoutMs: number;
+  simStartupTimeoutMs: number;
   containerUser: string | null;
   containerAutoStart: boolean;
 };
@@ -111,6 +113,16 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     simMemoryLimit: input.simMemoryLimit ?? Bun.env.SIM_MEMORY_LIMIT ?? "1536m",
     simPortRange: parsePortRange(input.simPortRange ?? Bun.env.SIM_PORT_RANGE, defaultSimPortRange),
     runConcurrency: parsePositiveInteger(input.runConcurrency ?? Bun.env.RUN_CONCURRENCY, 2, "RUN_CONCURRENCY"),
+    runBuildTimeoutMs: parsePositiveInteger(
+      input.runBuildTimeoutMs ?? Bun.env.RUN_BUILD_TIMEOUT_MS,
+      90_000,
+      "RUN_BUILD_TIMEOUT_MS",
+    ),
+    simStartupTimeoutMs: parsePositiveInteger(
+      input.simStartupTimeoutMs ?? Bun.env.SIM_STARTUP_TIMEOUT_MS,
+      30_000,
+      "SIM_STARTUP_TIMEOUT_MS",
+    ),
     containerUser: input.containerUser === undefined ? defaultContainerUser() : input.containerUser,
     containerAutoStart: parseBoolean(input.containerAutoStart ?? Bun.env.FRC_CONTAINER_AUTO_START ?? Bun.env.CONTAINER_AUTO_START, true),
   };

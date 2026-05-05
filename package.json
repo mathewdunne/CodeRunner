@@ -14,6 +14,7 @@
     "dev:web": "bun run --cwd apps/web dev",
     "build:web": "bun run --cwd apps/web build",
     "docker:build:sim": "bun scripts/build-sim-image.ts",
+    "verify:v1:two-user": "bun scripts/verify-v1-two-user.ts",
     "migrate": "bun apps/control/src/migrate.ts apply",
     "migrate:status": "bun apps/control/src/migrate.ts status",
     "typecheck": "bun scripts/typecheck.ts",

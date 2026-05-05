@@ -41,6 +41,9 @@ type RunJob = {
   command: RunCommand | null;
   canceled: boolean;
   reportedRunning: boolean;
+  buildSlotHeld: boolean;
+  finished: boolean;
+  readinessTimer: ReturnType<typeof setTimeout> | null;
 };
 
 type RunManagerOptions = {
@@ -132,7 +135,7 @@ async function consumeLines(
 export class RunManager {
   private readonly commandFactory: RunCommandFactory;
   private readonly queue: RunJob[] = [];
-  private readonly active = new Set<string>();
+  private readonly activeBuilds = new Set<string>();
   private readonly jobsByWorkspace = new Map<WorkspaceId, RunJob>();
 
   constructor(
@@ -188,6 +191,9 @@ export class RunManager {
       command: null,
       canceled: false,
       reportedRunning: false,
+      buildSlotHeld: false,
+      finished: false,
+      readinessTimer: null,
     };
 
     mkdirSync(dirname(logPath), { recursive: true });
@@ -233,12 +239,13 @@ export class RunManager {
   }
 
   private pump(): void {
-    while (this.active.size < this.storage.config.runConcurrency && this.queue.length > 0) {
+    while (this.activeBuilds.size < this.storage.config.runConcurrency && this.queue.length > 0) {
       const job = this.queue.shift();
       if (!job || job.canceled) {
         continue;
       }
-      this.active.add(job.id);
+      this.activeBuilds.add(job.id);
+      job.buildSlotHeld = true;
       this.updateQueuePositions();
       void this.runJob(job);
     }
@@ -268,11 +275,16 @@ export class RunManager {
         dockerPath: this.storage.config.dockerPath,
       });
       job.command = command;
+      this.armReadinessTimeout(job);
 
       const stdoutDone = consumeLines(command.stdout, (line) => this.recordLog(job, "stdout", line));
       const stderrDone = consumeLines(command.stderr, (line) => this.recordLog(job, "stderr", line));
       const exit = await command.exited;
       await Promise.all([stdoutDone, stderrDone]);
+
+      if (job.finished) {
+        return;
+      }
 
       if (job.canceled) {
         this.finishJob(job, "stopped", null, exit.signal);
@@ -285,9 +297,30 @@ export class RunManager {
       await this.recordLog(job, "stderr", error instanceof Error ? error.message : "Run failed.");
       this.finishJob(job, job.canceled ? "stopped" : "failed", null);
     } finally {
-      this.active.delete(job.id);
-      this.pump();
+      this.releaseBuildSlot(job);
     }
+  }
+
+  private armReadinessTimeout(job: RunJob): void {
+    const timeoutMs = this.storage.config.runBuildTimeoutMs + this.storage.config.simStartupTimeoutMs;
+    job.readinessTimer = setTimeout(() => {
+      void this.timeoutBeforeReadiness(job, timeoutMs);
+    }, timeoutMs);
+  }
+
+  private async timeoutBeforeReadiness(job: RunJob, timeoutMs: number): Promise<void> {
+    if (job.finished || job.reportedRunning) {
+      return;
+    }
+
+    job.canceled = true;
+    await this.recordLog(
+      job,
+      "stderr",
+      `Run timed out before simulator readiness after ${Math.round(timeoutMs / 1000)} seconds.`,
+    );
+    job.command?.kill("SIGTERM");
+    this.finishJob(job, "failed", null);
   }
 
   private async recordLog(job: RunJob, stream: "stdout" | "stderr" | "sim", line: string): Promise<void> {
@@ -296,11 +329,26 @@ export class RunManager {
     });
     this.broadcast(job, { type: "log", stream, line });
 
-    if (!job.reportedRunning && lineLooksReady(line)) {
+    if (!job.finished && !job.canceled && !job.reportedRunning && lineLooksReady(line)) {
       job.reportedRunning = true;
       this.setJobState(job, "running");
       this.broadcast(job, { type: "status", status: "running" });
+      this.releaseBuildSlot(job);
     }
+  }
+
+  private releaseBuildSlot(job: RunJob): void {
+    if (job.readinessTimer !== null) {
+      clearTimeout(job.readinessTimer);
+      job.readinessTimer = null;
+    }
+    if (!job.buildSlotHeld) {
+      return;
+    }
+
+    job.buildSlotHeld = false;
+    this.activeBuilds.delete(job.id);
+    this.pump();
   }
 
   private setJobState(
@@ -332,6 +380,11 @@ export class RunManager {
   }
 
   private finishJob(job: RunJob, state: "failed" | "stopped", code: number | null, signal: string | null = null): void {
+    if (job.finished) {
+      return;
+    }
+    job.finished = true;
+    this.releaseBuildSlot(job);
     this.setJobState(job, state, { finished: true, exitCode: code });
     this.broadcast(job, { type: "status", status: state });
     this.broadcast(job, { type: "exit", code, signal });

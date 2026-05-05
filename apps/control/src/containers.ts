@@ -64,6 +64,11 @@ function dockerError(args: string[], result: DockerCommandResult): Error {
   return new Error(`docker ${args.join(" ")} failed: ${detail}`);
 }
 
+function dockerPortBindError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : "";
+  return /port is already allocated|bind for .* failed|address already in use/i.test(message);
+}
+
 function simContainerName(workspaceId: WorkspaceId): string {
   return `frc-v1-sim-${workspaceId}`;
 }
@@ -151,6 +156,7 @@ async function portIsFree(port: number): Promise<boolean> {
 export class ContainerOrchestrator {
   private readonly dockerRunner: DockerRunner;
   private readonly activeEnsures = new Map<WorkspaceId, Promise<SimStatus>>();
+  private portReservationLock: Promise<void> = Promise.resolve();
 
   constructor(
     private readonly storage: AppStorage,
@@ -267,7 +273,26 @@ export class ContainerOrchestrator {
     }
   }
 
-  private async allocateSimPort(workspaceId: WorkspaceId, preferredPort: number | null): Promise<number> {
+  private async withPortReservationLock<T>(action: () => Promise<T>): Promise<T> {
+    const previous = this.portReservationLock;
+    let release!: () => void;
+    this.portReservationLock = new Promise<void>((resolveLock) => {
+      release = resolveLock;
+    });
+
+    await previous;
+    try {
+      return await action();
+    } finally {
+      release();
+    }
+  }
+
+  private async allocateSimPort(
+    workspaceId: WorkspaceId,
+    preferredPort: number | null,
+    rejectedPorts: Set<number>,
+  ): Promise<number> {
     const leasedPorts = new Set(this.storage.listLeasedSimPorts(workspaceId));
     const candidates: number[] = [];
     if (preferredPort !== null) {
@@ -281,6 +306,9 @@ export class ContainerOrchestrator {
       if (port < this.storage.config.simPortRange.start || port > this.storage.config.simPortRange.end) {
         continue;
       }
+      if (rejectedPorts.has(port)) {
+        continue;
+      }
       if (leasedPorts.has(port)) {
         continue;
       }
@@ -292,6 +320,20 @@ export class ContainerOrchestrator {
     throw new Error(
       `No free sim ports are available in ${this.storage.config.simPortRange.start}-${this.storage.config.simPortRange.end}.`,
     );
+  }
+
+  private async reserveSimPort(workspace: WorkspaceRow, rejectedPorts: Set<number>): Promise<number> {
+    return await this.withPortReservationLock(async () => {
+      const lease = this.storage.getContainerLease(workspace.id);
+      const port = await this.allocateSimPort(workspace.id, lease?.sim_port ?? null, rejectedPorts);
+      this.storage.upsertSimLease({
+        workspaceId: workspace.id,
+        containerName: lease?.sim_container ?? simContainerName(workspace.id),
+        port,
+        state: "starting",
+      });
+      return port;
+    });
   }
 
   private async adoptContainer(
@@ -409,9 +451,24 @@ export class ContainerOrchestrator {
       }
     }
 
-    const lease = this.storage.getContainerLease(workspace.id);
-    const port = await this.allocateSimPort(workspace.id, lease?.sim_port ?? null);
-    return await this.createSimContainer(workspace, port);
+    const rejectedPorts = new Set<number>();
+    const maxAttempts = this.storage.config.simPortRange.end - this.storage.config.simPortRange.start + 1;
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      const port = await this.reserveSimPort(workspace, rejectedPorts);
+      try {
+        return await this.createSimContainer(workspace, port);
+      } catch (error) {
+        if (!dockerPortBindError(error)) {
+          throw error;
+        }
+        rejectedPorts.add(port);
+        this.storage.clearReservedSimPort(workspace.id, port);
+      }
+    }
+
+    throw new Error(
+      `No free sim ports are available in ${this.storage.config.simPortRange.start}-${this.storage.config.simPortRange.end}.`,
+    );
   }
 
   private recordSimError(workspace: WorkspaceRow, error: unknown): SimStatus {

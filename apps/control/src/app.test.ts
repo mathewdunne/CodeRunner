@@ -103,9 +103,10 @@ function dockerInspect(container: FakeContainer): unknown {
   };
 }
 
-function createFakeDocker() {
+function createFakeDocker(options: { failRunPortsOnce?: number[] } = {}) {
   const containers = new Map<string, FakeContainer>();
   const calls: string[][] = [];
+  const failRunPortsOnce = new Set(options.failRunPortsOnce ?? []);
 
   const runner: DockerRunner = async (args) => {
     calls.push([...args]);
@@ -132,6 +133,10 @@ function createFakeDocker() {
       const name = args[args.indexOf("--name") + 1] ?? "";
       const portMapping = args[args.indexOf("-p") + 1] ?? "";
       const port = Number(/^127\.0\.0\.1:(\d+):5810$/u.exec(portMapping)?.[1]);
+      if (failRunPortsOnce.has(port)) {
+        failRunPortsOnce.delete(port);
+        return missing(`Bind for 127.0.0.1:${port} failed: port is already allocated`);
+      }
       const labels: Record<string, string> = {};
       for (let index = 0; index < args.length; index += 1) {
         if (args[index] === "--label") {
@@ -809,6 +814,12 @@ describe("V1-4 sim container orchestration", () => {
     );
   });
 
+  test("sim entrypoint idles until the run queue starts the sim", async () => {
+    const entrypoint = await readFile(join(process.cwd(), "containers", "sim", "entrypoint.sh"), "utf8");
+    expect(entrypoint).toContain("Waiting for a queued run request");
+    expect(entrypoint).not.toContain("/usr/local/bin/start-sim.sh");
+  });
+
   test("a restarted control plane rediscovers the labeled sim container", async () => {
     const root = await mkdtemp(join(tmpdir(), "frc-v1-control-"));
     const templateDir = await createTemplate(root);
@@ -896,6 +907,60 @@ describe("V1-4 sim container orchestration", () => {
       },
     );
   });
+
+  test("concurrent workspace startup reserves distinct sim ports", async () => {
+    const fakeDocker = createFakeDocker();
+
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        await login(app, "bob");
+        const aliceWorkspace = workspaceBySlug(app, "alice");
+        const bobWorkspace = workspaceBySlug(app, "bob");
+
+        const [aliceStatus, bobStatus] = await Promise.all([
+          app.containers.ensureSimContainer(aliceWorkspace),
+          app.containers.ensureSimContainer(bobWorkspace),
+        ]);
+
+        expect(aliceStatus.state).toBe("running");
+        expect(bobStatus.state).toBe("running");
+        const ports = [...fakeDocker.containers.values()].map((container) => container.port);
+        expect(new Set(ports).size).toBe(2);
+        expect(ports.sort()).toEqual([25814, 25815]);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25814, end: 25815 },
+      },
+    );
+  });
+
+  test("retries the next sim port when Docker reports a bind conflict", async () => {
+    const fakeDocker = createFakeDocker({ failRunPortsOnce: [25816] });
+
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        const workspace = workspaceBySlug(app, "alice");
+
+        const status = await app.containers.ensureSimContainer(workspace);
+
+        expect(status.state).toBe("running");
+        const runPorts = fakeDocker.calls
+          .filter((call) => call[0] === "run")
+          .map((call) => Number(/^127\.0\.0\.1:(\d+):5810$/u.exec(call[call.indexOf("-p") + 1] ?? "")?.[1]));
+        expect(runPorts).toEqual([25816, 25817]);
+        expect(app.storage.getContainerLease(workspace.id)).toMatchObject({ sim_port: 25817 });
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25816, end: 25817 },
+      },
+    );
+  });
 });
 
 describe("V1-5 run queue and log streaming", () => {
@@ -961,7 +1026,7 @@ describe("V1-5 run queue and log streaming", () => {
     return { commands, commandFactory };
   }
 
-  test("streams logs, persists run jobs, and starts queued work in order", async () => {
+  test("streams logs, persists run jobs, and releases the build slot after readiness", async () => {
     const fakeDocker = createFakeDocker();
     const controlled = createControlledRunCommands();
 
@@ -993,13 +1058,16 @@ describe("V1-5 run queue and log streaming", () => {
         const aliceRun = app.storage.getRunJob(aliceRunId);
         expect(aliceRun).toMatchObject({ state: "running", workspace_id: aliceWorkspace.id });
         expect(await readFile(aliceRun?.log_path ?? "", "utf8")).toContain("robot periodic tick");
-        expect(app.storage.getRunJob(bobRunId)).toMatchObject({ state: "queued" });
+        await waitFor(() => controlled.commands.length === 2);
+        expect(controlled.commands[1]?.context.workspace.slug).toBe("bob");
+        expect(app.storage.getRunJob(bobRunId)).toMatchObject({ state: "building" });
+        expect(controlled.commands[0]?.killed).toBe(false);
 
         app.runs.stopWorkspace(aliceWorkspace.id);
-        await waitFor(() => controlled.commands.length === 2);
         expect(controlled.commands[0]?.killed).toBe(true);
-        expect(controlled.commands[1]?.context.workspace.slug).toBe("bob");
+        await waitFor(() => app.storage.getRunJob(aliceRunId)?.state === "stopped");
         expect(app.storage.getRunJob(aliceRunId)).toMatchObject({ state: "stopped", exit_code: null });
+        app.runs.stopWorkspace(bobWorkspace.id);
       },
       {
         dockerRunner: fakeDocker.runner,
@@ -1007,6 +1075,44 @@ describe("V1-5 run queue and log streaming", () => {
         runConcurrency: 1,
         simImage: "frc-sim:test",
         simPortRange: { start: 25820, end: 25829 },
+      },
+    );
+  });
+
+  test("times out a run that never reaches simulator readiness and pumps the queue", async () => {
+    const fakeDocker = createFakeDocker();
+    const controlled = createControlledRunCommands();
+
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        await login(app, "bob");
+        const aliceWorkspace = workspaceBySlug(app, "alice");
+        const bobWorkspace = workspaceBySlug(app, "bob");
+        const aliceMessages: unknown[] = [];
+        const bobMessages: unknown[] = [];
+        const aliceConnection = app.runs.connect(aliceWorkspace, (message) => aliceMessages.push(message));
+        const bobConnection = app.runs.connect(bobWorkspace, (message) => bobMessages.push(message));
+
+        const aliceRunId = app.runs.start(aliceWorkspace, aliceConnection);
+        app.runs.start(bobWorkspace, bobConnection);
+
+        await waitFor(() => controlled.commands[0]?.killed === true);
+        await waitFor(() => controlled.commands.length === 2);
+        expect(app.storage.getRunJob(aliceRunId)).toMatchObject({ state: "failed", exit_code: null });
+        expect(JSON.stringify(aliceMessages)).toContain("timed out before simulator readiness");
+        expect(controlled.commands[1]?.context.workspace.slug).toBe("bob");
+        expect(bobMessages).toContainEqual({ type: "status", status: "building" });
+        app.runs.stopWorkspace(bobWorkspace.id);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        runCommandFactory: controlled.commandFactory,
+        runConcurrency: 1,
+        runBuildTimeoutMs: 20,
+        simStartupTimeoutMs: 20,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25840, end: 25849 },
       },
     );
   });
