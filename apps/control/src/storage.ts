@@ -45,6 +45,19 @@ export type ContainerLeaseRow = {
   created_at: string;
 };
 
+export type RunJobState = "queued" | "building" | "running" | "failed" | "stopped";
+
+export type RunJobRow = {
+  id: string;
+  workspace_id: WorkspaceId;
+  state: RunJobState;
+  requested_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  exit_code: number | null;
+  log_path: string | null;
+};
+
 export type AuthContext = {
   session: SessionRow;
   user: UserRow;
@@ -62,7 +75,7 @@ export class SlugTakenError extends Error {
   }
 }
 
-function randomId(prefix: "usr" | "ws" | "ses"): string {
+function randomId(prefix: "usr" | "ws" | "ses" | "run"): string {
   return `${prefix}_${randomBytes(16).toString("hex")}`;
 }
 
@@ -374,6 +387,79 @@ export class AppStorage {
       throw new Error(`Failed to reload container lease for workspace ${input.workspaceId}.`);
     }
     return lease;
+  }
+
+  createRunJob(input: {
+    workspaceId: WorkspaceId;
+    logPath: string;
+    id?: string;
+  }): RunJobRow {
+    const id = input.id ?? randomId("run");
+    const timestamp = nowIso();
+    this.db
+      .query(
+        `
+          INSERT INTO run_jobs (
+            id,
+            workspace_id,
+            state,
+            requested_at,
+            log_path
+          )
+          VALUES (?, ?, ?, ?, ?)
+        `,
+      )
+      .run(id, input.workspaceId, "queued", timestamp, input.logPath);
+
+    const row = this.getRunJob(id);
+    if (!row) {
+      throw new Error(`Failed to reload run job ${id}.`);
+    }
+    return row;
+  }
+
+  getRunJob(id: string): RunJobRow | null {
+    return (this.db.query("SELECT * FROM run_jobs WHERE id = ?").get(id) as RunJobRow | null) ?? null;
+  }
+
+  updateRunJob(input: {
+    id: string;
+    state: RunJobState;
+    started?: boolean;
+    finished?: boolean;
+    exitCode?: number | null;
+  }): RunJobRow {
+    const timestamp = nowIso();
+    const existing = this.getRunJob(input.id);
+    if (!existing) {
+      throw new Error(`Run job ${input.id} does not exist.`);
+    }
+
+    this.db
+      .query(
+        `
+          UPDATE run_jobs
+          SET
+            state = ?,
+            started_at = ?,
+            finished_at = ?,
+            exit_code = ?
+          WHERE id = ?
+        `,
+      )
+      .run(
+        input.state,
+        input.started ? (existing.started_at ?? timestamp) : existing.started_at,
+        input.finished ? (existing.finished_at ?? timestamp) : existing.finished_at,
+        input.exitCode === undefined ? existing.exit_code : input.exitCode,
+        input.id,
+      );
+
+    const row = this.getRunJob(input.id);
+    if (!row) {
+      throw new Error(`Failed to reload run job ${input.id}.`);
+    }
+    return row;
   }
 }
 

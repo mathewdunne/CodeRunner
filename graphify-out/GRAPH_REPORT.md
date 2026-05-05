@@ -1,12 +1,12 @@
 # Graph Report - FRC-Programming-Training-Sim  (2026-05-04)
 
 ## Corpus Check
-- 39 files · ~44,899 words
+- 40 files · ~47,528 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 390 nodes · 726 edges · 19 communities detected
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 17 edges (avg confidence: 0.82)
+- 419 nodes · 789 edges · 20 communities detected
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 18 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -28,19 +28,20 @@
 - [[_COMMUNITY_Community 15|Community 15]]
 - [[_COMMUNITY_Community 16|Community 16]]
 - [[_COMMUNITY_Community 17|Community 17]]
-- [[_COMMUNITY_Community 28|Community 28]]
+- [[_COMMUNITY_Community 18|Community 18]]
+- [[_COMMUNITY_Community 29|Community 29]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `AppStorage` - 20 edges
-2. `ContainerOrchestrator` - 16 edges
-3. `resolveProjectFilePath()` - 13 edges
-4. `isObject()` - 13 edges
-5. `apiError()` - 10 edges
-6. `startJavaLsp()` - 10 edges
-7. `BrowserLspClient` - 10 edges
-8. `MVP Backend Service (mvp/apps/server/src/main.ts)` - 10 edges
-9. `WebSocketTextPeer` - 9 edges
-10. `registerDefaultDarkModernTheme()` - 8 edges
+1. `AppStorage` - 24 edges
+2. `ContainerOrchestrator` - 17 edges
+3. `RunManager` - 17 edges
+4. `resolveProjectFilePath()` - 13 edges
+5. `isObject()` - 13 edges
+6. `apiError()` - 10 edges
+7. `startJavaLsp()` - 10 edges
+8. `BrowserLspClient` - 10 edges
+9. `MVP Backend Service (mvp/apps/server/src/main.ts)` - 10 edges
+10. `WebSocketTextPeer` - 9 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `readProjectTreeNode()` --calls--> `getProjectPathAccess()`  [INFERRED]
@@ -59,7 +60,7 @@
 - **Java LSP Intelligence Stack (browser to JDT LS)** — web_javalsp_startjavalsp, web_javalsp_browserlspclient, lsp_main_lspbridge, lsp_main_eclipsejdtls [EXTRACTED 1.00]
 - **AdvantageScope Lite NT4 Hosting and Display** — scripts_buildascope, scripts_serveascope, rationale_aslite_hostname, index_html [EXTRACTED 0.95]
 
-## Communities (29 total, 5 thin omitted)
+## Communities (30 total, 5 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.05
@@ -71,7 +72,7 @@ Nodes (40): apiError(), apiErrorResponse(), assertRealPathInside(), authFromRequ
 
 ### Community 2 - "Community 2"
 Cohesion: 0.09
-Nodes (17): defaultContainerUser(), loadControlConfig(), parseBoolean(), parsePortRange(), applyMigrations(), ensureMigrationTable(), listAppliedMigrations(), loadMigrations() (+9 more)
+Nodes (18): defaultContainerUser(), loadControlConfig(), parseBoolean(), parsePortRange(), parsePositiveInteger(), applyMigrations(), ensureMigrationTable(), listAppliedMigrations() (+10 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.15
@@ -90,30 +91,34 @@ Cohesion: 0.17
 Nodes (12): ContainerOrchestrator, containerRuntimeState(), defaultDockerRunner(), dockerError(), isLoopbackHost(), labelsMatch(), portIsFree(), publishedSimPort() (+4 more)
 
 ### Community 7 - "Community 7"
+Cohesion: 0.19
+Nodes (7): consumeLines(), defaultRunCommandFactory(), dockerRunScript(), lineLooksReady(), randomRunId(), runLogPath(), RunManager
+
+### Community 8 - "Community 8"
 Cohesion: 0.11
 Nodes (11): getProjectPathAccess(), isProjectPath(), isWorkspaceSlug(), matchesPathOrChild(), parseProjectPath(), App(), fetchJson(), fileName() (+3 more)
 
-### Community 8 - "Community 8"
+### Community 9 - "Community 9"
 Cohesion: 0.23
 Nodes (13): Robot, compileLite(), compileWasm(), ensureEmscripten(), ensureSubmodule(), envWithEmsdk(), listGitSymlinksUnder(), main() (+5 more)
 
-### Community 9 - "Community 9"
-Cohesion: 0.15
+### Community 10 - "Community 10"
+Cohesion: 0.13
 Nodes (4): createApp(), createTemplate(), createWebDist(), withApp()
 
-### Community 10 - "Community 10"
+### Community 11 - "Community 11"
 Cohesion: 0.47
 Nodes (11): containerState(), dockerStats(), down(), ensureContainer(), lifecycle(), main(), parseMiB(), printEnv() (+3 more)
 
-### Community 11 - "Community 11"
+### Community 12 - "Community 12"
 Cohesion: 0.43
 Nodes (6): nt4HttpUrl(), nt4WsUrl(), parseSessions(), pipeWebSockets(), requestedProtocols(), sessionFromPath()
 
-### Community 12 - "Community 12"
+### Community 13 - "Community 13"
 Cohesion: 0.54
 Nodes (6): ensureContainer(), ensureLspContainer(), ensureSimContainer(), runCommand(), shutdown(), startProcess()
 
-### Community 13 - "Community 13"
+### Community 14 - "Community 14"
 Cohesion: 0.6
 Nodes (3): asWebSocket(), handleUpgrade(), launchLanguageServer()
 
@@ -125,12 +130,12 @@ Nodes (3): asWebSocket(), handleUpgrade(), launchLanguageServer()
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AppStorage` connect `Community 2` to `Community 1`, `Community 6`?**
-  _High betweenness centrality (0.049) - this node is a cross-community bridge._
-- **Why does `getProjectPathAccess()` connect `Community 7` to `Community 1`?**
-  _High betweenness centrality (0.039) - this node is a cross-community bridge._
-- **Why does `ContainerOrchestrator` connect `Community 6` to `Community 1`?**
-  _High betweenness centrality (0.034) - this node is a cross-community bridge._
+- **Why does `AppStorage` connect `Community 2` to `Community 1`, `Community 6`, `Community 7`?**
+  _High betweenness centrality (0.071) - this node is a cross-community bridge._
+- **Why does `RunManager` connect `Community 7` to `Community 1`?**
+  _High betweenness centrality (0.064) - this node is a cross-community bridge._
+- **Why does `getProjectPathAccess()` connect `Community 8` to `Community 1`?**
+  _High betweenness centrality (0.046) - this node is a cross-community bridge._
 - **What connects `Eclipse JDT LS Process`, `LineSplitter class`, `Vite Config (mvp/apps/web/vite.config.ts)` to the rest of the system?**
   _10 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**

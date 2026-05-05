@@ -17,6 +17,7 @@ export type ControlConfig = {
   simImage: string;
   simMemoryLimit: string;
   simPortRange: PortRange;
+  runConcurrency: number;
   containerUser: string | null;
   containerAutoStart: boolean;
 };
@@ -62,6 +63,14 @@ function parseBoolean(value: string | boolean | undefined, fallback: boolean): b
   return !["0", "false", "no", "off"].includes(value.trim().toLowerCase());
 }
 
+function parsePositiveInteger(value: string | number | undefined, fallback: number, name: string): number {
+  const parsed = typeof value === "number" ? value : value === undefined ? fallback : Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${name} must be a positive integer.`);
+  }
+  return parsed;
+}
+
 function defaultContainerUser(): string | null {
   if (Bun.env.FRC_CONTAINER_USER) {
     return Bun.env.FRC_CONTAINER_USER;
@@ -101,6 +110,7 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     simImage: input.simImage ?? Bun.env.SIM_IMAGE ?? "frc-sim:v1",
     simMemoryLimit: input.simMemoryLimit ?? Bun.env.SIM_MEMORY_LIMIT ?? "1536m",
     simPortRange: parsePortRange(input.simPortRange ?? Bun.env.SIM_PORT_RANGE, defaultSimPortRange),
+    runConcurrency: parsePositiveInteger(input.runConcurrency ?? Bun.env.RUN_CONCURRENCY, 2, "RUN_CONCURRENCY"),
     containerUser: input.containerUser === undefined ? defaultContainerUser() : input.containerUser,
     containerAutoStart: parseBoolean(input.containerAutoStart ?? Bun.env.FRC_CONTAINER_AUTO_START ?? Bun.env.CONTAINER_AUTO_START, true),
   };

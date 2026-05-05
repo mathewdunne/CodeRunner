@@ -54,125 +54,143 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L1",
       "id": "apps_control_src_app_test_ts",
-      "community": 9,
+      "community": 10,
       "norm_label": "app.test.ts"
     },
     {
       "label": "exists()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L8",
+      "source_location": "L10",
       "id": "src_app_test_exists",
-      "community": 9,
+      "community": 10,
       "norm_label": "exists()"
     },
     {
       "label": "createTemplate()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L17",
+      "source_location": "L19",
       "id": "src_app_test_createtemplate",
-      "community": 9,
+      "community": 10,
       "norm_label": "createtemplate()"
     },
     {
       "label": "createWebDist()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L29",
+      "source_location": "L31",
       "id": "src_app_test_createwebdist",
-      "community": 9,
+      "community": 10,
       "norm_label": "createwebdist()"
     },
     {
       "label": "withApp()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L41",
+      "source_location": "L43",
       "id": "src_app_test_withapp",
-      "community": 9,
+      "community": 10,
       "norm_label": "withapp()"
     },
     {
       "label": "ok()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L73",
+      "source_location": "L75",
       "id": "src_app_test_ok",
-      "community": 9,
+      "community": 10,
       "norm_label": "ok()"
     },
     {
       "label": "missing()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L77",
+      "source_location": "L79",
       "id": "src_app_test_missing",
-      "community": 9,
+      "community": 10,
       "norm_label": "missing()"
     },
     {
       "label": "dockerInspect()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L81",
+      "source_location": "L83",
       "id": "src_app_test_dockerinspect",
-      "community": 9,
+      "community": 10,
       "norm_label": "dockerinspect()"
     },
     {
       "label": "createFakeDocker()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L104",
+      "source_location": "L106",
       "id": "src_app_test_createfakedocker",
-      "community": 9,
+      "community": 10,
       "norm_label": "createfakedocker()"
     },
     {
       "label": "waitFor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L172",
+      "source_location": "L174",
       "id": "src_app_test_waitfor",
-      "community": 9,
+      "community": 10,
       "norm_label": "waitfor()"
     },
     {
       "label": "login()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L182",
+      "source_location": "L184",
       "id": "src_app_test_login",
-      "community": 9,
+      "community": 10,
       "norm_label": "login()"
     },
     {
       "label": "cookieFrom()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L199",
+      "source_location": "L201",
       "id": "src_app_test_cookiefrom",
-      "community": 9,
+      "community": 10,
       "norm_label": "cookiefrom()"
     },
     {
       "label": "workspaceProjectPath()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L205",
+      "source_location": "L207",
       "id": "src_app_test_workspaceprojectpath",
-      "community": 9,
+      "community": 10,
       "norm_label": "workspaceprojectpath()"
+    },
+    {
+      "label": "workspaceBySlug()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L215",
+      "id": "src_app_test_workspacebyslug",
+      "community": 10,
+      "norm_label": "workspacebyslug()"
     },
     {
       "label": "tryCreateSymlink()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L213",
+      "source_location": "L221",
       "id": "src_app_test_trycreatesymlink",
-      "community": 9,
+      "community": 10,
       "norm_label": "trycreatesymlink()"
+    },
+    {
+      "label": "createControlledRunCommands()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L902",
+      "id": "src_app_test_createcontrolledruncommands",
+      "community": 10,
+      "norm_label": "createcontrolledruncommands()"
     },
     {
       "label": "app.ts",
@@ -187,7 +205,7 @@
       "label": "htmlResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L49",
+      "source_location": "L74",
       "id": "src_app_htmlresponse",
       "community": 1,
       "norm_label": "htmlresponse()"
@@ -196,7 +214,7 @@
       "label": "redirect()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L55",
+      "source_location": "L80",
       "id": "src_app_redirect",
       "community": 1,
       "norm_label": "redirect()"
@@ -205,7 +223,7 @@
       "label": "jsonResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L61",
+      "source_location": "L86",
       "id": "src_app_jsonresponse",
       "community": 1,
       "norm_label": "jsonresponse()"
@@ -214,7 +232,7 @@
       "label": "escapeHtml()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L67",
+      "source_location": "L92",
       "id": "src_app_escapehtml",
       "community": 1,
       "norm_label": "escapehtml()"
@@ -223,7 +241,7 @@
       "label": "loginPage()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L75",
+      "source_location": "L100",
       "id": "src_app_loginpage",
       "community": 1,
       "norm_label": "loginpage()"
@@ -232,7 +250,7 @@
       "label": "notFound()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L107",
+      "source_location": "L132",
       "id": "src_app_notfound",
       "community": 1,
       "norm_label": "notfound()"
@@ -241,7 +259,7 @@
       "label": "readDisplayName()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L111",
+      "source_location": "L136",
       "id": "src_app_readdisplayname",
       "community": 1,
       "norm_label": "readdisplayname()"
@@ -250,7 +268,7 @@
       "label": "currentUserId()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L126",
+      "source_location": "L151",
       "id": "src_app_currentuserid",
       "community": 1,
       "norm_label": "currentuserid()"
@@ -259,7 +277,7 @@
       "label": "authFromRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L130",
+      "source_location": "L155",
       "id": "src_app_authfromrequest",
       "community": 1,
       "norm_label": "authfromrequest()"
@@ -268,7 +286,7 @@
       "label": "resolveWorkspaceRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L147",
+      "source_location": "L172",
       "id": "src_app_resolveworkspacerequest",
       "community": 1,
       "norm_label": "resolveworkspacerequest()"
@@ -277,7 +295,7 @@
       "label": "sessionResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L171",
+      "source_location": "L196",
       "id": "src_app_sessionresponse",
       "community": 1,
       "norm_label": "sessionresponse()"
@@ -286,7 +304,7 @@
       "label": "sortProjectNodes()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L185",
+      "source_location": "L210",
       "id": "src_app_sortprojectnodes",
       "community": 1,
       "norm_label": "sortprojectnodes()"
@@ -295,7 +313,7 @@
       "label": "isReservedProjectTempName()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L193",
+      "source_location": "L218",
       "id": "src_app_isreservedprojecttempname",
       "community": 1,
       "norm_label": "isreservedprojecttempname()"
@@ -304,7 +322,7 @@
       "label": "readProjectTreeNode()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L197",
+      "source_location": "L222",
       "id": "src_app_readprojecttreenode",
       "community": 1,
       "norm_label": "readprojecttreenode()"
@@ -313,7 +331,7 @@
       "label": "projectTreeResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L257",
+      "source_location": "L282",
       "id": "src_app_projecttreeresponse",
       "community": 1,
       "norm_label": "projecttreeresponse()"
@@ -322,7 +340,7 @@
       "label": "mutationResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L272",
+      "source_location": "L297",
       "id": "src_app_mutationresponse",
       "community": 1,
       "norm_label": "mutationresponse()"
@@ -331,7 +349,7 @@
       "label": "projectPathFromQuery()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L279",
+      "source_location": "L304",
       "id": "src_app_projectpathfromquery",
       "community": 1,
       "norm_label": "projectpathfromquery()"
@@ -340,7 +358,7 @@
       "label": "apiError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L302",
+      "source_location": "L327",
       "id": "src_app_apierror",
       "community": 1,
       "norm_label": "apierror()"
@@ -349,7 +367,7 @@
       "label": "fsErrorCode()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L306",
+      "source_location": "L331",
       "id": "src_app_fserrorcode",
       "community": 1,
       "norm_label": "fserrorcode()"
@@ -358,7 +376,7 @@
       "label": "isMissingPathError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L310",
+      "source_location": "L335",
       "id": "src_app_ismissingpatherror",
       "community": 1,
       "norm_label": "ismissingpatherror()"
@@ -367,7 +385,7 @@
       "label": "isNonEmptyDirectoryError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L314",
+      "source_location": "L339",
       "id": "src_app_isnonemptydirectoryerror",
       "community": 1,
       "norm_label": "isnonemptydirectoryerror()"
@@ -376,7 +394,7 @@
       "label": "symlinkError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L319",
+      "source_location": "L344",
       "id": "src_app_symlinkerror",
       "community": 1,
       "norm_label": "symlinkerror()"
@@ -385,7 +403,7 @@
       "label": "lstatRequired()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L323",
+      "source_location": "L348",
       "id": "src_app_lstatrequired",
       "community": 1,
       "norm_label": "lstatrequired()"
@@ -394,7 +412,7 @@
       "label": "assertRealPathInside()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L334",
+      "source_location": "L359",
       "id": "src_app_assertrealpathinside",
       "community": 1,
       "norm_label": "assertrealpathinside()"
@@ -403,7 +421,7 @@
       "label": "resolveProjectFilePath()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L342",
+      "source_location": "L367",
       "id": "src_app_resolveprojectfilepath",
       "community": 1,
       "norm_label": "resolveprojectfilepath()"
@@ -412,7 +430,7 @@
       "label": "readJsonRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L419",
+      "source_location": "L444",
       "id": "src_app_readjsonrequest",
       "community": 1,
       "norm_label": "readjsonrequest()"
@@ -421,7 +439,7 @@
       "label": "writeTempPathFor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L435",
+      "source_location": "L460",
       "id": "src_app_writetemppathfor",
       "community": 1,
       "norm_label": "writetemppathfor()"
@@ -430,7 +448,7 @@
       "label": "writeFileAtomically()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L439",
+      "source_location": "L464",
       "id": "src_app_writefileatomically",
       "community": 1,
       "norm_label": "writefileatomically()"
@@ -439,7 +457,7 @@
       "label": "readProjectFile()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L452",
+      "source_location": "L477",
       "id": "src_app_readprojectfile",
       "community": 1,
       "norm_label": "readprojectfile()"
@@ -448,7 +466,7 @@
       "label": "writeProjectFile()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L471",
+      "source_location": "L496",
       "id": "src_app_writeprojectfile",
       "community": 1,
       "norm_label": "writeprojectfile()"
@@ -457,7 +475,7 @@
       "label": "createProjectEntry()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L488",
+      "source_location": "L513",
       "id": "src_app_createprojectentry",
       "community": 1,
       "norm_label": "createprojectentry()"
@@ -466,7 +484,7 @@
       "label": "renameProjectEntry()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L520",
+      "source_location": "L545",
       "id": "src_app_renameprojectentry",
       "community": 1,
       "norm_label": "renameprojectentry()"
@@ -475,7 +493,7 @@
       "label": "deleteProjectEntry()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L542",
+      "source_location": "L567",
       "id": "src_app_deleteprojectentry",
       "community": 1,
       "norm_label": "deleteprojectentry()"
@@ -484,7 +502,7 @@
       "label": "apiErrorResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L569",
+      "source_location": "L594",
       "id": "src_app_apierrorresponse",
       "community": 1,
       "norm_label": "apierrorresponse()"
@@ -493,7 +511,7 @@
       "label": "readHeartbeatRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L576",
+      "source_location": "L601",
       "id": "src_app_readheartbeatrequest",
       "community": 1,
       "norm_label": "readheartbeatrequest()"
@@ -502,7 +520,7 @@
       "label": "contentTypeFor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L583",
+      "source_location": "L608",
       "id": "src_app_contenttypefor",
       "community": 1,
       "norm_label": "contenttypefor()"
@@ -511,7 +529,7 @@
       "label": "isInsideDirectory()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L603",
+      "source_location": "L628",
       "id": "src_app_isinsidedirectory",
       "community": 1,
       "norm_label": "isinsidedirectory()"
@@ -520,7 +538,7 @@
       "label": "staticFileResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L608",
+      "source_location": "L633",
       "id": "src_app_staticfileresponse",
       "community": 1,
       "norm_label": "staticfileresponse()"
@@ -529,7 +547,7 @@
       "label": "webShellResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L626",
+      "source_location": "L651",
       "id": "src_app_webshellresponse",
       "community": 1,
       "norm_label": "webshellresponse()"
@@ -538,7 +556,7 @@
       "label": "containersStatusResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L638",
+      "source_location": "L663",
       "id": "src_app_containersstatusresponse",
       "community": 1,
       "norm_label": "containersstatusresponse()"
@@ -547,7 +565,7 @@
       "label": "webAssetResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L645",
+      "source_location": "L670",
       "id": "src_app_webassetresponse",
       "community": 1,
       "norm_label": "webassetresponse()"
@@ -556,9 +574,9 @@
       "label": "createApp()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L661",
+      "source_location": "L686",
       "id": "src_app_createapp",
-      "community": 9,
+      "community": 10,
       "norm_label": "createapp()"
     },
     {
@@ -574,7 +592,7 @@
       "label": "parsePortRange()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L32",
+      "source_location": "L33",
       "id": "src_config_parseportrange",
       "community": 2,
       "norm_label": "parseportrange()"
@@ -583,16 +601,25 @@
       "label": "parseBoolean()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L55",
+      "source_location": "L56",
       "id": "src_config_parseboolean",
       "community": 2,
       "norm_label": "parseboolean()"
     },
     {
+      "label": "parsePositiveInteger()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L66",
+      "id": "src_config_parsepositiveinteger",
+      "community": 2,
+      "norm_label": "parsepositiveinteger()"
+    },
+    {
       "label": "defaultContainerUser()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L65",
+      "source_location": "L74",
       "id": "src_config_defaultcontaineruser",
       "community": 2,
       "norm_label": "defaultcontaineruser()"
@@ -601,7 +628,7 @@
       "label": "loadControlConfig()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L81",
+      "source_location": "L90",
       "id": "src_config_loadcontrolconfig",
       "community": 2,
       "norm_label": "loadcontrolconfig()"
@@ -918,7 +945,7 @@
       "source_file": "apps\\control\\src\\main.ts",
       "source_location": "L1",
       "id": "apps_control_src_main_ts",
-      "community": 9,
+      "community": 10,
       "norm_label": "main.ts"
     },
     {
@@ -994,6 +1021,213 @@
       "norm_label": "applymigrations()"
     },
     {
+      "label": "runs.ts",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L1",
+      "id": "apps_control_src_runs_ts",
+      "community": 7,
+      "norm_label": "runs.ts"
+    },
+    {
+      "label": "randomRunId()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L50",
+      "id": "src_runs_randomrunid",
+      "community": 7,
+      "norm_label": "randomrunid()"
+    },
+    {
+      "label": "runLogPath()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L54",
+      "id": "src_runs_runlogpath",
+      "community": 7,
+      "norm_label": "runlogpath()"
+    },
+    {
+      "label": "lineLooksReady()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L58",
+      "id": "src_runs_linelooksready",
+      "community": 7,
+      "norm_label": "linelooksready()"
+    },
+    {
+      "label": "dockerRunScript()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L62",
+      "id": "src_runs_dockerrunscript",
+      "community": 7,
+      "norm_label": "dockerrunscript()"
+    },
+    {
+      "label": "defaultRunCommandFactory()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L76",
+      "id": "src_runs_defaultruncommandfactory",
+      "community": 7,
+      "norm_label": "defaultruncommandfactory()"
+    },
+    {
+      "label": "consumeLines()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L96",
+      "id": "src_runs_consumelines",
+      "community": 7,
+      "norm_label": "consumelines()"
+    },
+    {
+      "label": "RunManager",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L132",
+      "id": "src_runs_runmanager",
+      "community": 7,
+      "norm_label": "runmanager"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L138",
+      "id": "src_runs_runmanager_constructor",
+      "community": 7,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": ".connect()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L146",
+      "id": "src_runs_runmanager_connect",
+      "community": 7,
+      "norm_label": ".connect()"
+    },
+    {
+      "label": ".disconnect()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L168",
+      "id": "src_runs_runmanager_disconnect",
+      "community": 7,
+      "norm_label": ".disconnect()"
+    },
+    {
+      "label": ".queueDepth()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L173",
+      "id": "src_runs_runmanager_queuedepth",
+      "community": 7,
+      "norm_label": ".queuedepth()"
+    },
+    {
+      "label": ".start()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L177",
+      "id": "src_runs_runmanager_start",
+      "community": 7,
+      "norm_label": ".start()"
+    },
+    {
+      "label": ".stopWorkspace()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L209",
+      "id": "src_runs_runmanager_stopworkspace",
+      "community": 7,
+      "norm_label": ".stopworkspace()"
+    },
+    {
+      "label": ".cancelWorkspace()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L213",
+      "id": "src_runs_runmanager_cancelworkspace",
+      "community": 7,
+      "norm_label": ".cancelworkspace()"
+    },
+    {
+      "label": ".pump()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L235",
+      "id": "src_runs_runmanager_pump",
+      "community": 7,
+      "norm_label": ".pump()"
+    },
+    {
+      "label": ".runJob()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L247",
+      "id": "src_runs_runmanager_runjob",
+      "community": 7,
+      "norm_label": ".runjob()"
+    },
+    {
+      "label": ".recordLog()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L293",
+      "id": "src_runs_runmanager_recordlog",
+      "community": 7,
+      "norm_label": ".recordlog()"
+    },
+    {
+      "label": ".setJobState()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L306",
+      "id": "src_runs_runmanager_setjobstate",
+      "community": 7,
+      "norm_label": ".setjobstate()"
+    },
+    {
+      "label": ".finishJob()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L334",
+      "id": "src_runs_runmanager_finishjob",
+      "community": 7,
+      "norm_label": ".finishjob()"
+    },
+    {
+      "label": ".sendCurrentStatus()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L343",
+      "id": "src_runs_runmanager_sendcurrentstatus",
+      "community": 7,
+      "norm_label": ".sendcurrentstatus()"
+    },
+    {
+      "label": ".updateQueuePositions()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L356",
+      "id": "src_runs_runmanager_updatequeuepositions",
+      "community": 7,
+      "norm_label": ".updatequeuepositions()"
+    },
+    {
+      "label": ".broadcast()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L366",
+      "id": "src_runs_runmanager_broadcast",
+      "community": 7,
+      "norm_label": ".broadcast()"
+    },
+    {
       "label": "storage.ts",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
@@ -1006,7 +1240,7 @@
       "label": "SlugTakenError",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L58",
+      "source_location": "L71",
       "id": "src_storage_slugtakenerror",
       "community": 2,
       "norm_label": "slugtakenerror"
@@ -1015,7 +1249,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L59",
+      "source_location": "L72",
       "id": "src_storage_slugtakenerror_constructor",
       "community": 2,
       "norm_label": ".constructor()"
@@ -1024,7 +1258,7 @@
       "label": "randomId()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L65",
+      "source_location": "L78",
       "id": "src_storage_randomid",
       "community": 2,
       "norm_label": "randomid()"
@@ -1033,7 +1267,7 @@
       "label": "nowIso()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L69",
+      "source_location": "L82",
       "id": "src_storage_nowiso",
       "community": 2,
       "norm_label": "nowiso()"
@@ -1042,7 +1276,7 @@
       "label": "slugFromDisplayName()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L73",
+      "source_location": "L86",
       "id": "src_storage_slugfromdisplayname",
       "community": 2,
       "norm_label": "slugfromdisplayname()"
@@ -1051,7 +1285,7 @@
       "label": "ensureWorkspaceFiles()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L87",
+      "source_location": "L100",
       "id": "src_storage_ensureworkspacefiles",
       "community": 2,
       "norm_label": "ensureworkspacefiles()"
@@ -1060,7 +1294,7 @@
       "label": "AppStorage",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L110",
+      "source_location": "L123",
       "id": "src_storage_appstorage",
       "community": 2,
       "norm_label": "appstorage"
@@ -1069,7 +1303,7 @@
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L114",
+      "source_location": "L127",
       "id": "src_storage_appstorage_constructor",
       "community": 2,
       "norm_label": ".constructor()"
@@ -1078,7 +1312,7 @@
       "label": ".initialize()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L121",
+      "source_location": "L134",
       "id": "src_storage_appstorage_initialize",
       "community": 2,
       "norm_label": ".initialize()"
@@ -1087,7 +1321,7 @@
       "label": ".close()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L126",
+      "source_location": "L139",
       "id": "src_storage_appstorage_close",
       "community": 2,
       "norm_label": ".close()"
@@ -1096,7 +1330,7 @@
       "label": ".findUserBySlug()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L130",
+      "source_location": "L143",
       "id": "src_storage_appstorage_finduserbyslug",
       "community": 2,
       "norm_label": ".finduserbyslug()"
@@ -1105,7 +1339,7 @@
       "label": ".findWorkspaceByUserId()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L136",
+      "source_location": "L149",
       "id": "src_storage_appstorage_findworkspacebyuserid",
       "community": 2,
       "norm_label": ".findworkspacebyuserid()"
@@ -1114,7 +1348,7 @@
       "label": ".findWorkspaceBySlug()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L143",
+      "source_location": "L156",
       "id": "src_storage_appstorage_findworkspacebyslug",
       "community": 2,
       "norm_label": ".findworkspacebyslug()"
@@ -1123,7 +1357,7 @@
       "label": ".findWorkspaceById()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L150",
+      "source_location": "L163",
       "id": "src_storage_appstorage_findworkspacebyid",
       "community": 2,
       "norm_label": ".findworkspacebyid()"
@@ -1132,7 +1366,7 @@
       "label": ".createOrLoadUserWorkspace()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L157",
+      "source_location": "L170",
       "id": "src_storage_appstorage_createorloaduserworkspace",
       "community": 2,
       "norm_label": ".createorloaduserworkspace()"
@@ -1141,7 +1375,7 @@
       "label": ".createSession()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L204",
+      "source_location": "L217",
       "id": "src_storage_appstorage_createsession",
       "community": 2,
       "norm_label": ".createsession()"
@@ -1150,7 +1384,7 @@
       "label": ".login()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L223",
+      "source_location": "L236",
       "id": "src_storage_appstorage_login",
       "community": 2,
       "norm_label": ".login()"
@@ -1159,7 +1393,7 @@
       "label": ".getAuthContext()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L229",
+      "source_location": "L242",
       "id": "src_storage_appstorage_getauthcontext",
       "community": 2,
       "norm_label": ".getauthcontext()"
@@ -1168,7 +1402,7 @@
       "label": ".touchUserAndWorkspace()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L307",
+      "source_location": "L320",
       "id": "src_storage_appstorage_touchuserandworkspace",
       "community": 2,
       "norm_label": ".touchuserandworkspace()"
@@ -1177,7 +1411,7 @@
       "label": ".touchSession()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L315",
+      "source_location": "L328",
       "id": "src_storage_appstorage_touchsession",
       "community": 2,
       "norm_label": ".touchsession()"
@@ -1186,7 +1420,7 @@
       "label": ".deleteSession()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L321",
+      "source_location": "L334",
       "id": "src_storage_appstorage_deletesession",
       "community": 2,
       "norm_label": ".deletesession()"
@@ -1195,7 +1429,7 @@
       "label": ".getContainerLease()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L325",
+      "source_location": "L338",
       "id": "src_storage_appstorage_getcontainerlease",
       "community": 2,
       "norm_label": ".getcontainerlease()"
@@ -1204,7 +1438,7 @@
       "label": ".listLeasedSimPorts()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L333",
+      "source_location": "L346",
       "id": "src_storage_appstorage_listleasedsimports",
       "community": 2,
       "norm_label": ".listleasedsimports()"
@@ -1213,16 +1447,43 @@
       "label": ".upsertSimLease()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L344",
+      "source_location": "L357",
       "id": "src_storage_appstorage_upsertsimlease",
       "community": 2,
       "norm_label": ".upsertsimlease()"
     },
     {
+      "label": ".createRunJob()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L392",
+      "id": "src_storage_appstorage_createrunjob",
+      "community": 2,
+      "norm_label": ".createrunjob()"
+    },
+    {
+      "label": ".getRunJob()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L421",
+      "id": "src_storage_appstorage_getrunjob",
+      "community": 2,
+      "norm_label": ".getrunjob()"
+    },
+    {
+      "label": ".updateRunJob()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L425",
+      "id": "src_storage_appstorage_updaterunjob",
+      "community": 2,
+      "norm_label": ".updaterunjob()"
+    },
+    {
       "label": "createStorage()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L380",
+      "source_location": "L466",
       "id": "src_storage_createstorage",
       "community": 2,
       "norm_label": "createstorage()"
@@ -1233,7 +1494,7 @@
       "source_file": "apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "apps_web_vite_config_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "vite.config.ts"
     },
     {
@@ -1242,124 +1503,124 @@
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L1",
       "id": "apps_web_src_main_tsx",
-      "community": 7,
+      "community": 8,
       "norm_label": "main.tsx"
     },
     {
       "label": "getWorker()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L18",
+      "source_location": "L20",
       "id": "src_main_getworker",
-      "community": 7,
+      "community": 8,
       "norm_label": "getworker()"
     },
     {
       "label": "workspaceSlugFromLocation()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L42",
+      "source_location": "L46",
       "id": "src_main_workspaceslugfromlocation",
-      "community": 7,
+      "community": 8,
       "norm_label": "workspaceslugfromlocation()"
     },
     {
       "label": "fileName()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L48",
+      "source_location": "L52",
       "id": "src_main_filename",
-      "community": 7,
+      "community": 8,
       "norm_label": "filename()"
     },
     {
       "label": "parentPath()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L53",
+      "source_location": "L57",
       "id": "src_main_parentpath",
-      "community": 7,
+      "community": 8,
       "norm_label": "parentpath()"
     },
     {
       "label": "languageFor()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L57",
+      "source_location": "L61",
       "id": "src_main_languagefor",
-      "community": 7,
+      "community": 8,
       "norm_label": "languagefor()"
     },
     {
       "label": "modelUriFor()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L70",
+      "source_location": "L74",
       "id": "src_main_modelurifor",
-      "community": 7,
+      "community": 8,
       "norm_label": "modelurifor()"
     },
     {
       "label": "fetchJson()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L74",
+      "source_location": "L78",
       "id": "src_main_fetchjson",
-      "community": 7,
+      "community": 8,
       "norm_label": "fetchjson()"
     },
     {
       "label": "canOpen()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L94",
+      "source_location": "L98",
       "id": "src_main_canopen",
-      "community": 7,
+      "community": 8,
       "norm_label": "canopen()"
     },
     {
       "label": "setTree()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L98",
+      "source_location": "L102",
       "id": "src_main_settree",
-      "community": 7,
+      "community": 8,
       "norm_label": "settree()"
     },
     {
       "label": "loadWorkspace()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L353",
+      "source_location": "L364",
       "id": "src_main_loadworkspace",
-      "community": 7,
+      "community": 8,
       "norm_label": "loadworkspace()"
     },
     {
       "label": "sendHeartbeat()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L392",
+      "source_location": "L403",
       "id": "src_main_sendheartbeat",
-      "community": 7,
+      "community": 8,
       "norm_label": "sendheartbeat()"
     },
     {
       "label": "refreshStatus()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L412",
+      "source_location": "L493",
       "id": "src_main_refreshstatus",
-      "community": 7,
+      "community": 8,
       "norm_label": "refreshstatus()"
     },
     {
       "label": "warnOnDirtyFiles()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L434",
+      "source_location": "L515",
       "id": "src_main_warnondirtyfiles",
-      "community": 7,
+      "community": 8,
       "norm_label": "warnondirtyfiles()"
     },
     {
@@ -1368,7 +1629,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_lsp_src_main_ts",
-      "community": 13,
+      "community": 14,
       "norm_label": "main.ts"
     },
     {
@@ -1377,7 +1638,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L70",
       "id": "src_main_launchlanguageserver",
-      "community": 13,
+      "community": 14,
       "norm_label": "launchlanguageserver()"
     },
     {
@@ -1386,7 +1647,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L109",
       "id": "src_main_aswebsocket",
-      "community": 13,
+      "community": 14,
       "norm_label": "aswebsocket()"
     },
     {
@@ -1395,7 +1656,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L133",
       "id": "src_main_handleupgrade",
-      "community": 13,
+      "community": 14,
       "norm_label": "handleupgrade()"
     },
     {
@@ -1404,7 +1665,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_router_src_main_ts",
-      "community": 11,
+      "community": 12,
       "norm_label": "main.ts"
     },
     {
@@ -1413,7 +1674,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L17",
       "id": "src_main_parsesessions",
-      "community": 11,
+      "community": 12,
       "norm_label": "parsesessions()"
     },
     {
@@ -1422,7 +1683,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L36",
       "id": "src_main_sessionfrompath",
-      "community": 11,
+      "community": 12,
       "norm_label": "sessionfrompath()"
     },
     {
@@ -1431,7 +1692,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L44",
       "id": "src_main_nt4httpurl",
-      "community": 11,
+      "community": 12,
       "norm_label": "nt4httpurl()"
     },
     {
@@ -1440,7 +1701,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L48",
       "id": "src_main_nt4wsurl",
-      "community": 11,
+      "community": 12,
       "norm_label": "nt4wsurl()"
     },
     {
@@ -1449,7 +1710,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L52",
       "id": "src_main_requestedprotocols",
-      "community": 11,
+      "community": 12,
       "norm_label": "requestedprotocols()"
     },
     {
@@ -1458,7 +1719,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L58",
       "id": "src_main_pipewebsockets",
-      "community": 11,
+      "community": 12,
       "norm_label": "pipewebsockets()"
     },
     {
@@ -1746,7 +2007,7 @@
       "source_file": "mvp\\apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_vite_config_ts",
-      "community": 21,
+      "community": 22,
       "norm_label": "vite.config.ts"
     },
     {
@@ -2304,7 +2565,7 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_main_java",
-      "community": 14,
+      "community": 15,
       "norm_label": "main.java"
     },
     {
@@ -2313,7 +2574,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L5",
       "id": "robot_main_main",
-      "community": 14,
+      "community": 15,
       "norm_label": "main"
     },
     {
@@ -2322,7 +2583,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L6",
       "id": "robot_main_main_main",
-      "community": 14,
+      "community": 15,
       "norm_label": ".main()"
     },
     {
@@ -2331,7 +2592,7 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_robot_java",
-      "community": 8,
+      "community": 9,
       "norm_label": "robot.java"
     },
     {
@@ -2340,7 +2601,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L13",
       "id": "robot_robot_robot",
-      "community": 8,
+      "community": 9,
       "norm_label": "robot"
     },
     {
@@ -2349,7 +2610,7 @@
       "source_file": "",
       "source_location": "",
       "id": "timedrobot",
-      "community": 8,
+      "community": 9,
       "norm_label": "timedrobot"
     },
     {
@@ -2358,7 +2619,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L29",
       "id": "robot_robot_robot_robotinit",
-      "community": 8,
+      "community": 9,
       "norm_label": ".robotinit()"
     },
     {
@@ -2367,7 +2628,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L34",
       "id": "robot_robot_robot_robotperiodic",
-      "community": 8,
+      "community": 9,
       "norm_label": ".robotperiodic()"
     },
     {
@@ -2376,7 +2637,7 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_robotcontainer_java",
-      "community": 15,
+      "community": 16,
       "norm_label": "robotcontainer.java"
     },
     {
@@ -2385,7 +2646,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L3",
       "id": "robot_robotcontainer_robotcontainer",
-      "community": 15,
+      "community": 16,
       "norm_label": "robotcontainer"
     },
     {
@@ -2394,7 +2655,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L4",
       "id": "robot_robotcontainer_robotcontainer_robotcontainer",
-      "community": 15,
+      "community": 16,
       "norm_label": ".robotcontainer()"
     },
     {
@@ -2403,7 +2664,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L1",
       "id": "mvp_scripts_build_ascope_lite_ts",
-      "community": 8,
+      "community": 9,
       "norm_label": "build-ascope-lite.ts"
     },
     {
@@ -2412,7 +2673,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L26",
       "id": "scripts_build_ascope_lite_run",
-      "community": 8,
+      "community": 9,
       "norm_label": "run()"
     },
     {
@@ -2421,7 +2682,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L41",
       "id": "scripts_build_ascope_lite_ensuresubmodule",
-      "community": 8,
+      "community": 9,
       "norm_label": "ensuresubmodule()"
     },
     {
@@ -2430,7 +2691,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L49",
       "id": "scripts_build_ascope_lite_ensureemscripten",
-      "community": 8,
+      "community": 9,
       "norm_label": "ensureemscripten()"
     },
     {
@@ -2439,7 +2700,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L65",
       "id": "scripts_build_ascope_lite_envwithemsdk",
-      "community": 8,
+      "community": 9,
       "norm_label": "envwithemsdk()"
     },
     {
@@ -2448,7 +2709,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L76",
       "id": "scripts_build_ascope_lite_npminstallsubmodule",
-      "community": 8,
+      "community": 9,
       "norm_label": "npminstallsubmodule()"
     },
     {
@@ -2457,7 +2718,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L82",
       "id": "scripts_build_ascope_lite_compilelite",
-      "community": 8,
+      "community": 9,
       "norm_label": "compilelite()"
     },
     {
@@ -2466,7 +2727,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L89",
       "id": "scripts_build_ascope_lite_compilewasm",
-      "community": 8,
+      "community": 9,
       "norm_label": "compilewasm()"
     },
     {
@@ -2475,7 +2736,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L102",
       "id": "scripts_build_ascope_lite_listgitsymlinksunder",
-      "community": 8,
+      "community": 9,
       "norm_label": "listgitsymlinksunder()"
     },
     {
@@ -2484,7 +2745,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L122",
       "id": "scripts_build_ascope_lite_resolvesymlinksindist",
-      "community": 8,
+      "community": 9,
       "norm_label": "resolvesymlinksindist()"
     },
     {
@@ -2493,7 +2754,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L146",
       "id": "scripts_build_ascope_lite_stagebundle",
-      "community": 8,
+      "community": 9,
       "norm_label": "stagebundle()"
     },
     {
@@ -2502,7 +2763,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L157",
       "id": "scripts_build_ascope_lite_main",
-      "community": 8,
+      "community": 9,
       "norm_label": "main()"
     },
     {
@@ -2511,7 +2772,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L1",
       "id": "mvp_scripts_dev_mvp_ts",
-      "community": 12,
+      "community": 13,
       "norm_label": "dev-mvp.ts"
     },
     {
@@ -2520,7 +2781,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L12",
       "id": "scripts_dev_mvp_runcommand",
-      "community": 12,
+      "community": 13,
       "norm_label": "runcommand()"
     },
     {
@@ -2529,7 +2790,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L40",
       "id": "scripts_dev_mvp_ensurecontainer",
-      "community": 12,
+      "community": 13,
       "norm_label": "ensurecontainer()"
     },
     {
@@ -2538,7 +2799,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L82",
       "id": "scripts_dev_mvp_ensuresimcontainer",
-      "community": 12,
+      "community": 13,
       "norm_label": "ensuresimcontainer()"
     },
     {
@@ -2547,7 +2808,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L91",
       "id": "scripts_dev_mvp_ensurelspcontainer",
-      "community": 12,
+      "community": 13,
       "norm_label": "ensurelspcontainer()"
     },
     {
@@ -2556,7 +2817,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L100",
       "id": "scripts_dev_mvp_startprocess",
-      "community": 12,
+      "community": 13,
       "norm_label": "startprocess()"
     },
     {
@@ -2565,7 +2826,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L131",
       "id": "scripts_dev_mvp_shutdown",
-      "community": 12,
+      "community": 13,
       "norm_label": "shutdown()"
     },
     {
@@ -2574,7 +2835,7 @@
       "source_file": "mvp\\scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_dev_spike_multi_tenancy_ts",
-      "community": 16,
+      "community": 17,
       "norm_label": "dev-spike-multi-tenancy.ts"
     },
     {
@@ -2583,7 +2844,7 @@
       "source_file": "mvp\\scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L11",
       "id": "scripts_dev_spike_multi_tenancy_startprocess",
-      "community": 16,
+      "community": 17,
       "norm_label": "startprocess()"
     },
     {
@@ -2592,7 +2853,7 @@
       "source_file": "mvp\\scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L51",
       "id": "scripts_dev_spike_multi_tenancy_shutdown",
-      "community": 16,
+      "community": 17,
       "norm_label": "shutdown()"
     },
     {
@@ -2601,7 +2862,7 @@
       "source_file": "mvp\\scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_patch_ascope_lite_nt4_proxy_ts",
-      "community": 22,
+      "community": 23,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts"
     },
     {
@@ -2610,7 +2871,7 @@
       "source_file": "mvp\\scripts\\serve-ascope-lite.ts",
       "source_location": "L1",
       "id": "mvp_scripts_serve_ascope_lite_ts",
-      "community": 17,
+      "community": 18,
       "norm_label": "serve-ascope-lite.ts"
     },
     {
@@ -2619,7 +2880,7 @@
       "source_file": "mvp\\scripts\\serve-ascope-lite.ts",
       "source_location": "L29",
       "id": "scripts_serve_ascope_lite_buildassetmanifest",
-      "community": 17,
+      "community": 18,
       "norm_label": "buildassetmanifest()"
     },
     {
@@ -2628,7 +2889,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_spike_multi_tenancy_ts",
-      "community": 10,
+      "community": 11,
       "norm_label": "spike-multi-tenancy.ts"
     },
     {
@@ -2637,7 +2898,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L32",
       "id": "scripts_spike_multi_tenancy_run",
-      "community": 10,
+      "community": 11,
       "norm_label": "run()"
     },
     {
@@ -2646,7 +2907,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L47",
       "id": "scripts_spike_multi_tenancy_containerstate",
-      "community": 10,
+      "community": 11,
       "norm_label": "containerstate()"
     },
     {
@@ -2655,7 +2916,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L52",
       "id": "scripts_spike_multi_tenancy_ensurecontainer",
-      "community": 10,
+      "community": 11,
       "norm_label": "ensurecontainer()"
     },
     {
@@ -2664,7 +2925,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L68",
       "id": "scripts_spike_multi_tenancy_up",
-      "community": 10,
+      "community": 11,
       "norm_label": "up()"
     },
     {
@@ -2673,7 +2934,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L76",
       "id": "scripts_spike_multi_tenancy_down",
-      "community": 10,
+      "community": 11,
       "norm_label": "down()"
     },
     {
@@ -2682,7 +2943,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L87",
       "id": "scripts_spike_multi_tenancy_printenv",
-      "community": 10,
+      "community": 11,
       "norm_label": "printenv()"
     },
     {
@@ -2691,7 +2952,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L97",
       "id": "scripts_spike_multi_tenancy_dockerstats",
-      "community": 10,
+      "community": 11,
       "norm_label": "dockerstats()"
     },
     {
@@ -2700,7 +2961,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L105",
       "id": "scripts_spike_multi_tenancy_parsemib",
-      "community": 10,
+      "community": 11,
       "norm_label": "parsemib()"
     },
     {
@@ -2709,7 +2970,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L122",
       "id": "scripts_spike_multi_tenancy_stats",
-      "community": 10,
+      "community": 11,
       "norm_label": "stats()"
     },
     {
@@ -2718,7 +2979,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L145",
       "id": "scripts_spike_multi_tenancy_lifecycle",
-      "community": 10,
+      "community": 11,
       "norm_label": "lifecycle()"
     },
     {
@@ -2727,7 +2988,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L168",
       "id": "scripts_spike_multi_tenancy_main",
-      "community": 10,
+      "community": 11,
       "norm_label": "main()"
     },
     {
@@ -2736,7 +2997,7 @@
       "source_file": "packages\\contracts\\src\\index.test.ts",
       "source_location": "L1",
       "id": "packages_contracts_src_index_test_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "index.test.ts"
     },
     {
@@ -2745,7 +3006,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L1",
       "id": "packages_contracts_src_index_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "index.ts"
     },
     {
@@ -2754,7 +3015,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L23",
       "id": "src_index_isworkspaceslug",
-      "community": 7,
+      "community": 8,
       "norm_label": "isworkspaceslug()"
     },
     {
@@ -2763,7 +3024,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L35",
       "id": "src_index_projectpathissue",
-      "community": 7,
+      "community": 8,
       "norm_label": "projectpathissue()"
     },
     {
@@ -2772,7 +3033,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L82",
       "id": "src_index_parseprojectpath",
-      "community": 7,
+      "community": 8,
       "norm_label": "parseprojectpath()"
     },
     {
@@ -2781,7 +3042,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L86",
       "id": "src_index_isprojectpath",
-      "community": 7,
+      "community": 8,
       "norm_label": "isprojectpath()"
     },
     {
@@ -2790,7 +3051,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L92",
       "id": "src_index_matchespathorchild",
-      "community": 7,
+      "community": 8,
       "norm_label": "matchespathorchild()"
     },
     {
@@ -2799,7 +3060,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L96",
       "id": "src_index_getprojectpathaccess",
-      "community": 7,
+      "community": 8,
       "norm_label": "getprojectpathaccess()"
     },
     {
@@ -2808,7 +3069,7 @@
       "source_file": "scripts\\build-sim-image.ts",
       "source_location": "L1",
       "id": "scripts_build_sim_image_ts",
-      "community": 18,
+      "community": 19,
       "norm_label": "build-sim-image.ts"
     },
     {
@@ -2817,7 +3078,7 @@
       "source_file": "scripts\\build-sim-image.ts",
       "source_location": "L1",
       "id": "scripts_build_sim_image_defaultid",
-      "community": 18,
+      "community": 19,
       "norm_label": "defaultid()"
     },
     {
@@ -2826,7 +3087,7 @@
       "source_file": "scripts\\template-integrity.test.ts",
       "source_location": "L1",
       "id": "scripts_template_integrity_test_ts",
-      "community": 19,
+      "community": 20,
       "norm_label": "template-integrity.test.ts"
     },
     {
@@ -2835,7 +3096,7 @@
       "source_file": "scripts\\template-integrity.test.ts",
       "source_location": "L9",
       "id": "scripts_template_integrity_test_expecttemplatefile",
-      "community": 19,
+      "community": 20,
       "norm_label": "expecttemplatefile()"
     },
     {
@@ -2844,7 +3105,7 @@
       "source_file": "scripts\\typecheck.ts",
       "source_location": "L1",
       "id": "scripts_typecheck_ts",
-      "community": 23,
+      "community": 24,
       "norm_label": "typecheck.ts"
     },
     {
@@ -2853,7 +3114,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_main_java",
-      "community": 14,
+      "community": 15,
       "norm_label": "main.java"
     },
     {
@@ -2862,7 +3123,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_robot_java",
-      "community": 8,
+      "community": 9,
       "norm_label": "robot.java"
     },
     {
@@ -2871,7 +3132,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_robotcontainer_java",
-      "community": 15,
+      "community": 16,
       "norm_label": "robotcontainer.java"
     },
     {
@@ -2888,7 +3149,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L6",
-      "community": 7,
+      "community": 8,
       "norm_label": "app()",
       "id": "src_main_app"
     },
@@ -2897,7 +3158,7 @@
       "file_type": "code",
       "source_file": "scripts\\apply-ascope-patches.ts",
       "source_location": "L1",
-      "community": 24,
+      "community": 25,
       "norm_label": "apply-ascope-patches.ts",
       "id": "scripts_apply_ascope_patches_ts"
     },
@@ -2906,7 +3167,7 @@
       "file_type": "code",
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L1",
-      "community": 8,
+      "community": 9,
       "norm_label": "build-ascope-lite.ts",
       "id": "scripts_build_ascope_lite_ts"
     },
@@ -2915,7 +3176,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-v1.ts",
       "source_location": "L1",
-      "community": 25,
+      "community": 26,
       "norm_label": "dev-v1.ts",
       "id": "scripts_dev_v1_ts"
     },
@@ -2924,7 +3185,7 @@
       "file_type": "code",
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L1",
-      "community": 26,
+      "community": 27,
       "norm_label": "verify-v1-two-user.ts",
       "id": "scripts_verify_v1_two_user_ts"
     },
@@ -2933,7 +3194,7 @@
       "file_type": "code",
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L1",
-      "community": 13,
+      "community": 14,
       "norm_label": "main.ts",
       "id": "apps_lsp_src_main_ts"
     },
@@ -2942,7 +3203,7 @@
       "file_type": "code",
       "source_file": "apps\\router\\src\\main.ts",
       "source_location": "L1",
-      "community": 11,
+      "community": 12,
       "norm_label": "main.ts",
       "id": "apps_router_src_main_ts"
     },
@@ -2996,7 +3257,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
-      "community": 14,
+      "community": 15,
       "norm_label": "main.java",
       "id": "containers_sim_project_src_main_java_frc_robot_main_java"
     },
@@ -3005,7 +3266,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
-      "community": 8,
+      "community": 9,
       "norm_label": "robot.java",
       "id": "containers_sim_project_src_main_java_frc_robot_robot_java"
     },
@@ -3014,7 +3275,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
-      "community": 15,
+      "community": 16,
       "norm_label": "robotcontainer.java",
       "id": "containers_sim_project_src_main_java_frc_robot_robotcontainer_java"
     },
@@ -3023,7 +3284,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L1",
-      "community": 12,
+      "community": 13,
       "norm_label": "dev-mvp.ts",
       "id": "scripts_dev_mvp_ts"
     },
@@ -3032,7 +3293,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L1",
-      "community": 16,
+      "community": 17,
       "norm_label": "dev-spike-multi-tenancy.ts",
       "id": "scripts_dev_spike_multi_tenancy_ts"
     },
@@ -3041,7 +3302,7 @@
       "file_type": "code",
       "source_file": "scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
-      "community": 27,
+      "community": 28,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts",
       "id": "scripts_patch_ascope_lite_nt4_proxy_ts"
     },
@@ -3050,7 +3311,7 @@
       "file_type": "code",
       "source_file": "scripts\\serve-ascope-lite.ts",
       "source_location": "L1",
-      "community": 17,
+      "community": 18,
       "norm_label": "serve-ascope-lite.ts",
       "id": "scripts_serve_ascope_lite_ts"
     },
@@ -3059,7 +3320,7 @@
       "file_type": "code",
       "source_file": "scripts\\spike-multi-tenancy.ts",
       "source_location": "L1",
-      "community": 10,
+      "community": 11,
       "norm_label": "spike-multi-tenancy.ts",
       "id": "scripts_spike_multi_tenancy_ts"
     },
@@ -3579,7 +3840,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 28,
+      "community": 29,
       "norm_label": "web shell index.html",
       "id": "index_html"
     },
@@ -3925,11 +4186,31 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L215",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_workspacebyslug"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L90",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "apps_control_src_app_test_ts",
       "target": "src_app_test_trycreatesymlink"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L902",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_createcontrolledruncommands"
     },
     {
       "relation": "calls",
@@ -4007,6 +4288,17 @@
       "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
       "target": "src_cookies_serializesessioncookie"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L37",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_runs_runmanager"
     },
     {
       "relation": "imports",
@@ -5056,6 +5348,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L66",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_config_ts",
+      "target": "src_config_parsepositiveinteger"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\config.ts",
       "source_location": "L65",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -5093,6 +5395,17 @@
       "confidence_score": 1.0,
       "source": "src_config_loadcontrolconfig",
       "target": "src_config_parseboolean"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L113",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_config_loadcontrolconfig",
+      "target": "src_config_parsepositiveinteger"
     },
     {
       "relation": "calls",
@@ -5586,6 +5899,17 @@
       "target": "src_containers_containerorchestrator_recordsimerror"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L6",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_runs_ts",
+      "target": "src_containers_containerorchestrator"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -6069,6 +6393,523 @@
       "target": "src_migrations_applymigrations"
     },
     {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L7",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_runs_ts",
+      "target": "src_storage_appstorage"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L50",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_runs_ts",
+      "target": "src_runs_randomrunid"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L54",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_runs_ts",
+      "target": "src_runs_runlogpath"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L58",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_runs_ts",
+      "target": "src_runs_linelooksready"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L62",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_runs_ts",
+      "target": "src_runs_dockerrunscript"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L76",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_runs_ts",
+      "target": "src_runs_defaultruncommandfactory"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L96",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_runs_ts",
+      "target": "src_runs_consumelines"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L132",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_runs_ts",
+      "target": "src_runs_runmanager"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L180",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_start",
+      "target": "src_runs_randomrunid"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L181",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_start",
+      "target": "src_runs_runlogpath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L299",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_recordlog",
+      "target": "src_runs_linelooksready"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L78",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_defaultruncommandfactory",
+      "target": "src_runs_dockerrunscript"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L272",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_runjob",
+      "target": "src_runs_consumelines"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L138",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_constructor"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L146",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_connect"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L168",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_disconnect"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L173",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_queuedepth"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L177",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_start"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L209",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_stopworkspace"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L213",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_cancelworkspace"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L235",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_pump"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L247",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_runjob"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L293",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_recordlog"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L306",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_setjobstate"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L334",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_finishjob"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L343",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_sendcurrentstatus"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L356",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_updatequeuepositions"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L366",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager",
+      "target": "src_runs_runmanager_broadcast"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L163",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_connect",
+      "target": "src_runs_runmanager_sendcurrentstatus"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L178",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_start",
+      "target": "src_runs_runmanager_cancelworkspace"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L198",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_start",
+      "target": "src_runs_runmanager_broadcast"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L204",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_start",
+      "target": "src_runs_runmanager_updatequeuepositions"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L205",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_start",
+      "target": "src_runs_runmanager_pump"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "robot_robot_robot_robotinit",
+      "target": "src_runs_runmanager_start"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L210",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_stopworkspace",
+      "target": "src_runs_runmanager_cancelworkspace"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L225",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_cancelworkspace",
+      "target": "src_runs_runmanager_finishjob"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L226",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_cancelworkspace",
+      "target": "src_runs_runmanager_updatequeuepositions"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L230",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_cancelworkspace",
+      "target": "src_runs_runmanager_broadcast"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L242",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_pump",
+      "target": "src_runs_runmanager_updatequeuepositions"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L289",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_runjob",
+      "target": "src_runs_runmanager_pump"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L249",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_runjob",
+      "target": "src_runs_runmanager_setjobstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L250",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_runjob",
+      "target": "src_runs_runmanager_broadcast"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L252",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_runjob",
+      "target": "src_runs_runmanager_finishjob"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L285",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_runjob",
+      "target": "src_runs_runmanager_recordlog"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L297",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_recordlog",
+      "target": "src_runs_runmanager_broadcast"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L301",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_recordlog",
+      "target": "src_runs_runmanager_setjobstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L335",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_finishjob",
+      "target": "src_runs_runmanager_setjobstate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L336",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_finishjob",
+      "target": "src_runs_runmanager_broadcast"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\runs.ts",
+      "source_location": "L358",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_runs_runmanager_updatequeuepositions",
+      "target": "src_runs_runmanager_broadcast"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\storage.ts",
@@ -6175,6 +7016,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L397",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage_createrunjob",
+      "target": "src_storage_randomid"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L162",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -6223,6 +7075,28 @@
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_storage_appstorage_upsertsimlease",
+      "target": "src_storage_nowiso"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L398",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage_createrunjob",
+      "target": "src_storage_nowiso"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L432",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage_updaterunjob",
       "target": "src_storage_nowiso"
     },
     {
@@ -6418,6 +7292,36 @@
       "target": "src_storage_appstorage_upsertsimlease"
     },
     {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L392",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_createrunjob"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L421",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_getrunjob"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L425",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_updaterunjob"
+    },
+    {
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -6504,6 +7408,28 @@
       "confidence_score": 1.0,
       "source": "src_storage_appstorage_upsertsimlease",
       "target": "src_storage_appstorage_getcontainerlease"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L414",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage_createrunjob",
+      "target": "src_storage_appstorage_getrunjob"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L433",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage_updaterunjob",
+      "target": "src_storage_appstorage_getrunjob"
     },
     {
       "relation": "contains",

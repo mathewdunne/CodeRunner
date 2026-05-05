@@ -5,7 +5,8 @@ const app = await createApp();
 
 const server = Bun.serve({
   port,
-  fetch: app.fetch,
+  fetch: (request, server) => app.fetch(request, server),
+  websocket: app.websocket,
 });
 
 console.log(`V1 control plane listening on http://localhost:${server.port}`);

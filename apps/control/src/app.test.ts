@@ -4,6 +4,8 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createApp, type ControlApp, type ControlAppOptions } from "./app";
 import type { DockerCommandResult, DockerRunner } from "./containers";
+import type { RunCommandFactory } from "./runs";
+import type { WorkspaceRow } from "./storage";
 
 async function exists(path: string): Promise<boolean> {
   try {
@@ -208,6 +210,12 @@ function workspaceProjectPath(app: ControlApp, slug: string): string {
   } | null;
   expect(workspace).toBeTruthy();
   return workspace?.project_path ?? "";
+}
+
+function workspaceBySlug(app: ControlApp, slug: string) {
+  const workspace = app.storage.db.query("SELECT * FROM workspaces WHERE slug = ?").get(slug) as WorkspaceRow | null;
+  expect(workspace).toBeTruthy();
+  return workspace!;
 }
 
 async function tryCreateSymlink(target: string, path: string, type: "file" | "dir"): Promise<boolean> {
@@ -885,6 +893,151 @@ describe("V1-4 sim container orchestration", () => {
         dockerRunner: fakeDocker.runner,
         simImage: "frc-sim:test",
         simPortRange: { start: 25813, end: 25813 },
+      },
+    );
+  });
+});
+
+describe("V1-5 run queue and log streaming", () => {
+  function createControlledRunCommands() {
+    const encoder = new TextEncoder();
+    const commands: Array<{
+      context: Parameters<RunCommandFactory>[0];
+      killed: boolean;
+      writeStdout(line: string): void;
+      writeStderr(line: string): void;
+      exit(code: number | null, signal?: string | null): void;
+    }> = [];
+
+    const commandFactory: RunCommandFactory = (context) => {
+      let stdoutController: ReadableStreamDefaultController<Uint8Array>;
+      let stderrController: ReadableStreamDefaultController<Uint8Array>;
+      let resolveExit: (exit: { code: number | null; signal: string | null }) => void = () => {};
+      let finished = false;
+      const exited = new Promise<{ code: number | null; signal: string | null }>((resolve) => {
+        resolveExit = resolve;
+      });
+
+      const command = {
+        context,
+        killed: false,
+        writeStdout(line: string) {
+          stdoutController.enqueue(encoder.encode(`${line}\n`));
+        },
+        writeStderr(line: string) {
+          stderrController.enqueue(encoder.encode(`${line}\n`));
+        },
+        exit(code: number | null, signal: string | null = null) {
+          if (finished) {
+            return;
+          }
+          finished = true;
+          stdoutController.close();
+          stderrController.close();
+          resolveExit({ code, signal });
+        },
+      };
+
+      commands.push(command);
+      return {
+        stdout: new ReadableStream<Uint8Array>({
+          start(controller) {
+            stdoutController = controller;
+          },
+        }),
+        stderr: new ReadableStream<Uint8Array>({
+          start(controller) {
+            stderrController = controller;
+          },
+        }),
+        exited,
+        kill() {
+          command.killed = true;
+          command.exit(null, "SIGTERM");
+        },
+      };
+    };
+
+    return { commands, commandFactory };
+  }
+
+  test("streams logs, persists run jobs, and starts queued work in order", async () => {
+    const fakeDocker = createFakeDocker();
+    const controlled = createControlledRunCommands();
+
+    await withApp(
+      async (app) => {
+        const aliceLogin = await login(app, "alice");
+        const bobLogin = await login(app, "bob");
+        expect(aliceLogin.status).toBe(303);
+        expect(bobLogin.status).toBe(303);
+
+        const aliceWorkspace = workspaceBySlug(app, "alice");
+        const bobWorkspace = workspaceBySlug(app, "bob");
+        const aliceMessages: unknown[] = [];
+        const bobMessages: unknown[] = [];
+        const aliceConnection = app.runs.connect(aliceWorkspace, (message) => aliceMessages.push(message));
+        const bobConnection = app.runs.connect(bobWorkspace, (message) => bobMessages.push(message));
+
+        const aliceRunId = app.runs.start(aliceWorkspace, aliceConnection);
+        const bobRunId = app.runs.start(bobWorkspace, bobConnection);
+
+        await waitFor(() => controlled.commands.length === 1);
+        expect(controlled.commands[0]?.context.workspace.slug).toBe("alice");
+        expect(bobMessages).toContainEqual({ type: "queue", queueDepth: 1, queuePosition: 0 });
+
+        controlled.commands[0]?.writeStdout("NT4 listening on 5810");
+        controlled.commands[0]?.writeStdout("robot periodic tick");
+        await waitFor(() => JSON.stringify(aliceMessages).includes("running"));
+
+        const aliceRun = app.storage.getRunJob(aliceRunId);
+        expect(aliceRun).toMatchObject({ state: "running", workspace_id: aliceWorkspace.id });
+        expect(await readFile(aliceRun?.log_path ?? "", "utf8")).toContain("robot periodic tick");
+        expect(app.storage.getRunJob(bobRunId)).toMatchObject({ state: "queued" });
+
+        app.runs.stopWorkspace(aliceWorkspace.id);
+        await waitFor(() => controlled.commands.length === 2);
+        expect(controlled.commands[0]?.killed).toBe(true);
+        expect(controlled.commands[1]?.context.workspace.slug).toBe("bob");
+        expect(app.storage.getRunJob(aliceRunId)).toMatchObject({ state: "stopped", exit_code: null });
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        runCommandFactory: controlled.commandFactory,
+        runConcurrency: 1,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25820, end: 25829 },
+      },
+    );
+  });
+
+  test("replaces a queued run for the same workspace", async () => {
+    const fakeDocker = createFakeDocker();
+    const controlled = createControlledRunCommands();
+
+    await withApp(
+      async (app) => {
+        const response = await login(app, "alice");
+        expect(response.status).toBe(303);
+        const workspace = workspaceBySlug(app, "alice");
+        const messages: unknown[] = [];
+        const connection = app.runs.connect(workspace, (message) => messages.push(message));
+
+        const firstRunId = app.runs.start(workspace, connection);
+        const secondRunId = app.runs.start(workspace, connection);
+
+        await waitFor(() => controlled.commands.length === 1);
+        expect(firstRunId).not.toBe(secondRunId);
+        expect(controlled.commands[0]?.context.workspace.slug).toBe("alice");
+        expect(app.storage.getRunJob(firstRunId)).toMatchObject({ state: "stopped" });
+        expect(app.storage.getRunJob(secondRunId)).toMatchObject({ state: "building" });
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        runCommandFactory: controlled.commandFactory,
+        runConcurrency: 1,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25830, end: 25839 },
       },
     );
   });

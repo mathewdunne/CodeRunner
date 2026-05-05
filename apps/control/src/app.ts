@@ -9,6 +9,7 @@ import {
   heartbeatRequestSchema,
   projectPathSchema,
   renameFileRequestSchema,
+  runClientMessageSchema,
   writeFileRequestSchema,
   workspaceSlugSchema,
   type CreateFileRequest,
@@ -33,17 +34,41 @@ import {
   serializeExpiredSessionCookie,
   serializeSessionCookie,
 } from "./cookies";
+import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
 import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from "./storage";
 
 export type ControlApp = {
-  fetch(request: Request): Promise<Response>;
+  fetch(request: Request, server?: BunUpgradeServer): Promise<Response>;
+  websocket: {
+    open(ws: RunSocket): void;
+    message(ws: RunSocket, message: string | ArrayBuffer | Uint8Array): void;
+    close(ws: RunSocket): void;
+  };
   storage: AppStorage;
   containers: ContainerOrchestrator;
+  runs: RunManager;
   close(): void;
 };
 
 export type ControlAppOptions = ControlConfigInput & {
   dockerRunner?: DockerRunner | undefined;
+  runCommandFactory?: RunCommandFactory | undefined;
+};
+
+type BunUpgradeServer = {
+  upgrade(request: Request, options: { data: RunSocketData }): boolean;
+};
+
+type RunSocketData = {
+  kind: "run";
+  workspace: AuthContext["workspace"];
+  connection?: RunConnection | undefined;
+};
+
+type RunSocket = {
+  data: RunSocketData;
+  send(data: string): unknown;
+  close(code?: number, reason?: string): unknown;
 };
 
 function htmlResponse(body: string, init: ResponseInit = {}): Response {
@@ -659,15 +684,16 @@ async function webAssetResponse(storage: AppStorage, rawPath: string): Promise<R
 }
 
 export async function createApp(configInput: ControlAppOptions = {}): Promise<ControlApp> {
-  const { dockerRunner, ...storageConfig } = configInput;
+  const { dockerRunner, runCommandFactory, ...storageConfig } = configInput;
   const storage = await createStorage(storageConfig);
   const containers = new ContainerOrchestrator(storage, { dockerRunner });
+  const runs = new RunManager(storage, containers, { commandFactory: runCommandFactory });
 
-  async function fetch(request: Request): Promise<Response> {
+  async function fetch(request: Request, server?: BunUpgradeServer): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === "/healthz") {
-      return Response.json({ ok: true, service: "control", version: "v1-4" });
+      return Response.json({ ok: true, service: "control", version: "v1-5" });
     }
 
     if (url.pathname === "/" && request.method === "GET") {
@@ -732,6 +758,22 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         return webShellResponse(storage);
       }
 
+      if (suffix === "/ws/run" && request.method === "GET") {
+        if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
+          return new Response("Expected WebSocket upgrade.", { status: 426 });
+        }
+        const upgraded = server.upgrade(request, {
+          data: {
+            kind: "run",
+            workspace: auth.workspace,
+          },
+        });
+        if (!upgraded) {
+          return new Response("WebSocket upgrade failed.", { status: 400 });
+        }
+        return undefined as unknown as Response;
+      }
+
       if (suffix.startsWith("/assets/") && request.method === "GET") {
         return webAssetResponse(storage, `assets/${suffix.slice("/assets/".length)}`);
       }
@@ -755,6 +797,15 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         } catch (error) {
           return apiErrorResponse(error, "Unable to read container status.");
         }
+      }
+
+      if (suffix === "/api/run" && request.method === "POST") {
+        const runId = runs.start(auth.workspace);
+        return jsonResponse({ ok: true, runId, queueDepth: runs.queueDepth() }, { status: 202 });
+      }
+
+      if (suffix === "/api/run/stop" && request.method === "POST") {
+        return jsonResponse({ ok: true, stopped: runs.stopWorkspace(auth.workspace.id) });
       }
 
       if (suffix === "/api/files" && request.method === "GET") {
@@ -813,10 +864,50 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     return notFound();
   }
 
+  function socketMessageText(message: string | ArrayBuffer | Uint8Array): string {
+    if (typeof message === "string") {
+      return message;
+    }
+    return new TextDecoder().decode(message);
+  }
+
+  const websocket = {
+    open(ws: RunSocket): void {
+      if (ws.data.kind !== "run") {
+        ws.close(1008, "Unsupported socket.");
+        return;
+      }
+      ws.data.connection = runs.connect(ws.data.workspace, (message) => {
+        ws.send(JSON.stringify(message));
+      });
+    },
+    message(ws: RunSocket, message: string | ArrayBuffer | Uint8Array): void {
+      try {
+        const parsed = runClientMessageSchema.parse(JSON.parse(socketMessageText(message)));
+        if (parsed.type === "start") {
+          const runId = runs.start(ws.data.workspace, ws.data.connection);
+          ws.send(JSON.stringify({ type: "hello", runId, queueDepth: runs.queueDepth() }));
+        } else {
+          runs.stopWorkspace(ws.data.workspace.id);
+        }
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : "Invalid run message.";
+        ws.send(JSON.stringify({ type: "error", message: detail }));
+      }
+    },
+    close(ws: RunSocket): void {
+      if (ws.data.connection) {
+        runs.disconnect(ws.data.connection);
+      }
+    },
+  };
+
   return {
     fetch,
+    websocket,
     storage,
     containers,
+    runs,
     close() {
       storage.close();
     },

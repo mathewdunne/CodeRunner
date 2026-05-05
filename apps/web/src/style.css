@@ -31,7 +31,7 @@ button {
 
 .topbar {
   display: grid;
-  grid-template-columns: minmax(190px, 1fr) auto auto;
+  grid-template-columns: minmax(190px, 1fr) auto auto auto;
   gap: 14px;
   align-items: center;
   border-bottom: 1px solid #2a3440;
@@ -57,6 +57,22 @@ button {
 .topbar button {
   height: 34px;
   padding: 0 12px;
+}
+
+.run-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.run-actions button:first-child {
+  border-color: #2f7d5b;
+  background: #1f6b4b;
+}
+
+.run-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .status-strip {
@@ -288,7 +304,7 @@ button {
 
 @media (max-width: 900px) {
   .topbar {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
   }
 
   .status-strip {

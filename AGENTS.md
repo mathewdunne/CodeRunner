@@ -38,9 +38,10 @@ data/                          Runtime data, gitignored
 - [x] V1-2: control-plane routing and static shell
 - [x] V1-3: project store and multi-file editor
 - [x] V1-4: V1 sim image and container orchestrator
-- [ ] V1-5+: see `V1-Design.md`
+- [x] V1-5: run queue and log streaming
+- [ ] V1-6+: see `V1-Design.md`
 
-The V1-4 root includes shared contracts, SQLite migrations, signed-cookie login/session flow, first-login workspace creation from `templates/wpilib-java-command/`, workspace file APIs, a React/Vite multi-file shell, the mounted-project sim image, Docker lease orchestration, loopback sim port allocation, and a sim status endpoint. The MVP archive contains the completed single-user proof loop and Java LSP add-on.
+The V1-5 root includes shared contracts, SQLite migrations, signed-cookie login/session flow, first-login workspace creation from `templates/wpilib-java-command/`, workspace file APIs, a React/Vite multi-file shell, the mounted-project sim image, Docker lease orchestration, loopback sim port allocation, sim container status reporting, a global run queue, per-workspace run replacement/stop, persistent run logs, and browser Run/Stop log streaming. The MVP archive contains the completed single-user proof loop and Java LSP add-on.
 
 ## Working Principles
 
@@ -70,7 +71,7 @@ The V1-4 root includes shared contracts, SQLite migrations, signed-cookie login/
 - Run Bun tests: `bun run test`
 - Build V1 sim image: `bun run docker:build:sim`
 - Apply/check V1 migrations: `bun run migrate`, `bun run migrate:status`
-- Start V1-4 control plane: `bun run dev:control`
+- Start V1-5 control plane: `bun run dev:control`
 - Start web shell directly: `bun run dev:web`
 
 MVP commands live in `mvp/README.md`.

@@ -10,6 +10,8 @@ import {
   type ProjectPathAccess,
   type ProjectTreeNode,
   type ProjectTreeResponse,
+  runServerMessageSchema,
+  type RunServerMessage,
   type SessionResponse,
 } from "@frc-sim/contracts";
 import "./style.css";
@@ -38,6 +40,8 @@ type ModelState = {
   saveTimer: number | null;
   subscription: monaco.IDisposable;
 };
+
+type RunStatus = "connecting" | "idle" | "queued" | "building" | "running" | "stopping" | "failed" | "stopped" | "error";
 
 function workspaceSlugFromLocation(): string | null {
   const pathParts = window.location.pathname.split("/").filter(Boolean);
@@ -177,12 +181,15 @@ function App() {
   const workspaceSlug = useMemo(() => workspaceSlugFromLocation(), []);
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [containerStatus, setContainerStatus] = useState<ContainersStatusResponse | null>(null);
+  const [runStatus, setRunStatus] = useState<RunStatus>("connecting");
+  const [queueInfo, setQueueInfo] = useState<{ depth: number; position: number } | null>(null);
   const [openFiles, setOpenFiles] = useState<OpenFile[]>([]);
   const [activePath, setActivePath] = useState<string | null>(null);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [consoleLines, setConsoleLines] = useState<string[]>(["Connecting..."]);
   const editorHostRef = useRef<HTMLDivElement | null>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+  const runSocketRef = useRef<WebSocket | null>(null);
   const modelStatesRef = useRef(new Map<string, ModelState>());
   const openFilesRef = useRef(openFiles);
   const saveFileRef = useRef<(path: string) => void>(() => {});
@@ -204,6 +211,10 @@ function App() {
 
   const logLine = useCallback((line: string) => {
     setConsoleLines((current) => [...current.filter((entry) => entry !== "Connecting..."), line].slice(-80));
+  }, []);
+
+  const clearConsole = useCallback((line: string) => {
+    setConsoleLines([line]);
   }, []);
 
   const updateOpenFile = useCallback((path: string, patch: Partial<OpenFile>) => {
@@ -408,6 +419,76 @@ function App() {
       return;
     }
 
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const socket = new WebSocket(`${protocol}//${window.location.host}/u/${workspaceSlug}/ws/run`);
+    runSocketRef.current = socket;
+    setRunStatus("connecting");
+
+    socket.addEventListener("open", () => {
+      setRunStatus("idle");
+      logLine("Run channel connected.");
+    });
+    socket.addEventListener("message", (event) => {
+      let message: RunServerMessage;
+      try {
+        message = runServerMessageSchema.parse(JSON.parse(String(event.data)));
+      } catch {
+        logLine("Ignored an invalid run message from the server.");
+        return;
+      }
+
+      if (message.type === "hello") {
+        setQueueInfo(message.queueDepth > 0 ? { depth: message.queueDepth, position: 0 } : null);
+        return;
+      }
+      if (message.type === "status") {
+        setRunStatus(message.status);
+        setQueueInfo(
+          message.queueDepth === undefined || message.queuePosition === undefined
+            ? null
+            : { depth: message.queueDepth, position: message.queuePosition },
+        );
+        return;
+      }
+      if (message.type === "queue") {
+        setQueueInfo({ depth: message.queueDepth, position: message.queuePosition });
+        return;
+      }
+      if (message.type === "log") {
+        logLine(`[${message.stream}] ${message.line}`);
+        return;
+      }
+      if (message.type === "exit") {
+        logLine(`Run exited with code ${message.code ?? "none"}${message.signal ? ` (${message.signal})` : ""}.`);
+        return;
+      }
+      setRunStatus("error");
+      logLine(message.message);
+    });
+    socket.addEventListener("close", () => {
+      if (runSocketRef.current === socket) {
+        runSocketRef.current = null;
+      }
+      setRunStatus("error");
+      logLine("Run channel disconnected.");
+    });
+    socket.addEventListener("error", () => {
+      setRunStatus("error");
+    });
+
+    return () => {
+      if (runSocketRef.current === socket) {
+        runSocketRef.current = null;
+      }
+      socket.close();
+    };
+  }, [logLine, workspaceSlug]);
+
+  useEffect(() => {
+    if (!workspaceSlug) {
+      return;
+    }
+
     let cancelled = false;
     const refreshStatus = async () => {
       try {
@@ -604,6 +685,44 @@ function App() {
     [],
   );
 
+  const startRun = useCallback(async () => {
+    const dirtyEditableFiles = openFilesRef.current.filter((file) => file.access === "editable" && (file.dirty || file.saving));
+    clearConsole("Starting run...");
+    await Promise.all(dirtyEditableFiles.map((file) => saveFile(file.path)));
+
+    const socket = runSocketRef.current;
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: "start" }));
+      return;
+    }
+
+    try {
+      await fetchJson(apiUrl("/run"), { method: "POST" });
+      setRunStatus("queued");
+      logLine("Run queued. Reconnect the run channel to stream logs.");
+    } catch (error) {
+      setRunStatus("error");
+      logLine(error instanceof Error ? error.message : "Unable to start run.");
+    }
+  }, [apiUrl, clearConsole, logLine, saveFile]);
+
+  const stopRun = useCallback(async () => {
+    const socket = runSocketRef.current;
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ type: "stop" }));
+      setRunStatus("stopping");
+      return;
+    }
+
+    try {
+      await fetchJson(apiUrl("/run/stop"), { method: "POST" });
+      setRunStatus("stopping");
+    } catch (error) {
+      setRunStatus("error");
+      logLine(error instanceof Error ? error.message : "Unable to stop run.");
+    }
+  }, [apiUrl, logLine]);
+
   const displayName = state.status === "ready" ? state.session.user.displayName : "Loading";
   const workspaceLabel = state.status === "ready" ? state.session.workspace.slug : (workspaceSlug ?? "unknown");
   const activeFile = activePath ? openFiles.find((file) => file.path === activePath) : null;
@@ -615,6 +734,11 @@ function App() {
     : containerStatus.sim.state === "error"
       ? "Sim error"
       : `Sim ${containerStatus.sim.state}`;
+  const runBusy = ["queued", "building", "running", "stopping"].includes(runStatus);
+  const runLabel =
+    runStatus === "queued" && queueInfo
+      ? `Run queued ${queueInfo.position + 1}/${queueInfo.depth}`
+      : `Run ${runStatus}`;
 
   return (
     <div className="app-shell">
@@ -628,6 +752,15 @@ function App() {
           <span>{saveLabel}</span>
           <span>LSP pending</span>
           <span title={containerStatus?.sim.error ?? undefined}>{simLabel}</span>
+          <span>{runLabel}</span>
+        </div>
+        <div className="run-actions">
+          <button type="button" onClick={() => void startRun()} disabled={runBusy || state.status !== "ready"}>
+            Run
+          </button>
+          <button type="button" onClick={() => void stopRun()} disabled={!runBusy}>
+            Stop
+          </button>
         </div>
         <form method="post" action="/logout">
           <button type="submit">Logout</button>
