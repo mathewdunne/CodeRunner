@@ -1,11 +1,11 @@
 # Graph Report - FRC-Programming-Training-Sim  (2026-05-04)
 
 ## Corpus Check
-- 37 files · ~40,483 words
+- 37 files · ~41,359 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 335 nodes · 611 edges · 19 communities detected
+- 347 nodes · 645 edges · 19 communities detected
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 17 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
@@ -32,15 +32,15 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `AppStorage` - 15 edges
-2. `isObject()` - 13 edges
-3. `startJavaLsp()` - 10 edges
-4. `BrowserLspClient` - 10 edges
-5. `MVP Backend Service (mvp/apps/server/src/main.ts)` - 10 edges
-6. `WebSocketTextPeer` - 9 edges
-7. `resolveProjectFilePath()` - 8 edges
-8. `registerDefaultDarkModernTheme()` - 8 edges
-9. `main()` - 8 edges
-10. `Web Shell Entry (mvp/apps/web/src/main.ts)` - 8 edges
+2. `resolveProjectFilePath()` - 13 edges
+3. `isObject()` - 13 edges
+4. `apiError()` - 10 edges
+5. `startJavaLsp()` - 10 edges
+6. `BrowserLspClient` - 10 edges
+7. `MVP Backend Service (mvp/apps/server/src/main.ts)` - 10 edges
+8. `WebSocketTextPeer` - 9 edges
+9. `registerDefaultDarkModernTheme()` - 8 edges
+10. `main()` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `readProjectTreeNode()` --calls--> `getProjectPathAccess()`  [INFERRED]
@@ -67,7 +67,7 @@ Nodes (47): NT4 Routing under Multi-Tenancy (spike question), Shared vs. Per-use
 
 ### Community 1 - "Community 1"
 Cohesion: 0.09
-Nodes (30): apiErrorResponse(), authFromRequest(), contentTypeFor(), createProjectEntry(), deleteProjectEntry(), escapeHtml(), htmlResponse(), isInsideDirectory() (+22 more)
+Nodes (40): apiError(), apiErrorResponse(), assertRealPathInside(), authFromRequest(), contentTypeFor(), createProjectEntry(), deleteProjectEntry(), escapeHtml() (+32 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.15
@@ -98,7 +98,7 @@ Cohesion: 0.47
 Nodes (11): containerState(), dockerStats(), down(), ensureContainer(), lifecycle(), main(), parseMiB(), printEnv() (+3 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.31
+Cohesion: 0.24
 Nodes (4): createApp(), createTemplate(), createWebDist(), withApp()
 
 ### Community 10 - "Community 10"
@@ -122,9 +122,9 @@ Nodes (3): asWebSocket(), handleUpgrade(), launchLanguageServer()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `getProjectPathAccess()` connect `Community 6` to `Community 1`?**
-  _High betweenness centrality (0.030) - this node is a cross-community bridge._
+  _High betweenness centrality (0.032) - this node is a cross-community bridge._
 - **Why does `AppStorage` connect `Community 3` to `Community 1`?**
-  _High betweenness centrality (0.027) - this node is a cross-community bridge._
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
 - **What connects `Eclipse JDT LS Process`, `LineSplitter class`, `Vite Config (mvp/apps/web/vite.config.ts)` to the rest of the system?**
   _10 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**

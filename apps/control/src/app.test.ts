@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtemp, mkdir, rm, writeFile, access, readFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, rm, writeFile, access, readFile, symlink } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createApp, type ControlApp } from "./app";
@@ -77,6 +77,27 @@ function cookieFrom(response: Response): string {
   const setCookie = response.headers.get("set-cookie");
   expect(setCookie).toBeTruthy();
   return setCookie?.split(";")[0] ?? "";
+}
+
+function workspaceProjectPath(app: ControlApp, slug: string): string {
+  const workspace = app.storage.db.query("SELECT * FROM workspaces WHERE slug = ?").get(slug) as {
+    project_path: string;
+  } | null;
+  expect(workspace).toBeTruthy();
+  return workspace?.project_path ?? "";
+}
+
+async function tryCreateSymlink(target: string, path: string, type: "file" | "dir"): Promise<boolean> {
+  try {
+    await symlink(target, path, process.platform === "win32" && type === "dir" ? "junction" : type);
+    return true;
+  } catch (error) {
+    const code = error instanceof Error ? (error as Error & { code?: unknown }).code : undefined;
+    if (code === "EPERM" || code === "EACCES" || code === "ENOSYS") {
+      return false;
+    }
+    throw error;
+  }
 }
 
 describe("V1-1 session skeleton", () => {
@@ -317,10 +338,10 @@ describe("V1-3 project file APIs", () => {
         access: "editable",
       });
 
-      const workspace = app.storage.db.query("SELECT * FROM workspaces WHERE slug = ?").get("alice") as {
-        project_path: string;
-      };
-      expect(await readFile(join(workspace.project_path, ...filePath.split("/")), "utf8")).toContain("final class");
+      const projectPath = workspaceProjectPath(app, "alice");
+      expect(await readFile(join(projectPath, ...filePath.split("/")), "utf8")).toContain("final class");
+      const parentEntries = await readdir(join(projectPath, "src", "main", "java", "frc", "robot", "subsystems"));
+      expect(parentEntries.some((entry) => entry.startsWith(".frc-sim-write-"))).toBe(false);
 
       const renamedPath = "src/main/java/frc/robot/subsystems/RenamedSubsystem.java";
       const renameResponse = await app.fetch(
@@ -339,6 +360,142 @@ describe("V1-3 project file APIs", () => {
         }),
       );
       expect(deleteResponse.status).toBe(200);
+    });
+  });
+
+  test("deletes empty directories and rejects non-empty directories", async () => {
+    await withApp(async (app) => {
+      const response = await login(app, "alice");
+      const cookie = cookieFrom(response);
+      const authHeaders = {
+        cookie,
+        "content-type": "application/json",
+      };
+
+      const emptyPath = "src/main/java/frc/robot/empty";
+      const createEmpty = await app.fetch(
+        new Request("http://localhost/u/alice/api/files", {
+          method: "POST",
+          headers: authHeaders,
+          body: JSON.stringify({ kind: "directory", path: emptyPath }),
+        }),
+      );
+      expect(createEmpty.status).toBe(200);
+
+      const deleteEmpty = await app.fetch(
+        new Request(`http://localhost/u/alice/api/files?path=${encodeURIComponent(emptyPath)}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        }),
+      );
+      expect(deleteEmpty.status).toBe(200);
+
+      const nonEmptyPath = "src/main/java/frc/robot/nonempty";
+      const createNonEmpty = await app.fetch(
+        new Request("http://localhost/u/alice/api/files", {
+          method: "POST",
+          headers: authHeaders,
+          body: JSON.stringify({ kind: "directory", path: nonEmptyPath }),
+        }),
+      );
+      expect(createNonEmpty.status).toBe(200);
+
+      const createChild = await app.fetch(
+        new Request("http://localhost/u/alice/api/files", {
+          method: "POST",
+          headers: authHeaders,
+          body: JSON.stringify({ kind: "file", path: `${nonEmptyPath}/Child.java`, contents: "" }),
+        }),
+      );
+      expect(createChild.status).toBe(200);
+
+      const deleteNonEmpty = await app.fetch(
+        new Request(`http://localhost/u/alice/api/files?path=${encodeURIComponent(nonEmptyPath)}`, {
+          method: "DELETE",
+          headers: authHeaders,
+        }),
+      );
+      expect(deleteNonEmpty.status).toBe(409);
+    });
+  });
+
+  test("rejects symlink targets in allowlisted file paths", async () => {
+    await withApp(async (app, root) => {
+      const response = await login(app, "alice");
+      const cookie = cookieFrom(response);
+      const projectPath = workspaceProjectPath(app, "alice");
+      const outsidePath = join(root, "outside.txt");
+      const linkPath = join(projectPath, "src", "main", "java", "frc", "robot", "Linked.java");
+      await writeFile(outsidePath, "outside\n", "utf8");
+
+      const symlinkCreated = await tryCreateSymlink(outsidePath, linkPath, "file");
+      if (!symlinkCreated) {
+        return;
+      }
+
+      const read = await app.fetch(
+        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/Linked.java", {
+          headers: { cookie },
+        }),
+      );
+      expect(read.status).toBe(403);
+    });
+  });
+
+  test("rejects read and write through symlinked ancestor directories", async () => {
+    await withApp(async (app, root) => {
+      const response = await login(app, "alice");
+      const cookie = cookieFrom(response);
+      const projectPath = workspaceProjectPath(app, "alice");
+      const outsideDir = join(root, "outside-dir");
+      const linkDir = join(projectPath, "src", "main", "java", "frc", "robot", "linked");
+      await mkdir(outsideDir);
+      await writeFile(join(outsideDir, "Escape.java"), "outside\n", "utf8");
+
+      const symlinkCreated = await tryCreateSymlink(outsideDir, linkDir, "dir");
+      if (!symlinkCreated) {
+        return;
+      }
+
+      const read = await app.fetch(
+        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/linked/Escape.java", {
+          headers: { cookie },
+        }),
+      );
+      expect(read.status).toBe(403);
+
+      const write = await app.fetch(
+        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/linked/Escape.java", {
+          method: "PUT",
+          headers: {
+            cookie,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ contents: "package frc.robot;\n" }),
+        }),
+      );
+      expect(write.status).toBe(403);
+    });
+  });
+
+  test("omits leftover atomic write temp files from the project tree", async () => {
+    await withApp(async (app) => {
+      const response = await login(app, "alice");
+      const cookie = cookieFrom(response);
+      const projectPath = workspaceProjectPath(app, "alice");
+      await writeFile(
+        join(projectPath, "src", "main", "java", "frc", "robot", ".frc-sim-write-deadbeef.tmp"),
+        "temporary\n",
+        "utf8",
+      );
+
+      const tree = await app.fetch(
+        new Request("http://localhost/u/alice/api/project/tree", {
+          headers: { cookie },
+        }),
+      );
+      expect(tree.status).toBe(200);
+      expect(JSON.stringify(await tree.json())).not.toContain(".frc-sim-write-deadbeef.tmp");
     });
   });
 

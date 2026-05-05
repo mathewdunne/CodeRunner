@@ -1,4 +1,6 @@
-import { mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
+import { randomBytes } from "node:crypto";
+import type { Stats } from "node:fs";
+import { lstat, mkdir, readdir, readFile, realpath, rename, rmdir, unlink, writeFile } from "node:fs/promises";
 import { dirname, extname, isAbsolute, relative, resolve } from "node:path";
 import {
   createFileRequestSchema,
@@ -181,12 +183,20 @@ function sortProjectNodes(left: ProjectTreeNode, right: ProjectTreeNode): number
   return left.name.localeCompare(right.name);
 }
 
+function isReservedProjectTempName(name: string): boolean {
+  return /^\.frc-sim-write-[a-f0-9]+\.tmp$/u.test(name);
+}
+
 async function readProjectTreeNode(projectRoot: string, relativePath: string): Promise<ProjectTreeNode | null> {
   const absolutePath = relativePath ? resolve(projectRoot, ...relativePath.split("/")) : projectRoot;
   const entries = await readdir(absolutePath, { withFileTypes: true });
   const children: ProjectTreeNode[] = [];
 
   for (const entry of entries) {
+    if (isReservedProjectTempName(entry.name)) {
+      continue;
+    }
+
     const childPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
     const access = getProjectPathAccess(childPath);
     if (access === "blocked") {
@@ -271,30 +281,132 @@ type ResolvedProjectPath = {
   path: ProjectPath;
   absolutePath: string;
   access: Exclude<ProjectPathAccess, "blocked" | "outside-allowlist">;
+  stats: Stats | null;
 };
 
-function resolveProjectFilePath(auth: AuthContext, pathInput: string, mode: "read" | "write"): ResolvedProjectPath {
+type ResolveProjectPathOptions = {
+  mode: "read" | "write";
+  existingTarget: "required" | "optional";
+  missingTargetMessage?: string;
+  parentMissingMessage?: string;
+  parentMissingStatus?: number;
+};
+
+function apiError(message: string, status: number): Error & { status: number } {
+  return Object.assign(new Error(message), { status });
+}
+
+function fsErrorCode(error: unknown): unknown {
+  return error instanceof Error ? (error as Error & { code?: unknown }).code : undefined;
+}
+
+function isMissingPathError(error: unknown): boolean {
+  return fsErrorCode(error) === "ENOENT";
+}
+
+function isNonEmptyDirectoryError(error: unknown): boolean {
+  const code = fsErrorCode(error);
+  return code === "ENOTEMPTY" || code === "EEXIST";
+}
+
+function symlinkError(): Error & { status: number } {
+  return apiError("Project path cannot include symlinks.", 403);
+}
+
+async function lstatRequired(path: string, message: string, status: number): Promise<Stats> {
+  try {
+    return await lstat(path);
+  } catch (error) {
+    if (isMissingPathError(error)) {
+      throw apiError(message, status);
+    }
+    throw error;
+  }
+}
+
+async function assertRealPathInside(rootRealPath: string, targetPath: string): Promise<string> {
+  const targetRealPath = await realpath(targetPath);
+  if (!isInsideDirectory(rootRealPath, targetRealPath)) {
+    throw apiError("Project path resolved outside the workspace.", 403);
+  }
+  return targetRealPath;
+}
+
+async function resolveProjectFilePath(
+  auth: AuthContext,
+  pathInput: string,
+  options: ResolveProjectPathOptions,
+): Promise<ResolvedProjectPath> {
   const parsed = projectPathSchema.safeParse(pathInput);
   if (!parsed.success) {
-    throw Object.assign(new Error("Invalid project path."), { status: 400 });
+    throw apiError("Invalid project path.", 400);
   }
 
   const projectPath = parsed.data;
   const access = getProjectPathAccess(projectPath);
   if (access === "blocked" || access === "outside-allowlist") {
-    throw Object.assign(new Error("Project path is not available."), { status: 403 });
+    throw apiError("Project path is not available.", 403);
   }
 
-  if (mode === "write" && access !== "editable") {
-    throw Object.assign(new Error("Project path is read-only."), { status: 403 });
+  if (options.mode === "write" && access !== "editable") {
+    throw apiError("Project path is read-only.", 403);
   }
 
-  const absolutePath = resolve(auth.workspace.project_path, ...projectPath.split("/"));
-  if (!isInsideDirectory(auth.workspace.project_path, absolutePath)) {
-    throw Object.assign(new Error("Project path resolved outside the workspace."), { status: 403 });
+  const rootRealPath = await realpath(auth.workspace.project_path);
+  const segments = projectPath.split("/");
+  const parentSegments = segments.slice(0, -1);
+  let parentPath = rootRealPath;
+
+  for (const segment of parentSegments) {
+    parentPath = resolve(parentPath, segment);
+    if (!isInsideDirectory(rootRealPath, parentPath)) {
+      throw apiError("Project path resolved outside the workspace.", 403);
+    }
+
+    const segmentStats = await lstatRequired(
+      parentPath,
+      options.parentMissingMessage ?? "Parent directory does not exist.",
+      options.parentMissingStatus ?? 409,
+    );
+    if (segmentStats.isSymbolicLink()) {
+      throw symlinkError();
+    }
+    if (!segmentStats.isDirectory()) {
+      throw apiError(
+        options.parentMissingMessage ?? "Parent directory does not exist.",
+        options.parentMissingStatus ?? 409,
+      );
+    }
+
+    parentPath = await assertRealPathInside(rootRealPath, parentPath);
   }
 
-  return { path: projectPath, absolutePath, access };
+  const absolutePath = resolve(parentPath, segments.at(-1) ?? "");
+  if (!isInsideDirectory(rootRealPath, absolutePath)) {
+    throw apiError("Project path resolved outside the workspace.", 403);
+  }
+
+  let stats: Stats | null = null;
+  try {
+    stats = await lstat(absolutePath);
+  } catch (error) {
+    if (options.existingTarget === "required" && isMissingPathError(error)) {
+      throw apiError(options.missingTargetMessage ?? "Project path was not found.", 404);
+    }
+    if (!isMissingPathError(error)) {
+      throw error;
+    }
+  }
+
+  if (stats?.isSymbolicLink()) {
+    throw symlinkError();
+  }
+
+  if (stats) {
+    await assertRealPathInside(rootRealPath, absolutePath);
+  }
+
+  return { path: projectPath, absolutePath, access, stats };
 }
 
 async function readJsonRequest<T>(request: Request, parse: (input: unknown) => T): Promise<T> {
@@ -313,15 +425,33 @@ async function readJsonRequest<T>(request: Request, parse: (input: unknown) => T
   }
 }
 
-async function readProjectFile(auth: AuthContext, pathInput: string): Promise<ProjectFileResponse> {
-  const resolvedPath = resolveProjectFilePath(auth, pathInput, "read");
-  const fileStat = await stat(resolvedPath.absolutePath).catch(() => null);
-  if (!fileStat) {
-    throw Object.assign(new Error("Project file was not found."), { status: 404 });
-  }
+function writeTempPathFor(absolutePath: string): string {
+  return resolve(dirname(absolutePath), `.frc-sim-write-${randomBytes(12).toString("hex")}.tmp`);
+}
 
-  if (!fileStat.isFile()) {
-    throw Object.assign(new Error("Project path is not a file."), { status: 400 });
+async function writeFileAtomically(absolutePath: string, contents: string): Promise<void> {
+  const tempPath = writeTempPathFor(absolutePath);
+  try {
+    await writeFile(tempPath, contents, { encoding: "utf8", flag: "wx" });
+    await rename(tempPath, absolutePath);
+  } catch (error) {
+    await unlink(tempPath).catch(() => {
+      // Best effort cleanup; the project tree hides any crash leftovers with this prefix.
+    });
+    throw error;
+  }
+}
+
+async function readProjectFile(auth: AuthContext, pathInput: string): Promise<ProjectFileResponse> {
+  const resolvedPath = await resolveProjectFilePath(auth, pathInput, {
+    mode: "read",
+    existingTarget: "required",
+    missingTargetMessage: "Project file was not found.",
+    parentMissingMessage: "Project file was not found.",
+    parentMissingStatus: 404,
+  });
+  if (!resolvedPath.stats?.isFile()) {
+    throw apiError("Project path is not a file.", 400);
   }
 
   return {
@@ -336,54 +466,66 @@ async function writeProjectFile(
   pathInput: string,
   requestBody: WriteFileRequest,
 ): Promise<FileMutationResponse> {
-  const resolvedPath = resolveProjectFilePath(auth, pathInput, "write");
-  const parentStat = await stat(dirname(resolvedPath.absolutePath)).catch(() => null);
-  if (!parentStat?.isDirectory()) {
-    throw Object.assign(new Error("Parent directory does not exist."), { status: 409 });
+  const resolvedPath = await resolveProjectFilePath(auth, pathInput, {
+    mode: "write",
+    existingTarget: "optional",
+  });
+  if (resolvedPath.stats && !resolvedPath.stats.isFile()) {
+    throw apiError("Project path is not a file.", 400);
   }
 
-  await writeFile(resolvedPath.absolutePath, requestBody.contents, "utf8");
+  await writeFileAtomically(resolvedPath.absolutePath, requestBody.contents);
   return mutationResponse(auth);
 }
 
 async function createProjectEntry(auth: AuthContext, requestBody: CreateFileRequest): Promise<FileMutationResponse> {
-  const resolvedPath = resolveProjectFilePath(auth, requestBody.path, "write");
-  const existing = await stat(resolvedPath.absolutePath).catch(() => null);
-  if (existing) {
-    throw Object.assign(new Error("Project path already exists."), { status: 409 });
-  }
-
-  const parentStat = await stat(dirname(resolvedPath.absolutePath)).catch(() => null);
-  if (!parentStat?.isDirectory()) {
-    throw Object.assign(new Error("Parent directory does not exist."), { status: 409 });
+  const resolvedPath = await resolveProjectFilePath(auth, requestBody.path, {
+    mode: "write",
+    existingTarget: "optional",
+  });
+  if (resolvedPath.stats) {
+    throw apiError("Project path already exists.", 409);
   }
 
   if (requestBody.kind === "directory") {
-    await mkdir(resolvedPath.absolutePath);
+    try {
+      await mkdir(resolvedPath.absolutePath);
+    } catch (error) {
+      if (fsErrorCode(error) === "EEXIST") {
+        throw apiError("Project path already exists.", 409);
+      }
+      throw error;
+    }
   } else {
-    await writeFile(resolvedPath.absolutePath, requestBody.contents ?? "", "utf8");
+    try {
+      await writeFile(resolvedPath.absolutePath, requestBody.contents ?? "", { encoding: "utf8", flag: "wx" });
+    } catch (error) {
+      if (fsErrorCode(error) === "EEXIST") {
+        throw apiError("Project path already exists.", 409);
+      }
+      throw error;
+    }
   }
 
   return mutationResponse(auth);
 }
 
 async function renameProjectEntry(auth: AuthContext, requestBody: RenameFileRequest): Promise<FileMutationResponse> {
-  const from = resolveProjectFilePath(auth, requestBody.from, "write");
-  const to = resolveProjectFilePath(auth, requestBody.to, "write");
+  const from = await resolveProjectFilePath(auth, requestBody.from, {
+    mode: "write",
+    existingTarget: "required",
+    missingTargetMessage: "Source path was not found.",
+    parentMissingMessage: "Source path was not found.",
+    parentMissingStatus: 404,
+  });
+  const to = await resolveProjectFilePath(auth, requestBody.to, {
+    mode: "write",
+    existingTarget: "optional",
+    parentMissingMessage: "Destination parent directory does not exist.",
+  });
 
-  const fromStat = await stat(from.absolutePath).catch(() => null);
-  if (!fromStat) {
-    throw Object.assign(new Error("Source path was not found."), { status: 404 });
-  }
-
-  const toStat = await stat(to.absolutePath).catch(() => null);
-  if (toStat) {
-    throw Object.assign(new Error("Destination path already exists."), { status: 409 });
-  }
-
-  const parentStat = await stat(dirname(to.absolutePath)).catch(() => null);
-  if (!parentStat?.isDirectory()) {
-    throw Object.assign(new Error("Destination parent directory does not exist."), { status: 409 });
+  if (to.stats) {
+    throw apiError("Destination path already exists.", 409);
   }
 
   await rename(from.absolutePath, to.absolutePath);
@@ -391,18 +533,26 @@ async function renameProjectEntry(auth: AuthContext, requestBody: RenameFileRequ
 }
 
 async function deleteProjectEntry(auth: AuthContext, pathInput: string): Promise<FileMutationResponse> {
-  const resolvedPath = resolveProjectFilePath(auth, pathInput, "write");
-  const fileStat = await stat(resolvedPath.absolutePath).catch(() => null);
-  if (!fileStat) {
-    throw Object.assign(new Error("Project path was not found."), { status: 404 });
-  }
+  const resolvedPath = await resolveProjectFilePath(auth, pathInput, {
+    mode: "write",
+    existingTarget: "required",
+    missingTargetMessage: "Project path was not found.",
+    parentMissingMessage: "Project path was not found.",
+    parentMissingStatus: 404,
+  });
+  const fileStat = resolvedPath.stats;
 
   try {
-    await rm(resolvedPath.absolutePath, { recursive: false });
+    if (fileStat?.isDirectory()) {
+      await rmdir(resolvedPath.absolutePath);
+    } else if (fileStat?.isFile()) {
+      await unlink(resolvedPath.absolutePath);
+    } else {
+      throw apiError("Project path is not a file or directory.", 400);
+    }
   } catch (error) {
-    const code = error instanceof Error ? (error as Error & { code?: unknown }).code : undefined;
-    if (code === "ENOTEMPTY") {
-      throw Object.assign(new Error("Directory is not empty."), { status: 409 });
+    if (isNonEmptyDirectoryError(error)) {
+      throw apiError("Directory is not empty.", 409);
     }
     throw error;
   }
