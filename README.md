@@ -2,7 +2,7 @@
 
 A browser-based IDE for learning FRC robot programming. Students write Java in Monaco, run a WPILib simulation, and view telemetry through AdvantageScope Lite.
 
-Status: V1-0 through V1-2 are implemented. The current root contains the Bun workspace scaffold, shared contracts, SQLite migrations, signed-cookie login/session flow, first-login workspace creation from the WPILib Java command template, authenticated workspace routing, the static React/Vite shell, session/tree APIs, and heartbeat tracking. The working MVP has been archived under `mvp/` for reference.
+Status: V1-0 through V1-4 are implemented. The current root contains the Bun workspace scaffold, shared contracts, SQLite migrations, signed-cookie login/session flow, first-login workspace creation from the WPILib Java command template, authenticated workspace routing, the React/Vite multi-file shell, project file APIs, the V1 sim image, Docker lease orchestration, loopback sim port allocation, and sim container status reporting. The working MVP has been archived under `mvp/` for reference.
 
 ## Prerequisites
 
@@ -40,9 +40,10 @@ mvp/                           Archived MVP implementation and docs
 | `bun run typecheck` | Typecheck all V1 TypeScript projects |
 | `bun test` | Run Bun tests |
 | `bun run build:web` | Build the static Vite shell into `apps/web/dist/` |
+| `bun run docker:build:sim` | Build the mounted-project V1 sim image as `frc-sim:v1` |
 | `bun run migrate` | Apply pending SQLite migrations |
 | `bun run migrate:status` | Show SQLite migration status |
-| `bun run dev:control` | Start the V1-2 Bun control plane on `:4000` |
+| `bun run dev:control` | Start the V1-4 Bun control plane on `:4000` |
 | `bun run dev:web` | Start the Vite web shell directly for frontend-only work |
 
 The source of truth for the V1 rewrite is [`V1-Design.md`](./V1-Design.md). The old MVP source is intentionally not evolved in place; copy proven behavior from `mvp/` only when a V1 task calls for it.

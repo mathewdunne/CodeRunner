@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import * as monaco from "monaco-editor";
 import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import {
+  type ContainersStatusResponse,
   isWorkspaceSlug,
   type FileMutationResponse,
   type ProjectFileResponse,
@@ -175,6 +176,7 @@ function TreeNodeView({
 function App() {
   const workspaceSlug = useMemo(() => workspaceSlugFromLocation(), []);
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [containerStatus, setContainerStatus] = useState<ContainersStatusResponse | null>(null);
   const [openFiles, setOpenFiles] = useState<OpenFile[]>([]);
   const [activePath, setActivePath] = useState<string | null>(null);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
@@ -402,6 +404,33 @@ function App() {
   }, [workspaceSlug]);
 
   useEffect(() => {
+    if (!workspaceSlug) {
+      return;
+    }
+
+    let cancelled = false;
+    const refreshStatus = async () => {
+      try {
+        const status = await fetchJson<ContainersStatusResponse>(`/u/${workspaceSlug}/api/containers/status`);
+        if (!cancelled) {
+          setContainerStatus(status);
+        }
+      } catch {
+        if (!cancelled) {
+          setContainerStatus(null);
+        }
+      }
+    };
+
+    void refreshStatus();
+    const interval = window.setInterval(() => void refreshStatus(), 5_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [workspaceSlug]);
+
+  useEffect(() => {
     const warnOnDirtyFiles = (event: BeforeUnloadEvent) => {
       if (!openFilesRef.current.some((file) => file.dirty || file.saving)) {
         return;
@@ -581,6 +610,11 @@ function App() {
   const dirtyCount = openFiles.filter((file) => file.dirty || file.saving).length;
   const saveLabel =
     dirtyCount === 0 ? "Save idle" : openFiles.some((file) => file.saving) ? "Saving" : `${dirtyCount} unsaved`;
+  const simLabel = !containerStatus
+    ? "Sim pending"
+    : containerStatus.sim.state === "error"
+      ? "Sim error"
+      : `Sim ${containerStatus.sim.state}`;
 
   return (
     <div className="app-shell">
@@ -593,7 +627,7 @@ function App() {
           <span>Workspace {workspaceLabel}</span>
           <span>{saveLabel}</span>
           <span>LSP pending</span>
-          <span>Sim offline</span>
+          <span title={containerStatus?.sim.error ?? undefined}>{simLabel}</span>
         </div>
         <form method="post" action="/logout">
           <button type="submit">Logout</button>

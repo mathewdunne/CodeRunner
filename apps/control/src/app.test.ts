@@ -2,7 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { mkdtemp, mkdir, readdir, rm, writeFile, access, readFile, symlink } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { createApp, type ControlApp } from "./app";
+import { createApp, type ControlApp, type ControlAppOptions } from "./app";
+import type { DockerCommandResult, DockerRunner } from "./containers";
 
 async function exists(path: string): Promise<boolean> {
   try {
@@ -37,7 +38,10 @@ async function createWebDist(root: string): Promise<string> {
   return webDistDir;
 }
 
-async function withApp<T>(fn: (app: ControlApp, root: string) => Promise<T>): Promise<T> {
+async function withApp<T>(
+  fn: (app: ControlApp, root: string) => Promise<T>,
+  options: Partial<ControlAppOptions> = {},
+): Promise<T> {
   const root = await mkdtemp(join(tmpdir(), "frc-v1-control-"));
   const templateDir = await createTemplate(root);
   const webDistDir = await createWebDist(root);
@@ -46,6 +50,8 @@ async function withApp<T>(fn: (app: ControlApp, root: string) => Promise<T>): Pr
     templateDir,
     webDistDir,
     sessionSecret: "test-session-secret",
+    containerAutoStart: false,
+    ...options,
   });
 
   try {
@@ -54,6 +60,123 @@ async function withApp<T>(fn: (app: ControlApp, root: string) => Promise<T>): Pr
     app.close();
     await rm(root, { recursive: true, force: true });
   }
+}
+
+type FakeContainer = {
+  name: string;
+  running: boolean;
+  labels: Record<string, string>;
+  hostIp: string;
+  port: number;
+};
+
+function ok(stdout = ""): DockerCommandResult {
+  return { exitCode: 0, stdout, stderr: "" };
+}
+
+function missing(message = "missing"): DockerCommandResult {
+  return { exitCode: 1, stdout: "", stderr: message };
+}
+
+function dockerInspect(container: FakeContainer): unknown {
+  return {
+    Name: `/${container.name}`,
+    State: {
+      Running: container.running,
+      Status: container.running ? "running" : "exited",
+    },
+    Config: {
+      Labels: container.labels,
+    },
+    NetworkSettings: {
+      Ports: {
+        "5810/tcp": [
+          {
+            HostIp: container.hostIp,
+            HostPort: String(container.port),
+          },
+        ],
+      },
+    },
+  };
+}
+
+function createFakeDocker() {
+  const containers = new Map<string, FakeContainer>();
+  const calls: string[][] = [];
+
+  const runner: DockerRunner = async (args) => {
+    calls.push([...args]);
+
+    if (args[0] === "image" && args[1] === "inspect") {
+      return ok(JSON.stringify([{ Id: "fake-image" }]));
+    }
+
+    if (args[0] === "container" && args[1] === "inspect") {
+      const container = containers.get(args[2] ?? "");
+      return container ? ok(JSON.stringify([dockerInspect(container)])) : missing("No such container");
+    }
+
+    if (args[0] === "container" && args[1] === "ls") {
+      const workspaceFilter = args.find((arg) => arg.startsWith("label=frc-sim.workspace="));
+      const workspaceId = workspaceFilter?.slice("label=frc-sim.workspace=".length);
+      const names = [...containers.values()]
+        .filter((container) => container.labels["frc-sim.workspace"] === workspaceId)
+        .map((container) => container.name);
+      return ok(`${names.join("\n")}${names.length ? "\n" : ""}`);
+    }
+
+    if (args[0] === "run") {
+      const name = args[args.indexOf("--name") + 1] ?? "";
+      const portMapping = args[args.indexOf("-p") + 1] ?? "";
+      const port = Number(/^127\.0\.0\.1:(\d+):5810$/u.exec(portMapping)?.[1]);
+      const labels: Record<string, string> = {};
+      for (let index = 0; index < args.length; index += 1) {
+        if (args[index] === "--label") {
+          const [key, value] = (args[index + 1] ?? "").split("=");
+          if (key && value) {
+            labels[key] = value;
+          }
+        }
+      }
+      containers.set(name, {
+        name,
+        running: true,
+        labels,
+        hostIp: "127.0.0.1",
+        port,
+      });
+      return ok("fake-container-id\n");
+    }
+
+    if (args[0] === "start") {
+      const container = containers.get(args[1] ?? "");
+      if (!container) {
+        return missing("No such container");
+      }
+      container.running = true;
+      return ok(`${container.name}\n`);
+    }
+
+    if (args[0] === "rm" && args[1] === "-f") {
+      containers.delete(args[2] ?? "");
+      return ok();
+    }
+
+    return missing(`unhandled docker args: ${args.join(" ")}`);
+  };
+
+  return { runner, containers, calls };
+}
+
+async function waitFor(predicate: () => boolean): Promise<void> {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    if (predicate()) {
+      return;
+    }
+    await Bun.sleep(10);
+  }
+  throw new Error("Timed out waiting for condition.");
 }
 
 async function login(app: ControlApp, displayName: string, cookie?: string): Promise<Response> {
@@ -584,5 +707,185 @@ describe("V1-3 project file APIs", () => {
       );
       expect(badPath.status).toBe(400);
     });
+  });
+});
+
+describe("V1-4 sim container orchestration", () => {
+  test("container status creates a managed sim container and lease", async () => {
+    const fakeDocker = createFakeDocker();
+
+    await withApp(
+      async (app) => {
+        const response = await login(app, "alice");
+        const cookie = cookieFrom(response);
+
+        const status = await app.fetch(
+          new Request("http://localhost/u/alice/api/containers/status", {
+            headers: { cookie },
+          }),
+        );
+
+        expect(status.status).toBe(200);
+        const body = await status.json();
+        expect(body).toMatchObject({
+          workspace: { slug: "alice" },
+          sim: {
+            role: "sim",
+            state: "running",
+            image: "frc-sim:test",
+            portAllocated: true,
+            error: null,
+          },
+        });
+
+        const workspace = app.storage.db.query("SELECT * FROM workspaces WHERE slug = ?").get("alice") as {
+          id: string;
+          project_path: string;
+        };
+        const expectedName = `frc-v1-sim-${workspace.id}`;
+        expect(body.sim.containerName).toBe(expectedName);
+        expect(fakeDocker.containers.has(expectedName)).toBe(true);
+
+        const runCall = fakeDocker.calls.find((call) => call[0] === "run");
+        expect(runCall).toBeTruthy();
+        expect(runCall).toContain(`frc-sim.workspace=${workspace.id}`);
+        expect(runCall).toContain(`type=bind,src=${workspace.project_path},dst=/workspace/project`);
+        expect(runCall).toContain(`type=bind,src=${join(app.storage.config.dataDir, "users", workspace.id, "home")},dst=/home/frc`);
+        expect(runCall).toContain("127.0.0.1:25810:5810");
+        expect(runCall).toContain("--user");
+        expect(runCall?.[runCall.indexOf("--user") + 1]).toBe("123:456");
+
+        const lease = app.storage.db.query("SELECT * FROM container_leases WHERE workspace_id = ?").get(workspace.id) as {
+          sim_container: string;
+          sim_port: number;
+          state: string;
+        };
+        expect(lease).toMatchObject({
+          sim_container: expectedName,
+          sim_port: 25810,
+          state: "running",
+        });
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25810, end: 25810 },
+        containerUser: "123:456",
+      },
+    );
+  });
+
+  test("opening a workspace kicks off sim startup without blocking the shell", async () => {
+    const fakeDocker = createFakeDocker();
+
+    await withApp(
+      async (app) => {
+        const response = await login(app, "alice");
+        const cookie = cookieFrom(response);
+
+        const shell = await app.fetch(
+          new Request("http://localhost/u/alice/", {
+            headers: { cookie },
+          }),
+        );
+        expect(shell.status).toBe(200);
+        await waitFor(() => fakeDocker.calls.some((call) => call[0] === "run"));
+        expect(fakeDocker.containers.size).toBe(1);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        containerAutoStart: true,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25811, end: 25811 },
+      },
+    );
+  });
+
+  test("a restarted control plane rediscovers the labeled sim container", async () => {
+    const root = await mkdtemp(join(tmpdir(), "frc-v1-control-"));
+    const templateDir = await createTemplate(root);
+    const webDistDir = await createWebDist(root);
+    const fakeDocker = createFakeDocker();
+    const config: ControlAppOptions = {
+      dataDir: join(root, "data"),
+      templateDir,
+      webDistDir,
+      sessionSecret: "test-session-secret",
+      containerAutoStart: false,
+      dockerRunner: fakeDocker.runner,
+      simImage: "frc-sim:test",
+      simPortRange: { start: 25812, end: 25812 },
+    };
+
+    const app1 = await createApp(config);
+    try {
+      const response = await login(app1, "alice");
+      const cookie = cookieFrom(response);
+      const firstStatus = await app1.fetch(
+        new Request("http://localhost/u/alice/api/containers/status", {
+          headers: { cookie },
+        }),
+      );
+      expect(firstStatus.status).toBe(200);
+      const runCount = fakeDocker.calls.filter((call) => call[0] === "run").length;
+      app1.close();
+
+      const app2 = await createApp(config);
+      try {
+        const secondStatus = await app2.fetch(
+          new Request("http://localhost/u/alice/api/containers/status", {
+            headers: { cookie },
+          }),
+        );
+        expect(secondStatus.status).toBe(200);
+        expect(await secondStatus.json()).toMatchObject({
+          sim: { state: "running", portAllocated: true },
+        });
+        expect(fakeDocker.calls.filter((call) => call[0] === "run").length).toBe(runCount);
+      } finally {
+        app2.close();
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("recreating a removed container preserves project files", async () => {
+    const fakeDocker = createFakeDocker();
+
+    await withApp(
+      async (app) => {
+        const response = await login(app, "alice");
+        const cookie = cookieFrom(response);
+        const projectPath = workspaceProjectPath(app, "alice");
+        const robotPath = join(projectPath, "src", "main", "java", "frc", "robot", "Robot.java");
+        await writeFile(robotPath, "package frc.robot;\n// sentinel\n", "utf8");
+
+        const firstStatus = await app.fetch(
+          new Request("http://localhost/u/alice/api/containers/status", {
+            headers: { cookie },
+          }),
+        );
+        expect(firstStatus.status).toBe(200);
+        const firstBody = await firstStatus.json();
+        fakeDocker.containers.delete(firstBody.sim.containerName);
+
+        const secondStatus = await app.fetch(
+          new Request("http://localhost/u/alice/api/containers/status", {
+            headers: { cookie },
+          }),
+        );
+        expect(secondStatus.status).toBe(200);
+        expect(await secondStatus.json()).toMatchObject({
+          sim: { state: "running" },
+        });
+        expect(await readFile(robotPath, "utf8")).toContain("sentinel");
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25813, end: 25813 },
+      },
+    );
   });
 });

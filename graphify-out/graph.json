@@ -61,7 +61,7 @@
       "label": "exists()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L7",
+      "source_location": "L8",
       "id": "src_app_test_exists",
       "community": 9,
       "norm_label": "exists()"
@@ -70,7 +70,7 @@
       "label": "createTemplate()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "id": "src_app_test_createtemplate",
       "community": 9,
       "norm_label": "createtemplate()"
@@ -79,7 +79,7 @@
       "label": "createWebDist()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L28",
+      "source_location": "L29",
       "id": "src_app_test_createwebdist",
       "community": 9,
       "norm_label": "createwebdist()"
@@ -88,16 +88,61 @@
       "label": "withApp()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L40",
+      "source_location": "L41",
       "id": "src_app_test_withapp",
       "community": 9,
       "norm_label": "withapp()"
     },
     {
+      "label": "ok()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L73",
+      "id": "src_app_test_ok",
+      "community": 9,
+      "norm_label": "ok()"
+    },
+    {
+      "label": "missing()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L77",
+      "id": "src_app_test_missing",
+      "community": 9,
+      "norm_label": "missing()"
+    },
+    {
+      "label": "dockerInspect()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L81",
+      "id": "src_app_test_dockerinspect",
+      "community": 9,
+      "norm_label": "dockerinspect()"
+    },
+    {
+      "label": "createFakeDocker()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L104",
+      "id": "src_app_test_createfakedocker",
+      "community": 9,
+      "norm_label": "createfakedocker()"
+    },
+    {
+      "label": "waitFor()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L172",
+      "id": "src_app_test_waitfor",
+      "community": 9,
+      "norm_label": "waitfor()"
+    },
+    {
       "label": "login()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L59",
+      "source_location": "L182",
       "id": "src_app_test_login",
       "community": 9,
       "norm_label": "login()"
@@ -106,7 +151,7 @@
       "label": "cookieFrom()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L76",
+      "source_location": "L199",
       "id": "src_app_test_cookiefrom",
       "community": 9,
       "norm_label": "cookiefrom()"
@@ -115,7 +160,7 @@
       "label": "workspaceProjectPath()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L82",
+      "source_location": "L205",
       "id": "src_app_test_workspaceprojectpath",
       "community": 9,
       "norm_label": "workspaceprojectpath()"
@@ -124,7 +169,7 @@
       "label": "tryCreateSymlink()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L90",
+      "source_location": "L213",
       "id": "src_app_test_trycreatesymlink",
       "community": 9,
       "norm_label": "trycreatesymlink()"
@@ -142,7 +187,7 @@
       "label": "htmlResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L42",
+      "source_location": "L49",
       "id": "src_app_htmlresponse",
       "community": 1,
       "norm_label": "htmlresponse()"
@@ -151,7 +196,7 @@
       "label": "redirect()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L48",
+      "source_location": "L55",
       "id": "src_app_redirect",
       "community": 1,
       "norm_label": "redirect()"
@@ -160,7 +205,7 @@
       "label": "jsonResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L54",
+      "source_location": "L61",
       "id": "src_app_jsonresponse",
       "community": 1,
       "norm_label": "jsonresponse()"
@@ -169,7 +214,7 @@
       "label": "escapeHtml()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L60",
+      "source_location": "L67",
       "id": "src_app_escapehtml",
       "community": 1,
       "norm_label": "escapehtml()"
@@ -178,7 +223,7 @@
       "label": "loginPage()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L68",
+      "source_location": "L75",
       "id": "src_app_loginpage",
       "community": 1,
       "norm_label": "loginpage()"
@@ -187,7 +232,7 @@
       "label": "notFound()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L100",
+      "source_location": "L107",
       "id": "src_app_notfound",
       "community": 1,
       "norm_label": "notfound()"
@@ -196,7 +241,7 @@
       "label": "readDisplayName()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L104",
+      "source_location": "L111",
       "id": "src_app_readdisplayname",
       "community": 1,
       "norm_label": "readdisplayname()"
@@ -205,7 +250,7 @@
       "label": "currentUserId()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L119",
+      "source_location": "L126",
       "id": "src_app_currentuserid",
       "community": 1,
       "norm_label": "currentuserid()"
@@ -214,7 +259,7 @@
       "label": "authFromRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L123",
+      "source_location": "L130",
       "id": "src_app_authfromrequest",
       "community": 1,
       "norm_label": "authfromrequest()"
@@ -223,7 +268,7 @@
       "label": "resolveWorkspaceRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L140",
+      "source_location": "L147",
       "id": "src_app_resolveworkspacerequest",
       "community": 1,
       "norm_label": "resolveworkspacerequest()"
@@ -232,7 +277,7 @@
       "label": "sessionResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L164",
+      "source_location": "L171",
       "id": "src_app_sessionresponse",
       "community": 1,
       "norm_label": "sessionresponse()"
@@ -241,7 +286,7 @@
       "label": "sortProjectNodes()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L178",
+      "source_location": "L185",
       "id": "src_app_sortprojectnodes",
       "community": 1,
       "norm_label": "sortprojectnodes()"
@@ -250,7 +295,7 @@
       "label": "isReservedProjectTempName()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L186",
+      "source_location": "L193",
       "id": "src_app_isreservedprojecttempname",
       "community": 1,
       "norm_label": "isreservedprojecttempname()"
@@ -259,7 +304,7 @@
       "label": "readProjectTreeNode()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L190",
+      "source_location": "L197",
       "id": "src_app_readprojecttreenode",
       "community": 1,
       "norm_label": "readprojecttreenode()"
@@ -268,7 +313,7 @@
       "label": "projectTreeResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L250",
+      "source_location": "L257",
       "id": "src_app_projecttreeresponse",
       "community": 1,
       "norm_label": "projecttreeresponse()"
@@ -277,7 +322,7 @@
       "label": "mutationResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L265",
+      "source_location": "L272",
       "id": "src_app_mutationresponse",
       "community": 1,
       "norm_label": "mutationresponse()"
@@ -286,7 +331,7 @@
       "label": "projectPathFromQuery()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L272",
+      "source_location": "L279",
       "id": "src_app_projectpathfromquery",
       "community": 1,
       "norm_label": "projectpathfromquery()"
@@ -295,7 +340,7 @@
       "label": "apiError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L295",
+      "source_location": "L302",
       "id": "src_app_apierror",
       "community": 1,
       "norm_label": "apierror()"
@@ -304,7 +349,7 @@
       "label": "fsErrorCode()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L299",
+      "source_location": "L306",
       "id": "src_app_fserrorcode",
       "community": 1,
       "norm_label": "fserrorcode()"
@@ -313,7 +358,7 @@
       "label": "isMissingPathError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L303",
+      "source_location": "L310",
       "id": "src_app_ismissingpatherror",
       "community": 1,
       "norm_label": "ismissingpatherror()"
@@ -322,7 +367,7 @@
       "label": "isNonEmptyDirectoryError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L307",
+      "source_location": "L314",
       "id": "src_app_isnonemptydirectoryerror",
       "community": 1,
       "norm_label": "isnonemptydirectoryerror()"
@@ -331,7 +376,7 @@
       "label": "symlinkError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L312",
+      "source_location": "L319",
       "id": "src_app_symlinkerror",
       "community": 1,
       "norm_label": "symlinkerror()"
@@ -340,7 +385,7 @@
       "label": "lstatRequired()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L316",
+      "source_location": "L323",
       "id": "src_app_lstatrequired",
       "community": 1,
       "norm_label": "lstatrequired()"
@@ -349,7 +394,7 @@
       "label": "assertRealPathInside()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L327",
+      "source_location": "L334",
       "id": "src_app_assertrealpathinside",
       "community": 1,
       "norm_label": "assertrealpathinside()"
@@ -358,7 +403,7 @@
       "label": "resolveProjectFilePath()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L335",
+      "source_location": "L342",
       "id": "src_app_resolveprojectfilepath",
       "community": 1,
       "norm_label": "resolveprojectfilepath()"
@@ -367,7 +412,7 @@
       "label": "readJsonRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L412",
+      "source_location": "L419",
       "id": "src_app_readjsonrequest",
       "community": 1,
       "norm_label": "readjsonrequest()"
@@ -376,7 +421,7 @@
       "label": "writeTempPathFor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L428",
+      "source_location": "L435",
       "id": "src_app_writetemppathfor",
       "community": 1,
       "norm_label": "writetemppathfor()"
@@ -385,7 +430,7 @@
       "label": "writeFileAtomically()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L432",
+      "source_location": "L439",
       "id": "src_app_writefileatomically",
       "community": 1,
       "norm_label": "writefileatomically()"
@@ -394,7 +439,7 @@
       "label": "readProjectFile()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L445",
+      "source_location": "L452",
       "id": "src_app_readprojectfile",
       "community": 1,
       "norm_label": "readprojectfile()"
@@ -403,7 +448,7 @@
       "label": "writeProjectFile()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L464",
+      "source_location": "L471",
       "id": "src_app_writeprojectfile",
       "community": 1,
       "norm_label": "writeprojectfile()"
@@ -412,7 +457,7 @@
       "label": "createProjectEntry()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L481",
+      "source_location": "L488",
       "id": "src_app_createprojectentry",
       "community": 1,
       "norm_label": "createprojectentry()"
@@ -421,7 +466,7 @@
       "label": "renameProjectEntry()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L513",
+      "source_location": "L520",
       "id": "src_app_renameprojectentry",
       "community": 1,
       "norm_label": "renameprojectentry()"
@@ -430,7 +475,7 @@
       "label": "deleteProjectEntry()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L535",
+      "source_location": "L542",
       "id": "src_app_deleteprojectentry",
       "community": 1,
       "norm_label": "deleteprojectentry()"
@@ -439,7 +484,7 @@
       "label": "apiErrorResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L562",
+      "source_location": "L569",
       "id": "src_app_apierrorresponse",
       "community": 1,
       "norm_label": "apierrorresponse()"
@@ -448,7 +493,7 @@
       "label": "readHeartbeatRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L569",
+      "source_location": "L576",
       "id": "src_app_readheartbeatrequest",
       "community": 1,
       "norm_label": "readheartbeatrequest()"
@@ -457,7 +502,7 @@
       "label": "contentTypeFor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L576",
+      "source_location": "L583",
       "id": "src_app_contenttypefor",
       "community": 1,
       "norm_label": "contenttypefor()"
@@ -466,7 +511,7 @@
       "label": "isInsideDirectory()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L596",
+      "source_location": "L603",
       "id": "src_app_isinsidedirectory",
       "community": 1,
       "norm_label": "isinsidedirectory()"
@@ -475,7 +520,7 @@
       "label": "staticFileResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L601",
+      "source_location": "L608",
       "id": "src_app_staticfileresponse",
       "community": 1,
       "norm_label": "staticfileresponse()"
@@ -484,16 +529,25 @@
       "label": "webShellResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L619",
+      "source_location": "L626",
       "id": "src_app_webshellresponse",
       "community": 1,
       "norm_label": "webshellresponse()"
     },
     {
+      "label": "containersStatusResponse()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L638",
+      "id": "src_app_containersstatusresponse",
+      "community": 1,
+      "norm_label": "containersstatusresponse()"
+    },
+    {
       "label": "webAssetResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L631",
+      "source_location": "L645",
       "id": "src_app_webassetresponse",
       "community": 1,
       "norm_label": "webassetresponse()"
@@ -502,7 +556,7 @@
       "label": "createApp()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L647",
+      "source_location": "L661",
       "id": "src_app_createapp",
       "community": 9,
       "norm_label": "createapp()"
@@ -513,17 +567,287 @@
       "source_file": "apps\\control\\src\\config.ts",
       "source_location": "L1",
       "id": "apps_control_src_config_ts",
-      "community": 3,
+      "community": 2,
       "norm_label": "config.ts"
+    },
+    {
+      "label": "parsePortRange()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L32",
+      "id": "src_config_parseportrange",
+      "community": 2,
+      "norm_label": "parseportrange()"
+    },
+    {
+      "label": "parseBoolean()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L55",
+      "id": "src_config_parseboolean",
+      "community": 2,
+      "norm_label": "parseboolean()"
+    },
+    {
+      "label": "defaultContainerUser()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L65",
+      "id": "src_config_defaultcontaineruser",
+      "community": 2,
+      "norm_label": "defaultcontaineruser()"
     },
     {
       "label": "loadControlConfig()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L18",
+      "source_location": "L81",
       "id": "src_config_loadcontrolconfig",
-      "community": 3,
+      "community": 2,
       "norm_label": "loadcontrolconfig()"
+    },
+    {
+      "label": "containers.ts",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L1",
+      "id": "apps_control_src_containers_ts",
+      "community": 6,
+      "norm_label": "containers.ts"
+    },
+    {
+      "label": "runDockerCli()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L43",
+      "id": "src_containers_rundockercli",
+      "community": 6,
+      "norm_label": "rundockercli()"
+    },
+    {
+      "label": "defaultDockerRunner()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L58",
+      "id": "src_containers_defaultdockerrunner",
+      "community": 6,
+      "norm_label": "defaultdockerrunner()"
+    },
+    {
+      "label": "dockerError()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L62",
+      "id": "src_containers_dockererror",
+      "community": 6,
+      "norm_label": "dockererror()"
+    },
+    {
+      "label": "simContainerName()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L67",
+      "id": "src_containers_simcontainername",
+      "community": 6,
+      "norm_label": "simcontainername()"
+    },
+    {
+      "label": "workspaceHomePath()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L71",
+      "id": "src_containers_workspacehomepath",
+      "community": 6,
+      "norm_label": "workspacehomepath()"
+    },
+    {
+      "label": "isLoopbackHost()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L75",
+      "id": "src_containers_isloopbackhost",
+      "community": 6,
+      "norm_label": "isloopbackhost()"
+    },
+    {
+      "label": "publishedSimPort()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L79",
+      "id": "src_containers_publishedsimport",
+      "community": 6,
+      "norm_label": "publishedsimport()"
+    },
+    {
+      "label": "containerRuntimeState()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L95",
+      "id": "src_containers_containerruntimestate",
+      "community": 6,
+      "norm_label": "containerruntimestate()"
+    },
+    {
+      "label": "labelsMatch()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L102",
+      "id": "src_containers_labelsmatch",
+      "community": 6,
+      "norm_label": "labelsmatch()"
+    },
+    {
+      "label": "statusFromLease()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L112",
+      "id": "src_containers_statusfromlease",
+      "community": 6,
+      "norm_label": "statusfromlease()"
+    },
+    {
+      "label": "portIsFree()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L129",
+      "id": "src_containers_portisfree",
+      "community": 6,
+      "norm_label": "portisfree()"
+    },
+    {
+      "label": "ContainerOrchestrator",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L151",
+      "id": "src_containers_containerorchestrator",
+      "community": 6,
+      "norm_label": "containerorchestrator"
+    },
+    {
+      "label": ".constructor()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L155",
+      "id": "src_containers_containerorchestrator_constructor",
+      "community": 6,
+      "norm_label": ".constructor()"
+    },
+    {
+      "label": ".startSimContainer()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L162",
+      "id": "src_containers_containerorchestrator_startsimcontainer",
+      "community": 6,
+      "norm_label": ".startsimcontainer()"
+    },
+    {
+      "label": ".containersStatus()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L172",
+      "id": "src_containers_containerorchestrator_containersstatus",
+      "community": 6,
+      "norm_label": ".containersstatus()"
+    },
+    {
+      "label": ".ensureSimContainer()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L182",
+      "id": "src_containers_containerorchestrator_ensuresimcontainer",
+      "community": 6,
+      "norm_label": ".ensuresimcontainer()"
+    },
+    {
+      "label": ".runDocker()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L197",
+      "id": "src_containers_containerorchestrator_rundocker",
+      "community": 6,
+      "norm_label": ".rundocker()"
+    },
+    {
+      "label": ".inspectContainer()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L205",
+      "id": "src_containers_containerorchestrator_inspectcontainer",
+      "community": 6,
+      "norm_label": ".inspectcontainer()"
+    },
+    {
+      "label": ".listManagedSimContainerNames()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L215",
+      "id": "src_containers_containerorchestrator_listmanagedsimcontainernames",
+      "community": 6,
+      "norm_label": ".listmanagedsimcontainernames()"
+    },
+    {
+      "label": ".findManagedSimContainer()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L243",
+      "id": "src_containers_containerorchestrator_findmanagedsimcontainer",
+      "community": 6,
+      "norm_label": ".findmanagedsimcontainer()"
+    },
+    {
+      "label": ".ensureSimImage()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L263",
+      "id": "src_containers_containerorchestrator_ensuresimimage",
+      "community": 6,
+      "norm_label": ".ensuresimimage()"
+    },
+    {
+      "label": ".allocateSimPort()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L270",
+      "id": "src_containers_containerorchestrator_allocatesimport",
+      "community": 6,
+      "norm_label": ".allocatesimport()"
+    },
+    {
+      "label": ".adoptContainer()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L297",
+      "id": "src_containers_containerorchestrator_adoptcontainer",
+      "community": 6,
+      "norm_label": ".adoptcontainer()"
+    },
+    {
+      "label": ".createSimContainer()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L345",
+      "id": "src_containers_containerorchestrator_createsimcontainer",
+      "community": 6,
+      "norm_label": ".createsimcontainer()"
+    },
+    {
+      "label": ".ensureSimContainerInner()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L403",
+      "id": "src_containers_containerorchestrator_ensuresimcontainerinner",
+      "community": 6,
+      "norm_label": ".ensuresimcontainerinner()"
+    },
+    {
+      "label": ".recordSimError()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L417",
+      "id": "src_containers_containerorchestrator_recordsimerror",
+      "community": 6,
+      "norm_label": ".recordsimerror()"
     },
     {
       "label": "cookies.ts",
@@ -603,7 +927,7 @@
       "source_file": "apps\\control\\src\\migrate.ts",
       "source_location": "L1",
       "id": "apps_control_src_migrate_ts",
-      "community": 3,
+      "community": 2,
       "norm_label": "migrate.ts"
     },
     {
@@ -612,7 +936,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L1",
       "id": "apps_control_src_migrations_ts",
-      "community": 3,
+      "community": 2,
       "norm_label": "migrations.ts"
     },
     {
@@ -621,7 +945,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L23",
       "id": "src_migrations_loadmigrations",
-      "community": 3,
+      "community": 2,
       "norm_label": "loadmigrations()"
     },
     {
@@ -630,7 +954,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L40",
       "id": "src_migrations_ensuremigrationtable",
-      "community": 3,
+      "community": 2,
       "norm_label": "ensuremigrationtable()"
     },
     {
@@ -639,7 +963,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L50",
       "id": "src_migrations_listappliedmigrations",
-      "community": 3,
+      "community": 2,
       "norm_label": "listappliedmigrations()"
     },
     {
@@ -648,7 +972,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L57",
       "id": "src_migrations_verifyappliedmigrationchecksums",
-      "community": 3,
+      "community": 2,
       "norm_label": "verifyappliedmigrationchecksums()"
     },
     {
@@ -657,7 +981,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L74",
       "id": "src_migrations_migrationstatus",
-      "community": 3,
+      "community": 2,
       "norm_label": "migrationstatus()"
     },
     {
@@ -666,7 +990,7 @@
       "source_file": "apps\\control\\src\\migrations.ts",
       "source_location": "L89",
       "id": "src_migrations_applymigrations",
-      "community": 3,
+      "community": 2,
       "norm_label": "applymigrations()"
     },
     {
@@ -675,196 +999,232 @@
       "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L1",
       "id": "apps_control_src_storage_ts",
-      "community": 3,
+      "community": 2,
       "norm_label": "storage.ts"
     },
     {
       "label": "SlugTakenError",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L47",
+      "source_location": "L58",
       "id": "src_storage_slugtakenerror",
-      "community": 3,
+      "community": 2,
       "norm_label": "slugtakenerror"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L48",
+      "source_location": "L59",
       "id": "src_storage_slugtakenerror_constructor",
-      "community": 3,
+      "community": 2,
       "norm_label": ".constructor()"
     },
     {
       "label": "randomId()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L54",
+      "source_location": "L65",
       "id": "src_storage_randomid",
-      "community": 3,
+      "community": 2,
       "norm_label": "randomid()"
     },
     {
       "label": "nowIso()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L58",
+      "source_location": "L69",
       "id": "src_storage_nowiso",
-      "community": 3,
+      "community": 2,
       "norm_label": "nowiso()"
     },
     {
       "label": "slugFromDisplayName()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L62",
+      "source_location": "L73",
       "id": "src_storage_slugfromdisplayname",
-      "community": 3,
+      "community": 2,
       "norm_label": "slugfromdisplayname()"
     },
     {
       "label": "ensureWorkspaceFiles()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L76",
+      "source_location": "L87",
       "id": "src_storage_ensureworkspacefiles",
-      "community": 3,
+      "community": 2,
       "norm_label": "ensureworkspacefiles()"
     },
     {
       "label": "AppStorage",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L99",
+      "source_location": "L110",
       "id": "src_storage_appstorage",
-      "community": 3,
+      "community": 2,
       "norm_label": "appstorage"
     },
     {
       "label": ".constructor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L103",
+      "source_location": "L114",
       "id": "src_storage_appstorage_constructor",
-      "community": 3,
+      "community": 2,
       "norm_label": ".constructor()"
     },
     {
       "label": ".initialize()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L110",
+      "source_location": "L121",
       "id": "src_storage_appstorage_initialize",
-      "community": 3,
+      "community": 2,
       "norm_label": ".initialize()"
     },
     {
       "label": ".close()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L115",
+      "source_location": "L126",
       "id": "src_storage_appstorage_close",
-      "community": 3,
+      "community": 2,
       "norm_label": ".close()"
     },
     {
       "label": ".findUserBySlug()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L119",
+      "source_location": "L130",
       "id": "src_storage_appstorage_finduserbyslug",
-      "community": 3,
+      "community": 2,
       "norm_label": ".finduserbyslug()"
     },
     {
       "label": ".findWorkspaceByUserId()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L125",
+      "source_location": "L136",
       "id": "src_storage_appstorage_findworkspacebyuserid",
-      "community": 3,
+      "community": 2,
       "norm_label": ".findworkspacebyuserid()"
     },
     {
       "label": ".findWorkspaceBySlug()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L132",
+      "source_location": "L143",
       "id": "src_storage_appstorage_findworkspacebyslug",
-      "community": 3,
+      "community": 2,
       "norm_label": ".findworkspacebyslug()"
+    },
+    {
+      "label": ".findWorkspaceById()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L150",
+      "id": "src_storage_appstorage_findworkspacebyid",
+      "community": 2,
+      "norm_label": ".findworkspacebyid()"
     },
     {
       "label": ".createOrLoadUserWorkspace()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L139",
+      "source_location": "L157",
       "id": "src_storage_appstorage_createorloaduserworkspace",
-      "community": 3,
+      "community": 2,
       "norm_label": ".createorloaduserworkspace()"
     },
     {
       "label": ".createSession()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L186",
+      "source_location": "L204",
       "id": "src_storage_appstorage_createsession",
-      "community": 3,
+      "community": 2,
       "norm_label": ".createsession()"
     },
     {
       "label": ".login()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L205",
+      "source_location": "L223",
       "id": "src_storage_appstorage_login",
-      "community": 3,
+      "community": 2,
       "norm_label": ".login()"
     },
     {
       "label": ".getAuthContext()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L211",
+      "source_location": "L229",
       "id": "src_storage_appstorage_getauthcontext",
-      "community": 3,
+      "community": 2,
       "norm_label": ".getauthcontext()"
     },
     {
       "label": ".touchUserAndWorkspace()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L289",
+      "source_location": "L307",
       "id": "src_storage_appstorage_touchuserandworkspace",
-      "community": 3,
+      "community": 2,
       "norm_label": ".touchuserandworkspace()"
     },
     {
       "label": ".touchSession()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L297",
+      "source_location": "L315",
       "id": "src_storage_appstorage_touchsession",
-      "community": 3,
+      "community": 2,
       "norm_label": ".touchsession()"
     },
     {
       "label": ".deleteSession()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L303",
+      "source_location": "L321",
       "id": "src_storage_appstorage_deletesession",
-      "community": 3,
+      "community": 2,
       "norm_label": ".deletesession()"
+    },
+    {
+      "label": ".getContainerLease()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L325",
+      "id": "src_storage_appstorage_getcontainerlease",
+      "community": 2,
+      "norm_label": ".getcontainerlease()"
+    },
+    {
+      "label": ".listLeasedSimPorts()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L333",
+      "id": "src_storage_appstorage_listleasedsimports",
+      "community": 2,
+      "norm_label": ".listleasedsimports()"
+    },
+    {
+      "label": ".upsertSimLease()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L344",
+      "id": "src_storage_appstorage_upsertsimlease",
+      "community": 2,
+      "norm_label": ".upsertsimlease()"
     },
     {
       "label": "createStorage()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\storage.ts",
-      "source_location": "L308",
+      "source_location": "L380",
       "id": "src_storage_createstorage",
-      "community": 3,
+      "community": 2,
       "norm_label": "createstorage()"
     },
     {
@@ -873,7 +1233,7 @@
       "source_file": "apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "apps_web_vite_config_ts",
-      "community": 19,
+      "community": 20,
       "norm_label": "vite.config.ts"
     },
     {
@@ -882,115 +1242,124 @@
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L1",
       "id": "apps_web_src_main_tsx",
-      "community": 6,
+      "community": 7,
       "norm_label": "main.tsx"
     },
     {
       "label": "getWorker()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L17",
+      "source_location": "L18",
       "id": "src_main_getworker",
-      "community": 6,
+      "community": 7,
       "norm_label": "getworker()"
     },
     {
       "label": "workspaceSlugFromLocation()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L41",
+      "source_location": "L42",
       "id": "src_main_workspaceslugfromlocation",
-      "community": 6,
+      "community": 7,
       "norm_label": "workspaceslugfromlocation()"
     },
     {
       "label": "fileName()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L47",
+      "source_location": "L48",
       "id": "src_main_filename",
-      "community": 6,
+      "community": 7,
       "norm_label": "filename()"
     },
     {
       "label": "parentPath()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L52",
+      "source_location": "L53",
       "id": "src_main_parentpath",
-      "community": 6,
+      "community": 7,
       "norm_label": "parentpath()"
     },
     {
       "label": "languageFor()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L56",
+      "source_location": "L57",
       "id": "src_main_languagefor",
-      "community": 6,
+      "community": 7,
       "norm_label": "languagefor()"
     },
     {
       "label": "modelUriFor()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L69",
+      "source_location": "L70",
       "id": "src_main_modelurifor",
-      "community": 6,
+      "community": 7,
       "norm_label": "modelurifor()"
     },
     {
       "label": "fetchJson()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L73",
+      "source_location": "L74",
       "id": "src_main_fetchjson",
-      "community": 6,
+      "community": 7,
       "norm_label": "fetchjson()"
     },
     {
       "label": "canOpen()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L93",
+      "source_location": "L94",
       "id": "src_main_canopen",
-      "community": 6,
+      "community": 7,
       "norm_label": "canopen()"
     },
     {
       "label": "setTree()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L97",
+      "source_location": "L98",
       "id": "src_main_settree",
-      "community": 6,
+      "community": 7,
       "norm_label": "settree()"
     },
     {
       "label": "loadWorkspace()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L351",
+      "source_location": "L353",
       "id": "src_main_loadworkspace",
-      "community": 6,
+      "community": 7,
       "norm_label": "loadworkspace()"
     },
     {
       "label": "sendHeartbeat()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L390",
+      "source_location": "L392",
       "id": "src_main_sendheartbeat",
-      "community": 6,
+      "community": 7,
       "norm_label": "sendheartbeat()"
+    },
+    {
+      "label": "refreshStatus()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L412",
+      "id": "src_main_refreshstatus",
+      "community": 7,
+      "norm_label": "refreshstatus()"
     },
     {
       "label": "warnOnDirtyFiles()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L405",
+      "source_location": "L434",
       "id": "src_main_warnondirtyfiles",
-      "community": 6,
+      "community": 7,
       "norm_label": "warnondirtyfiles()"
     },
     {
@@ -1035,7 +1404,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_router_src_main_ts",
-      "community": 10,
+      "community": 11,
       "norm_label": "main.ts"
     },
     {
@@ -1044,7 +1413,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L17",
       "id": "src_main_parsesessions",
-      "community": 10,
+      "community": 11,
       "norm_label": "parsesessions()"
     },
     {
@@ -1053,7 +1422,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L36",
       "id": "src_main_sessionfrompath",
-      "community": 10,
+      "community": 11,
       "norm_label": "sessionfrompath()"
     },
     {
@@ -1062,7 +1431,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L44",
       "id": "src_main_nt4httpurl",
-      "community": 10,
+      "community": 11,
       "norm_label": "nt4httpurl()"
     },
     {
@@ -1071,7 +1440,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L48",
       "id": "src_main_nt4wsurl",
-      "community": 10,
+      "community": 11,
       "norm_label": "nt4wsurl()"
     },
     {
@@ -1080,7 +1449,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L52",
       "id": "src_main_requestedprotocols",
-      "community": 10,
+      "community": 11,
       "norm_label": "requestedprotocols()"
     },
     {
@@ -1089,7 +1458,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L58",
       "id": "src_main_pipewebsockets",
-      "community": 10,
+      "community": 11,
       "norm_label": "pipewebsockets()"
     },
     {
@@ -1377,7 +1746,7 @@
       "source_file": "mvp\\apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_vite_config_ts",
-      "community": 20,
+      "community": 21,
       "norm_label": "vite.config.ts"
     },
     {
@@ -1386,7 +1755,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_src_java_lsp_ts",
-      "community": 2,
+      "community": 3,
       "norm_label": "java-lsp.ts"
     },
     {
@@ -1395,7 +1764,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L156",
       "id": "src_java_lsp_startjavalsp",
-      "community": 2,
+      "community": 3,
       "norm_label": "startjavalsp()"
     },
     {
@@ -1404,7 +1773,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L258",
       "id": "src_java_lsp_registersemantictokensprovider",
-      "community": 2,
+      "community": 3,
       "norm_label": "registersemantictokensprovider()"
     },
     {
@@ -1413,7 +1782,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L298",
       "id": "src_java_lsp_browserlspclient",
-      "community": 2,
+      "community": 3,
       "norm_label": "browserlspclient"
     },
     {
@@ -1422,7 +1791,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L304",
       "id": "src_java_lsp_browserlspclient_constructor",
-      "community": 2,
+      "community": 3,
       "norm_label": ".constructor()"
     },
     {
@@ -1431,7 +1800,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L306",
       "id": "src_java_lsp_browserlspclient_open",
-      "community": 2,
+      "community": 3,
       "norm_label": ".open()"
     },
     {
@@ -1440,7 +1809,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L331",
       "id": "src_java_lsp_browserlspclient_request",
-      "community": 2,
+      "community": 3,
       "norm_label": ".request()"
     },
     {
@@ -1449,7 +1818,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L339",
       "id": "src_java_lsp_browserlspclient_notify",
-      "community": 2,
+      "community": 3,
       "norm_label": ".notify()"
     },
     {
@@ -1458,7 +1827,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L343",
       "id": "src_java_lsp_browserlspclient_onnotification",
-      "community": 2,
+      "community": 3,
       "norm_label": ".onnotification()"
     },
     {
@@ -1467,7 +1836,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L347",
       "id": "src_java_lsp_browserlspclient_close",
-      "community": 2,
+      "community": 3,
       "norm_label": ".close()"
     },
     {
@@ -1476,7 +1845,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L351",
       "id": "src_java_lsp_browserlspclient_send",
-      "community": 2,
+      "community": 3,
       "norm_label": ".send()"
     },
     {
@@ -1485,7 +1854,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L358",
       "id": "src_java_lsp_browserlspclient_handlemessage",
-      "community": 2,
+      "community": 3,
       "norm_label": ".handlemessage()"
     },
     {
@@ -1494,7 +1863,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L383",
       "id": "src_java_lsp_initializeparams",
-      "community": 2,
+      "community": 3,
       "norm_label": "initializeparams()"
     },
     {
@@ -1503,7 +1872,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L434",
       "id": "src_java_lsp_tolspposition",
-      "community": 2,
+      "community": 3,
       "norm_label": "tolspposition()"
     },
     {
@@ -1512,7 +1881,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L441",
       "id": "src_java_lsp_tomonacorange",
-      "community": 2,
+      "community": 3,
       "norm_label": "tomonacorange()"
     },
     {
@@ -1521,7 +1890,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L450",
       "id": "src_java_lsp_handlediagnostics",
-      "community": 2,
+      "community": 3,
       "norm_label": "handlediagnostics()"
     },
     {
@@ -1530,7 +1899,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L471",
       "id": "src_java_lsp_completionitemstosuggestions",
-      "community": 2,
+      "community": 3,
       "norm_label": "completionitemstosuggestions()"
     },
     {
@@ -1539,7 +1908,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L501",
       "id": "src_java_lsp_completionitems",
-      "community": 2,
+      "community": 3,
       "norm_label": "completionitems()"
     },
     {
@@ -1548,7 +1917,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L511",
       "id": "src_java_lsp_semantictokensprovider",
-      "community": 2,
+      "community": 3,
       "norm_label": "semantictokensprovider()"
     },
     {
@@ -1557,7 +1926,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L525",
       "id": "src_java_lsp_hovertomonaco",
-      "community": 2,
+      "community": 3,
       "norm_label": "hovertomonaco()"
     },
     {
@@ -1566,7 +1935,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L542",
       "id": "src_java_lsp_hovercontentstomarkdown",
-      "community": 2,
+      "community": 3,
       "norm_label": "hovercontentstomarkdown()"
     },
     {
@@ -1575,7 +1944,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L557",
       "id": "src_java_lsp_documentationtomarkdown",
-      "community": 2,
+      "community": 3,
       "norm_label": "documentationtomarkdown()"
     },
     {
@@ -1584,7 +1953,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L569",
       "id": "src_java_lsp_tomarkerseverity",
-      "community": 2,
+      "community": 3,
       "norm_label": "tomarkerseverity()"
     },
     {
@@ -1593,7 +1962,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L584",
       "id": "src_java_lsp_tocompletionitemkind",
-      "community": 2,
+      "community": 3,
       "norm_label": "tocompletionitemkind()"
     },
     {
@@ -1602,7 +1971,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L633",
       "id": "src_java_lsp_isobject",
-      "community": 2,
+      "community": 3,
       "norm_label": "isobject()"
     },
     {
@@ -1611,7 +1980,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L637",
       "id": "src_java_lsp_islspdiagnostic",
-      "community": 2,
+      "community": 3,
       "norm_label": "islspdiagnostic()"
     },
     {
@@ -1620,7 +1989,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L645",
       "id": "src_java_lsp_isrange",
-      "community": 2,
+      "community": 3,
       "norm_label": "isrange()"
     },
     {
@@ -1629,7 +1998,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L653",
       "id": "src_java_lsp_isposition",
-      "community": 2,
+      "community": 3,
       "norm_label": "isposition()"
     },
     {
@@ -1638,7 +2007,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L661",
       "id": "src_java_lsp_iscompletionitem",
-      "community": 2,
+      "community": 3,
       "norm_label": "iscompletionitem()"
     },
     {
@@ -1647,7 +2016,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L665",
       "id": "src_java_lsp_issemantictokensprovider",
-      "community": 2,
+      "community": 3,
       "norm_label": "issemantictokensprovider()"
     },
     {
@@ -1656,7 +2025,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L673",
       "id": "src_java_lsp_issemantictokenslegend",
-      "community": 2,
+      "community": 3,
       "norm_label": "issemantictokenslegend()"
     },
     {
@@ -1665,7 +2034,7 @@
       "source_file": "mvp\\apps\\web\\src\\java-lsp.ts",
       "source_location": "L683",
       "id": "src_java_lsp_issemantictokens",
-      "community": 2,
+      "community": 3,
       "norm_label": "issemantictokens()"
     },
     {
@@ -1962,7 +2331,7 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_robot_java",
-      "community": 12,
+      "community": 8,
       "norm_label": "robot.java"
     },
     {
@@ -1971,7 +2340,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L13",
       "id": "robot_robot_robot",
-      "community": 12,
+      "community": 8,
       "norm_label": "robot"
     },
     {
@@ -1980,7 +2349,7 @@
       "source_file": "",
       "source_location": "",
       "id": "timedrobot",
-      "community": 12,
+      "community": 8,
       "norm_label": "timedrobot"
     },
     {
@@ -1989,7 +2358,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L29",
       "id": "robot_robot_robot_robotinit",
-      "community": 12,
+      "community": 8,
       "norm_label": ".robotinit()"
     },
     {
@@ -1998,7 +2367,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L34",
       "id": "robot_robot_robot_robotperiodic",
-      "community": 12,
+      "community": 8,
       "norm_label": ".robotperiodic()"
     },
     {
@@ -2034,7 +2403,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L1",
       "id": "mvp_scripts_build_ascope_lite_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "build-ascope-lite.ts"
     },
     {
@@ -2043,7 +2412,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L26",
       "id": "scripts_build_ascope_lite_run",
-      "community": 7,
+      "community": 8,
       "norm_label": "run()"
     },
     {
@@ -2052,7 +2421,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L41",
       "id": "scripts_build_ascope_lite_ensuresubmodule",
-      "community": 7,
+      "community": 8,
       "norm_label": "ensuresubmodule()"
     },
     {
@@ -2061,7 +2430,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L49",
       "id": "scripts_build_ascope_lite_ensureemscripten",
-      "community": 7,
+      "community": 8,
       "norm_label": "ensureemscripten()"
     },
     {
@@ -2070,7 +2439,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L65",
       "id": "scripts_build_ascope_lite_envwithemsdk",
-      "community": 7,
+      "community": 8,
       "norm_label": "envwithemsdk()"
     },
     {
@@ -2079,7 +2448,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L76",
       "id": "scripts_build_ascope_lite_npminstallsubmodule",
-      "community": 7,
+      "community": 8,
       "norm_label": "npminstallsubmodule()"
     },
     {
@@ -2088,7 +2457,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L82",
       "id": "scripts_build_ascope_lite_compilelite",
-      "community": 7,
+      "community": 8,
       "norm_label": "compilelite()"
     },
     {
@@ -2097,7 +2466,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L89",
       "id": "scripts_build_ascope_lite_compilewasm",
-      "community": 7,
+      "community": 8,
       "norm_label": "compilewasm()"
     },
     {
@@ -2106,7 +2475,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L102",
       "id": "scripts_build_ascope_lite_listgitsymlinksunder",
-      "community": 7,
+      "community": 8,
       "norm_label": "listgitsymlinksunder()"
     },
     {
@@ -2115,7 +2484,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L122",
       "id": "scripts_build_ascope_lite_resolvesymlinksindist",
-      "community": 7,
+      "community": 8,
       "norm_label": "resolvesymlinksindist()"
     },
     {
@@ -2124,7 +2493,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L146",
       "id": "scripts_build_ascope_lite_stagebundle",
-      "community": 7,
+      "community": 8,
       "norm_label": "stagebundle()"
     },
     {
@@ -2133,7 +2502,7 @@
       "source_file": "mvp\\scripts\\build-ascope-lite.ts",
       "source_location": "L157",
       "id": "scripts_build_ascope_lite_main",
-      "community": 7,
+      "community": 8,
       "norm_label": "main()"
     },
     {
@@ -2142,7 +2511,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L1",
       "id": "mvp_scripts_dev_mvp_ts",
-      "community": 11,
+      "community": 12,
       "norm_label": "dev-mvp.ts"
     },
     {
@@ -2151,7 +2520,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L12",
       "id": "scripts_dev_mvp_runcommand",
-      "community": 11,
+      "community": 12,
       "norm_label": "runcommand()"
     },
     {
@@ -2160,7 +2529,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L40",
       "id": "scripts_dev_mvp_ensurecontainer",
-      "community": 11,
+      "community": 12,
       "norm_label": "ensurecontainer()"
     },
     {
@@ -2169,7 +2538,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L82",
       "id": "scripts_dev_mvp_ensuresimcontainer",
-      "community": 11,
+      "community": 12,
       "norm_label": "ensuresimcontainer()"
     },
     {
@@ -2178,7 +2547,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L91",
       "id": "scripts_dev_mvp_ensurelspcontainer",
-      "community": 11,
+      "community": 12,
       "norm_label": "ensurelspcontainer()"
     },
     {
@@ -2187,7 +2556,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L100",
       "id": "scripts_dev_mvp_startprocess",
-      "community": 11,
+      "community": 12,
       "norm_label": "startprocess()"
     },
     {
@@ -2196,7 +2565,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L131",
       "id": "scripts_dev_mvp_shutdown",
-      "community": 11,
+      "community": 12,
       "norm_label": "shutdown()"
     },
     {
@@ -2232,7 +2601,7 @@
       "source_file": "mvp\\scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_patch_ascope_lite_nt4_proxy_ts",
-      "community": 21,
+      "community": 22,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts"
     },
     {
@@ -2259,7 +2628,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_spike_multi_tenancy_ts",
-      "community": 8,
+      "community": 10,
       "norm_label": "spike-multi-tenancy.ts"
     },
     {
@@ -2268,7 +2637,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L32",
       "id": "scripts_spike_multi_tenancy_run",
-      "community": 8,
+      "community": 10,
       "norm_label": "run()"
     },
     {
@@ -2277,7 +2646,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L47",
       "id": "scripts_spike_multi_tenancy_containerstate",
-      "community": 8,
+      "community": 10,
       "norm_label": "containerstate()"
     },
     {
@@ -2286,7 +2655,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L52",
       "id": "scripts_spike_multi_tenancy_ensurecontainer",
-      "community": 8,
+      "community": 10,
       "norm_label": "ensurecontainer()"
     },
     {
@@ -2295,7 +2664,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L68",
       "id": "scripts_spike_multi_tenancy_up",
-      "community": 8,
+      "community": 10,
       "norm_label": "up()"
     },
     {
@@ -2304,7 +2673,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L76",
       "id": "scripts_spike_multi_tenancy_down",
-      "community": 8,
+      "community": 10,
       "norm_label": "down()"
     },
     {
@@ -2313,7 +2682,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L87",
       "id": "scripts_spike_multi_tenancy_printenv",
-      "community": 8,
+      "community": 10,
       "norm_label": "printenv()"
     },
     {
@@ -2322,7 +2691,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L97",
       "id": "scripts_spike_multi_tenancy_dockerstats",
-      "community": 8,
+      "community": 10,
       "norm_label": "dockerstats()"
     },
     {
@@ -2331,7 +2700,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L105",
       "id": "scripts_spike_multi_tenancy_parsemib",
-      "community": 8,
+      "community": 10,
       "norm_label": "parsemib()"
     },
     {
@@ -2340,7 +2709,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L122",
       "id": "scripts_spike_multi_tenancy_stats",
-      "community": 8,
+      "community": 10,
       "norm_label": "stats()"
     },
     {
@@ -2349,7 +2718,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L145",
       "id": "scripts_spike_multi_tenancy_lifecycle",
-      "community": 8,
+      "community": 10,
       "norm_label": "lifecycle()"
     },
     {
@@ -2358,7 +2727,7 @@
       "source_file": "mvp\\scripts\\spike-multi-tenancy.ts",
       "source_location": "L168",
       "id": "scripts_spike_multi_tenancy_main",
-      "community": 8,
+      "community": 10,
       "norm_label": "main()"
     },
     {
@@ -2367,7 +2736,7 @@
       "source_file": "packages\\contracts\\src\\index.test.ts",
       "source_location": "L1",
       "id": "packages_contracts_src_index_test_ts",
-      "community": 6,
+      "community": 7,
       "norm_label": "index.test.ts"
     },
     {
@@ -2376,7 +2745,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L1",
       "id": "packages_contracts_src_index_ts",
-      "community": 6,
+      "community": 7,
       "norm_label": "index.ts"
     },
     {
@@ -2385,7 +2754,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L23",
       "id": "src_index_isworkspaceslug",
-      "community": 6,
+      "community": 7,
       "norm_label": "isworkspaceslug()"
     },
     {
@@ -2394,7 +2763,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L35",
       "id": "src_index_projectpathissue",
-      "community": 6,
+      "community": 7,
       "norm_label": "projectpathissue()"
     },
     {
@@ -2403,7 +2772,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L82",
       "id": "src_index_parseprojectpath",
-      "community": 6,
+      "community": 7,
       "norm_label": "parseprojectpath()"
     },
     {
@@ -2412,7 +2781,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L86",
       "id": "src_index_isprojectpath",
-      "community": 6,
+      "community": 7,
       "norm_label": "isprojectpath()"
     },
     {
@@ -2421,7 +2790,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L92",
       "id": "src_index_matchespathorchild",
-      "community": 6,
+      "community": 7,
       "norm_label": "matchespathorchild()"
     },
     {
@@ -2430,8 +2799,26 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L96",
       "id": "src_index_getprojectpathaccess",
-      "community": 6,
+      "community": 7,
       "norm_label": "getprojectpathaccess()"
+    },
+    {
+      "label": "build-sim-image.ts",
+      "file_type": "code",
+      "source_file": "scripts\\build-sim-image.ts",
+      "source_location": "L1",
+      "id": "scripts_build_sim_image_ts",
+      "community": 18,
+      "norm_label": "build-sim-image.ts"
+    },
+    {
+      "label": "defaultId()",
+      "file_type": "code",
+      "source_file": "scripts\\build-sim-image.ts",
+      "source_location": "L1",
+      "id": "scripts_build_sim_image_defaultid",
+      "community": 18,
+      "norm_label": "defaultid()"
     },
     {
       "label": "template-integrity.test.ts",
@@ -2439,7 +2826,7 @@
       "source_file": "scripts\\template-integrity.test.ts",
       "source_location": "L1",
       "id": "scripts_template_integrity_test_ts",
-      "community": 18,
+      "community": 19,
       "norm_label": "template-integrity.test.ts"
     },
     {
@@ -2448,7 +2835,7 @@
       "source_file": "scripts\\template-integrity.test.ts",
       "source_location": "L9",
       "id": "scripts_template_integrity_test_expecttemplatefile",
-      "community": 18,
+      "community": 19,
       "norm_label": "expecttemplatefile()"
     },
     {
@@ -2457,7 +2844,7 @@
       "source_file": "scripts\\typecheck.ts",
       "source_location": "L1",
       "id": "scripts_typecheck_ts",
-      "community": 22,
+      "community": 23,
       "norm_label": "typecheck.ts"
     },
     {
@@ -2475,7 +2862,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_robot_java",
-      "community": 12,
+      "community": 8,
       "norm_label": "robot.java"
     },
     {
@@ -2501,7 +2888,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L6",
-      "community": 6,
+      "community": 7,
       "norm_label": "app()",
       "id": "src_main_app"
     },
@@ -2510,7 +2897,7 @@
       "file_type": "code",
       "source_file": "scripts\\apply-ascope-patches.ts",
       "source_location": "L1",
-      "community": 23,
+      "community": 24,
       "norm_label": "apply-ascope-patches.ts",
       "id": "scripts_apply_ascope_patches_ts"
     },
@@ -2519,7 +2906,7 @@
       "file_type": "code",
       "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L1",
-      "community": 7,
+      "community": 8,
       "norm_label": "build-ascope-lite.ts",
       "id": "scripts_build_ascope_lite_ts"
     },
@@ -2528,7 +2915,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-v1.ts",
       "source_location": "L1",
-      "community": 24,
+      "community": 25,
       "norm_label": "dev-v1.ts",
       "id": "scripts_dev_v1_ts"
     },
@@ -2537,7 +2924,7 @@
       "file_type": "code",
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L1",
-      "community": 25,
+      "community": 26,
       "norm_label": "verify-v1-two-user.ts",
       "id": "scripts_verify_v1_two_user_ts"
     },
@@ -2555,7 +2942,7 @@
       "file_type": "code",
       "source_file": "apps\\router\\src\\main.ts",
       "source_location": "L1",
-      "community": 10,
+      "community": 11,
       "norm_label": "main.ts",
       "id": "apps_router_src_main_ts"
     },
@@ -2573,7 +2960,7 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\java-lsp.ts",
       "source_location": "L1",
-      "community": 2,
+      "community": 3,
       "norm_label": "java-lsp.ts",
       "id": "apps_web_src_java_lsp_ts"
     },
@@ -2618,7 +3005,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
-      "community": 12,
+      "community": 8,
       "norm_label": "robot.java",
       "id": "containers_sim_project_src_main_java_frc_robot_robot_java"
     },
@@ -2636,7 +3023,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L1",
-      "community": 11,
+      "community": 12,
       "norm_label": "dev-mvp.ts",
       "id": "scripts_dev_mvp_ts"
     },
@@ -2654,7 +3041,7 @@
       "file_type": "code",
       "source_file": "scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
-      "community": 26,
+      "community": 27,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts",
       "id": "scripts_patch_ascope_lite_nt4_proxy_ts"
     },
@@ -2672,7 +3059,7 @@
       "file_type": "code",
       "source_file": "scripts\\spike-multi-tenancy.ts",
       "source_location": "L1",
-      "community": 8,
+      "community": 10,
       "norm_label": "spike-multi-tenancy.ts",
       "id": "scripts_spike_multi_tenancy_ts"
     },
@@ -3192,7 +3579,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 27,
+      "community": 28,
       "norm_label": "web shell index.html",
       "id": "index_html"
     },
@@ -3458,6 +3845,56 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L73",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_ok"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L77",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_missing"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L81",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_dockerinspect"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L104",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_createfakedocker"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L172",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_waitfor"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L43",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -3526,6 +3963,17 @@
       "weight": 1.0,
       "source": "src_app_test_withapp",
       "target": "src_app_createapp"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L30",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_containers_containerorchestrator"
     },
     {
       "relation": "imports",
@@ -3982,6 +4430,16 @@
       "confidence_score": 1.0,
       "source": "apps_control_src_app_ts",
       "target": "src_app_webshellresponse"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L638",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_containersstatusresponse"
     },
     {
       "relation": "contains",
@@ -4578,11 +5036,74 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L32",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_config_ts",
+      "target": "src_config_parseportrange"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L55",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_config_ts",
+      "target": "src_config_parseboolean"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L65",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_config_ts",
+      "target": "src_config_defaultcontaineruser"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\config.ts",
       "source_location": "L17",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "apps_control_src_config_ts",
       "target": "src_config_loadcontrolconfig"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L103",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_config_loadcontrolconfig",
+      "target": "src_config_parseportrange"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L105",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_config_loadcontrolconfig",
+      "target": "src_config_parseboolean"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\config.ts",
+      "source_location": "L104",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_config_loadcontrolconfig",
+      "target": "src_config_defaultcontaineruser"
     },
     {
       "relation": "imports",
@@ -4616,6 +5137,640 @@
       "weight": 1.0,
       "source": "src_storage_appstorage_constructor",
       "target": "src_config_loadcontrolconfig"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_storage_appstorage"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_rundockercli"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L58",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_defaultdockerrunner"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L62",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_dockererror"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_simcontainername"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L71",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_workspacehomepath"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L75",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_isloopbackhost"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L79",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_publishedsimport"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L95",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_containerruntimestate"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L102",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_labelsmatch"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L112",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_statusfromlease"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L129",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_portisfree"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L151",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_control_src_containers_ts",
+      "target": "src_containers_containerorchestrator"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L59",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_defaultdockerrunner",
+      "target": "src_containers_rundockercli"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L200",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_rundocker",
+      "target": "src_containers_dockererror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L247",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_findmanagedsimcontainer",
+      "target": "src_containers_simcontainername"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L349",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_createsimcontainer",
+      "target": "src_containers_simcontainername"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L422",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_recordsimerror",
+      "target": "src_containers_simcontainername"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L347",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_createsimcontainer",
+      "target": "src_containers_workspacehomepath"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L91",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_publishedsimport",
+      "target": "src_containers_isloopbackhost"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L307",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_adoptcontainer",
+      "target": "src_containers_publishedsimport"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L392",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_createsimcontainer",
+      "target": "src_containers_publishedsimport"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L340",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_adoptcontainer",
+      "target": "src_containers_containerruntimestate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L397",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_createsimcontainer",
+      "target": "src_containers_containerruntimestate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L302",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_adoptcontainer",
+      "target": "src_containers_labelsmatch"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L320",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_adoptcontainer",
+      "target": "src_containers_statusfromlease"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L400",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_createsimcontainer",
+      "target": "src_containers_statusfromlease"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L426",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_recordsimerror",
+      "target": "src_containers_statusfromlease"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L287",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_allocatesimport",
+      "target": "src_containers_portisfree"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L155",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_constructor"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L162",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_startsimcontainer"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L172",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_containersstatus"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L182",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_ensuresimcontainer"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L197",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_rundocker"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L205",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_inspectcontainer"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L215",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_listmanagedsimcontainernames"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L243",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_findmanagedsimcontainer"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L263",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_ensuresimimage"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L270",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_allocatesimport"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L297",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_adoptcontainer"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L345",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_createsimcontainer"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L403",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_ensuresimcontainerinner"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L417",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator",
+      "target": "src_containers_containerorchestrator_recordsimerror"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L167",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_startsimcontainer",
+      "target": "src_containers_containerorchestrator_ensuresimcontainer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L178",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_containersstatus",
+      "target": "src_containers_containerorchestrator_ensuresimcontainer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L188",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_ensuresimcontainer",
+      "target": "src_containers_containerorchestrator_ensuresimcontainerinner"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L206",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_inspectcontainer",
+      "target": "src_containers_containerorchestrator_rundocker"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L216",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_listmanagedsimcontainernames",
+      "target": "src_containers_containerorchestrator_rundocker"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L264",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_ensuresimimage",
+      "target": "src_containers_containerorchestrator_rundocker"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L303",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_adoptcontainer",
+      "target": "src_containers_containerorchestrator_rundocker"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L389",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_createsimcontainer",
+      "target": "src_containers_containerorchestrator_rundocker"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L248",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_findmanagedsimcontainer",
+      "target": "src_containers_containerorchestrator_inspectcontainer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L329",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_adoptcontainer",
+      "target": "src_containers_containerorchestrator_inspectcontainer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L391",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_createsimcontainer",
+      "target": "src_containers_containerorchestrator_inspectcontainer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L253",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_findmanagedsimcontainer",
+      "target": "src_containers_containerorchestrator_listmanagedsimcontainernames"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L404",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_ensuresimcontainerinner",
+      "target": "src_containers_containerorchestrator_findmanagedsimcontainer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L346",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_createsimcontainer",
+      "target": "src_containers_containerorchestrator_ensuresimimage"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L413",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_ensuresimcontainerinner",
+      "target": "src_containers_containerorchestrator_allocatesimport"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L406",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_ensuresimcontainerinner",
+      "target": "src_containers_containerorchestrator_adoptcontainer"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\containers.ts",
+      "source_location": "L414",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_containers_containerorchestrator_ensuresimcontainerinner",
+      "target": "src_containers_containerorchestrator_createsimcontainer"
     },
     {
       "relation": "contains",
@@ -5064,6 +6219,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L350",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage_upsertsimlease",
+      "target": "src_storage_nowiso"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L144",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -5145,6 +6311,16 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L150",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_findworkspacebyid"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
       "source_location": "L139",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -5210,6 +6386,36 @@
       "confidence_score": 1.0,
       "source": "src_storage_appstorage",
       "target": "src_storage_appstorage_deletesession"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L325",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_getcontainerlease"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L333",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_listleasedsimports"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L344",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage",
+      "target": "src_storage_appstorage_upsertsimlease"
     },
     {
       "relation": "calls",
@@ -5287,6 +6493,17 @@
       "confidence_score": 1.0,
       "source": "src_storage_appstorage_touchsession",
       "target": "src_storage_appstorage_touchuserandworkspace"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\storage.ts",
+      "source_location": "L372",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "src_storage_appstorage_upsertsimlease",
+      "target": "src_storage_appstorage_getcontainerlease"
     },
     {
       "relation": "contains",
@@ -5397,6 +6614,16 @@
       "confidence_score": 1.0,
       "source": "apps_web_src_main_tsx",
       "target": "src_main_sendheartbeat"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L412",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_main_refreshstatus"
     },
     {
       "relation": "contains",
@@ -9286,6 +10513,16 @@
       "confidence_score": 1.0,
       "source": "src_index_getprojectpathaccess",
       "target": "src_index_matchespathorchild"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-sim-image.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "scripts_build_sim_image_ts",
+      "target": "scripts_build_sim_image_defaultid"
     },
     {
       "relation": "contains",

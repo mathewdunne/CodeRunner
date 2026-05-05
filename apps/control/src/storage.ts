@@ -3,7 +3,7 @@ import { mkdirSync } from "node:fs";
 import { cp, mkdir, readdir, chmod } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { Database } from "bun:sqlite";
-import type { SessionId, UserId, WorkspaceId, WorkspaceSlug } from "@frc-sim/contracts";
+import type { SessionId, SimContainerState, UserId, WorkspaceId, WorkspaceSlug } from "@frc-sim/contracts";
 import { displayNameSchema } from "@frc-sim/contracts";
 import type { ControlConfigInput, ControlConfig } from "./config";
 import { loadControlConfig } from "./config";
@@ -32,6 +32,17 @@ export type SessionRow = {
   created_at: string;
   last_seen_at: string;
   expires_at: string;
+};
+
+export type ContainerLeaseRow = {
+  workspace_id: WorkspaceId;
+  sim_container: string | null;
+  lsp_container: string | null;
+  sim_port: number | null;
+  lsp_port: number | null;
+  state: SimContainerState;
+  last_used_at: string;
+  created_at: string;
 };
 
 export type AuthContext = {
@@ -132,6 +143,13 @@ export class AppStorage {
   findWorkspaceBySlug(slug: WorkspaceSlug): WorkspaceRow | null {
     return (
       (this.db.query("SELECT * FROM workspaces WHERE slug = ?").get(slug) as WorkspaceRow | null) ??
+      null
+    );
+  }
+
+  findWorkspaceById(workspaceId: WorkspaceId): WorkspaceRow | null {
+    return (
+      (this.db.query("SELECT * FROM workspaces WHERE id = ?").get(workspaceId) as WorkspaceRow | null) ??
       null
     );
   }
@@ -302,6 +320,60 @@ export class AppStorage {
 
   deleteSession(sessionId: SessionId): void {
     this.db.query("DELETE FROM sessions WHERE id = ?").run(sessionId);
+  }
+
+  getContainerLease(workspaceId: WorkspaceId): ContainerLeaseRow | null {
+    return (
+      (this.db.query("SELECT * FROM container_leases WHERE workspace_id = ?").get(workspaceId) as
+        | ContainerLeaseRow
+        | null) ?? null
+    );
+  }
+
+  listLeasedSimPorts(exceptWorkspaceId?: WorkspaceId): number[] {
+    const rows = (
+      exceptWorkspaceId
+        ? this.db
+            .query("SELECT sim_port FROM container_leases WHERE sim_port IS NOT NULL AND workspace_id != ?")
+            .all(exceptWorkspaceId)
+        : this.db.query("SELECT sim_port FROM container_leases WHERE sim_port IS NOT NULL").all()
+    ) as Array<{ sim_port: number }>;
+    return rows.map((row) => row.sim_port);
+  }
+
+  upsertSimLease(input: {
+    workspaceId: WorkspaceId;
+    containerName: string | null;
+    port: number | null;
+    state: SimContainerState;
+  }): ContainerLeaseRow {
+    const timestamp = nowIso();
+    this.db
+      .query(
+        `
+          INSERT INTO container_leases (
+            workspace_id,
+            sim_container,
+            sim_port,
+            state,
+            last_used_at,
+            created_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?)
+          ON CONFLICT(workspace_id) DO UPDATE SET
+            sim_container = excluded.sim_container,
+            sim_port = excluded.sim_port,
+            state = excluded.state,
+            last_used_at = excluded.last_used_at
+        `,
+      )
+      .run(input.workspaceId, input.containerName, input.port, input.state, timestamp, timestamp);
+
+    const lease = this.getContainerLease(input.workspaceId);
+    if (!lease) {
+      throw new Error(`Failed to reload container lease for workspace ${input.workspaceId}.`);
+    }
+    return lease;
   }
 }
 

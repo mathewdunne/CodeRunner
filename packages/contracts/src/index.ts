@@ -197,6 +197,24 @@ export const heartbeatResponseSchema = z.object({
   closing: z.boolean(),
 });
 
+export const simContainerStateSchema = z.enum(["missing", "starting", "running", "stopped", "error"]);
+
+export const containersStatusResponseSchema = z.object({
+  workspace: z.object({
+    id: workspaceIdSchema,
+    slug: workspaceSlugSchema,
+  }),
+  sim: z.object({
+    role: z.literal("sim"),
+    state: simContainerStateSchema,
+    image: z.string().min(1),
+    containerName: z.string().min(1).nullable(),
+    portAllocated: z.boolean(),
+    lastUsedAt: z.string().nullable(),
+    error: z.string().nullable(),
+  }),
+});
+
 export const projectFileResponseSchema = z.object({
   path: projectPathSchema,
   contents: z.string(),
@@ -253,6 +271,8 @@ export type HeartbeatRequest = z.infer<typeof heartbeatRequestSchema>;
 export type SessionResponse = z.infer<typeof sessionResponseSchema>;
 export type ProjectTreeResponse = z.infer<typeof projectTreeResponseSchema>;
 export type HeartbeatResponse = z.infer<typeof heartbeatResponseSchema>;
+export type SimContainerState = z.infer<typeof simContainerStateSchema>;
+export type ContainersStatusResponse = z.infer<typeof containersStatusResponseSchema>;
 export type ProjectFileResponse = z.infer<typeof projectFileResponseSchema>;
 export type FileMutationResponse = z.infer<typeof fileMutationResponseSchema>;
 export type RunClientMessage = z.infer<typeof runClientMessageSchema>;

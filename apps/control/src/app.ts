@@ -12,6 +12,7 @@ import {
   writeFileRequestSchema,
   workspaceSlugSchema,
   type CreateFileRequest,
+  type ContainersStatusResponse,
   type FileMutationResponse,
   type HeartbeatResponse,
   type ProjectPathAccess,
@@ -26,6 +27,7 @@ import {
   type WorkspaceSlug,
 } from "@frc-sim/contracts";
 import type { ControlConfigInput } from "./config";
+import { ContainerOrchestrator, type DockerRunner } from "./containers";
 import {
   parseSignedSessionCookie,
   serializeExpiredSessionCookie,
@@ -36,7 +38,12 @@ import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from
 export type ControlApp = {
   fetch(request: Request): Promise<Response>;
   storage: AppStorage;
+  containers: ContainerOrchestrator;
   close(): void;
+};
+
+export type ControlAppOptions = ControlConfigInput & {
+  dockerRunner?: DockerRunner | undefined;
 };
 
 function htmlResponse(body: string, init: ResponseInit = {}): Response {
@@ -628,6 +635,13 @@ async function webShellResponse(storage: AppStorage): Promise<Response> {
   }
 }
 
+async function containersStatusResponse(
+  containers: ContainerOrchestrator,
+  auth: AuthContext,
+): Promise<ContainersStatusResponse> {
+  return await containers.containersStatus(auth.workspace);
+}
+
 async function webAssetResponse(storage: AppStorage, rawPath: string): Promise<Response> {
   let assetPath: string;
   try {
@@ -644,14 +658,16 @@ async function webAssetResponse(storage: AppStorage, rawPath: string): Promise<R
   return staticFileResponse(storage.config.webDistDir, parsed.data);
 }
 
-export async function createApp(configInput: ControlConfigInput = {}): Promise<ControlApp> {
-  const storage = await createStorage(configInput);
+export async function createApp(configInput: ControlAppOptions = {}): Promise<ControlApp> {
+  const { dockerRunner, ...storageConfig } = configInput;
+  const storage = await createStorage(storageConfig);
+  const containers = new ContainerOrchestrator(storage, { dockerRunner });
 
   async function fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === "/healthz") {
-      return Response.json({ ok: true, service: "control", version: "v1-3" });
+      return Response.json({ ok: true, service: "control", version: "v1-4" });
     }
 
     if (url.pathname === "/" && request.method === "GET") {
@@ -712,6 +728,7 @@ export async function createApp(configInput: ControlConfigInput = {}): Promise<C
       }
 
       if (suffix === "/" && request.method === "GET") {
+        containers.startSimContainer(auth.workspace);
         return webShellResponse(storage);
       }
 
@@ -729,6 +746,14 @@ export async function createApp(configInput: ControlConfigInput = {}): Promise<C
         } catch (error) {
           const message = error instanceof Error ? error.message : "Unable to read project tree.";
           return jsonResponse({ error: message }, { status: 500 });
+        }
+      }
+
+      if (suffix === "/api/containers/status" && request.method === "GET") {
+        try {
+          return jsonResponse(await containersStatusResponse(containers, auth));
+        } catch (error) {
+          return apiErrorResponse(error, "Unable to read container status.");
         }
       }
 
@@ -791,6 +816,7 @@ export async function createApp(configInput: ControlConfigInput = {}): Promise<C
   return {
     fetch,
     storage,
+    containers,
     close() {
       storage.close();
     },

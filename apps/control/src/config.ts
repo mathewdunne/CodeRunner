@@ -1,6 +1,11 @@
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
 
+export type PortRange = {
+  start: number;
+  end: number;
+};
+
 export type ControlConfig = {
   dataDir: string;
   dbPath: string;
@@ -8,12 +13,70 @@ export type ControlConfig = {
   migrationsDir: string;
   webDistDir: string;
   sessionSecret: string;
+  dockerPath: string;
+  simImage: string;
+  simMemoryLimit: string;
+  simPortRange: PortRange;
+  containerUser: string | null;
+  containerAutoStart: boolean;
 };
 
-export type ControlConfigInput = Partial<ControlConfig>;
+export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange">> & {
+  simPortRange?: PortRange | string;
+};
 
 const repoRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
 const defaultDataDir = resolve(repoRoot, "data");
+const defaultSimPortRange: PortRange = { start: 25810, end: 25899 };
+
+function parsePortRange(value: string | PortRange | undefined, fallback: PortRange): PortRange {
+  if (!value) {
+    return fallback;
+  }
+
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const match = /^(\d{1,5})-(\d{1,5})$/u.exec(value.trim());
+  if (!match) {
+    throw new Error(`Invalid port range "${value}". Expected start-end.`);
+  }
+
+  const start = Number(match[1]);
+  const end = Number(match[2]);
+  if (!Number.isInteger(start) || !Number.isInteger(end) || start < 1 || end > 65535 || start > end) {
+    throw new Error(`Invalid port range "${value}". Ports must be 1-65535 and start must be <= end.`);
+  }
+
+  return { start, end };
+}
+
+function parseBoolean(value: string | boolean | undefined, fallback: boolean): boolean {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (value === undefined) {
+    return fallback;
+  }
+  return !["0", "false", "no", "off"].includes(value.trim().toLowerCase());
+}
+
+function defaultContainerUser(): string | null {
+  if (Bun.env.FRC_CONTAINER_USER) {
+    return Bun.env.FRC_CONTAINER_USER;
+  }
+
+  if (Bun.env.FRC_UID && Bun.env.FRC_GID) {
+    return `${Bun.env.FRC_UID}:${Bun.env.FRC_GID}`;
+  }
+
+  if (process.platform !== "win32" && typeof process.getuid === "function" && typeof process.getgid === "function") {
+    return `${process.getuid()}:${process.getgid()}`;
+  }
+
+  return null;
+}
 
 export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig {
   const dataDir = resolve(input.dataDir ?? Bun.env.FRC_DATA_DIR ?? defaultDataDir);
@@ -34,5 +97,11 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
       input.sessionSecret ??
       Bun.env.FRC_SESSION_SECRET ??
       "frc-v1-local-dev-session-secret-change-me",
+    dockerPath: input.dockerPath ?? Bun.env.FRC_DOCKER_PATH ?? "docker",
+    simImage: input.simImage ?? Bun.env.SIM_IMAGE ?? "frc-sim:v1",
+    simMemoryLimit: input.simMemoryLimit ?? Bun.env.SIM_MEMORY_LIMIT ?? "1536m",
+    simPortRange: parsePortRange(input.simPortRange ?? Bun.env.SIM_PORT_RANGE, defaultSimPortRange),
+    containerUser: input.containerUser === undefined ? defaultContainerUser() : input.containerUser,
+    containerAutoStart: parseBoolean(input.containerAutoStart ?? Bun.env.FRC_CONTAINER_AUTO_START ?? Bun.env.CONTAINER_AUTO_START, true),
   };
 }

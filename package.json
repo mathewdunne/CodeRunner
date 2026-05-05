@@ -13,6 +13,7 @@
     "dev:control": "bun apps/control/src/main.ts",
     "dev:web": "bun run --cwd apps/web dev",
     "build:web": "bun run --cwd apps/web build",
+    "docker:build:sim": "bun scripts/build-sim-image.ts",
     "migrate": "bun apps/control/src/migrate.ts apply",
     "migrate:status": "bun apps/control/src/migrate.ts status",
     "typecheck": "bun scripts/typecheck.ts",
