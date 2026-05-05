@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import type { Stats } from "node:fs";
-import { lstat, mkdir, readdir, readFile, realpath, rename, rmdir, unlink, writeFile } from "node:fs/promises";
-import { dirname, extname, isAbsolute, relative, resolve } from "node:path";
+import { lstat, mkdir, readdir, readFile, realpath, rename, rmdir, stat, unlink, writeFile } from "node:fs/promises";
+import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
   createFileRequestSchema,
   displayNameSchema,
@@ -40,9 +40,9 @@ import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from
 export type ControlApp = {
   fetch(request: Request, server?: BunUpgradeServer): Promise<Response>;
   websocket: {
-    open(ws: RunSocket): void;
-    message(ws: RunSocket, message: string | ArrayBuffer | Uint8Array): void;
-    close(ws: RunSocket): void;
+    open(ws: AppSocket): void;
+    message(ws: AppSocket, message: string | ArrayBuffer | Uint8Array): void;
+    close(ws: AppSocket): void;
   };
   storage: AppStorage;
   containers: ContainerOrchestrator;
@@ -56,7 +56,7 @@ export type ControlAppOptions = ControlConfigInput & {
 };
 
 type BunUpgradeServer = {
-  upgrade(request: Request, options: { data: RunSocketData }): boolean;
+  upgrade(request: Request, options: { data: SocketData; headers?: HeadersInit }): boolean;
 };
 
 type RunSocketData = {
@@ -65,9 +65,21 @@ type RunSocketData = {
   connection?: RunConnection | undefined;
 };
 
-type RunSocket = {
-  data: RunSocketData;
+type Nt4SocketData = {
+  kind: "nt4";
+  upstreamUrl: string;
+  protocols: string[];
+  upstream?: WebSocket | undefined;
+  upstreamOpen: boolean;
+  pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
+};
+
+type SocketData = RunSocketData | Nt4SocketData;
+
+type AppSocket = {
+  data: SocketData;
   send(data: string): unknown;
+  send(data: ArrayBuffer | Uint8Array): unknown;
   close(code?: number, reason?: string): unknown;
 };
 
@@ -616,8 +628,23 @@ function contentTypeFor(path: string): string {
       return "text/javascript; charset=utf-8";
     case ".json":
       return "application/json; charset=utf-8";
+    case ".ico":
+      return "image/x-icon";
+    case ".png":
+      return "image/png";
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg";
+    case ".webp":
+      return "image/webp";
     case ".svg":
       return "image/svg+xml";
+    case ".glb":
+      return "model/gltf-binary";
+    case ".woff":
+      return "font/woff";
+    case ".woff2":
+      return "font/woff2";
     case ".wasm":
       return "application/wasm";
     default:
@@ -634,6 +661,15 @@ async function staticFileResponse(root: string, path: string): Promise<Response>
   const target = resolve(root, path);
   if (!isInsideDirectory(root, target)) {
     return new Response("Static asset path is outside the web shell.", { status: 403 });
+  }
+
+  try {
+    const targetStats = await stat(target);
+    if (!targetStats.isFile()) {
+      return notFound();
+    }
+  } catch {
+    return notFound();
   }
 
   const file = Bun.file(target);
@@ -683,6 +719,142 @@ async function webAssetResponse(storage: AppStorage, rawPath: string): Promise<R
   return staticFileResponse(storage.config.webDistDir, parsed.data);
 }
 
+type AssetManifest = Record<string, unknown>;
+
+async function readScopeAssetManifest(storage: AppStorage): Promise<AssetManifest> {
+  const bundledAssetsRoot = resolve(storage.config.advantageScopeDistDir, "bundledAssets");
+  const manifest: AssetManifest = {};
+
+  async function walk(directory: string): Promise<void> {
+    const entries = await readdir(directory, { withFileTypes: true }).catch(() => null);
+    if (!entries) {
+      return;
+    }
+
+    for (const entry of entries) {
+      if (entry.name.startsWith(".")) {
+        continue;
+      }
+
+      const absolutePath = resolve(directory, entry.name);
+      if (entry.isDirectory()) {
+        await walk(absolutePath);
+        continue;
+      }
+      if (!entry.isFile()) {
+        continue;
+      }
+
+      const manifestPath = relative(bundledAssetsRoot, absolutePath).split(sep).join("/");
+      let contents: unknown = null;
+      if (entry.name === "config.json") {
+        try {
+          contents = JSON.parse(await readFile(absolutePath, "utf8"));
+        } catch {
+          contents = null;
+        }
+      }
+      manifest[manifestPath] = contents;
+    }
+  }
+
+  await walk(bundledAssetsRoot);
+  return manifest;
+}
+
+async function scopeResponse(storage: AppStorage, pathname: string): Promise<Response> {
+  let suffix = pathname === "/scope" ? "" : pathname.slice("/scope/".length);
+  if (suffix === "" || suffix === "/") {
+    suffix = "index.html";
+  }
+
+  if (suffix.startsWith("www/www/")) {
+    return redirect(`/scope/www/${suffix.slice("www/www/".length)}`, { status: 302 });
+  }
+
+  let assetPath: string;
+  try {
+    assetPath = decodeURIComponent(suffix);
+  } catch {
+    return new Response("Invalid AdvantageScope asset path.", { status: 400 });
+  }
+
+  if (assetPath === "assets" || assetPath === "assets/") {
+    return jsonResponse(await readScopeAssetManifest(storage));
+  }
+
+  if (assetPath.startsWith("assets/")) {
+    const relativeAssetPath = assetPath.slice("assets/".length);
+    return staticFileResponse(resolve(storage.config.advantageScopeDistDir, "bundledAssets"), relativeAssetPath);
+  }
+
+  return staticFileResponse(storage.config.advantageScopeDistDir, assetPath);
+}
+
+function requestedProtocols(request: Request): string[] {
+  return (request.headers.get("sec-websocket-protocol") ?? "")
+    .split(",")
+    .map((protocol) => protocol.trim())
+    .filter(Boolean);
+}
+
+async function nt4AliveResponse(storage: AppStorage, containers: ContainerOrchestrator, auth: AuthContext): Promise<Response> {
+  const sim = await containers.ensureSimContainer(auth.workspace);
+  const lease = storage.getContainerLease(auth.workspace.id);
+  if (sim.state !== "running" || !lease?.sim_port) {
+    return new Response(sim.error ?? "Simulator is not running.", { status: 503 });
+  }
+
+  try {
+    const upstream = await fetch(`http://127.0.0.1:${lease.sim_port}/`, {
+      signal: AbortSignal.timeout(500),
+    });
+    if (!upstream.ok) {
+      return new Response("Simulator NT4 endpoint is not ready.", { status: 503 });
+    }
+    return new Response("ok\n", { status: 200, headers: { "content-type": "text/plain; charset=utf-8" } });
+  } catch {
+    return new Response("Simulator NT4 endpoint is not reachable.", { status: 503 });
+  }
+}
+
+async function nt4WebSocketResponse(
+  storage: AppStorage,
+  containers: ContainerOrchestrator,
+  auth: AuthContext,
+  request: Request,
+  server?: BunUpgradeServer,
+): Promise<Response> {
+  if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
+    return new Response("Expected WebSocket upgrade.", { status: 426 });
+  }
+
+  const sim = await containers.ensureSimContainer(auth.workspace);
+  const lease = storage.getContainerLease(auth.workspace.id);
+  if (sim.state !== "running" || !lease?.sim_port) {
+    return new Response(sim.error ?? "Simulator is not running.", { status: 503 });
+  }
+
+  const protocols = requestedProtocols(request);
+  const upgradeOptions: { data: SocketData; headers?: HeadersInit } = {
+    data: {
+      kind: "nt4",
+      upstreamUrl: `ws://127.0.0.1:${lease.sim_port}/nt/AdvantageScopeLite`,
+      protocols,
+      upstreamOpen: false,
+      pendingMessages: [],
+    },
+  };
+  if (protocols.length > 0) {
+    upgradeOptions.headers = { "sec-websocket-protocol": protocols[0] ?? "" };
+  }
+  const upgraded = server.upgrade(request, upgradeOptions);
+  if (!upgraded) {
+    return new Response("WebSocket upgrade failed.", { status: 400 });
+  }
+  return undefined as unknown as Response;
+}
+
 export async function createApp(configInput: ControlAppOptions = {}): Promise<ControlApp> {
   const { dockerRunner, runCommandFactory, ...storageConfig } = configInput;
   const storage = await createStorage(storageConfig);
@@ -693,7 +865,11 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     const url = new URL(request.url);
 
     if (url.pathname === "/healthz") {
-      return Response.json({ ok: true, service: "control", version: "v1-5" });
+      return Response.json({ ok: true, service: "control", version: "v1-6" });
+    }
+
+    if ((url.pathname === "/scope" || url.pathname.startsWith("/scope/")) && request.method === "GET") {
+      return scopeResponse(storage, url.pathname);
     }
 
     if (url.pathname === "/" && request.method === "GET") {
@@ -772,6 +948,14 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
           return new Response("WebSocket upgrade failed.", { status: 400 });
         }
         return undefined as unknown as Response;
+      }
+
+      if (suffix === "/sim/alive" && request.method === "GET") {
+        return nt4AliveResponse(storage, containers, auth);
+      }
+
+      if (suffix === "/sim/nt4" && request.method === "GET") {
+        return nt4WebSocketResponse(storage, containers, auth, request, server);
       }
 
       if (suffix.startsWith("/assets/") && request.method === "GET") {
@@ -871,17 +1055,64 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     return new TextDecoder().decode(message);
   }
 
+  function openNt4Proxy(ws: AppSocket): void {
+    if (ws.data.kind !== "nt4") {
+      return;
+    }
+
+    const upstream = new WebSocket(
+      ws.data.upstreamUrl,
+      ws.data.protocols.length > 0 ? ws.data.protocols : undefined,
+    );
+    ws.data.upstream = upstream;
+    upstream.binaryType = "arraybuffer";
+
+    upstream.addEventListener("open", () => {
+      if (ws.data.kind !== "nt4") {
+        return;
+      }
+      ws.data.upstreamOpen = true;
+      for (const message of ws.data.pendingMessages.splice(0)) {
+        upstream.send(message);
+      }
+    });
+    upstream.addEventListener("message", (event) => {
+      if (typeof event.data === "string") {
+        ws.send(event.data);
+      } else if (event.data instanceof ArrayBuffer) {
+        ws.send(event.data);
+      } else if (event.data instanceof Uint8Array) {
+        ws.send(event.data);
+      }
+    });
+    upstream.addEventListener("close", (event) => {
+      ws.close(event.code || 1011, event.reason || "NT4 upstream closed.");
+    });
+    upstream.addEventListener("error", () => {
+      ws.close(1011, "NT4 upstream error.");
+    });
+  }
+
   const websocket = {
-    open(ws: RunSocket): void {
-      if (ws.data.kind !== "run") {
-        ws.close(1008, "Unsupported socket.");
+    open(ws: AppSocket): void {
+      if (ws.data.kind === "nt4") {
+        openNt4Proxy(ws);
         return;
       }
       ws.data.connection = runs.connect(ws.data.workspace, (message) => {
         ws.send(JSON.stringify(message));
       });
     },
-    message(ws: RunSocket, message: string | ArrayBuffer | Uint8Array): void {
+    message(ws: AppSocket, message: string | ArrayBuffer | Uint8Array): void {
+      if (ws.data.kind === "nt4") {
+        if (ws.data.upstreamOpen && ws.data.upstream) {
+          ws.data.upstream.send(message);
+        } else {
+          ws.data.pendingMessages.push(message);
+        }
+        return;
+      }
+
       try {
         const parsed = runClientMessageSchema.parse(JSON.parse(socketMessageText(message)));
         if (parsed.type === "start") {
@@ -895,7 +1126,13 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         ws.send(JSON.stringify({ type: "error", message: detail }));
       }
     },
-    close(ws: RunSocket): void {
+    close(ws: AppSocket): void {
+      if (ws.data.kind === "nt4") {
+        ws.data.upstream?.close();
+        ws.data.pendingMessages.length = 0;
+        return;
+      }
+
       if (ws.data.connection) {
         runs.disconnect(ws.data.connection);
       }

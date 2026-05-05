@@ -54,7 +54,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L1",
       "id": "apps_control_src_app_test_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "app.test.ts"
     },
     {
@@ -63,7 +63,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L10",
       "id": "src_app_test_exists",
-      "community": 7,
+      "community": 8,
       "norm_label": "exists()"
     },
     {
@@ -72,7 +72,7 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L19",
       "id": "src_app_test_createtemplate",
-      "community": 7,
+      "community": 8,
       "norm_label": "createtemplate()"
     },
     {
@@ -81,115 +81,124 @@
       "source_file": "apps\\control\\src\\app.test.ts",
       "source_location": "L31",
       "id": "src_app_test_createwebdist",
-      "community": 7,
+      "community": 8,
       "norm_label": "createwebdist()"
+    },
+    {
+      "label": "createAdvantageScopeDist()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L43",
+      "id": "src_app_test_createadvantagescopedist",
+      "community": 8,
+      "norm_label": "createadvantagescopedist()"
     },
     {
       "label": "withApp()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L43",
+      "source_location": "L60",
       "id": "src_app_test_withapp",
-      "community": 7,
+      "community": 8,
       "norm_label": "withapp()"
     },
     {
       "label": "ok()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L75",
+      "source_location": "L94",
       "id": "src_app_test_ok",
-      "community": 7,
+      "community": 8,
       "norm_label": "ok()"
     },
     {
       "label": "missing()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L79",
+      "source_location": "L98",
       "id": "src_app_test_missing",
-      "community": 7,
+      "community": 8,
       "norm_label": "missing()"
     },
     {
       "label": "dockerInspect()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L83",
+      "source_location": "L102",
       "id": "src_app_test_dockerinspect",
-      "community": 7,
+      "community": 8,
       "norm_label": "dockerinspect()"
     },
     {
       "label": "createFakeDocker()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L106",
+      "source_location": "L125",
       "id": "src_app_test_createfakedocker",
-      "community": 7,
+      "community": 8,
       "norm_label": "createfakedocker()"
     },
     {
       "label": "waitFor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L179",
+      "source_location": "L199",
       "id": "src_app_test_waitfor",
-      "community": 7,
+      "community": 8,
       "norm_label": "waitfor()"
     },
     {
       "label": "login()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L189",
+      "source_location": "L209",
       "id": "src_app_test_login",
-      "community": 7,
+      "community": 8,
       "norm_label": "login()"
     },
     {
       "label": "cookieFrom()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L206",
+      "source_location": "L226",
       "id": "src_app_test_cookiefrom",
-      "community": 7,
+      "community": 8,
       "norm_label": "cookiefrom()"
     },
     {
       "label": "workspaceProjectPath()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L212",
+      "source_location": "L232",
       "id": "src_app_test_workspaceprojectpath",
-      "community": 7,
+      "community": 8,
       "norm_label": "workspaceprojectpath()"
     },
     {
       "label": "workspaceBySlug()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L220",
+      "source_location": "L240",
       "id": "src_app_test_workspacebyslug",
-      "community": 7,
+      "community": 8,
       "norm_label": "workspacebyslug()"
     },
     {
       "label": "tryCreateSymlink()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L226",
+      "source_location": "L246",
       "id": "src_app_test_trycreatesymlink",
-      "community": 7,
+      "community": 8,
       "norm_label": "trycreatesymlink()"
     },
     {
       "label": "createControlledRunCommands()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.test.ts",
-      "source_location": "L967",
+      "source_location": "L987",
       "id": "src_app_test_createcontrolledruncommands",
-      "community": 7,
+      "community": 8,
       "norm_label": "createcontrolledruncommands()"
     },
     {
@@ -198,385 +207,430 @@
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L1",
       "id": "apps_control_src_app_ts",
-      "community": 1,
+      "community": 0,
       "norm_label": "app.ts"
     },
     {
       "label": "htmlResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L74",
+      "source_location": "L86",
       "id": "src_app_htmlresponse",
-      "community": 1,
+      "community": 0,
       "norm_label": "htmlresponse()"
     },
     {
       "label": "redirect()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L80",
+      "source_location": "L92",
       "id": "src_app_redirect",
-      "community": 1,
+      "community": 0,
       "norm_label": "redirect()"
     },
     {
       "label": "jsonResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L86",
+      "source_location": "L98",
       "id": "src_app_jsonresponse",
-      "community": 1,
+      "community": 0,
       "norm_label": "jsonresponse()"
     },
     {
       "label": "escapeHtml()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L92",
+      "source_location": "L104",
       "id": "src_app_escapehtml",
-      "community": 1,
+      "community": 0,
       "norm_label": "escapehtml()"
     },
     {
       "label": "loginPage()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L100",
+      "source_location": "L112",
       "id": "src_app_loginpage",
-      "community": 1,
+      "community": 0,
       "norm_label": "loginpage()"
     },
     {
       "label": "notFound()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L132",
+      "source_location": "L144",
       "id": "src_app_notfound",
-      "community": 1,
+      "community": 0,
       "norm_label": "notfound()"
     },
     {
       "label": "readDisplayName()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L136",
+      "source_location": "L148",
       "id": "src_app_readdisplayname",
-      "community": 1,
+      "community": 0,
       "norm_label": "readdisplayname()"
     },
     {
       "label": "currentUserId()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L151",
+      "source_location": "L163",
       "id": "src_app_currentuserid",
-      "community": 1,
+      "community": 0,
       "norm_label": "currentuserid()"
     },
     {
       "label": "authFromRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L155",
+      "source_location": "L167",
       "id": "src_app_authfromrequest",
-      "community": 1,
+      "community": 0,
       "norm_label": "authfromrequest()"
     },
     {
       "label": "resolveWorkspaceRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L172",
+      "source_location": "L184",
       "id": "src_app_resolveworkspacerequest",
-      "community": 1,
+      "community": 0,
       "norm_label": "resolveworkspacerequest()"
     },
     {
       "label": "sessionResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L196",
+      "source_location": "L208",
       "id": "src_app_sessionresponse",
-      "community": 1,
+      "community": 0,
       "norm_label": "sessionresponse()"
     },
     {
       "label": "sortProjectNodes()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L210",
+      "source_location": "L222",
       "id": "src_app_sortprojectnodes",
-      "community": 1,
+      "community": 0,
       "norm_label": "sortprojectnodes()"
     },
     {
       "label": "isReservedProjectTempName()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L218",
+      "source_location": "L230",
       "id": "src_app_isreservedprojecttempname",
-      "community": 1,
+      "community": 0,
       "norm_label": "isreservedprojecttempname()"
     },
     {
       "label": "readProjectTreeNode()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L222",
+      "source_location": "L234",
       "id": "src_app_readprojecttreenode",
-      "community": 1,
+      "community": 0,
       "norm_label": "readprojecttreenode()"
     },
     {
       "label": "projectTreeResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L282",
+      "source_location": "L294",
       "id": "src_app_projecttreeresponse",
-      "community": 1,
+      "community": 0,
       "norm_label": "projecttreeresponse()"
     },
     {
       "label": "mutationResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L297",
+      "source_location": "L309",
       "id": "src_app_mutationresponse",
-      "community": 1,
+      "community": 0,
       "norm_label": "mutationresponse()"
     },
     {
       "label": "projectPathFromQuery()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L304",
+      "source_location": "L316",
       "id": "src_app_projectpathfromquery",
-      "community": 1,
+      "community": 0,
       "norm_label": "projectpathfromquery()"
     },
     {
       "label": "apiError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L327",
+      "source_location": "L339",
       "id": "src_app_apierror",
-      "community": 1,
+      "community": 0,
       "norm_label": "apierror()"
     },
     {
       "label": "fsErrorCode()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L331",
+      "source_location": "L343",
       "id": "src_app_fserrorcode",
-      "community": 1,
+      "community": 0,
       "norm_label": "fserrorcode()"
     },
     {
       "label": "isMissingPathError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L335",
+      "source_location": "L347",
       "id": "src_app_ismissingpatherror",
-      "community": 1,
+      "community": 0,
       "norm_label": "ismissingpatherror()"
     },
     {
       "label": "isNonEmptyDirectoryError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L339",
+      "source_location": "L351",
       "id": "src_app_isnonemptydirectoryerror",
-      "community": 1,
+      "community": 0,
       "norm_label": "isnonemptydirectoryerror()"
     },
     {
       "label": "symlinkError()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L344",
+      "source_location": "L356",
       "id": "src_app_symlinkerror",
-      "community": 1,
+      "community": 0,
       "norm_label": "symlinkerror()"
     },
     {
       "label": "lstatRequired()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L348",
+      "source_location": "L360",
       "id": "src_app_lstatrequired",
-      "community": 1,
+      "community": 0,
       "norm_label": "lstatrequired()"
     },
     {
       "label": "assertRealPathInside()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L359",
+      "source_location": "L371",
       "id": "src_app_assertrealpathinside",
-      "community": 1,
+      "community": 0,
       "norm_label": "assertrealpathinside()"
     },
     {
       "label": "resolveProjectFilePath()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L367",
+      "source_location": "L379",
       "id": "src_app_resolveprojectfilepath",
-      "community": 1,
+      "community": 0,
       "norm_label": "resolveprojectfilepath()"
     },
     {
       "label": "readJsonRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L444",
+      "source_location": "L456",
       "id": "src_app_readjsonrequest",
-      "community": 1,
+      "community": 0,
       "norm_label": "readjsonrequest()"
     },
     {
       "label": "writeTempPathFor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L460",
+      "source_location": "L472",
       "id": "src_app_writetemppathfor",
-      "community": 1,
+      "community": 0,
       "norm_label": "writetemppathfor()"
     },
     {
       "label": "writeFileAtomically()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L464",
+      "source_location": "L476",
       "id": "src_app_writefileatomically",
-      "community": 1,
+      "community": 0,
       "norm_label": "writefileatomically()"
     },
     {
       "label": "readProjectFile()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L477",
+      "source_location": "L489",
       "id": "src_app_readprojectfile",
-      "community": 1,
+      "community": 0,
       "norm_label": "readprojectfile()"
     },
     {
       "label": "writeProjectFile()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L496",
+      "source_location": "L508",
       "id": "src_app_writeprojectfile",
-      "community": 1,
+      "community": 0,
       "norm_label": "writeprojectfile()"
     },
     {
       "label": "createProjectEntry()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L513",
+      "source_location": "L525",
       "id": "src_app_createprojectentry",
-      "community": 1,
+      "community": 0,
       "norm_label": "createprojectentry()"
     },
     {
       "label": "renameProjectEntry()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L545",
+      "source_location": "L557",
       "id": "src_app_renameprojectentry",
-      "community": 1,
+      "community": 0,
       "norm_label": "renameprojectentry()"
     },
     {
       "label": "deleteProjectEntry()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L567",
+      "source_location": "L579",
       "id": "src_app_deleteprojectentry",
-      "community": 1,
+      "community": 0,
       "norm_label": "deleteprojectentry()"
     },
     {
       "label": "apiErrorResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L594",
+      "source_location": "L606",
       "id": "src_app_apierrorresponse",
-      "community": 1,
+      "community": 0,
       "norm_label": "apierrorresponse()"
     },
     {
       "label": "readHeartbeatRequest()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L601",
+      "source_location": "L613",
       "id": "src_app_readheartbeatrequest",
-      "community": 1,
+      "community": 0,
       "norm_label": "readheartbeatrequest()"
     },
     {
       "label": "contentTypeFor()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L608",
+      "source_location": "L620",
       "id": "src_app_contenttypefor",
-      "community": 1,
+      "community": 0,
       "norm_label": "contenttypefor()"
     },
     {
       "label": "isInsideDirectory()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L628",
+      "source_location": "L655",
       "id": "src_app_isinsidedirectory",
-      "community": 1,
+      "community": 0,
       "norm_label": "isinsidedirectory()"
     },
     {
       "label": "staticFileResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L633",
+      "source_location": "L660",
       "id": "src_app_staticfileresponse",
-      "community": 1,
+      "community": 0,
       "norm_label": "staticfileresponse()"
     },
     {
       "label": "webShellResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L651",
+      "source_location": "L687",
       "id": "src_app_webshellresponse",
-      "community": 1,
+      "community": 0,
       "norm_label": "webshellresponse()"
     },
     {
       "label": "containersStatusResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L663",
+      "source_location": "L699",
       "id": "src_app_containersstatusresponse",
-      "community": 1,
+      "community": 0,
       "norm_label": "containersstatusresponse()"
     },
     {
       "label": "webAssetResponse()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L670",
+      "source_location": "L706",
       "id": "src_app_webassetresponse",
-      "community": 1,
+      "community": 0,
       "norm_label": "webassetresponse()"
+    },
+    {
+      "label": "readScopeAssetManifest()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L724",
+      "id": "src_app_readscopeassetmanifest",
+      "community": 0,
+      "norm_label": "readscopeassetmanifest()"
+    },
+    {
+      "label": "scopeResponse()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L765",
+      "id": "src_app_scoperesponse",
+      "community": 0,
+      "norm_label": "scoperesponse()"
+    },
+    {
+      "label": "requestedProtocols()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L794",
+      "id": "src_app_requestedprotocols",
+      "community": 0,
+      "norm_label": "requestedprotocols()"
+    },
+    {
+      "label": "nt4AliveResponse()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L801",
+      "id": "src_app_nt4aliveresponse",
+      "community": 0,
+      "norm_label": "nt4aliveresponse()"
+    },
+    {
+      "label": "nt4WebSocketResponse()",
+      "file_type": "code",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L821",
+      "id": "src_app_nt4websocketresponse",
+      "community": 0,
+      "norm_label": "nt4websocketresponse()"
     },
     {
       "label": "createApp()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
-      "source_location": "L686",
+      "source_location": "L858",
       "id": "src_app_createapp",
-      "community": 7,
+      "community": 8,
       "norm_label": "createapp()"
     },
     {
@@ -592,7 +646,7 @@
       "label": "parsePortRange()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L35",
+      "source_location": "L36",
       "id": "src_config_parseportrange",
       "community": 2,
       "norm_label": "parseportrange()"
@@ -601,7 +655,7 @@
       "label": "parseBoolean()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L58",
+      "source_location": "L59",
       "id": "src_config_parseboolean",
       "community": 2,
       "norm_label": "parseboolean()"
@@ -610,7 +664,7 @@
       "label": "parsePositiveInteger()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L68",
+      "source_location": "L69",
       "id": "src_config_parsepositiveinteger",
       "community": 2,
       "norm_label": "parsepositiveinteger()"
@@ -619,7 +673,7 @@
       "label": "defaultContainerUser()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L76",
+      "source_location": "L77",
       "id": "src_config_defaultcontaineruser",
       "community": 2,
       "norm_label": "defaultcontaineruser()"
@@ -628,7 +682,7 @@
       "label": "loadControlConfig()",
       "file_type": "code",
       "source_file": "apps\\control\\src\\config.ts",
-      "source_location": "L92",
+      "source_location": "L93",
       "id": "src_config_loadcontrolconfig",
       "community": 2,
       "norm_label": "loadcontrolconfig()"
@@ -909,7 +963,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L1",
       "id": "apps_control_src_cookies_ts",
-      "community": 1,
+      "community": 0,
       "norm_label": "cookies.ts"
     },
     {
@@ -918,7 +972,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L7",
       "id": "src_cookies_base64url",
-      "community": 1,
+      "community": 0,
       "norm_label": "base64url()"
     },
     {
@@ -927,7 +981,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L11",
       "id": "src_cookies_signsessionid",
-      "community": 1,
+      "community": 0,
       "norm_label": "signsessionid()"
     },
     {
@@ -936,7 +990,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L15",
       "id": "src_cookies_serializesessioncookie",
-      "community": 1,
+      "community": 0,
       "norm_label": "serializesessioncookie()"
     },
     {
@@ -945,7 +999,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L26",
       "id": "src_cookies_serializeexpiredsessioncookie",
-      "community": 1,
+      "community": 0,
       "norm_label": "serializeexpiredsessioncookie()"
     },
     {
@@ -954,7 +1008,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L36",
       "id": "src_cookies_parsecookies",
-      "community": 1,
+      "community": 0,
       "norm_label": "parsecookies()"
     },
     {
@@ -963,7 +1017,7 @@
       "source_file": "apps\\control\\src\\cookies.ts",
       "source_location": "L53",
       "id": "src_cookies_parsesignedsessioncookie",
-      "community": 1,
+      "community": 0,
       "norm_label": "parsesignedsessioncookie()"
     },
     {
@@ -972,7 +1026,7 @@
       "source_file": "apps\\control\\src\\main.ts",
       "source_location": "L1",
       "id": "apps_control_src_main_ts",
-      "community": 7,
+      "community": 8,
       "norm_label": "main.ts"
     },
     {
@@ -1053,7 +1107,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L1",
       "id": "apps_control_src_runs_ts",
-      "community": 8,
+      "community": 9,
       "norm_label": "runs.ts"
     },
     {
@@ -1062,7 +1116,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L53",
       "id": "src_runs_randomrunid",
-      "community": 8,
+      "community": 9,
       "norm_label": "randomrunid()"
     },
     {
@@ -1071,7 +1125,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L57",
       "id": "src_runs_runlogpath",
-      "community": 8,
+      "community": 9,
       "norm_label": "runlogpath()"
     },
     {
@@ -1080,7 +1134,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L61",
       "id": "src_runs_linelooksready",
-      "community": 8,
+      "community": 9,
       "norm_label": "linelooksready()"
     },
     {
@@ -1089,7 +1143,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L65",
       "id": "src_runs_dockerrunscript",
-      "community": 8,
+      "community": 9,
       "norm_label": "dockerrunscript()"
     },
     {
@@ -1098,7 +1152,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L79",
       "id": "src_runs_defaultruncommandfactory",
-      "community": 8,
+      "community": 9,
       "norm_label": "defaultruncommandfactory()"
     },
     {
@@ -1107,7 +1161,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L99",
       "id": "src_runs_consumelines",
-      "community": 8,
+      "community": 9,
       "norm_label": "consumelines()"
     },
     {
@@ -1116,7 +1170,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L135",
       "id": "src_runs_runmanager",
-      "community": 8,
+      "community": 9,
       "norm_label": "runmanager"
     },
     {
@@ -1125,7 +1179,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L141",
       "id": "src_runs_runmanager_constructor",
-      "community": 8,
+      "community": 9,
       "norm_label": ".constructor()"
     },
     {
@@ -1134,7 +1188,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L149",
       "id": "src_runs_runmanager_connect",
-      "community": 8,
+      "community": 9,
       "norm_label": ".connect()"
     },
     {
@@ -1143,7 +1197,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L171",
       "id": "src_runs_runmanager_disconnect",
-      "community": 8,
+      "community": 9,
       "norm_label": ".disconnect()"
     },
     {
@@ -1152,7 +1206,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L176",
       "id": "src_runs_runmanager_queuedepth",
-      "community": 8,
+      "community": 9,
       "norm_label": ".queuedepth()"
     },
     {
@@ -1161,7 +1215,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L180",
       "id": "src_runs_runmanager_start",
-      "community": 8,
+      "community": 9,
       "norm_label": ".start()"
     },
     {
@@ -1170,7 +1224,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L215",
       "id": "src_runs_runmanager_stopworkspace",
-      "community": 8,
+      "community": 9,
       "norm_label": ".stopworkspace()"
     },
     {
@@ -1179,7 +1233,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L219",
       "id": "src_runs_runmanager_cancelworkspace",
-      "community": 8,
+      "community": 9,
       "norm_label": ".cancelworkspace()"
     },
     {
@@ -1188,7 +1242,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L241",
       "id": "src_runs_runmanager_pump",
-      "community": 8,
+      "community": 9,
       "norm_label": ".pump()"
     },
     {
@@ -1197,7 +1251,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L254",
       "id": "src_runs_runmanager_runjob",
-      "community": 8,
+      "community": 9,
       "norm_label": ".runjob()"
     },
     {
@@ -1206,7 +1260,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L304",
       "id": "src_runs_runmanager_armreadinesstimeout",
-      "community": 8,
+      "community": 9,
       "norm_label": ".armreadinesstimeout()"
     },
     {
@@ -1215,7 +1269,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L311",
       "id": "src_runs_runmanager_timeoutbeforereadiness",
-      "community": 8,
+      "community": 9,
       "norm_label": ".timeoutbeforereadiness()"
     },
     {
@@ -1224,7 +1278,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L326",
       "id": "src_runs_runmanager_recordlog",
-      "community": 8,
+      "community": 9,
       "norm_label": ".recordlog()"
     },
     {
@@ -1233,7 +1287,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L340",
       "id": "src_runs_runmanager_releasebuildslot",
-      "community": 8,
+      "community": 9,
       "norm_label": ".releasebuildslot()"
     },
     {
@@ -1242,7 +1296,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L354",
       "id": "src_runs_runmanager_setjobstate",
-      "community": 8,
+      "community": 9,
       "norm_label": ".setjobstate()"
     },
     {
@@ -1251,7 +1305,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L382",
       "id": "src_runs_runmanager_finishjob",
-      "community": 8,
+      "community": 9,
       "norm_label": ".finishjob()"
     },
     {
@@ -1260,7 +1314,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L396",
       "id": "src_runs_runmanager_sendcurrentstatus",
-      "community": 8,
+      "community": 9,
       "norm_label": ".sendcurrentstatus()"
     },
     {
@@ -1269,7 +1323,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L409",
       "id": "src_runs_runmanager_updatequeuepositions",
-      "community": 8,
+      "community": 9,
       "norm_label": ".updatequeuepositions()"
     },
     {
@@ -1278,7 +1332,7 @@
       "source_file": "apps\\control\\src\\runs.ts",
       "source_location": "L419",
       "id": "src_runs_runmanager_broadcast",
-      "community": 8,
+      "community": 9,
       "norm_label": ".broadcast()"
     },
     {
@@ -1557,7 +1611,7 @@
       "source_file": "apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "apps_web_vite_config_ts",
-      "community": 21,
+      "community": 23,
       "norm_label": "vite.config.ts"
     },
     {
@@ -1566,7 +1620,7 @@
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L1",
       "id": "apps_web_src_main_tsx",
-      "community": 9,
+      "community": 7,
       "norm_label": "main.tsx"
     },
     {
@@ -1575,115 +1629,133 @@
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L21",
       "id": "src_main_getworker",
-      "community": 9,
+      "community": 7,
       "norm_label": "getworker()"
     },
     {
       "label": "workspaceSlugFromLocation()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L47",
+      "source_location": "L48",
       "id": "src_main_workspaceslugfromlocation",
-      "community": 9,
+      "community": 7,
       "norm_label": "workspaceslugfromlocation()"
     },
     {
       "label": "fileName()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L53",
+      "source_location": "L54",
       "id": "src_main_filename",
-      "community": 9,
+      "community": 7,
       "norm_label": "filename()"
     },
     {
       "label": "parentPath()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L58",
+      "source_location": "L59",
       "id": "src_main_parentpath",
-      "community": 9,
+      "community": 7,
       "norm_label": "parentpath()"
     },
     {
       "label": "languageFor()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L62",
+      "source_location": "L63",
       "id": "src_main_languagefor",
-      "community": 9,
+      "community": 7,
       "norm_label": "languagefor()"
     },
     {
       "label": "modelUriFor()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L75",
+      "source_location": "L76",
       "id": "src_main_modelurifor",
-      "community": 9,
+      "community": 7,
       "norm_label": "modelurifor()"
     },
     {
       "label": "fetchJson()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L79",
+      "source_location": "L80",
       "id": "src_main_fetchjson",
-      "community": 9,
+      "community": 7,
       "norm_label": "fetchjson()"
     },
     {
       "label": "canOpen()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L99",
+      "source_location": "L100",
       "id": "src_main_canopen",
-      "community": 9,
+      "community": 7,
       "norm_label": "canopen()"
     },
     {
       "label": "setTree()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L103",
+      "source_location": "L104",
       "id": "src_main_settree",
-      "community": 9,
+      "community": 7,
       "norm_label": "settree()"
     },
     {
       "label": "loadWorkspace()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L367",
+      "source_location": "L370",
       "id": "src_main_loadworkspace",
-      "community": 9,
+      "community": 7,
       "norm_label": "loadworkspace()"
     },
     {
       "label": "sendHeartbeat()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L406",
+      "source_location": "L409",
       "id": "src_main_sendheartbeat",
-      "community": 9,
+      "community": 7,
       "norm_label": "sendheartbeat()"
     },
     {
       "label": "refreshStatus()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L496",
+      "source_location": "L499",
       "id": "src_main_refreshstatus",
-      "community": 9,
+      "community": 7,
       "norm_label": "refreshstatus()"
+    },
+    {
+      "label": "sendConfig()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L533",
+      "id": "src_main_sendconfig",
+      "community": 7,
+      "norm_label": "sendconfig()"
+    },
+    {
+      "label": "onMessage()",
+      "file_type": "code",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L544",
+      "id": "src_main_onmessage",
+      "community": 7,
+      "norm_label": "onmessage()"
     },
     {
       "label": "warnOnDirtyFiles()",
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
-      "source_location": "L518",
+      "source_location": "L574",
       "id": "src_main_warnondirtyfiles",
-      "community": 9,
+      "community": 7,
       "norm_label": "warnondirtyfiles()"
     },
     {
@@ -1692,7 +1764,7 @@
       "source_file": "apps\\web\\src\\save-before-run.test.ts",
       "source_location": "L1",
       "id": "apps_web_src_save_before_run_test_ts",
-      "community": 9,
+      "community": 7,
       "norm_label": "save-before-run.test.ts"
     },
     {
@@ -1701,7 +1773,7 @@
       "source_file": "apps\\web\\src\\save-before-run.test.ts",
       "source_location": "L4",
       "id": "src_save_before_run_test_file",
-      "community": 9,
+      "community": 7,
       "norm_label": "file()"
     },
     {
@@ -1710,7 +1782,7 @@
       "source_file": "apps\\web\\src\\save-before-run.ts",
       "source_location": "L1",
       "id": "apps_web_src_save_before_run_ts",
-      "community": 9,
+      "community": 7,
       "norm_label": "save-before-run.ts"
     },
     {
@@ -1719,7 +1791,7 @@
       "source_file": "apps\\web\\src\\save-before-run.ts",
       "source_location": "L9",
       "id": "src_save_before_run_runflushblockers",
-      "community": 9,
+      "community": 7,
       "norm_label": "runflushblockers()"
     },
     {
@@ -1728,7 +1800,7 @@
       "source_file": "data\\users\\ws_e380750c4506481e0065ec1244002809\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
       "id": "data_users_ws_e380750c4506481e0065ec1244002809_project_src_main_java_frc_robot_main_java",
-      "community": 14,
+      "community": 16,
       "norm_label": "main.java"
     },
     {
@@ -1737,7 +1809,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L5",
       "id": "robot_main_main",
-      "community": 14,
+      "community": 16,
       "norm_label": "main"
     },
     {
@@ -1746,7 +1818,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L6",
       "id": "robot_main_main_main",
-      "community": 14,
+      "community": 16,
       "norm_label": ".main()"
     },
     {
@@ -1755,7 +1827,7 @@
       "source_file": "data\\users\\ws_e380750c4506481e0065ec1244002809\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "data_users_ws_e380750c4506481e0065ec1244002809_project_src_main_java_frc_robot_robot_java",
-      "community": 10,
+      "community": 13,
       "norm_label": "robot.java"
     },
     {
@@ -1764,7 +1836,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L13",
       "id": "robot_robot_robot",
-      "community": 10,
+      "community": 13,
       "norm_label": "robot"
     },
     {
@@ -1773,7 +1845,7 @@
       "source_file": "",
       "source_location": "",
       "id": "timedrobot",
-      "community": 10,
+      "community": 13,
       "norm_label": "timedrobot"
     },
     {
@@ -1782,7 +1854,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L29",
       "id": "robot_robot_robot_robotinit",
-      "community": 8,
+      "community": 13,
       "norm_label": ".robotinit()"
     },
     {
@@ -1791,7 +1863,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L34",
       "id": "robot_robot_robot_robotperiodic",
-      "community": 10,
+      "community": 13,
       "norm_label": ".robotperiodic()"
     },
     {
@@ -1800,7 +1872,7 @@
       "source_file": "data\\users\\ws_e380750c4506481e0065ec1244002809\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
       "id": "data_users_ws_e380750c4506481e0065ec1244002809_project_src_main_java_frc_robot_robotcontainer_java",
-      "community": 15,
+      "community": 17,
       "norm_label": "robotcontainer.java"
     },
     {
@@ -1809,7 +1881,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L3",
       "id": "robot_robotcontainer_robotcontainer",
-      "community": 15,
+      "community": 17,
       "norm_label": "robotcontainer"
     },
     {
@@ -1818,7 +1890,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L4",
       "id": "robot_robotcontainer_robotcontainer_robotcontainer",
-      "community": 15,
+      "community": 17,
       "norm_label": ".robotcontainer()"
     },
     {
@@ -1827,7 +1899,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_lsp_src_main_ts",
-      "community": 16,
+      "community": 18,
       "norm_label": "main.ts"
     },
     {
@@ -1836,7 +1908,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L70",
       "id": "src_main_launchlanguageserver",
-      "community": 16,
+      "community": 18,
       "norm_label": "launchlanguageserver()"
     },
     {
@@ -1845,7 +1917,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L109",
       "id": "src_main_aswebsocket",
-      "community": 16,
+      "community": 18,
       "norm_label": "aswebsocket()"
     },
     {
@@ -1854,7 +1926,7 @@
       "source_file": "mvp\\apps\\lsp\\src\\main.ts",
       "source_location": "L133",
       "id": "src_main_handleupgrade",
-      "community": 16,
+      "community": 18,
       "norm_label": "handleupgrade()"
     },
     {
@@ -1863,7 +1935,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L1",
       "id": "mvp_apps_router_src_main_ts",
-      "community": 12,
+      "community": 14,
       "norm_label": "main.ts"
     },
     {
@@ -1872,7 +1944,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L17",
       "id": "src_main_parsesessions",
-      "community": 12,
+      "community": 14,
       "norm_label": "parsesessions()"
     },
     {
@@ -1881,7 +1953,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L36",
       "id": "src_main_sessionfrompath",
-      "community": 12,
+      "community": 14,
       "norm_label": "sessionfrompath()"
     },
     {
@@ -1890,7 +1962,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L44",
       "id": "src_main_nt4httpurl",
-      "community": 12,
+      "community": 14,
       "norm_label": "nt4httpurl()"
     },
     {
@@ -1899,7 +1971,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L48",
       "id": "src_main_nt4wsurl",
-      "community": 12,
+      "community": 14,
       "norm_label": "nt4wsurl()"
     },
     {
@@ -1908,7 +1980,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L52",
       "id": "src_main_requestedprotocols",
-      "community": 12,
+      "community": 14,
       "norm_label": "requestedprotocols()"
     },
     {
@@ -1917,7 +1989,7 @@
       "source_file": "mvp\\apps\\router\\src\\main.ts",
       "source_location": "L58",
       "id": "src_main_pipewebsockets",
-      "community": 12,
+      "community": 14,
       "norm_label": "pipewebsockets()"
     },
     {
@@ -2205,7 +2277,7 @@
       "source_file": "mvp\\apps\\web\\vite.config.ts",
       "source_location": "L1",
       "id": "mvp_apps_web_vite_config_ts",
-      "community": 22,
+      "community": 24,
       "norm_label": "vite.config.ts"
     },
     {
@@ -2763,7 +2835,7 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_main_java",
-      "community": 14,
+      "community": 16,
       "norm_label": "main.java"
     },
     {
@@ -2772,7 +2844,7 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_robot_java",
-      "community": 10,
+      "community": 13,
       "norm_label": "robot.java"
     },
     {
@@ -2781,7 +2853,7 @@
       "source_file": "mvp\\containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
       "id": "mvp_containers_sim_project_src_main_java_frc_robot_robotcontainer_java",
-      "community": 15,
+      "community": 17,
       "norm_label": "robotcontainer.java"
     },
     {
@@ -2796,8 +2868,8 @@
     {
       "label": "run()",
       "file_type": "code",
-      "source_file": "mvp\\scripts\\build-ascope-lite.ts",
-      "source_location": "L26",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L21",
       "id": "scripts_build_ascope_lite_run",
       "community": 10,
       "norm_label": "run()"
@@ -2805,8 +2877,8 @@
     {
       "label": "ensureSubmodule()",
       "file_type": "code",
-      "source_file": "mvp\\scripts\\build-ascope-lite.ts",
-      "source_location": "L41",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L47",
       "id": "scripts_build_ascope_lite_ensuresubmodule",
       "community": 10,
       "norm_label": "ensuresubmodule()"
@@ -2814,8 +2886,8 @@
     {
       "label": "ensureEmscripten()",
       "file_type": "code",
-      "source_file": "mvp\\scripts\\build-ascope-lite.ts",
-      "source_location": "L49",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L53",
       "id": "scripts_build_ascope_lite_ensureemscripten",
       "community": 10,
       "norm_label": "ensureemscripten()"
@@ -2823,8 +2895,8 @@
     {
       "label": "envWithEmsdk()",
       "file_type": "code",
-      "source_file": "mvp\\scripts\\build-ascope-lite.ts",
-      "source_location": "L65",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L62",
       "id": "scripts_build_ascope_lite_envwithemsdk",
       "community": 10,
       "norm_label": "envwithemsdk()"
@@ -2868,8 +2940,8 @@
     {
       "label": "resolveSymlinksInDist()",
       "file_type": "code",
-      "source_file": "mvp\\scripts\\build-ascope-lite.ts",
-      "source_location": "L122",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L93",
       "id": "scripts_build_ascope_lite_resolvesymlinksindist",
       "community": 10,
       "norm_label": "resolvesymlinksindist()"
@@ -2877,8 +2949,8 @@
     {
       "label": "stageBundle()",
       "file_type": "code",
-      "source_file": "mvp\\scripts\\build-ascope-lite.ts",
-      "source_location": "L146",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L114",
       "id": "scripts_build_ascope_lite_stagebundle",
       "community": 10,
       "norm_label": "stagebundle()"
@@ -2886,8 +2958,8 @@
     {
       "label": "main()",
       "file_type": "code",
-      "source_file": "mvp\\scripts\\build-ascope-lite.ts",
-      "source_location": "L157",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L124",
       "id": "scripts_build_ascope_lite_main",
       "community": 10,
       "norm_label": "main()"
@@ -2898,7 +2970,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L1",
       "id": "mvp_scripts_dev_mvp_ts",
-      "community": 13,
+      "community": 15,
       "norm_label": "dev-mvp.ts"
     },
     {
@@ -2907,7 +2979,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L12",
       "id": "scripts_dev_mvp_runcommand",
-      "community": 13,
+      "community": 15,
       "norm_label": "runcommand()"
     },
     {
@@ -2916,7 +2988,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L40",
       "id": "scripts_dev_mvp_ensurecontainer",
-      "community": 13,
+      "community": 15,
       "norm_label": "ensurecontainer()"
     },
     {
@@ -2925,7 +2997,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L82",
       "id": "scripts_dev_mvp_ensuresimcontainer",
-      "community": 13,
+      "community": 15,
       "norm_label": "ensuresimcontainer()"
     },
     {
@@ -2934,7 +3006,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L91",
       "id": "scripts_dev_mvp_ensurelspcontainer",
-      "community": 13,
+      "community": 15,
       "norm_label": "ensurelspcontainer()"
     },
     {
@@ -2943,7 +3015,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L100",
       "id": "scripts_dev_mvp_startprocess",
-      "community": 13,
+      "community": 15,
       "norm_label": "startprocess()"
     },
     {
@@ -2952,7 +3024,7 @@
       "source_file": "mvp\\scripts\\dev-mvp.ts",
       "source_location": "L131",
       "id": "scripts_dev_mvp_shutdown",
-      "community": 13,
+      "community": 15,
       "norm_label": "shutdown()"
     },
     {
@@ -2961,7 +3033,7 @@
       "source_file": "mvp\\scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_dev_spike_multi_tenancy_ts",
-      "community": 17,
+      "community": 19,
       "norm_label": "dev-spike-multi-tenancy.ts"
     },
     {
@@ -2970,7 +3042,7 @@
       "source_file": "mvp\\scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L11",
       "id": "scripts_dev_spike_multi_tenancy_startprocess",
-      "community": 17,
+      "community": 19,
       "norm_label": "startprocess()"
     },
     {
@@ -2979,7 +3051,7 @@
       "source_file": "mvp\\scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L51",
       "id": "scripts_dev_spike_multi_tenancy_shutdown",
-      "community": 17,
+      "community": 19,
       "norm_label": "shutdown()"
     },
     {
@@ -2988,7 +3060,7 @@
       "source_file": "mvp\\scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
       "id": "mvp_scripts_patch_ascope_lite_nt4_proxy_ts",
-      "community": 23,
+      "community": 25,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts"
     },
     {
@@ -2997,7 +3069,7 @@
       "source_file": "mvp\\scripts\\serve-ascope-lite.ts",
       "source_location": "L1",
       "id": "mvp_scripts_serve_ascope_lite_ts",
-      "community": 18,
+      "community": 20,
       "norm_label": "serve-ascope-lite.ts"
     },
     {
@@ -3006,7 +3078,7 @@
       "source_file": "mvp\\scripts\\serve-ascope-lite.ts",
       "source_location": "L29",
       "id": "scripts_serve_ascope_lite_buildassetmanifest",
-      "community": 18,
+      "community": 20,
       "norm_label": "buildassetmanifest()"
     },
     {
@@ -3123,7 +3195,7 @@
       "source_file": "packages\\contracts\\src\\index.test.ts",
       "source_location": "L1",
       "id": "packages_contracts_src_index_test_ts",
-      "community": 9,
+      "community": 7,
       "norm_label": "index.test.ts"
     },
     {
@@ -3132,7 +3204,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L1",
       "id": "packages_contracts_src_index_ts",
-      "community": 9,
+      "community": 7,
       "norm_label": "index.ts"
     },
     {
@@ -3141,7 +3213,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L23",
       "id": "src_index_isworkspaceslug",
-      "community": 9,
+      "community": 7,
       "norm_label": "isworkspaceslug()"
     },
     {
@@ -3150,7 +3222,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L35",
       "id": "src_index_projectpathissue",
-      "community": 9,
+      "community": 7,
       "norm_label": "projectpathissue()"
     },
     {
@@ -3159,7 +3231,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L82",
       "id": "src_index_parseprojectpath",
-      "community": 9,
+      "community": 7,
       "norm_label": "parseprojectpath()"
     },
     {
@@ -3168,7 +3240,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L86",
       "id": "src_index_isprojectpath",
-      "community": 9,
+      "community": 7,
       "norm_label": "isprojectpath()"
     },
     {
@@ -3177,7 +3249,7 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L92",
       "id": "src_index_matchespathorchild",
-      "community": 9,
+      "community": 7,
       "norm_label": "matchespathorchild()"
     },
     {
@@ -3186,8 +3258,71 @@
       "source_file": "packages\\contracts\\src\\index.ts",
       "source_location": "L96",
       "id": "src_index_getprojectpathaccess",
-      "community": 9,
+      "community": 7,
       "norm_label": "getprojectpathaccess()"
+    },
+    {
+      "label": "apply-ascope-patches.ts",
+      "file_type": "code",
+      "source_file": "scripts\\apply-ascope-patches.ts",
+      "source_location": "L1",
+      "id": "scripts_apply_ascope_patches_ts",
+      "community": 10,
+      "norm_label": "apply-ascope-patches.ts"
+    },
+    {
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "scripts\\apply-ascope-patches.ts",
+      "source_location": "L14",
+      "id": "scripts_apply_ascope_patches_run",
+      "community": 10,
+      "norm_label": "run()"
+    },
+    {
+      "label": "patchFiles()",
+      "file_type": "code",
+      "source_file": "scripts\\apply-ascope-patches.ts",
+      "source_location": "L33",
+      "id": "scripts_apply_ascope_patches_patchfiles",
+      "community": 10,
+      "norm_label": "patchfiles()"
+    },
+    {
+      "label": "applyAdvantageScopePatches()",
+      "file_type": "code",
+      "source_file": "scripts\\apply-ascope-patches.ts",
+      "source_location": "L41",
+      "id": "scripts_apply_ascope_patches_applyadvantagescopepatches",
+      "community": 10,
+      "norm_label": "applyadvantagescopepatches()"
+    },
+    {
+      "label": "build-ascope-lite.ts",
+      "file_type": "code",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L1",
+      "id": "scripts_build_ascope_lite_ts",
+      "community": 10,
+      "norm_label": "build-ascope-lite.ts"
+    },
+    {
+      "label": "exists()",
+      "file_type": "code",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L12",
+      "id": "scripts_build_ascope_lite_exists",
+      "community": 10,
+      "norm_label": "exists()"
+    },
+    {
+      "label": "gitSymlinksUnder()",
+      "file_type": "code",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L72",
+      "id": "scripts_build_ascope_lite_gitsymlinksunder",
+      "community": 10,
+      "norm_label": "gitsymlinksunder()"
     },
     {
       "label": "build-sim-image.ts",
@@ -3195,7 +3330,7 @@
       "source_file": "scripts\\build-sim-image.ts",
       "source_location": "L1",
       "id": "scripts_build_sim_image_ts",
-      "community": 19,
+      "community": 21,
       "norm_label": "build-sim-image.ts"
     },
     {
@@ -3204,7 +3339,7 @@
       "source_file": "scripts\\build-sim-image.ts",
       "source_location": "L1",
       "id": "scripts_build_sim_image_defaultid",
-      "community": 19,
+      "community": 21,
       "norm_label": "defaultid()"
     },
     {
@@ -3213,7 +3348,7 @@
       "source_file": "scripts\\template-integrity.test.ts",
       "source_location": "L1",
       "id": "scripts_template_integrity_test_ts",
-      "community": 20,
+      "community": 22,
       "norm_label": "template-integrity.test.ts"
     },
     {
@@ -3222,7 +3357,7 @@
       "source_file": "scripts\\template-integrity.test.ts",
       "source_location": "L9",
       "id": "scripts_template_integrity_test_expecttemplatefile",
-      "community": 20,
+      "community": 22,
       "norm_label": "expecttemplatefile()"
     },
     {
@@ -3231,8 +3366,80 @@
       "source_file": "scripts\\typecheck.ts",
       "source_location": "L1",
       "id": "scripts_typecheck_ts",
-      "community": 24,
+      "community": 26,
       "norm_label": "typecheck.ts"
+    },
+    {
+      "label": "verify-ascope.ts",
+      "file_type": "code",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L1",
+      "id": "scripts_verify_ascope_ts",
+      "community": 8,
+      "norm_label": "verify-ascope.ts"
+    },
+    {
+      "label": "exists()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L11",
+      "id": "scripts_verify_ascope_exists",
+      "community": 8,
+      "norm_label": "exists()"
+    },
+    {
+      "label": "assert()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L20",
+      "id": "scripts_verify_ascope_assert",
+      "community": 8,
+      "norm_label": "assert()"
+    },
+    {
+      "label": "createTemplate()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L26",
+      "id": "scripts_verify_ascope_createtemplate",
+      "community": 8,
+      "norm_label": "createtemplate()"
+    },
+    {
+      "label": "runGit()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L34",
+      "id": "scripts_verify_ascope_rungit",
+      "community": 8,
+      "norm_label": "rungit()"
+    },
+    {
+      "label": "verifyPatchFiles()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L47",
+      "id": "scripts_verify_ascope_verifypatchfiles",
+      "community": 8,
+      "norm_label": "verifypatchfiles()"
+    },
+    {
+      "label": "verifyStagedBundle()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L68",
+      "id": "scripts_verify_ascope_verifystagedbundle",
+      "community": 8,
+      "norm_label": "verifystagedbundle()"
+    },
+    {
+      "label": "verifyScopeServing()",
+      "file_type": "code",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L91",
+      "id": "scripts_verify_ascope_verifyscopeserving",
+      "community": 8,
+      "norm_label": "verifyscopeserving()"
     },
     {
       "label": "verify-v1-two-user.ts",
@@ -3240,7 +3447,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L1",
       "id": "scripts_verify_v1_two_user_ts",
-      "community": 7,
+      "community": 12,
       "norm_label": "verify-v1-two-user.ts"
     },
     {
@@ -3249,7 +3456,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L19",
       "id": "scripts_verify_v1_two_user_assert",
-      "community": 7,
+      "community": 12,
       "norm_label": "assert()"
     },
     {
@@ -3258,7 +3465,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L25",
       "id": "scripts_verify_v1_two_user_runcommand",
-      "community": 7,
+      "community": 12,
       "norm_label": "runcommand()"
     },
     {
@@ -3267,7 +3474,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L42",
       "id": "scripts_verify_v1_two_user_waitfor",
-      "community": 7,
+      "community": 12,
       "norm_label": "waitfor()"
     },
     {
@@ -3276,7 +3483,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L53",
       "id": "scripts_verify_v1_two_user_login",
-      "community": 7,
+      "community": 12,
       "norm_label": "login()"
     },
     {
@@ -3285,7 +3492,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L72",
       "id": "scripts_verify_v1_two_user_readprojectfile",
-      "community": 7,
+      "community": 12,
       "norm_label": "readprojectfile()"
     },
     {
@@ -3294,7 +3501,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L84",
       "id": "scripts_verify_v1_two_user_writeprojectfile",
-      "community": 7,
+      "community": 12,
       "norm_label": "writeprojectfile()"
     },
     {
@@ -3303,7 +3510,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L98",
       "id": "scripts_verify_v1_two_user_connectrun",
-      "community": 7,
+      "community": 12,
       "norm_label": "connectrun()"
     },
     {
@@ -3312,7 +3519,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L104",
       "id": "scripts_verify_v1_two_user_hasstatus",
-      "community": 7,
+      "community": 12,
       "norm_label": "hasstatus()"
     },
     {
@@ -3321,7 +3528,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L108",
       "id": "scripts_verify_v1_two_user_laststatus",
-      "community": 7,
+      "community": 12,
       "norm_label": "laststatus()"
     },
     {
@@ -3330,7 +3537,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L114",
       "id": "scripts_verify_v1_two_user_assertsimprocessalive",
-      "community": 7,
+      "community": 12,
       "norm_label": "assertsimprocessalive()"
     },
     {
@@ -3339,7 +3546,7 @@
       "source_file": "scripts\\verify-v1-two-user.ts",
       "source_location": "L127",
       "id": "scripts_verify_v1_two_user_removemanagedcontainers",
-      "community": 7,
+      "community": 12,
       "norm_label": "removemanagedcontainers()"
     },
     {
@@ -3348,7 +3555,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_main_java",
-      "community": 14,
+      "community": 16,
       "norm_label": "main.java"
     },
     {
@@ -3357,7 +3564,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_robot_java",
-      "community": 10,
+      "community": 13,
       "norm_label": "robot.java"
     },
     {
@@ -3366,7 +3573,7 @@
       "source_file": "templates\\wpilib-java-command\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
       "id": "templates_wpilib_java_command_src_main_java_frc_robot_robotcontainer_java",
-      "community": 15,
+      "community": 17,
       "norm_label": "robotcontainer.java"
     },
     {
@@ -3374,7 +3581,7 @@
       "file_type": "code",
       "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L68",
-      "community": 1,
+      "community": 0,
       "norm_label": "workspacepage()",
       "id": "src_app_workspacepage"
     },
@@ -3383,34 +3590,16 @@
       "file_type": "code",
       "source_file": "apps\\web\\src\\main.tsx",
       "source_location": "L6",
-      "community": 9,
+      "community": 7,
       "norm_label": "app()",
       "id": "src_main_app"
-    },
-    {
-      "label": "apply-ascope-patches.ts",
-      "file_type": "code",
-      "source_file": "scripts\\apply-ascope-patches.ts",
-      "source_location": "L1",
-      "community": 25,
-      "norm_label": "apply-ascope-patches.ts",
-      "id": "scripts_apply_ascope_patches_ts"
-    },
-    {
-      "label": "build-ascope-lite.ts",
-      "file_type": "code",
-      "source_file": "scripts\\build-ascope-lite.ts",
-      "source_location": "L1",
-      "community": 10,
-      "norm_label": "build-ascope-lite.ts",
-      "id": "scripts_build_ascope_lite_ts"
     },
     {
       "label": "dev-v1.ts",
       "file_type": "code",
       "source_file": "scripts\\dev-v1.ts",
       "source_location": "L1",
-      "community": 26,
+      "community": 27,
       "norm_label": "dev-v1.ts",
       "id": "scripts_dev_v1_ts"
     },
@@ -3419,7 +3608,7 @@
       "file_type": "code",
       "source_file": "apps\\lsp\\src\\main.ts",
       "source_location": "L1",
-      "community": 16,
+      "community": 18,
       "norm_label": "main.ts",
       "id": "apps_lsp_src_main_ts"
     },
@@ -3428,7 +3617,7 @@
       "file_type": "code",
       "source_file": "apps\\router\\src\\main.ts",
       "source_location": "L1",
-      "community": 12,
+      "community": 14,
       "norm_label": "main.ts",
       "id": "apps_router_src_main_ts"
     },
@@ -3482,7 +3671,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Main.java",
       "source_location": "L1",
-      "community": 14,
+      "community": 16,
       "norm_label": "main.java",
       "id": "containers_sim_project_src_main_java_frc_robot_main_java"
     },
@@ -3491,7 +3680,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\Robot.java",
       "source_location": "L1",
-      "community": 10,
+      "community": 13,
       "norm_label": "robot.java",
       "id": "containers_sim_project_src_main_java_frc_robot_robot_java"
     },
@@ -3500,7 +3689,7 @@
       "file_type": "code",
       "source_file": "containers\\sim\\project\\src\\main\\java\\frc\\robot\\RobotContainer.java",
       "source_location": "L1",
-      "community": 15,
+      "community": 17,
       "norm_label": "robotcontainer.java",
       "id": "containers_sim_project_src_main_java_frc_robot_robotcontainer_java"
     },
@@ -3509,7 +3698,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-mvp.ts",
       "source_location": "L1",
-      "community": 13,
+      "community": 15,
       "norm_label": "dev-mvp.ts",
       "id": "scripts_dev_mvp_ts"
     },
@@ -3518,7 +3707,7 @@
       "file_type": "code",
       "source_file": "scripts\\dev-spike-multi-tenancy.ts",
       "source_location": "L1",
-      "community": 17,
+      "community": 19,
       "norm_label": "dev-spike-multi-tenancy.ts",
       "id": "scripts_dev_spike_multi_tenancy_ts"
     },
@@ -3527,7 +3716,7 @@
       "file_type": "code",
       "source_file": "scripts\\patch-ascope-lite-nt4-proxy.ts",
       "source_location": "L1",
-      "community": 27,
+      "community": 28,
       "norm_label": "patch-ascope-lite-nt4-proxy.ts",
       "id": "scripts_patch_ascope_lite_nt4_proxy_ts"
     },
@@ -3536,7 +3725,7 @@
       "file_type": "code",
       "source_file": "scripts\\serve-ascope-lite.ts",
       "source_location": "L1",
-      "community": 18,
+      "community": 20,
       "norm_label": "serve-ascope-lite.ts",
       "id": "scripts_serve_ascope_lite_ts"
     },
@@ -3558,7 +3747,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "lsp websocket bridge (mvp/apps/lsp/src/main.ts)",
       "id": "lsp_main_lspbridge"
     },
@@ -3571,7 +3760,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "launchlanguageserver()",
       "id": "lsp_main_launchlanguageserver"
     },
@@ -3584,7 +3773,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "handleupgrade()",
       "id": "lsp_main_handleupgrade"
     },
@@ -3597,7 +3786,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "aswebsocket()",
       "id": "lsp_main_aswebsocket"
     },
@@ -3610,7 +3799,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "eclipse jdt ls process",
       "id": "lsp_main_eclipsejdtls"
     },
@@ -3623,7 +3812,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "mvp backend service (mvp/apps/server/src/main.ts)",
       "id": "server_main_backendservice"
     },
@@ -3636,7 +3825,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "handlerun()",
       "id": "server_main_handlerun"
     },
@@ -3649,7 +3838,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "websockettextpeer class",
       "id": "server_main_websockettextpeer"
     },
@@ -3662,7 +3851,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "linesplitter class",
       "id": "server_main_linesplitter"
     },
@@ -3675,7 +3864,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "spawndockerstep()",
       "id": "server_main_spawndockerstep"
     },
@@ -3688,7 +3877,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "spawndockerlogs()",
       "id": "server_main_spawndockerlogs"
     },
@@ -3701,7 +3890,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "readrobotfile()",
       "id": "server_main_readrobotfile"
     },
@@ -3714,7 +3903,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "writerobotfile()",
       "id": "server_main_writerobotfile"
     },
@@ -3727,7 +3916,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "docker() helper",
       "id": "server_main_docker"
     },
@@ -3740,7 +3929,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "dockerexec() helper",
       "id": "server_main_dockerexec"
     },
@@ -3753,7 +3942,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "acceptwebsocket()",
       "id": "server_main_acceptwebsocket"
     },
@@ -3766,7 +3955,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "vite config (mvp/apps/web/vite.config.ts)",
       "id": "web_viteconfig"
     },
@@ -3779,7 +3968,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "startjavalsp()",
       "id": "web_javalsp_startjavalsp"
     },
@@ -3792,7 +3981,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "browserlspclient class",
       "id": "web_javalsp_browserlspclient"
     },
@@ -3805,7 +3994,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "registersemantictokensprovider()",
       "id": "web_javalsp_registersemantictokens"
     },
@@ -3818,7 +4007,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "handlediagnostics()",
       "id": "web_javalsp_handlediagnostics"
     },
@@ -3831,7 +4020,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "web shell entry (mvp/apps/web/src/main.ts)",
       "id": "web_main_entry"
     },
@@ -3844,7 +4033,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "loadrobotjava()",
       "id": "web_main_loadrobotjava"
     },
@@ -3857,7 +4046,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "saverobotjava()",
       "id": "web_main_saverobotjava"
     },
@@ -3870,7 +4059,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "schedulesave()",
       "id": "web_main_schedulesave"
     },
@@ -3883,7 +4072,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "flushsave()",
       "id": "web_main_flushsave"
     },
@@ -3896,7 +4085,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "handlerunmessage()",
       "id": "web_main_handlerunmessage"
     },
@@ -3909,7 +4098,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "setupmonaco()",
       "id": "web_monacosetup_setupmonaco"
     },
@@ -3922,7 +4111,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "registerdefaultdarkmoderntheme()",
       "id": "web_vscodemod_registerdefaultdarkmodern"
     },
@@ -3935,7 +4124,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "vs code dark modern token colors",
       "id": "web_vscodemod_vscodetokencolors"
     },
@@ -3948,7 +4137,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "robot.java (sim project source of truth)",
       "id": "robot_java"
     },
@@ -3961,7 +4150,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "main.java (wpilib entry point)",
       "id": "main_java"
     },
@@ -3974,7 +4163,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "robotcontainer.java",
       "id": "robotcontainer_java"
     },
@@ -3987,7 +4176,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "build-ascope-lite.ts script",
       "id": "scripts_buildascope"
     },
@@ -4000,7 +4189,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "dev-mvp.ts orchestration script",
       "id": "scripts_devmvp"
     },
@@ -4013,7 +4202,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "serve-ascope-lite.ts script",
       "id": "scripts_serveascope"
     },
@@ -4026,7 +4215,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "mvp/project-mvp.md (mvp spec)",
       "id": "project_mvp_doc"
     },
@@ -4039,7 +4228,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "readme.md",
       "id": "readme_doc"
     },
@@ -4052,7 +4241,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "mvp/spike-multi-tenancy.md",
       "id": "spike_multitenancy_doc"
     },
@@ -4065,7 +4254,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 28,
+      "community": 29,
       "norm_label": "web shell index.html",
       "id": "index_html"
     },
@@ -4078,7 +4267,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "decision 001: sim container architecture",
       "id": "dec001_sim_container"
     },
@@ -4091,7 +4280,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "decision 002: advantagescope lite hosting",
       "id": "dec002_ascope_hosting"
     },
@@ -4104,7 +4293,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "decision 003: minimal web shell",
       "id": "dec003_web_shell"
     },
@@ -4117,7 +4306,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "decision 004: backend wiring for save and run",
       "id": "dec004_backend_wiring"
     },
@@ -4130,7 +4319,7 @@
       "captured_at": null,
       "author": null,
       "contributor": null,
-      "community": 0,
+      "community": 1,
       "norm_label": "decision 005: java lsp mvp integration",
       "id": "dec005_java_lsp"
     },
@@ -4144,7 +4333,7 @@
       "author": null,
       "contributor": null,
       "rationale": "GradleRIO 2026 makes SimGUI and DriverStation sim opt-in; removing those lines from build.gradle avoids needing an X server or DISPLAY env var.",
-      "community": 0,
+      "community": 1,
       "norm_label": "rationale: headless sim via omission (no simgui/driverstation)",
       "id": "rationale_headless_sim"
     },
@@ -4158,7 +4347,7 @@
       "author": null,
       "contributor": null,
       "rationale": "When ASCOPE_DISTRIBUTION=LITE, AS Lite hardcodes window.location.hostname:5810 for NT4, so serving on localhost:8080 with sim on localhost:5810 works with zero source patches.",
-      "community": 0,
+      "community": 1,
       "norm_label": "rationale: as lite reads window.location.hostname for nt4",
       "id": "rationale_aslite_hostname"
     },
@@ -4172,7 +4361,7 @@
       "author": null,
       "contributor": null,
       "rationale": "The /run socket is server-to-client text streaming only; the backend implements WebSocket handshake and unmasked text frames directly on Node HTTP upgrade event, avoiding a dependency.",
-      "community": 0,
+      "community": 1,
       "norm_label": "rationale: custom websocket sender without @fastify/websocket",
       "id": "rationale_custom_ws"
     },
@@ -4186,7 +4375,7 @@
       "author": null,
       "contributor": null,
       "rationale": "TypeFox MonacoVscodeApiWrapper caused unreliable browser behavior; a small direct LSP adapter in java-lsp.ts is simpler and more debuggable for MVP scope.",
-      "community": 0,
+      "community": 1,
       "norm_label": "rationale: plain monaco client with direct lsp requests instead of typefox wrappers",
       "id": "rationale_plain_monaco_lsp"
     },
@@ -4200,7 +4389,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Adding COEP caused Chrome to reject the AS Lite iframe from localhost:8080, so cross-origin isolation headers were deliberately left off the Vite dev server.",
-      "community": 0,
+      "community": 1,
       "norm_label": "rationale: no cross-origin-embedder-policy headers (as lite iframe)",
       "id": "rationale_no_coep"
     },
@@ -4214,7 +4403,7 @@
       "author": null,
       "contributor": null,
       "rationale": "iframe sandboxes AS Lite's WebGL/wasm/asset loading, avoids coupling build pipelines, and auto-connects to NT4 via window.location.hostname.",
-      "community": 0,
+      "community": 1,
       "norm_label": "rationale: as lite embedded via iframe, not bundled into web app",
       "id": "rationale_ascope_iframe"
     },
@@ -4228,7 +4417,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Without an init reaper, stopped sim PIDs remained as zombies and caused every rebuild to wait for the 10-second hard-kill path.",
-      "community": 0,
+      "community": 1,
       "norm_label": "rationale: tini as pid 1 in sim container to reap zombie processes",
       "id": "rationale_tini_pid1"
     },
@@ -4242,7 +4431,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Multi-stage builds would lose ~/.gradle/caches; baking the cache in a single stage is necessary so container startup does not re-download WPILib jars.",
-      "community": 0,
+      "community": 1,
       "norm_label": "rationale: single-stage dockerfile to preserve gradle cache",
       "id": "rationale_single_stage_dockerfile"
     },
@@ -4256,7 +4445,7 @@
       "author": null,
       "contributor": null,
       "rationale": "AS Lite hardcodes window.location.hostname:5810; multi-tenant options include port-per-user, subdomain-per-user, WS proxy demux by path, or patching AS Lite to read endpoint from URL param.",
-      "community": 0,
+      "community": 1,
       "norm_label": "nt4 routing under multi-tenancy (spike question)",
       "id": "concept_nt4_routing_multitenancy"
     },
@@ -4270,7 +4459,7 @@
       "author": null,
       "contributor": null,
       "rationale": "Eclipse JDT LS supports multiple workspaces in one process. Shared instance saves ~1.5 GB RAM per student if it works with correct per-browser routing and failure isolation.",
-      "community": 0,
+      "community": 1,
       "norm_label": "shared vs. per-user jdt ls topology (spike question)",
       "id": "concept_shared_jdtls"
     }
@@ -4316,6 +4505,16 @@
       "confidence_score": 1.0,
       "source": "apps_control_src_app_test_ts",
       "target": "src_app_test_createwebdist"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "apps_control_src_app_test_ts",
+      "target": "src_app_test_createadvantagescopedist",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -4458,6 +4657,17 @@
       "confidence_score": 1.0,
       "source": "src_app_test_withapp",
       "target": "src_app_test_createwebdist"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.test.ts",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "src_app_test_withapp",
+      "target": "src_app_test_createadvantagescopedist",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -4972,6 +5182,56 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L724",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_readscopeassetmanifest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L765",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_scoperesponse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L794",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_requestedprotocols",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L801",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_nt4aliveresponse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L821",
+      "weight": 1.0,
+      "source": "apps_control_src_app_ts",
+      "target": "src_app_nt4websocketresponse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L164",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -5037,11 +5297,33 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L772",
+      "weight": 1.0,
+      "source": "src_app_scoperesponse",
+      "target": "src_app_redirect",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
       "source_location": "L408",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "src_app_apierrorresponse",
       "target": "src_app_jsonresponse"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L783",
+      "weight": 1.0,
+      "source": "src_app_scoperesponse",
+      "target": "src_app_jsonresponse",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -5528,6 +5810,39 @@
       "target": "src_app_staticfileresponse"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L788",
+      "weight": 1.0,
+      "source": "src_app_scoperesponse",
+      "target": "src_app_staticfileresponse",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L783",
+      "weight": 1.0,
+      "source": "src_app_scoperesponse",
+      "target": "src_app_readscopeassetmanifest",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\control\\src\\app.ts",
+      "source_location": "L838",
+      "weight": 1.0,
+      "source": "src_app_nt4websocketresponse",
+      "target": "src_app_requestedprotocols",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -5537,6 +5852,17 @@
       "confidence_score": 1.0,
       "source": "apps_control_src_main_ts",
       "target": "src_app_createapp"
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_ts",
+      "target": "src_app_createapp",
+      "confidence_score": 1.0
     },
     {
       "relation": "imports",
@@ -5559,6 +5885,17 @@
       "weight": 1.0,
       "source": "src_app_createapp",
       "target": "src_storage_createstorage"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L98",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_verifyscopeserving",
+      "target": "src_app_createapp"
     },
     {
       "relation": "contains",
@@ -7988,6 +8325,26 @@
       "confidence_score": 1.0,
       "source": "apps_web_src_main_tsx",
       "target": "src_main_refreshstatus"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L533",
+      "weight": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_main_sendconfig",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "apps\\web\\src\\main.tsx",
+      "source_location": "L544",
+      "weight": 1.0,
+      "source": "apps_web_src_main_tsx",
+      "target": "src_main_onmessage",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",
@@ -11032,6 +11389,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L130",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_main",
+      "target": "scripts_build_ascope_lite_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L158",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -11047,6 +11415,17 @@
       "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
       "target": "scripts_build_ascope_lite_ensuresubmodule"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_ensuresubmodule",
+      "target": "scripts_build_ascope_lite_exists",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11074,6 +11453,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_ensureemscripten",
+      "target": "scripts_build_ascope_lite_exists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L92",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -11089,6 +11479,17 @@
       "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
       "target": "scripts_build_ascope_lite_envwithemsdk"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L137",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_main",
+      "target": "scripts_build_ascope_lite_envwithemsdk",
+      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -11200,6 +11601,28 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L94",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_resolvesymlinksindist",
+      "target": "scripts_build_ascope_lite_gitsymlinksunder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L97",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_resolvesymlinksindist",
+      "target": "scripts_build_ascope_lite_exists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-ascope-lite.ts",
       "source_location": "L167",
       "weight": 1.0,
       "confidence_score": 1.0,
@@ -11217,6 +11640,17 @@
       "target": "scripts_build_ascope_lite_stagebundle"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L115",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_stagebundle",
+      "target": "scripts_build_ascope_lite_exists",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts\\build-ascope-lite.ts",
@@ -11225,6 +11659,17 @@
       "confidence_score": 1.0,
       "source": "scripts_build_ascope_lite_ts",
       "target": "scripts_build_ascope_lite_main"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L126",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_main",
+      "target": "scripts_apply_ascope_patches_applyadvantagescopepatches"
     },
     {
       "relation": "contains",
@@ -11953,6 +12398,89 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "scripts\\apply-ascope-patches.ts",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "scripts_apply_ascope_patches_ts",
+      "target": "scripts_apply_ascope_patches_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\apply-ascope-patches.ts",
+      "source_location": "L33",
+      "weight": 1.0,
+      "source": "scripts_apply_ascope_patches_ts",
+      "target": "scripts_apply_ascope_patches_patchfiles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\apply-ascope-patches.ts",
+      "source_location": "L41",
+      "weight": 1.0,
+      "source": "scripts_apply_ascope_patches_ts",
+      "target": "scripts_apply_ascope_patches_applyadvantagescopepatches",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\apply-ascope-patches.ts",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "scripts_apply_ascope_patches_applyadvantagescopepatches",
+      "target": "scripts_apply_ascope_patches_run",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\apply-ascope-patches.ts",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "scripts_apply_ascope_patches_applyadvantagescopepatches",
+      "target": "scripts_apply_ascope_patches_patchfiles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_ts",
+      "target": "scripts_apply_ascope_patches_applyadvantagescopepatches",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_ts",
+      "target": "scripts_build_ascope_lite_exists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\build-ascope-lite.ts",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "scripts_build_ascope_lite_ts",
+      "target": "scripts_build_ascope_lite_gitsymlinksunder",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "scripts\\build-sim-image.ts",
       "source_location": "L1",
       "weight": 1.0,
@@ -11969,6 +12497,142 @@
       "confidence_score": 1.0,
       "source": "scripts_template_integrity_test_ts",
       "target": "scripts_template_integrity_test_expecttemplatefile"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L11",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_ts",
+      "target": "scripts_verify_ascope_exists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L20",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_ts",
+      "target": "scripts_verify_ascope_assert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_ts",
+      "target": "scripts_verify_ascope_createtemplate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_ts",
+      "target": "scripts_verify_ascope_rungit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_ts",
+      "target": "scripts_verify_ascope_verifypatchfiles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L68",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_ts",
+      "target": "scripts_verify_ascope_verifystagedbundle",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L91",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_ts",
+      "target": "scripts_verify_ascope_verifyscopeserving",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_verifystagedbundle",
+      "target": "scripts_verify_ascope_exists",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_verifypatchfiles",
+      "target": "scripts_verify_ascope_assert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L69",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_verifystagedbundle",
+      "target": "scripts_verify_ascope_assert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L109",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_verifyscopeserving",
+      "target": "scripts_verify_ascope_assert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L93",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_verifyscopeserving",
+      "target": "scripts_verify_ascope_createtemplate",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts\\verify-ascope.ts",
+      "source_location": "L55",
+      "weight": 1.0,
+      "source": "scripts_verify_ascope_verifypatchfiles",
+      "target": "scripts_verify_ascope_rungit",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",

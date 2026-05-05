@@ -1,12 +1,12 @@
 # Graph Report - FRC-Programming-Training-Sim  (2026-05-05)
 
 ## Corpus Check
-- 48 files · ~51,119 words
+- 51 files · ~53,719 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 444 nodes · 833 edges · 20 communities detected
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 18 edges (avg confidence: 0.82)
+- 465 nodes · 878 edges · 22 communities detected
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 20 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -29,7 +29,9 @@
 - [[_COMMUNITY_Community 16|Community 16]]
 - [[_COMMUNITY_Community 17|Community 17]]
 - [[_COMMUNITY_Community 18|Community 18]]
-- [[_COMMUNITY_Community 28|Community 28]]
+- [[_COMMUNITY_Community 19|Community 19]]
+- [[_COMMUNITY_Community 20|Community 20]]
+- [[_COMMUNITY_Community 29|Community 29]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `AppStorage` - 25 edges
@@ -37,11 +39,11 @@
 3. `ContainerOrchestrator` - 19 edges
 4. `resolveProjectFilePath()` - 13 edges
 5. `isObject()` - 13 edges
-6. `apiError()` - 10 edges
-7. `startJavaLsp()` - 10 edges
-8. `BrowserLspClient` - 10 edges
-9. `MVP Backend Service (mvp/apps/server/src/main.ts)` - 10 edges
-10. `nowIso()` - 9 edges
+6. `main()` - 11 edges
+7. `apiError()` - 10 edges
+8. `startJavaLsp()` - 10 edges
+9. `BrowserLspClient` - 10 edges
+10. `MVP Backend Service (mvp/apps/server/src/main.ts)` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `readProjectTreeNode()` --calls--> `getProjectPathAccess()`  [INFERRED]
@@ -60,15 +62,15 @@
 - **Java LSP Intelligence Stack (browser to JDT LS)** — web_javalsp_startjavalsp, web_javalsp_browserlspclient, lsp_main_lspbridge, lsp_main_eclipsejdtls [EXTRACTED 1.00]
 - **AdvantageScope Lite NT4 Hosting and Display** — scripts_buildascope, scripts_serveascope, rationale_aslite_hostname, index_html [EXTRACTED 0.95]
 
-## Communities (29 total, 5 thin omitted)
+## Communities (30 total, 6 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.05
-Nodes (47): NT4 Routing under Multi-Tenancy (spike question), Shared vs. Per-user JDT LS topology (spike question), Decision 001: Sim Container Architecture, Decision 002: AdvantageScope Lite Hosting, Decision 003: Minimal Web Shell, Decision 004: Backend Wiring for Save and Run, Decision 005: Java LSP MVP Integration, Eclipse JDT LS Process (+39 more)
+Cohesion: 0.08
+Nodes (44): apiError(), apiErrorResponse(), assertRealPathInside(), authFromRequest(), contentTypeFor(), createProjectEntry(), deleteProjectEntry(), escapeHtml() (+36 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.08
-Nodes (40): apiError(), apiErrorResponse(), assertRealPathInside(), authFromRequest(), contentTypeFor(), createProjectEntry(), deleteProjectEntry(), escapeHtml() (+32 more)
+Cohesion: 0.05
+Nodes (47): NT4 Routing under Multi-Tenancy (spike question), Shared vs. Per-user JDT LS topology (spike question), Decision 001: Sim Container Architecture, Decision 002: AdvantageScope Lite Hosting, Decision 003: Minimal Web Shell, Decision 004: Backend Wiring for Save and Run, Decision 005: Java LSP MVP Integration, Eclipse JDT LS Process (+39 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.09
@@ -92,55 +94,59 @@ Nodes (13): ContainerOrchestrator, containerRuntimeState(), defaultDockerRunner(
 
 ### Community 7 - "Community 7"
 Cohesion: 0.09
-Nodes (11): assert(), assertSimProcessAlive(), login(), readProjectFile(), removeManagedContainers(), runCommand(), writeProjectFile(), createApp() (+3 more)
-
-### Community 8 - "Community 8"
-Cohesion: 0.17
-Nodes (7): consumeLines(), defaultRunCommandFactory(), dockerRunScript(), lineLooksReady(), randomRunId(), runLogPath(), RunManager
-
-### Community 9 - "Community 9"
-Cohesion: 0.09
 Nodes (12): getProjectPathAccess(), isProjectPath(), isWorkspaceSlug(), matchesPathOrChild(), parseProjectPath(), App(), fetchJson(), fileName() (+4 more)
 
+### Community 8 - "Community 8"
+Cohesion: 0.11
+Nodes (12): assert(), createTemplate(), exists(), runGit(), verifyPatchFiles(), verifyScopeServing(), verifyStagedBundle(), createApp() (+4 more)
+
+### Community 9 - "Community 9"
+Cohesion: 0.18
+Nodes (7): consumeLines(), defaultRunCommandFactory(), dockerRunScript(), lineLooksReady(), randomRunId(), runLogPath(), RunManager
+
 ### Community 10 - "Community 10"
-Cohesion: 0.24
-Nodes (13): Robot, compileLite(), compileWasm(), ensureEmscripten(), ensureSubmodule(), envWithEmsdk(), listGitSymlinksUnder(), main() (+5 more)
+Cohesion: 0.29
+Nodes (16): applyAdvantageScopePatches(), patchFiles(), run(), compileLite(), compileWasm(), ensureEmscripten(), ensureSubmodule(), envWithEmsdk() (+8 more)
 
 ### Community 11 - "Community 11"
 Cohesion: 0.47
 Nodes (11): containerState(), dockerStats(), down(), ensureContainer(), lifecycle(), main(), parseMiB(), printEnv() (+3 more)
 
 ### Community 12 - "Community 12"
+Cohesion: 0.26
+Nodes (7): assert(), assertSimProcessAlive(), login(), readProjectFile(), removeManagedContainers(), runCommand(), writeProjectFile()
+
+### Community 14 - "Community 14"
 Cohesion: 0.43
 Nodes (6): nt4HttpUrl(), nt4WsUrl(), parseSessions(), pipeWebSockets(), requestedProtocols(), sessionFromPath()
 
-### Community 13 - "Community 13"
+### Community 15 - "Community 15"
 Cohesion: 0.54
 Nodes (6): ensureContainer(), ensureLspContainer(), ensureSimContainer(), runCommand(), shutdown(), startProcess()
 
-### Community 16 - "Community 16"
+### Community 18 - "Community 18"
 Cohesion: 0.6
 Nodes (3): asWebSocket(), handleUpgrade(), launchLanguageServer()
 
 ## Knowledge Gaps
 - **10 isolated node(s):** `Eclipse JDT LS Process`, `LineSplitter class`, `Vite Config (mvp/apps/web/vite.config.ts)`, `Main.java (WPILib entry point)`, `Web Shell index.html` (+5 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `AppStorage` connect `Community 2` to `Community 8`, `Community 1`, `Community 6`?**
+- **Why does `RunManager` connect `Community 9` to `Community 0`?**
+  _High betweenness centrality (0.082) - this node is a cross-community bridge._
+- **Why does `createApp()` connect `Community 8` to `Community 0`, `Community 2`, `Community 12`?**
+  _High betweenness centrality (0.079) - this node is a cross-community bridge._
+- **Why does `AppStorage` connect `Community 2` to `Community 0`, `Community 9`, `Community 6`?**
   _High betweenness centrality (0.073) - this node is a cross-community bridge._
-- **Why does `RunManager` connect `Community 8` to `Community 1`?**
-  _High betweenness centrality (0.072) - this node is a cross-community bridge._
-- **Why does `createApp()` connect `Community 7` to `Community 1`, `Community 2`?**
-  _High betweenness centrality (0.061) - this node is a cross-community bridge._
 - **What connects `Eclipse JDT LS Process`, `LineSplitter class`, `Vite Config (mvp/apps/web/vite.config.ts)` to the rest of the system?**
   _10 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
-- **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._
+- **Should `Community 1` be split into smaller, more focused modules?**
+  _Cohesion score 0.05 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.09 - nodes in this community are weakly interconnected._

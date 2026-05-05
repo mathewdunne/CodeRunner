@@ -1,0 +1,176 @@
+diff --git a/src/hub/dataSources/nt4/NT4.ts b/src/hub/dataSources/nt4/NT4.ts
+index f3f7427..d794648 100644
+--- a/src/hub/dataSources/nt4/NT4.ts
++++ b/src/hub/dataSources/nt4/NT4.ts
+@@ -9,6 +9,31 @@ import { Decoder, Encoder } from "@msgpack/msgpack";
+ 
+ export const NT4_PORTS_DEFAULT = [5810];
+ 
++type FrcSimNt4Endpoint = {
++  aliveUrl: string;
++  websocketUrl: string;
++};
++
++declare global {
++  interface Window {
++    frcSimNt4Endpoint?: FrcSimNt4Endpoint;
++  }
++}
++
++function getFrcSimNt4Endpoint(): FrcSimNt4Endpoint | null {
++  let endpoint = window.frcSimNt4Endpoint;
++  if (
++    endpoint === undefined ||
++    typeof endpoint.aliveUrl !== "string" ||
++    typeof endpoint.websocketUrl !== "string" ||
++    endpoint.aliveUrl.length === 0 ||
++    endpoint.websocketUrl.length === 0
++  ) {
++    return null;
++  }
++  return endpoint;
++}
++
+ const typestrIdxLookup: { [id: string]: number } = {
+   boolean: 0,
+   double: 1,
+@@ -177,19 +202,28 @@ export class NT4_Client {
+     let result: Response | null = null;
+     let requestStart = new Date().getTime();
+     try {
+-      result = await Promise.any(
+-        this.serverPorts.map((port) =>
+-          fetch("http://" + this.serverAddr + ":" + port.toString(), {
+-            signal: AbortSignal.timeout(250)
+-          })
+-        )
+-      );
++      let injectedEndpoint = getFrcSimNt4Endpoint();
++      if (injectedEndpoint !== null) {
++        result = await fetch(injectedEndpoint.aliveUrl, {
++          signal: AbortSignal.timeout(250)
++        });
++      } else {
++        result = await Promise.any(
++          this.serverPorts.map((port) =>
++            fetch("http://" + this.serverAddr + ":" + port.toString(), {
++              signal: AbortSignal.timeout(250)
++            })
++          )
++        );
++      }
+     } catch (err) {}
+     if (result === null || !result.ok) {
+       let requestLength = new Date().getTime() - requestStart;
+       setTimeout(() => this.connectOnAlive(), 350 - requestLength);
+     } else {
+-      this.activeServerPort = parseInt(result.url.split(":")[2].split("/")[0]);
++      let injectedEndpoint = getFrcSimNt4Endpoint();
++      this.activeServerPort =
++        injectedEndpoint === null ? parseInt(result.url.split(":")[2].split("/")[0]) : (this.serverPorts[0] ?? 5810);
+       this.ws_connect();
+     }
+   }
+@@ -675,9 +709,15 @@ export class NT4_Client {
+ 
+   private ws_connect(rttWs = false) {
+     if (this.activeServerPort === null) return;
++    let protocols = rttWs
++      ? ["rtt.networktables.first.wpi.edu"]
++      : ["v4.1.networktables.first.wpi.edu", "networktables.first.wpi.edu"];
++    let injectedEndpoint = getFrcSimNt4Endpoint();
+     let ws = new WebSocket(
+-      "ws://" + this.serverAddr + ":" + this.activeServerPort.toString() + "/nt/" + this.appName,
+-      rttWs ? ["rtt.networktables.first.wpi.edu"] : ["v4.1.networktables.first.wpi.edu", "networktables.first.wpi.edu"]
++      injectedEndpoint === null
++        ? "ws://" + this.serverAddr + ":" + this.activeServerPort.toString() + "/nt/" + this.appName
++        : injectedEndpoint.websocketUrl,
++      protocols
+     );
+     if (rttWs) {
+       this.rttWs = ws;
+diff --git a/src/main/lite/main.ts b/src/main/lite/main.ts
+index f8e6a0d..30d0031 100644
+--- a/src/main/lite/main.ts
++++ b/src/main/lite/main.ts
+@@ -45,6 +45,61 @@ let popupMenu = new TinyPopupMenu();
+ let assetsPromise: Promise<AdvantageScopeAssets>;
+ let downloadInterval: number | null = null;
+ let popupRequiresForceClose = false;
++let frcSimStartLivePending = false;
++
++type FrcSimNt4Endpoint = {
++  aliveUrl: string;
++  websocketUrl: string;
++};
++
++declare global {
++  interface Window {
++    frcSimNt4Endpoint?: FrcSimNt4Endpoint;
++  }
++}
++
++const frcSimEndpointMode = new URLSearchParams(window.location.search).get("frcEndpoint") === "postMessage";
++
++function isFrcSimEndpoint(input: unknown): input is FrcSimNt4Endpoint {
++  if (input === null || typeof input !== "object") return false;
++  let endpoint = input as { aliveUrl?: unknown; websocketUrl?: unknown };
++  return (
++    typeof endpoint.aliveUrl === "string" &&
++    endpoint.aliveUrl.length > 0 &&
++    typeof endpoint.websocketUrl === "string" &&
++    endpoint.websocketUrl.length > 0
++  );
++}
++
++function requestFrcSimLiveStart() {
++  if (!frcSimEndpointMode || window.frcSimNt4Endpoint === undefined) return;
++  if (hubPort === null) {
++    frcSimStartLivePending = true;
++  } else {
++    frcSimStartLivePending = false;
++    sendMessage(hubPort, "start-live", false);
++  }
++}
++
++function installFrcSimEndpointHandshake() {
++  if (!frcSimEndpointMode) return;
++
++  window.addEventListener("message", (event) => {
++    let message = event.data as { type?: unknown; endpoint?: unknown } | null;
++    if (message?.type !== "frc-sim:set-nt4-endpoint" || !isFrcSimEndpoint(message.endpoint)) return;
++
++    window.frcSimNt4Endpoint = message.endpoint;
++    window.parent.postMessage(
++      {
++        type: "frc-sim:nt4-endpoint-ready"
++      },
++      event.origin.length > 0 ? event.origin : "*"
++    );
++    requestFrcSimLiveStart();
++  });
++}
++
++installFrcSimEndpointHandshake();
+ 
+ /**
+  * Open a new popup menu
+@@ -257,6 +312,7 @@ async function initHub() {
+   let prefs = DEFAULT_PREFS;
+   let prefsRaw = localStorage.getItem(LocalStorageKeys.PREFS);
+   if (prefsRaw !== null) mergePreferences(prefs, JSON.parse(prefsRaw));
++  if (frcSimEndpointMode) prefs.liveMode = "nt4";
+   sendMessage(hubPort, "set-preferences", prefs);
+   sendMessage(hubPort, "set-assets", await assetsPromise);
+   let typeMemory = localStorage.getItem(LocalStorageKeys.TYPE_MEMORY);
+@@ -264,6 +320,10 @@ async function initHub() {
+   let state = localStorage.getItem(LocalStorageKeys.STATE);
+   if (state !== null) sendMessage(hubPort, "restore-state", JSON.parse(state));
+   sendMessage(hubPort, "show-when-ready");
++  if (frcSimStartLivePending && window.frcSimNt4Endpoint !== undefined) {
++    frcSimStartLivePending = false;
++    sendMessage(hubPort, "start-live", false);
++  }
+ 
+   // Add cursor event handlers
+   HUB_FRAME.contentWindow?.addEventListener("contextmenu", (event) => {

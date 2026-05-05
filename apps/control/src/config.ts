@@ -12,6 +12,7 @@ export type ControlConfig = {
   templateDir: string;
   migrationsDir: string;
   webDistDir: string;
+  advantageScopeDistDir: string;
   sessionSecret: string;
   dockerPath: string;
   simImage: string;
@@ -104,6 +105,9 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
         fileURLToPath(new URL("../migrations", import.meta.url)),
     ),
     webDistDir: resolve(input.webDistDir ?? Bun.env.FRC_WEB_DIST_DIR ?? resolve(repoRoot, "apps", "web", "dist")),
+    advantageScopeDistDir: resolve(
+      input.advantageScopeDistDir ?? Bun.env.FRC_ASCOPE_DIST_DIR ?? resolve(repoRoot, "dist", "advantagescope"),
+    ),
     sessionSecret:
       input.sessionSecret ??
       Bun.env.FRC_SESSION_SECRET ??

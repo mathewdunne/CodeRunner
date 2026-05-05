@@ -39,9 +39,10 @@ data/                          Runtime data, gitignored
 - [x] V1-3: project store and multi-file editor
 - [x] V1-4: V1 sim image and container orchestrator
 - [x] V1-5: run queue and log streaming
-- [ ] V1-6+: see `V1-Design.md`
+- [x] V1-6: NT4 route and AS Lite source patch
+- [ ] V1-7+: see `V1-Design.md`
 
-The V1-5 root includes shared contracts, SQLite migrations, signed-cookie login/session flow, first-login workspace creation from `templates/wpilib-java-command/`, workspace file APIs, a React/Vite multi-file shell, the mounted-project sim image, Docker lease orchestration, loopback sim port allocation, sim container status reporting, a global run queue, per-workspace run replacement/stop, persistent run logs, and browser Run/Stop log streaming. The MVP archive contains the completed single-user proof loop and Java LSP add-on.
+The V1-6 root includes shared contracts, SQLite migrations, signed-cookie login/session flow, first-login workspace creation from `templates/wpilib-java-command/`, workspace file APIs, a React/Vite multi-file shell, the mounted-project sim image, Docker lease orchestration, loopback sim port allocation, sim container status reporting, a global run queue, per-workspace run replacement/stop, persistent run logs, browser Run/Stop log streaming, `/scope/` AS Lite serving, authenticated NT4 alive/WebSocket proxy routes, and AS Lite endpoint-injection patches. The MVP archive contains the completed single-user proof loop and Java LSP add-on.
 
 ## Working Principles
 

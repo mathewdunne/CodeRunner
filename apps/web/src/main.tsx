@@ -43,6 +43,7 @@ type ModelState = {
 };
 
 type RunStatus = "connecting" | "idle" | "queued" | "building" | "running" | "stopping" | "failed" | "stopped" | "error";
+type ScopeStatus = "loading" | "configured" | "connected" | "timeout";
 
 function workspaceSlugFromLocation(): string | null {
   const pathParts = window.location.pathname.split("/").filter(Boolean);
@@ -183,12 +184,14 @@ function App() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [containerStatus, setContainerStatus] = useState<ContainersStatusResponse | null>(null);
   const [runStatus, setRunStatus] = useState<RunStatus>("connecting");
+  const [scopeStatus, setScopeStatus] = useState<ScopeStatus>("loading");
   const [queueInfo, setQueueInfo] = useState<{ depth: number; position: number } | null>(null);
   const [openFiles, setOpenFiles] = useState<OpenFile[]>([]);
   const [activePath, setActivePath] = useState<string | null>(null);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [consoleLines, setConsoleLines] = useState<string[]>(["Connecting..."]);
   const editorHostRef = useRef<HTMLDivElement | null>(null);
+  const scopeFrameRef = useRef<HTMLIFrameElement | null>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const runSocketRef = useRef<WebSocket | null>(null);
   const modelStatesRef = useRef(new Map<string, ModelState>());
@@ -515,6 +518,59 @@ function App() {
   }, [workspaceSlug]);
 
   useEffect(() => {
+    if (!workspaceSlug) {
+      return;
+    }
+
+    let acknowledged = false;
+    const frame = scopeFrameRef.current;
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const endpoint = {
+      aliveUrl: `/u/${workspaceSlug}/sim/alive`,
+      websocketUrl: `${protocol}//${window.location.host}/u/${workspaceSlug}/sim/nt4`,
+    };
+
+    const sendConfig = () => {
+      setScopeStatus("configured");
+      frame?.contentWindow?.postMessage(
+        {
+          type: "frc-sim:set-nt4-endpoint",
+          endpoint,
+        },
+        window.location.origin,
+      );
+    };
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+      if ((event.data as { type?: unknown } | null)?.type !== "frc-sim:nt4-endpoint-ready") {
+        return;
+      }
+      acknowledged = true;
+      setScopeStatus("connected");
+    };
+
+    window.addEventListener("message", onMessage);
+    frame?.addEventListener("load", sendConfig);
+    if (frame?.contentWindow) {
+      sendConfig();
+    }
+    const timeout = window.setTimeout(() => {
+      if (!acknowledged) {
+        setScopeStatus("timeout");
+      }
+    }, 10_000);
+
+    return () => {
+      window.removeEventListener("message", onMessage);
+      frame?.removeEventListener("load", sendConfig);
+      window.clearTimeout(timeout);
+    };
+  }, [workspaceSlug]);
+
+  useEffect(() => {
     const warnOnDirtyFiles = (event: BeforeUnloadEvent) => {
       if (!openFilesRef.current.some((file) => file.dirty || file.saving)) {
         return;
@@ -752,6 +808,12 @@ function App() {
     runStatus === "queued" && queueInfo
       ? `Run queued ${queueInfo.position + 1}/${queueInfo.depth}`
       : `Run ${runStatus}`;
+  const scopeLabel =
+    scopeStatus === "connected"
+      ? "Scope connected"
+      : scopeStatus === "timeout"
+        ? "Scope timeout"
+        : "Scope connecting";
 
   return (
     <div className="app-shell">
@@ -766,6 +828,7 @@ function App() {
           <span>LSP pending</span>
           <span title={containerStatus?.sim.error ?? undefined}>{simLabel}</span>
           <span>{runLabel}</span>
+          <span>{scopeLabel}</span>
         </div>
         <div className="run-actions">
           <button type="button" onClick={() => void startRun()} disabled={runBusy || state.status !== "ready"}>
@@ -852,8 +915,15 @@ function App() {
           {activeFile?.error ? <div className="save-error">{activeFile.error}</div> : null}
         </section>
         <aside className="scope-pane">
-          <header>AdvantageScope</header>
-          <div>Disconnected</div>
+          <header>
+            <span>AdvantageScope</span>
+            <span>{scopeLabel}</span>
+          </header>
+          <iframe
+            ref={scopeFrameRef}
+            title="AdvantageScope Lite"
+            src="/scope/?frcEndpoint=postMessage"
+          />
         </aside>
         <section className="console-pane">
           <header>Console</header>

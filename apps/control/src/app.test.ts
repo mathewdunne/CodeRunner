@@ -40,6 +40,23 @@ async function createWebDist(root: string): Promise<string> {
   return webDistDir;
 }
 
+async function createAdvantageScopeDist(root: string): Promise<string> {
+  const ascopeDistDir = join(root, "ascope-dist");
+  await mkdir(join(ascopeDistDir, "bundles"), { recursive: true });
+  await mkdir(join(ascopeDistDir, "bundledAssets", "Robot_Test"), { recursive: true });
+  await mkdir(join(ascopeDistDir, "www", "textures"), { recursive: true });
+  await writeFile(
+    join(ascopeDistDir, "index.html"),
+    '<!doctype html><html><head><script type="module" src="bundles/main.js"></script></head><body>AS Lite</body></html>',
+    "utf8",
+  );
+  await writeFile(join(ascopeDistDir, "bundles", "main.js"), "console.log('ascope main');\n", "utf8");
+  await writeFile(join(ascopeDistDir, "bundles", "hub.js"), "console.log('ascope hub');\n", "utf8");
+  await writeFile(join(ascopeDistDir, "bundledAssets", "Robot_Test", "config.json"), "{\"name\":\"Robot_Test\"}\n", "utf8");
+  await writeFile(join(ascopeDistDir, "www", "textures", "example.png"), "fake png\n", "utf8");
+  return ascopeDistDir;
+}
+
 async function withApp<T>(
   fn: (app: ControlApp, root: string) => Promise<T>,
   options: Partial<ControlAppOptions> = {},
@@ -47,10 +64,12 @@ async function withApp<T>(
   const root = await mkdtemp(join(tmpdir(), "frc-v1-control-"));
   const templateDir = await createTemplate(root);
   const webDistDir = await createWebDist(root);
+  const advantageScopeDistDir = await createAdvantageScopeDist(root);
   const app = await createApp({
     dataDir: join(root, "data"),
     templateDir,
     webDistDir,
+    advantageScopeDistDir,
     sessionSecret: "test-session-secret",
     containerAutoStart: false,
     ...options,
@@ -103,7 +122,7 @@ function dockerInspect(container: FakeContainer): unknown {
   };
 }
 
-function createFakeDocker(options: { failRunPortsOnce?: number[] } = {}) {
+function createFakeDocker(options: { failRunPortsOnce?: number[]; onRunPort?: (port: number) => void } = {}) {
   const containers = new Map<string, FakeContainer>();
   const calls: string[][] = [];
   const failRunPortsOnce = new Set(options.failRunPortsOnce ?? []);
@@ -153,6 +172,7 @@ function createFakeDocker(options: { failRunPortsOnce?: number[] } = {}) {
         hostIp: "127.0.0.1",
         port,
       });
+      options.onRunPort?.(port);
       return ok("fake-container-id\n");
     }
 
@@ -1146,5 +1166,87 @@ describe("V1-5 run queue and log streaming", () => {
         simPortRange: { start: 25830, end: 25839 },
       },
     );
+  });
+});
+
+describe("V1-6 AdvantageScope Lite and NT4 routing", () => {
+  test("serves AdvantageScope Lite under /scope with assets manifest and www redirect", async () => {
+    await withApp(async (app) => {
+      const index = await app.fetch(new Request("http://localhost/scope/"));
+      expect(index.status).toBe(200);
+      expect(index.headers.get("content-type")).toContain("text/html");
+      expect(await index.text()).toContain("AS Lite");
+
+      const main = await app.fetch(new Request("http://localhost/scope/bundles/main.js"));
+      expect(main.status).toBe(200);
+      expect(main.headers.get("content-type")).toContain("text/javascript");
+      expect(await main.text()).toContain("ascope main");
+
+      const manifest = await app.fetch(new Request("http://localhost/scope/assets"));
+      expect(manifest.status).toBe(200);
+      expect(await manifest.json()).toMatchObject({
+        "Robot_Test/config.json": { name: "Robot_Test" },
+      });
+
+      const asset = await app.fetch(new Request("http://localhost/scope/assets/Robot_Test/config.json"));
+      expect(asset.status).toBe(200);
+      expect(await asset.text()).toContain("Robot_Test");
+
+      const redirect = await app.fetch(new Request("http://localhost/scope/www/www/textures/example.png"));
+      expect(redirect.status).toBe(302);
+      expect(redirect.headers.get("location")).toBe("/scope/www/textures/example.png");
+    });
+  });
+
+  test("proxies authenticated sim alive checks to the workspace sim port", async () => {
+    const nt4Servers: Array<ReturnType<typeof Bun.serve>> = [];
+    const fakeDocker = createFakeDocker({
+      onRunPort(port) {
+        nt4Servers.push(
+          Bun.serve({
+            hostname: "127.0.0.1",
+            port,
+            fetch() {
+              return new Response("nt4 alive\n");
+            },
+          }),
+        );
+      },
+    });
+
+    try {
+      await withApp(
+        async (app) => {
+          const aliceLogin = await login(app, "alice");
+          const aliceCookie = cookieFrom(aliceLogin);
+          const bobLogin = await login(app, "bob");
+          const bobCookie = cookieFrom(bobLogin);
+
+          const alive = await app.fetch(
+            new Request("http://localhost/u/alice/sim/alive", {
+              headers: { cookie: aliceCookie },
+            }),
+          );
+          expect(alive.status).toBe(200);
+          expect(await alive.text()).toContain("ok");
+
+          const bobReadsAlice = await app.fetch(
+            new Request("http://localhost/u/alice/sim/alive", {
+              headers: { cookie: bobCookie },
+            }),
+          );
+          expect(bobReadsAlice.status).toBe(403);
+        },
+        {
+          dockerRunner: fakeDocker.runner,
+          simImage: "frc-sim:test",
+          simPortRange: { start: 25910, end: 25910 },
+        },
+      );
+    } finally {
+      for (const server of nt4Servers) {
+        server.stop(true);
+      }
+    }
   });
 });
