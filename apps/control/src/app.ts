@@ -74,7 +74,15 @@ type Nt4SocketData = {
   pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
 };
 
-type SocketData = RunSocketData | Nt4SocketData;
+type LspSocketData = {
+  kind: "lsp";
+  upstreamUrl: string;
+  upstream?: WebSocket | undefined;
+  upstreamOpen: boolean;
+  pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
+};
+
+type SocketData = RunSocketData | Nt4SocketData | LspSocketData;
 
 type AppSocket = {
   data: SocketData;
@@ -855,6 +863,38 @@ async function nt4WebSocketResponse(
   return undefined as unknown as Response;
 }
 
+async function lspWebSocketResponse(
+  storage: AppStorage,
+  containers: ContainerOrchestrator,
+  auth: AuthContext,
+  request: Request,
+  server?: BunUpgradeServer,
+): Promise<Response> {
+  if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
+    return new Response("Expected WebSocket upgrade.", { status: 426 });
+  }
+
+  const lsp = await containers.ensureLspContainer(auth.workspace);
+  const lease = storage.getContainerLease(auth.workspace.id);
+  if (lsp.state !== "running" || !lease?.lsp_port) {
+    return new Response(lsp.error ?? "Java language server is not running.", { status: 503 });
+  }
+
+  const upgradeOptions: { data: SocketData } = {
+    data: {
+      kind: "lsp",
+      upstreamUrl: `ws://127.0.0.1:${lease.lsp_port}/jdtls`,
+      upstreamOpen: false,
+      pendingMessages: [],
+    },
+  };
+  const upgraded = server.upgrade(request, upgradeOptions);
+  if (!upgraded) {
+    return new Response("WebSocket upgrade failed.", { status: 400 });
+  }
+  return undefined as unknown as Response;
+}
+
 export async function createApp(configInput: ControlAppOptions = {}): Promise<ControlApp> {
   const { dockerRunner, runCommandFactory, ...storageConfig } = configInput;
   const storage = await createStorage(storageConfig);
@@ -865,7 +905,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     const url = new URL(request.url);
 
     if (url.pathname === "/healthz") {
-      return Response.json({ ok: true, service: "control", version: "v1-6" });
+      return Response.json({ ok: true, service: "control", version: "v1-7" });
     }
 
     if ((url.pathname === "/scope" || url.pathname.startsWith("/scope/")) && request.method === "GET") {
@@ -930,7 +970,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       }
 
       if (suffix === "/" && request.method === "GET") {
-        containers.startSimContainer(auth.workspace);
+        containers.startWorkspaceContainers(auth.workspace);
         return webShellResponse(storage);
       }
 
@@ -956,6 +996,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
       if (suffix === "/sim/nt4" && request.method === "GET") {
         return nt4WebSocketResponse(storage, containers, auth, request, server);
+      }
+
+      if (suffix === "/ws/lsp" && request.method === "GET") {
+        return lspWebSocketResponse(storage, containers, auth, request, server);
       }
 
       if (suffix.startsWith("/assets/") && request.method === "GET") {
@@ -1055,20 +1099,20 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     return new TextDecoder().decode(message);
   }
 
-  function openNt4Proxy(ws: AppSocket): void {
-    if (ws.data.kind !== "nt4") {
+  function openProxyUpstream(
+    ws: AppSocket,
+    label: "NT4" | "LSP",
+    protocols: string[] | undefined,
+  ): void {
+    if (ws.data.kind !== "nt4" && ws.data.kind !== "lsp") {
       return;
     }
-
-    const upstream = new WebSocket(
-      ws.data.upstreamUrl,
-      ws.data.protocols.length > 0 ? ws.data.protocols : undefined,
-    );
+    const upstream = new WebSocket(ws.data.upstreamUrl, protocols && protocols.length > 0 ? protocols : undefined);
     ws.data.upstream = upstream;
     upstream.binaryType = "arraybuffer";
 
     upstream.addEventListener("open", () => {
-      if (ws.data.kind !== "nt4") {
+      if (ws.data.kind !== "nt4" && ws.data.kind !== "lsp") {
         return;
       }
       ws.data.upstreamOpen = true;
@@ -1086,17 +1130,21 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       }
     });
     upstream.addEventListener("close", (event) => {
-      ws.close(event.code || 1011, event.reason || "NT4 upstream closed.");
+      ws.close(event.code || 1011, event.reason || `${label} upstream closed.`);
     });
     upstream.addEventListener("error", () => {
-      ws.close(1011, "NT4 upstream error.");
+      ws.close(1011, `${label} upstream error.`);
     });
   }
 
   const websocket = {
     open(ws: AppSocket): void {
       if (ws.data.kind === "nt4") {
-        openNt4Proxy(ws);
+        openProxyUpstream(ws, "NT4", ws.data.protocols);
+        return;
+      }
+      if (ws.data.kind === "lsp") {
+        openProxyUpstream(ws, "LSP", undefined);
         return;
       }
       ws.data.connection = runs.connect(ws.data.workspace, (message) => {
@@ -1104,7 +1152,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       });
     },
     message(ws: AppSocket, message: string | ArrayBuffer | Uint8Array): void {
-      if (ws.data.kind === "nt4") {
+      if (ws.data.kind === "nt4" || ws.data.kind === "lsp") {
         if (ws.data.upstreamOpen && ws.data.upstream) {
           ws.data.upstream.send(message);
         } else {
@@ -1127,7 +1175,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       }
     },
     close(ws: AppSocket): void {
-      if (ws.data.kind === "nt4") {
+      if (ws.data.kind === "nt4" || ws.data.kind === "lsp") {
         ws.data.upstream?.close();
         ws.data.pendingMessages.length = 0;
         return;
