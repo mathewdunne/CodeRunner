@@ -89,6 +89,7 @@ type FakeContainer = {
   labels: Record<string, string>;
   hostIp: string;
   port: number;
+  containerPort: number;
 };
 
 function ok(stdout = ""): DockerCommandResult {
@@ -111,7 +112,7 @@ function dockerInspect(container: FakeContainer): unknown {
     },
     NetworkSettings: {
       Ports: {
-        "5810/tcp": [
+        [`${container.containerPort}/tcp`]: [
           {
             HostIp: container.hostIp,
             HostPort: String(container.port),
@@ -151,7 +152,9 @@ function createFakeDocker(options: { failRunPortsOnce?: number[]; onRunPort?: (p
     if (args[0] === "run") {
       const name = args[args.indexOf("--name") + 1] ?? "";
       const portMapping = args[args.indexOf("-p") + 1] ?? "";
-      const port = Number(/^127\.0\.0\.1:(\d+):5810$/u.exec(portMapping)?.[1]);
+      const portMatch = /^127\.0\.0\.1:(\d+):(\d+)$/u.exec(portMapping);
+      const port = Number(portMatch?.[1]);
+      const containerPort = Number(portMatch?.[2]);
       if (failRunPortsOnce.has(port)) {
         failRunPortsOnce.delete(port);
         return missing(`Bind for 127.0.0.1:${port} failed: port is already allocated`);
@@ -171,6 +174,7 @@ function createFakeDocker(options: { failRunPortsOnce?: number[]; onRunPort?: (p
         labels,
         hostIp: "127.0.0.1",
         port,
+        containerPort,
       });
       options.onRunPort?.(port);
       return ok("fake-container-id\n");
@@ -1248,5 +1252,158 @@ describe("V1-6 AdvantageScope Lite and NT4 routing", () => {
         server.stop(true);
       }
     }
+  });
+});
+
+describe("V1-7 Java LSP container and proxy", () => {
+  test("container status reports per-workspace sim and LSP containers", async () => {
+    const fakeDocker = createFakeDocker();
+
+    await withApp(
+      async (app) => {
+        const response = await login(app, "alice");
+        const cookie = cookieFrom(response);
+
+        const status = await app.fetch(
+          new Request("http://localhost/u/alice/api/containers/status", {
+            headers: { cookie },
+          }),
+        );
+        expect(status.status).toBe(200);
+
+        const body = await status.json();
+        const workspace = workspaceBySlug(app, "alice");
+        expect(body).toMatchObject({
+          sim: {
+            role: "sim",
+            state: "running",
+            image: "frc-sim:test",
+            portAllocated: true,
+            error: null,
+          },
+          lsp: {
+            role: "lsp",
+            state: "running",
+            image: "frc-lsp:test",
+            portAllocated: true,
+            error: null,
+          },
+        });
+        expect(body.sim.containerName).toBe(`frc-v1-sim-${workspace.id}`);
+        expect(body.lsp.containerName).toBe(`frc-v1-lsp-${workspace.id}`);
+
+        const lspRunCall = fakeDocker.calls.find(
+          (call) => call[0] === "run" && call.includes("frc-sim.role=lsp"),
+        );
+        expect(lspRunCall).toBeTruthy();
+        expect(lspRunCall).toContain(`frc-sim.workspace=${workspace.id}`);
+        expect(lspRunCall).toContain(
+          `type=bind,src=${join(app.storage.config.dataDir, "users", workspace.id, "jdtls-data")},dst=/workspace/jdtls-data`,
+        );
+        expect(lspRunCall).toContain("127.0.0.1:30003:30003");
+        expect(lspRunCall).toContain("frc-lsp:test");
+
+        const lease = app.storage.getContainerLease(workspace.id);
+        expect(lease).toMatchObject({
+          lsp_container: `frc-v1-lsp-${workspace.id}`,
+          lsp_port: 30003,
+          lsp_state: "running",
+        });
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25950, end: 25950 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30003, end: 30003 },
+      },
+    );
+  });
+
+  test("a restarted control plane rediscovers the labeled LSP container", async () => {
+    const root = await mkdtemp(join(tmpdir(), "frc-v1-lsp-"));
+    const templateDir = await createTemplate(root);
+    const webDistDir = await createWebDist(root);
+    const fakeDocker = createFakeDocker();
+    const config: ControlAppOptions = {
+      dataDir: join(root, "data"),
+      templateDir,
+      webDistDir,
+      sessionSecret: "test-session-secret",
+      containerAutoStart: false,
+      dockerRunner: fakeDocker.runner,
+      simImage: "frc-sim:test",
+      simPortRange: { start: 25960, end: 25960 },
+      lspImage: "frc-lsp:test",
+      lspPortRange: { start: 30013, end: 30013 },
+    };
+
+    const app1 = await createApp(config);
+    try {
+      const response = await login(app1, "alice");
+      const cookie = cookieFrom(response);
+      const firstStatus = await app1.fetch(
+        new Request("http://localhost/u/alice/api/containers/status", {
+          headers: { cookie },
+        }),
+      );
+      expect(firstStatus.status).toBe(200);
+      const lspRunsBefore = fakeDocker.calls.filter(
+        (call) => call[0] === "run" && call.includes("frc-sim.role=lsp"),
+      ).length;
+      app1.close();
+
+      const app2 = await createApp(config);
+      try {
+        const secondStatus = await app2.fetch(
+          new Request("http://localhost/u/alice/api/containers/status", {
+            headers: { cookie },
+          }),
+        );
+        expect(secondStatus.status).toBe(200);
+        expect(await secondStatus.json()).toMatchObject({
+          lsp: { state: "running", portAllocated: true },
+        });
+        const lspRunsAfter = fakeDocker.calls.filter(
+          (call) => call[0] === "run" && call.includes("frc-sim.role=lsp"),
+        ).length;
+        expect(lspRunsAfter).toBe(lspRunsBefore);
+      } finally {
+        app2.close();
+      }
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("rejects /ws/lsp upgrade for another workspace", async () => {
+    const fakeDocker = createFakeDocker();
+
+    await withApp(
+      async (app) => {
+        const aliceLogin = await login(app, "alice");
+        const aliceCookie = cookieFrom(aliceLogin);
+        const bobLogin = await login(app, "bob");
+        expect(bobLogin.status).toBe(303);
+
+        const bobReadsAlice = await app.fetch(
+          new Request("http://localhost/u/bob/ws/lsp", {
+            headers: {
+              cookie: aliceCookie,
+              upgrade: "websocket",
+              connection: "upgrade",
+            },
+          }),
+        );
+        expect(bobReadsAlice.status).toBe(403);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25970, end: 25970 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30023, end: 30023 },
+      },
+    );
   });
 });

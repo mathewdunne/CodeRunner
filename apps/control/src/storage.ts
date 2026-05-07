@@ -3,7 +3,15 @@ import { mkdirSync } from "node:fs";
 import { cp, mkdir, readdir, chmod } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { Database } from "bun:sqlite";
-import type { SessionId, SimContainerState, UserId, WorkspaceId, WorkspaceSlug } from "@frc-sim/contracts";
+import type {
+  ContainerRole,
+  ContainerState,
+  SessionId,
+  SimContainerState,
+  UserId,
+  WorkspaceId,
+  WorkspaceSlug,
+} from "@frc-sim/contracts";
 import { displayNameSchema } from "@frc-sim/contracts";
 import type { ControlConfigInput, ControlConfig } from "./config";
 import { loadControlConfig } from "./config";
@@ -41,6 +49,7 @@ export type ContainerLeaseRow = {
   sim_port: number | null;
   lsp_port: number | null;
   state: SimContainerState;
+  lsp_state: ContainerState;
   last_used_at: string;
   created_at: string;
 };
@@ -343,31 +352,140 @@ export class AppStorage {
     );
   }
 
-  listLeasedSimPorts(exceptWorkspaceId?: WorkspaceId): number[] {
+  listLeasedPorts(role: ContainerRole, exceptWorkspaceId?: WorkspaceId): number[] {
+    const column = role === "sim" ? "sim_port" : "lsp_port";
     const rows = (
       exceptWorkspaceId
         ? this.db
-            .query("SELECT sim_port FROM container_leases WHERE sim_port IS NOT NULL AND workspace_id != ?")
+            .query(`SELECT ${column} AS port FROM container_leases WHERE ${column} IS NOT NULL AND workspace_id != ?`)
             .all(exceptWorkspaceId)
-        : this.db.query("SELECT sim_port FROM container_leases WHERE sim_port IS NOT NULL").all()
-    ) as Array<{ sim_port: number }>;
-    return rows.map((row) => row.sim_port);
+        : this.db.query(`SELECT ${column} AS port FROM container_leases WHERE ${column} IS NOT NULL`).all()
+    ) as Array<{ port: number }>;
+    return rows.map((row) => row.port);
+  }
+
+  listLeasedSimPorts(exceptWorkspaceId?: WorkspaceId): number[] {
+    return this.listLeasedPorts("sim", exceptWorkspaceId);
+  }
+
+  listLeasedLspPorts(exceptWorkspaceId?: WorkspaceId): number[] {
+    return this.listLeasedPorts("lsp", exceptWorkspaceId);
+  }
+
+  clearReservedPort(role: ContainerRole, workspaceId: WorkspaceId, port: number): void {
+    const timestamp = nowIso();
+    if (role === "sim") {
+      this.db
+        .query(
+          `
+            UPDATE container_leases
+            SET sim_port = NULL,
+                state = ?,
+                last_used_at = ?
+            WHERE workspace_id = ?
+              AND sim_port = ?
+          `,
+        )
+        .run("error", timestamp, workspaceId, port);
+    } else {
+      this.db
+        .query(
+          `
+            UPDATE container_leases
+            SET lsp_port = NULL,
+                lsp_state = ?,
+                last_used_at = ?
+            WHERE workspace_id = ?
+              AND lsp_port = ?
+          `,
+        )
+        .run("error", timestamp, workspaceId, port);
+    }
   }
 
   clearReservedSimPort(workspaceId: WorkspaceId, port: number): void {
+    this.clearReservedPort("sim", workspaceId, port);
+  }
+
+  clearReservedLspPort(workspaceId: WorkspaceId, port: number): void {
+    this.clearReservedPort("lsp", workspaceId, port);
+  }
+
+  upsertContainerLease(input: {
+    workspaceId: WorkspaceId;
+    role: ContainerRole;
+    containerName: string | null;
+    port: number | null;
+    state: ContainerState;
+  }): ContainerLeaseRow {
     const timestamp = nowIso();
-    this.db
-      .query(
-        `
-          UPDATE container_leases
-          SET sim_port = NULL,
-              state = ?,
-              last_used_at = ?
-          WHERE workspace_id = ?
-            AND sim_port = ?
-        `,
-      )
-      .run("error", timestamp, workspaceId, port);
+    if (input.role === "sim") {
+      this.db
+        .query(
+          `
+            INSERT INTO container_leases (
+              workspace_id,
+              sim_container,
+              sim_port,
+              state,
+              lsp_state,
+              last_used_at,
+              created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(workspace_id) DO UPDATE SET
+              sim_container = excluded.sim_container,
+              sim_port = excluded.sim_port,
+              state = excluded.state,
+              last_used_at = excluded.last_used_at
+          `,
+        )
+        .run(
+          input.workspaceId,
+          input.containerName,
+          input.port,
+          input.state,
+          "missing",
+          timestamp,
+          timestamp,
+        );
+    } else {
+      this.db
+        .query(
+          `
+            INSERT INTO container_leases (
+              workspace_id,
+              lsp_container,
+              lsp_port,
+              state,
+              lsp_state,
+              last_used_at,
+              created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(workspace_id) DO UPDATE SET
+              lsp_container = excluded.lsp_container,
+              lsp_port = excluded.lsp_port,
+              lsp_state = excluded.lsp_state,
+              last_used_at = excluded.last_used_at
+          `,
+        )
+        .run(
+          input.workspaceId,
+          input.containerName,
+          input.port,
+          "missing",
+          input.state,
+          timestamp,
+          timestamp,
+        );
+    }
+
+    const lease = this.getContainerLease(input.workspaceId);
+    if (!lease) {
+      throw new Error(`Failed to reload container lease for workspace ${input.workspaceId}.`);
+    }
+    return lease;
   }
 
   upsertSimLease(input: {
@@ -376,33 +494,16 @@ export class AppStorage {
     port: number | null;
     state: SimContainerState;
   }): ContainerLeaseRow {
-    const timestamp = nowIso();
-    this.db
-      .query(
-        `
-          INSERT INTO container_leases (
-            workspace_id,
-            sim_container,
-            sim_port,
-            state,
-            last_used_at,
-            created_at
-          )
-          VALUES (?, ?, ?, ?, ?, ?)
-          ON CONFLICT(workspace_id) DO UPDATE SET
-            sim_container = excluded.sim_container,
-            sim_port = excluded.sim_port,
-            state = excluded.state,
-            last_used_at = excluded.last_used_at
-        `,
-      )
-      .run(input.workspaceId, input.containerName, input.port, input.state, timestamp, timestamp);
+    return this.upsertContainerLease({ ...input, role: "sim" });
+  }
 
-    const lease = this.getContainerLease(input.workspaceId);
-    if (!lease) {
-      throw new Error(`Failed to reload container lease for workspace ${input.workspaceId}.`);
-    }
-    return lease;
+  upsertLspLease(input: {
+    workspaceId: WorkspaceId;
+    containerName: string | null;
+    port: number | null;
+    state: ContainerState;
+  }): ContainerLeaseRow {
+    return this.upsertContainerLease({ ...input, role: "lsp" });
   }
 
   createRunJob(input: {

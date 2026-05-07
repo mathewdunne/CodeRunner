@@ -15,6 +15,7 @@ import {
   type SessionResponse,
 } from "@frc-sim/contracts";
 import { runFlushBlockers } from "./save-before-run";
+import { startJavaLsp, type JavaLspController } from "./java-lsp";
 import "./style.css";
 
 self.MonacoEnvironment = {
@@ -44,6 +45,7 @@ type ModelState = {
 
 type RunStatus = "connecting" | "idle" | "queued" | "building" | "running" | "stopping" | "failed" | "stopped" | "error";
 type ScopeStatus = "loading" | "configured" | "connected" | "timeout";
+type LspStatus = "pending" | "connecting" | "ready" | "reconnecting" | "unavailable";
 
 function workspaceSlugFromLocation(): string | null {
   const pathParts = window.location.pathname.split("/").filter(Boolean);
@@ -185,6 +187,8 @@ function App() {
   const [containerStatus, setContainerStatus] = useState<ContainersStatusResponse | null>(null);
   const [runStatus, setRunStatus] = useState<RunStatus>("connecting");
   const [scopeStatus, setScopeStatus] = useState<ScopeStatus>("loading");
+  const [lspStatus, setLspStatus] = useState<LspStatus>("pending");
+  const [lspDetail, setLspDetail] = useState<string | null>(null);
   const [queueInfo, setQueueInfo] = useState<{ depth: number; position: number } | null>(null);
   const [openFiles, setOpenFiles] = useState<OpenFile[]>([]);
   const [activePath, setActivePath] = useState<string | null>(null);
@@ -194,6 +198,7 @@ function App() {
   const scopeFrameRef = useRef<HTMLIFrameElement | null>(null);
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
   const runSocketRef = useRef<WebSocket | null>(null);
+  const lspControllerRef = useRef<JavaLspController | null>(null);
   const modelStatesRef = useRef(new Map<string, ModelState>());
   const openFilesRef = useRef(openFiles);
   const saveFileRef = useRef<(path: string) => void>(() => {});
@@ -351,6 +356,9 @@ function App() {
         editorRef.current?.updateOptions({ readOnly: file.access === "readonly" });
         setActivePath(file.path);
         setSelectedPath(file.path);
+        if (file.path.endsWith(".java")) {
+          lspControllerRef.current?.attachModel(model);
+        }
         logLine(`Opened ${file.path}`);
       } catch (error) {
         logLine(error instanceof Error ? error.message : `Unable to open ${path}`);
@@ -491,6 +499,31 @@ function App() {
   }, [logLine, workspaceSlug]);
 
   useEffect(() => {
+    if (!workspaceSlug || state.status !== "ready") {
+      return;
+    }
+
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const url = `${protocol}//${window.location.host}/u/${workspaceSlug}/ws/lsp`;
+    const controller = startJavaLsp({
+      url,
+      onStatus: (message) => logLine(message),
+    });
+    controller.onStatusChange((status, detail) => {
+      setLspStatus(status);
+      setLspDetail(detail);
+    });
+    lspControllerRef.current = controller;
+
+    return () => {
+      lspControllerRef.current = null;
+      controller.dispose();
+      setLspStatus("pending");
+      setLspDetail(null);
+    };
+  }, [logLine, state.status, workspaceSlug]);
+
+  useEffect(() => {
     if (!workspaceSlug) {
       return;
     }
@@ -612,6 +645,9 @@ function App() {
         applyTree(response.tree);
         setSelectedPath(path);
         if (kind === "file") {
+          if (path.endsWith(".java")) {
+            lspControllerRef.current?.notifyDidCreateFile(modelUriFor(path).toString());
+          }
           await openProjectFile(path);
         }
         logLine(`Created ${path}`);
@@ -639,6 +675,11 @@ function App() {
       });
       applyTree(response.tree);
 
+      lspControllerRef.current?.notifyDidRenameFile(
+        modelUriFor(selectedPath).toString(),
+        modelUriFor(to).toString(),
+      );
+
       setOpenFiles((current) =>
         current.map((file) => {
           if (file.path === selectedPath || file.path.startsWith(`${selectedPath}/`)) {
@@ -653,6 +694,7 @@ function App() {
           continue;
         }
         const nextPath = `${to}${path.slice(selectedPath.length)}`;
+        const oldUri = modelState.model.uri.toString();
         const nextModel = monaco.editor.createModel(modelState.model.getValue(), languageFor(nextPath), modelUriFor(nextPath));
         const subscription = nextModel.onDidChangeContent(() => {
           const openFile = openFilesRef.current.find((entry) => entry.path === nextPath);
@@ -666,9 +708,15 @@ function App() {
           window.clearTimeout(modelState.saveTimer);
         }
         modelState.subscription.dispose();
+        if (path.endsWith(".java")) {
+          lspControllerRef.current?.detachModel(oldUri);
+        }
         modelState.model.dispose();
         modelStatesRef.current.delete(path);
         modelStatesRef.current.set(nextPath, { model: nextModel, saveTimer: null, subscription });
+        if (nextPath.endsWith(".java")) {
+          lspControllerRef.current?.attachModel(nextModel);
+        }
       }
 
       setSelectedPath(to);
@@ -693,6 +741,7 @@ function App() {
         method: "DELETE",
       });
       applyTree(response.tree);
+      lspControllerRef.current?.notifyDidDeleteFile(modelUriFor(selectedPath).toString());
       const removedPaths = [...modelStatesRef.current.keys()].filter(
         (path) => path === selectedPath || path.startsWith(`${selectedPath}/`),
       );
@@ -705,6 +754,9 @@ function App() {
           window.clearTimeout(modelState.saveTimer);
         }
         modelState.subscription.dispose();
+        if (path.endsWith(".java")) {
+          lspControllerRef.current?.detachModel(modelState.model.uri.toString());
+        }
         modelState.model.dispose();
         modelStatesRef.current.delete(path);
       }
@@ -729,6 +781,9 @@ function App() {
           window.clearTimeout(modelState.saveTimer);
         }
         modelState.subscription.dispose();
+        if (path.endsWith(".java")) {
+          lspControllerRef.current?.detachModel(modelState.model.uri.toString());
+        }
         modelState.model.dispose();
         modelStatesRef.current.delete(path);
       }
@@ -814,6 +869,16 @@ function App() {
       : scopeStatus === "timeout"
         ? "Scope timeout"
         : "Scope connecting";
+  const lspLabel =
+    lspStatus === "ready"
+      ? "LSP ready"
+      : lspStatus === "unavailable"
+        ? "LSP unavailable"
+        : lspStatus === "reconnecting"
+          ? "LSP reconnecting"
+          : lspStatus === "connecting"
+            ? "LSP connecting"
+            : "LSP pending";
 
   return (
     <div className="app-shell">
@@ -825,7 +890,7 @@ function App() {
         <div className="status-strip">
           <span>Workspace {workspaceLabel}</span>
           <span>{saveLabel}</span>
-          <span>LSP pending</span>
+          <span title={lspDetail ?? undefined}>{lspLabel}</span>
           <span title={containerStatus?.sim.error ?? undefined}>{simLabel}</span>
           <span>{runLabel}</span>
           <span>{scopeLabel}</span>

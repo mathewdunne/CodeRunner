@@ -18,6 +18,9 @@ export type ControlConfig = {
   simImage: string;
   simMemoryLimit: string;
   simPortRange: PortRange;
+  lspImage: string;
+  lspMemoryLimit: string;
+  lspPortRange: PortRange;
   runConcurrency: number;
   runBuildTimeoutMs: number;
   simStartupTimeoutMs: number;
@@ -25,13 +28,15 @@ export type ControlConfig = {
   containerAutoStart: boolean;
 };
 
-export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange">> & {
+export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "lspPortRange">> & {
   simPortRange?: PortRange | string;
+  lspPortRange?: PortRange | string;
 };
 
 const repoRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
 const defaultDataDir = resolve(repoRoot, "data");
 const defaultSimPortRange: PortRange = { start: 25810, end: 25899 };
+const defaultLspPortRange: PortRange = { start: 30003, end: 30102 };
 
 function parsePortRange(value: string | PortRange | undefined, fallback: PortRange): PortRange {
   if (!value) {
@@ -116,6 +121,9 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     simImage: input.simImage ?? Bun.env.SIM_IMAGE ?? "frc-sim:v1",
     simMemoryLimit: input.simMemoryLimit ?? Bun.env.SIM_MEMORY_LIMIT ?? "1536m",
     simPortRange: parsePortRange(input.simPortRange ?? Bun.env.SIM_PORT_RANGE, defaultSimPortRange),
+    lspImage: input.lspImage ?? Bun.env.LSP_IMAGE ?? "frc-lsp:v1",
+    lspMemoryLimit: input.lspMemoryLimit ?? Bun.env.LSP_MEMORY_LIMIT ?? "1536m",
+    lspPortRange: parsePortRange(input.lspPortRange ?? Bun.env.LSP_PORT_RANGE, defaultLspPortRange),
     runConcurrency: parsePositiveInteger(input.runConcurrency ?? Bun.env.RUN_CONCURRENCY, 2, "RUN_CONCURRENCY"),
     runBuildTimeoutMs: parsePositiveInteger(
       input.runBuildTimeoutMs ?? Bun.env.RUN_BUILD_TIMEOUT_MS,

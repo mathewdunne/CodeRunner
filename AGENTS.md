@@ -40,9 +40,10 @@ data/                          Runtime data, gitignored
 - [x] V1-4: V1 sim image and container orchestrator
 - [x] V1-5: run queue and log streaming
 - [x] V1-6: NT4 route and AS Lite source patch
-- [ ] V1-7+: see `V1-Design.md`
+- [x] V1-7: V1 LSP container and project-wide Java LSP
+- [ ] V1-8+: see `V1-Design.md`
 
-The V1-6 root includes shared contracts, SQLite migrations, signed-cookie login/session flow, first-login workspace creation from `templates/wpilib-java-command/`, workspace file APIs, a React/Vite multi-file shell, the mounted-project sim image, Docker lease orchestration, loopback sim port allocation, sim container status reporting, a global run queue, per-workspace run replacement/stop, persistent run logs, browser Run/Stop log streaming, `/scope/` AS Lite serving, authenticated NT4 alive/WebSocket proxy routes, and AS Lite endpoint-injection patches. The MVP archive contains the completed single-user proof loop and Java LSP add-on.
+The V1-7 root adds a per-workspace Eclipse JDT LS container with a Bun-native WebSocket-to-stdio bridge, a generic `ContainerOrchestrator` that reconciles both sim and LSP containers from Docker labels and SQLite, an authenticated `/u/:workspaceSlug/ws/lsp` proxy route, and a project-wide multi-file Java LSP client in the web shell with `didCreateFiles`/`didDeleteFiles`/`didRenameFiles` notifications wired into the file APIs. Earlier V1 phases provide the shared contracts, SQLite migrations, signed-cookie login/session flow, first-login workspace creation from `templates/wpilib-java-command/`, workspace file APIs, the React/Vite multi-file shell, the mounted-project sim image, Docker lease orchestration, loopback port allocation, the global run queue, persistent run logs, `/scope/` AS Lite serving, authenticated NT4 routes, and AS Lite endpoint-injection patches. The MVP archive contains the completed single-user proof loop and Java LSP add-on.
 
 ## Working Principles
 
@@ -71,8 +72,9 @@ The V1-6 root includes shared contracts, SQLite migrations, signed-cookie login/
 - Typecheck V1: `bun run typecheck`
 - Run Bun tests: `bun run test`
 - Build V1 sim image: `bun run docker:build:sim`
+- Build V1 LSP image: `bun run docker:build:lsp`
 - Apply/check V1 migrations: `bun run migrate`, `bun run migrate:status`
-- Start V1-5 control plane: `bun run dev:control`
+- Start V1 control plane: `bun run dev:control`
 - Start web shell directly: `bun run dev:web`
 
 MVP commands live in `mvp/README.md`.
