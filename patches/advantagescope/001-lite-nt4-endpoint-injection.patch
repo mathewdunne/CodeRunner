@@ -3,9 +3,9 @@ index f3f7427..d794648 100644
 --- a/src/hub/dataSources/nt4/NT4.ts
 +++ b/src/hub/dataSources/nt4/NT4.ts
 @@ -9,6 +9,31 @@ import { Decoder, Encoder } from "@msgpack/msgpack";
- 
+
  export const NT4_PORTS_DEFAULT = [5810];
- 
+
 +type FrcSimNt4Endpoint = {
 +  aliveUrl: string;
 +  websocketUrl: string;
@@ -72,7 +72,7 @@ index f3f7427..d794648 100644
      }
    }
 @@ -675,9 +709,15 @@ export class NT4_Client {
- 
+
    private ws_connect(rttWs = false) {
      if (this.activeServerPort === null) return;
 +    let protocols = rttWs
@@ -93,11 +93,12 @@ diff --git a/src/main/lite/main.ts b/src/main/lite/main.ts
 index f8e6a0d..30d0031 100644
 --- a/src/main/lite/main.ts
 +++ b/src/main/lite/main.ts
-@@ -45,6 +45,61 @@ let popupMenu = new TinyPopupMenu();
+@@ -45,6 +45,79 @@ let popupMenu = new TinyPopupMenu();
  let assetsPromise: Promise<AdvantageScopeAssets>;
  let downloadInterval: number | null = null;
  let popupRequiresForceClose = false;
 +let frcSimStartLivePending = false;
++let frcSimEndpointTimeoutId: number | null = null;
 +
 +type FrcSimNt4Endpoint = {
 +  aliveUrl: string;
@@ -123,6 +124,16 @@ index f8e6a0d..30d0031 100644
 +  );
 +}
 +
++function showFrcSimNoEndpointBanner() {
++  if (window.frcSimNt4Endpoint !== undefined) return;
++  let banner = document.createElement("div");
++  banner.style.cssText =
++    "position:fixed;inset:0;display:grid;place-items:center;background:#101820;color:#ffb4ab;font:14px system-ui;text-align:center;padding:1rem;z-index:9999;";
++  banner.textContent =
++    "AdvantageScope Lite did not receive an endpoint configuration from the parent app within 10 seconds.";
++  document.body.appendChild(banner);
++}
++
 +function requestFrcSimLiveStart() {
 +  if (!frcSimEndpointMode || window.frcSimNt4Endpoint === undefined) return;
 +  if (hubPort === null) {
@@ -136,9 +147,16 @@ index f8e6a0d..30d0031 100644
 +function installFrcSimEndpointHandshake() {
 +  if (!frcSimEndpointMode) return;
 +
++  frcSimEndpointTimeoutId = window.setTimeout(showFrcSimNoEndpointBanner, 10_000);
++
 +  window.addEventListener("message", (event) => {
 +    let message = event.data as { type?: unknown; endpoint?: unknown } | null;
 +    if (message?.type !== "frc-sim:set-nt4-endpoint" || !isFrcSimEndpoint(message.endpoint)) return;
++
++    if (frcSimEndpointTimeoutId !== null) {
++      window.clearTimeout(frcSimEndpointTimeoutId);
++      frcSimEndpointTimeoutId = null;
++    }
 +
 +    window.frcSimNt4Endpoint = message.endpoint;
 +    window.parent.postMessage(
@@ -152,10 +170,10 @@ index f8e6a0d..30d0031 100644
 +}
 +
 +installFrcSimEndpointHandshake();
- 
+
  /**
   * Open a new popup menu
-@@ -257,6 +312,7 @@ async function initHub() {
+@@ -257,6 +330,7 @@ async function initHub() {
    let prefs = DEFAULT_PREFS;
    let prefsRaw = localStorage.getItem(LocalStorageKeys.PREFS);
    if (prefsRaw !== null) mergePreferences(prefs, JSON.parse(prefsRaw));
@@ -163,7 +181,7 @@ index f8e6a0d..30d0031 100644
    sendMessage(hubPort, "set-preferences", prefs);
    sendMessage(hubPort, "set-assets", await assetsPromise);
    let typeMemory = localStorage.getItem(LocalStorageKeys.TYPE_MEMORY);
-@@ -264,6 +320,10 @@ async function initHub() {
+@@ -264,6 +338,10 @@ async function initHub() {
    let state = localStorage.getItem(LocalStorageKeys.STATE);
    if (state !== null) sendMessage(hubPort, "restore-state", JSON.parse(state));
    sendMessage(hubPort, "show-when-ready");
@@ -171,6 +189,6 @@ index f8e6a0d..30d0031 100644
 +    frcSimStartLivePending = false;
 +    sendMessage(hubPort, "start-live", false);
 +  }
- 
+
    // Add cursor event handlers
    HUB_FRAME.contentWindow?.addEventListener("contextmenu", (event) => {

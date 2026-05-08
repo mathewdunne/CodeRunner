@@ -126,14 +126,234 @@ async function assertSimProcessAlive(app: ControlApp, workspace: WorkspaceRow): 
 
 async function removeManagedContainers(app: ControlApp): Promise<void> {
   const rows = app.storage.db
-    .query("SELECT sim_container FROM container_leases WHERE sim_container IS NOT NULL")
-    .all() as Array<{ sim_container: string }>;
+    .query(
+      "SELECT sim_container, lsp_container FROM container_leases WHERE sim_container IS NOT NULL OR lsp_container IS NOT NULL",
+    )
+    .all() as Array<{ sim_container: string | null; lsp_container: string | null }>;
 
   for (const row of rows) {
-    await runCommand([app.storage.config.dockerPath, "rm", "-f", row.sim_container]).catch((error) => {
-      console.warn(error instanceof Error ? error.message : error);
-    });
+    for (const name of [row.sim_container, row.lsp_container]) {
+      if (!name) {
+        continue;
+      }
+      await runCommand([app.storage.config.dockerPath, "rm", "-f", name]).catch((error) => {
+        console.warn(error instanceof Error ? error.message : error);
+      });
+    }
   }
+}
+
+type LspSession = {
+  socket: WebSocket;
+  diagnostics: Array<{ uri: string; diagnostics: Array<{ message: string; severity?: number }> }>;
+  pending: Map<number, { resolve(value: unknown): void; reject(reason: Error): void }>;
+  nextId: number;
+  closed: boolean;
+};
+
+function openLspSocket(baseUrl: string, login: Login): Promise<LspSession> {
+  const session: LspSession = {
+    socket: null as unknown as WebSocket,
+    diagnostics: [],
+    pending: new Map(),
+    nextId: 1,
+    closed: false,
+  };
+
+  const wsUrl = baseUrl.replace(/^http/u, "ws") + `/u/${login.workspace.slug}/ws/lsp`;
+  // Bun's WebSocket client accepts a non-standard `headers` option for
+  // attaching the auth cookie. Cast through unknown so the standard DOM type
+  // doesn't reject it.
+  const socket = new (WebSocket as unknown as new (url: string, opts: { headers: Record<string, string> }) => WebSocket)(
+    wsUrl,
+    { headers: { cookie: login.cookie } },
+  );
+  session.socket = socket;
+  socket.addEventListener("message", (event) => {
+    if (typeof event.data !== "string") {
+      return;
+    }
+    let parsed: { id?: number; method?: string; result?: unknown; error?: { message?: string }; params?: unknown };
+    try {
+      parsed = JSON.parse(event.data);
+    } catch {
+      return;
+    }
+    if (typeof parsed.id === "number" && parsed.method === undefined) {
+      const pending = session.pending.get(parsed.id);
+      if (pending) {
+        session.pending.delete(parsed.id);
+        if (parsed.error) {
+          pending.reject(new Error(parsed.error.message ?? "LSP request failed"));
+        } else {
+          pending.resolve(parsed.result);
+        }
+      }
+      return;
+    }
+    if (parsed.method === "textDocument/publishDiagnostics") {
+      session.diagnostics.push(parsed.params as { uri: string; diagnostics: Array<{ message: string; severity?: number }> });
+    }
+    // Surface JDT LS lifecycle events so cold-start hangs are debuggable.
+    if (parsed.method === "window/logMessage" || parsed.method === "window/showMessage") {
+      const payload = parsed.params as { type?: number; message?: string };
+      console.log(`  [${login.workspace.slug} jdtls ${parsed.method}] ${payload.message ?? ""}`);
+    }
+    if (parsed.method === "$/progress") {
+      const payload = parsed.params as { value?: { kind?: string; title?: string; message?: string } };
+      const value = payload.value;
+      if (value?.kind === "begin" || value?.kind === "end") {
+        console.log(`  [${login.workspace.slug} jdtls progress ${value.kind}] ${value.title ?? value.message ?? ""}`);
+      }
+    }
+  });
+  socket.addEventListener("close", () => {
+    session.closed = true;
+    for (const pending of session.pending.values()) {
+      pending.reject(new Error("LSP socket closed"));
+    }
+    session.pending.clear();
+  });
+
+  return new Promise<LspSession>((resolveSocket, rejectSocket) => {
+    socket.addEventListener("open", () => resolveSocket(session), { once: true });
+    socket.addEventListener("error", () => rejectSocket(new Error(`Failed to open ${wsUrl}`)), { once: true });
+  });
+}
+
+function lspSend(session: LspSession, message: object): void {
+  if (session.closed) {
+    throw new Error("LSP socket is closed");
+  }
+  session.socket.send(JSON.stringify(message));
+}
+
+function lspRequest(session: LspSession, method: string, params: unknown): Promise<unknown> {
+  const id = session.nextId++;
+  const promise = new Promise<unknown>((resolveRequest, rejectRequest) => {
+    session.pending.set(id, { resolve: resolveRequest, reject: rejectRequest });
+  });
+  lspSend(session, { jsonrpc: "2.0", id, method, params });
+  return promise;
+}
+
+function lspNotify(session: LspSession, method: string, params: unknown): void {
+  lspSend(session, { jsonrpc: "2.0", method, params });
+}
+
+async function initializeLspSession(session: LspSession): Promise<void> {
+  await lspRequest(session, "initialize", {
+    processId: null,
+    rootUri: "file:///workspace/project",
+    workspaceFolders: [{ uri: "file:///workspace/project", name: "project" }],
+    capabilities: {
+      window: { workDoneProgress: true },
+      textDocument: {
+        synchronization: { dynamicRegistration: false },
+        completion: { dynamicRegistration: false, contextSupport: true },
+        publishDiagnostics: { relatedInformation: true },
+      },
+      workspace: { workspaceFolders: true, didChangeWatchedFiles: { dynamicRegistration: false } },
+    },
+    initializationOptions: {},
+  });
+  lspNotify(session, "initialized", {});
+}
+
+function fileUri(login: Login, projectRelativePath: string): string {
+  return `file:///workspace/project/${projectRelativePath}`;
+}
+
+async function waitForDiagnostics(session: LspSession, uri: string, timeoutMs: number): Promise<Array<{ message: string; severity?: number }>> {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeoutMs) {
+    const match = session.diagnostics.find((entry) => entry.uri === uri);
+    if (match) {
+      return match.diagnostics;
+    }
+    if (session.closed) {
+      throw new Error(`LSP socket closed while waiting for ${uri} diagnostics.`);
+    }
+    await Bun.sleep(500);
+  }
+  throw new Error(
+    `Timed out waiting for ${uri} diagnostics after ${Math.round(timeoutMs / 1000)}s. ` +
+      `Inspect the JDT LS container with: docker logs <frc-v1-lsp-...> --tail 200`,
+  );
+}
+
+async function runLspSmoke(app: ControlApp, baseUrl: string, alice: Login, bob: Login, robotPath: string): Promise<void> {
+  console.log("Opening LSP sessions for Alice and Bob...");
+  const aliceLsp = await openLspSocket(baseUrl, alice);
+  const bobLsp = await openLspSocket(baseUrl, bob);
+  try {
+    await Promise.all([initializeLspSession(aliceLsp), initializeLspSession(bobLsp)]);
+
+    const aliceContent = await readProjectFile(app, alice, robotPath);
+    const bobContent = await readProjectFile(app, bob, robotPath);
+    lspNotify(aliceLsp, "textDocument/didOpen", {
+      textDocument: { uri: fileUri(alice, robotPath), languageId: "java", version: 1, text: aliceContent },
+    });
+    lspNotify(bobLsp, "textDocument/didOpen", {
+      textDocument: { uri: fileUri(bob, robotPath), languageId: "java", version: 1, text: bobContent },
+    });
+
+    console.log("Waiting for diagnostics (cold JDT LS on a WPILib project can take 3-5 minutes)...");
+    const aliceDiagnostics = await waitForDiagnostics(aliceLsp, fileUri(alice, robotPath), 300_000);
+    const bobDiagnostics = await waitForDiagnostics(bobLsp, fileUri(bob, robotPath), 300_000);
+    console.log(`  Alice diagnostics: ${aliceDiagnostics.length}`);
+    console.log(`  Bob diagnostics: ${bobDiagnostics.length}`);
+
+    console.log("Checking completion suggestions for Alice...");
+    const completion = (await lspRequest(aliceLsp, "textDocument/completion", {
+      textDocument: { uri: fileUri(alice, robotPath) },
+      position: { line: 0, character: 0 },
+    })) as { items?: unknown[] } | unknown[] | null;
+    const items = Array.isArray(completion) ? completion : (completion?.items ?? []);
+    assert(Array.isArray(items) && items.length > 0, "Expected at least one completion suggestion for Alice.");
+
+    console.log("Breaking Bob's project, confirming Alice is unaffected...");
+    const aliceErrorsBefore = aliceDiagnostics.filter((d) => d.severity === 1).length;
+    await writeProjectFile(app, bob, robotPath, "package frc.robot;\npublic class Robot {\n");
+    lspNotify(bobLsp, "textDocument/didChange", {
+      textDocument: { uri: fileUri(bob, robotPath), version: 2 },
+      contentChanges: [{ text: "package frc.robot;\npublic class Robot {\n" }],
+    });
+    const bobBrokenDiagnostics = await waitForBrokenDiagnostics(bobLsp, fileUri(bob, robotPath), 60_000);
+    assert(
+      bobBrokenDiagnostics.some((d) => d.severity === 1),
+      "Expected Bob's broken file to produce error diagnostics.",
+    );
+    const aliceLatest = aliceLsp.diagnostics.filter((entry) => entry.uri === fileUri(alice, robotPath)).at(-1);
+    const aliceErrorsAfter = (aliceLatest?.diagnostics ?? []).filter((d) => d.severity === 1).length;
+    assert(aliceErrorsAfter <= aliceErrorsBefore, "Alice's error count grew after Bob's edit.");
+    await writeProjectFile(app, bob, robotPath, bobContent);
+
+    console.log("LSP smoke passed.");
+  } finally {
+    aliceLsp.socket.close();
+    bobLsp.socket.close();
+  }
+}
+
+async function waitForBrokenDiagnostics(
+  session: LspSession,
+  uri: string,
+  timeoutMs: number,
+): Promise<Array<{ message: string; severity?: number }>> {
+  const startedAt = Date.now();
+  let lastSeen = session.diagnostics.length;
+  while (Date.now() - startedAt < timeoutMs) {
+    if (session.diagnostics.length > lastSeen) {
+      const latest = session.diagnostics.filter((entry) => entry.uri === uri).at(-1);
+      if (latest && latest.diagnostics.some((d) => d.severity === 1)) {
+        return latest.diagnostics;
+      }
+      lastSeen = session.diagnostics.length;
+    }
+    await Bun.sleep(500);
+  }
+  throw new Error(`Timed out waiting for ${uri} error diagnostics after edit.`);
 }
 
 if (Bun.env.VERIFY_SKIP_SIM_BUILD !== "1") {
@@ -141,8 +361,15 @@ if (Bun.env.VERIFY_SKIP_SIM_BUILD !== "1") {
   await runCommand(["bun", "run", "docker:build:sim"]);
 }
 
+const lspSmokeEnabled = Bun.env.VERIFY_SKIP_LSP !== "1";
+if (lspSmokeEnabled && Bun.env.VERIFY_SKIP_LSP_BUILD !== "1") {
+  console.log("Building V1 LSP image...");
+  await runCommand(["bun", "run", "docker:build:lsp"]);
+}
+
 const root = await mkdtemp(join(tmpdir(), "frc-v1-two-user-"));
 let app: ControlApp | null = null;
+let server: ReturnType<typeof Bun.serve> | null = null;
 
 try {
   app = await createApp({
@@ -151,6 +378,13 @@ try {
     runConcurrency: 1,
     containerAutoStart: false,
   });
+  server = Bun.serve({
+    port: 0,
+    hostname: "127.0.0.1",
+    fetch: (request, instance) => app!.fetch(request, instance),
+    websocket: app.websocket,
+  });
+  const baseUrl = `http://127.0.0.1:${server.port}`;
 
   const alice = await login(app, "alice");
   const bob = await login(app, "bob");
@@ -206,8 +440,17 @@ try {
   app.runs.disconnect(aliceRun.connection);
   app.runs.disconnect(bobRun.connection);
 
+  if (lspSmokeEnabled) {
+    await runLspSmoke(app, baseUrl, alice, bob, robotPath);
+  } else {
+    console.log("Skipping LSP smoke (VERIFY_SKIP_LSP=1).");
+  }
+
   console.log("V1 two-user smoke passed.");
 } finally {
+  if (server) {
+    server.stop(true);
+  }
   if (app) {
     await removeManagedContainers(app);
     app.close();

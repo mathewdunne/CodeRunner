@@ -88,6 +88,9 @@ export type JavaLspController = {
 };
 
 const projectRootUri = "file:///workspace/project";
+// Reconnect schedule (ms). Caps at 10s; we never give up because the operator
+// may restart the LSP container at any time and we want the browser to recover.
+const reconnectBackoffMs = [1_000, 2_000, 5_000, 10_000];
 
 const semanticTokenTypes = [
   "namespace",
@@ -144,6 +147,7 @@ class BrowserLspClient {
   #nextId = 1;
   #pending = new Map<number, PendingRequest>();
   #notificationHandlers: Array<(message: JsonRpcNotification) => void> = [];
+  #closeHandlers: Array<() => void> = [];
 
   constructor(private readonly url: string) {}
 
@@ -170,6 +174,9 @@ class BrowserLspClient {
           pending.reject(new Error("Java language server connection closed"));
         }
         this.#pending.clear();
+        for (const handler of this.#closeHandlers) {
+          handler();
+        }
       });
     });
   }
@@ -195,7 +202,7 @@ class BrowserLspClient {
   }
 
   onClose(handler: () => void): void {
-    this.#socket?.addEventListener("close", handler, { once: true });
+    this.#closeHandlers.push(handler);
   }
 
   close(): void {
@@ -254,7 +261,7 @@ function modelUriString(model: monaco.editor.ITextModel): string {
 }
 
 export function startJavaLsp(options: StartJavaLspOptions): JavaLspController {
-  const client = new BrowserLspClient(options.url);
+  let client = new BrowserLspClient(options.url);
   const managed = new Map<string, ManagedModel>();
   let initialized = false;
   let initializeResult: LspInitializeResult | null = null;
@@ -263,6 +270,9 @@ export function startJavaLsp(options: StartJavaLspOptions): JavaLspController {
   let hoverDisposable: monaco.IDisposable | undefined;
   let statusListener: ((status: JavaLspStatus, detail: string | null) => void) | null = null;
   let disposed = false;
+  let reconnectAttempt = 0;
+  let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  let bootstrapInFlight = false;
 
   function setStatus(status: JavaLspStatus, detail: string | null = null): void {
     options.onStatus?.(`java language server ${status}${detail ? `: ${detail}` : ""}`);
@@ -276,6 +286,12 @@ export function startJavaLsp(options: StartJavaLspOptions): JavaLspController {
     completionDisposable = undefined;
     hoverDisposable?.dispose();
     hoverDisposable = undefined;
+  }
+
+  function clearStaleMarkers(): void {
+    for (const entry of managed.values()) {
+      monaco.editor.setModelMarkers(entry.model, "jdtls", []);
+    }
   }
 
   function registerProviders(): void {
@@ -323,29 +339,70 @@ export function startJavaLsp(options: StartJavaLspOptions): JavaLspController {
     semanticTokensDisposable = registerSemanticTokens(client, managed, initializeResult);
   }
 
-  client.onNotification((message) => {
-    if (message.method === "textDocument/publishDiagnostics") {
-      handleDiagnostics(managed, message.params);
-    }
-  });
+  function attachClientHandlers(): void {
+    client.onNotification((message) => {
+      if (message.method === "textDocument/publishDiagnostics") {
+        handleDiagnostics(managed, message.params);
+      }
+    });
+    client.onClose(() => {
+      if (disposed) {
+        return;
+      }
+      // Move from "ready"/"connecting" into reconnect loop. Provider disposal
+      // prevents stale results, and clearing markers stops ghost diagnostics.
+      const wasInitialized = initialized;
+      initialized = false;
+      disposeProviders();
+      clearStaleMarkers();
+      setStatus("reconnecting", wasInitialized ? "connection dropped" : "initial connect failed");
+      scheduleReconnect();
+    });
+  }
 
-  async function bootstrap(): Promise<void> {
-    setStatus("connecting");
+  function scheduleReconnect(): void {
+    if (disposed || reconnectTimer !== null) {
+      return;
+    }
+    const delay = reconnectBackoffMs[Math.min(reconnectAttempt, reconnectBackoffMs.length - 1)] ?? 10_000;
+    reconnectTimer = setTimeout(() => {
+      reconnectTimer = null;
+      reconnectAttempt += 1;
+      client = new BrowserLspClient(options.url);
+      attachClientHandlers();
+      void bootstrap(true);
+    }, delay);
+  }
+
+  async function bootstrap(isReconnect = false): Promise<void> {
+    if (bootstrapInFlight) {
+      return;
+    }
+    bootstrapInFlight = true;
+    if (!isReconnect) {
+      setStatus("connecting");
+    }
     try {
       await client.open();
       const result = (await client.request("initialize", initializeParams())) as LspInitializeResult;
       initializeResult = result;
       client.notify("initialized", {});
       initialized = true;
+      reconnectAttempt = 0;
       registerProviders();
-      // Re-open any models that were attached before initialization completed.
+      // Re-open every managed model so JDT LS sees the current editor state.
       for (const entry of managed.values()) {
         sendDidOpen(entry.model);
       }
-      setStatus("ready");
+      setStatus("ready", isReconnect ? "reconnected" : null);
     } catch (err) {
       const message = err instanceof Error ? err.message : "unknown error";
-      setStatus("unavailable", message);
+      // Don't flip to a permanent "unavailable" — keep retrying. The user sees
+      // "reconnecting" and operator-driven container restarts can recover.
+      setStatus("reconnecting", message);
+      scheduleReconnect();
+    } finally {
+      bootstrapInFlight = false;
     }
   }
 
@@ -459,6 +516,10 @@ export function startJavaLsp(options: StartJavaLspOptions): JavaLspController {
       return;
     }
     disposed = true;
+    if (reconnectTimer !== null) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
     for (const uri of [...managed.keys()]) {
       detachModel(uri);
     }
@@ -466,6 +527,7 @@ export function startJavaLsp(options: StartJavaLspOptions): JavaLspController {
     client.close();
   }
 
+  attachClientHandlers();
   void bootstrap();
 
   return {

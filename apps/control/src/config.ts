@@ -21,6 +21,7 @@ export type ControlConfig = {
   lspImage: string;
   lspMemoryLimit: string;
   lspPortRange: PortRange;
+  lspStartupConcurrency: number;
   runConcurrency: number;
   runBuildTimeoutMs: number;
   simStartupTimeoutMs: number;
@@ -124,6 +125,11 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     lspImage: input.lspImage ?? Bun.env.LSP_IMAGE ?? "frc-lsp:v1",
     lspMemoryLimit: input.lspMemoryLimit ?? Bun.env.LSP_MEMORY_LIMIT ?? "1536m",
     lspPortRange: parsePortRange(input.lspPortRange ?? Bun.env.LSP_PORT_RANGE, defaultLspPortRange),
+    lspStartupConcurrency: parsePositiveInteger(
+      input.lspStartupConcurrency ?? Bun.env.LSP_STARTUP_CONCURRENCY,
+      2,
+      "LSP_STARTUP_CONCURRENCY",
+    ),
     runConcurrency: parsePositiveInteger(input.runConcurrency ?? Bun.env.RUN_CONCURRENCY, 2, "RUN_CONCURRENCY"),
     runBuildTimeoutMs: parsePositiveInteger(
       input.runBuildTimeoutMs ?? Bun.env.RUN_BUILD_TIMEOUT_MS,

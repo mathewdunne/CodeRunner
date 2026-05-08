@@ -186,6 +186,37 @@ function statusFromLease(
   } as SimStatus | LspStatus;
 }
 
+// Counting semaphore used to cap concurrent `docker run` invocations for the
+// LSP role. Class-start bursts (10 students opening the IDE at once) would
+// otherwise spawn 10 simultaneous JDT LS Java processes during image-create.
+class Semaphore {
+  private available: number;
+  private waiters: Array<() => void> = [];
+
+  constructor(permits: number) {
+    this.available = permits;
+  }
+
+  async acquire(): Promise<() => void> {
+    if (this.available > 0) {
+      this.available -= 1;
+      return () => this.release();
+    }
+    return new Promise<() => void>((resolveAcquire) => {
+      this.waiters.push(() => resolveAcquire(() => this.release()));
+    });
+  }
+
+  private release(): void {
+    const next = this.waiters.shift();
+    if (next) {
+      next();
+    } else {
+      this.available += 1;
+    }
+  }
+}
+
 async function portIsFree(port: number): Promise<boolean> {
   return await new Promise<boolean>((resolvePort) => {
     const server = createServer();
@@ -212,12 +243,14 @@ export class ContainerOrchestrator {
   private readonly dockerRunner: DockerRunner;
   private readonly activeEnsures = new Map<string, Promise<SimStatus | LspStatus>>();
   private portReservationLock: Promise<void> = Promise.resolve();
+  private readonly lspStartupSemaphore: Semaphore;
 
   constructor(
     private readonly storage: AppStorage,
     options: ContainerOrchestratorOptions = {},
   ) {
     this.dockerRunner = options.dockerRunner ?? ((args) => runDockerCli(this.storage.config.dockerPath, args));
+    this.lspStartupSemaphore = new Semaphore(this.storage.config.lspStartupConcurrency);
   }
 
   startSimContainer(workspace: WorkspaceRow): void {
@@ -577,23 +610,31 @@ export class ContainerOrchestrator {
       }
     }
 
-    const range = this.portRangeFor(role);
-    const rejectedPorts = new Set<number>();
-    const maxAttempts = range.end - range.start + 1;
-    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-      const port = await this.reservePort(role, workspace, rejectedPorts);
-      try {
-        return await this.createContainer(role, workspace, port);
-      } catch (error) {
-        if (!dockerPortBindError(error)) {
-          throw error;
+    // Throttle docker-create bursts for LSP only. Sim creates are already
+    // throttled implicitly by the global run queue. Adoption above does not
+    // need a permit because it's just `docker start` on an existing image.
+    const release = role === "lsp" ? await this.lspStartupSemaphore.acquire() : null;
+    try {
+      const range = this.portRangeFor(role);
+      const rejectedPorts = new Set<number>();
+      const maxAttempts = range.end - range.start + 1;
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        const port = await this.reservePort(role, workspace, rejectedPorts);
+        try {
+          return await this.createContainer(role, workspace, port);
+        } catch (error) {
+          if (!dockerPortBindError(error)) {
+            throw error;
+          }
+          rejectedPorts.add(port);
+          this.storage.clearReservedPort(role, workspace.id, port);
         }
-        rejectedPorts.add(port);
-        this.storage.clearReservedPort(role, workspace.id, port);
       }
-    }
 
-    throw new Error(`No free ${role} ports are available in ${range.start}-${range.end}.`);
+      throw new Error(`No free ${role} ports are available in ${range.start}-${range.end}.`);
+    } finally {
+      release?.();
+    }
   }
 
   private recordError(role: ContainerRole, workspace: WorkspaceRow, error: unknown): SimStatus | LspStatus {

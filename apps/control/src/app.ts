@@ -65,6 +65,11 @@ type RunSocketData = {
   connection?: RunConnection | undefined;
 };
 
+// Defensive cap on per-socket message buffering while waiting for upstream
+// to open. A misbehaving sim that accepts TCP but never finishes the WS
+// handshake would otherwise let the browser flood control-plane memory.
+const PROXY_PENDING_LIMIT = 256;
+
 type Nt4SocketData = {
   kind: "nt4";
   upstreamUrl: string;
@@ -863,6 +868,32 @@ async function nt4WebSocketResponse(
   return undefined as unknown as Response;
 }
 
+// Docker reports a container as "running" the moment its entrypoint starts,
+// which is well before the in-container Bun bridge calls Bun.serve(). If the
+// proxy upgrades the browser WS too eagerly, the immediate upstream connection
+// fails and the browser-side socket gets closed with 1011. Probe the bridge's
+// HTTP path until it answers (or we time out) before upgrading.
+async function probeLspBridgeReady(port: number, timeoutMs: number): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/healthz`, {
+        signal: AbortSignal.timeout(500),
+      });
+      // Any HTTP response means the bridge's Bun.serve is up. The bridge
+      // returns 200 with a "listening at /jdtls" body for non-/jdtls paths,
+      // which is exactly what we want to confirm here without upgrading.
+      if (response.status >= 200 && response.status < 500) {
+        return true;
+      }
+    } catch {
+      // Connection refused or aborted; keep retrying.
+    }
+    await new Promise((resolveSleep) => setTimeout(resolveSleep, 250));
+  }
+  return false;
+}
+
 async function lspWebSocketResponse(
   storage: AppStorage,
   containers: ContainerOrchestrator,
@@ -878,6 +909,12 @@ async function lspWebSocketResponse(
   const lease = storage.getContainerLease(auth.workspace.id);
   if (lsp.state !== "running" || !lease?.lsp_port) {
     return new Response(lsp.error ?? "Java language server is not running.", { status: 503 });
+  }
+
+  // Cap the probe at 30s. On a cold container, bridge boot + first-connection
+  // warmup takes ~3-5s. Leaving headroom for slow disks / first-time gradle.
+  if (!(await probeLspBridgeReady(lease.lsp_port, 30_000))) {
+    return new Response("Java language server bridge did not become ready.", { status: 503 });
   }
 
   const upgradeOptions: { data: SocketData } = {
@@ -1115,6 +1152,24 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       if (ws.data.kind !== "nt4" && ws.data.kind !== "lsp") {
         return;
       }
+      // The browser was told (in the upgrade handshake) that we picked
+      // protocols[0]. If upstream actually negotiated something else, the
+      // browser believes a protocol that the upstream isn't speaking. Close
+      // with 1002 (protocol error) so AS Lite reconnects rather than silently
+      // talking past the sim.
+      if (
+        protocols &&
+        protocols.length > 0 &&
+        upstream.protocol &&
+        upstream.protocol !== protocols[0]
+      ) {
+        console.warn(
+          `${label} upstream subprotocol mismatch: browser expected ${protocols[0]}, upstream chose ${upstream.protocol}.`,
+        );
+        ws.close(1002, `${label} subprotocol mismatch.`);
+        upstream.close();
+        return;
+      }
       ws.data.upstreamOpen = true;
       for (const message of ws.data.pendingMessages.splice(0)) {
         upstream.send(message);
@@ -1156,6 +1211,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         if (ws.data.upstreamOpen && ws.data.upstream) {
           ws.data.upstream.send(message);
         } else {
+          if (ws.data.pendingMessages.length >= PROXY_PENDING_LIMIT) {
+            ws.close(1013, "Upstream is not ready; please retry.");
+            return;
+          }
           ws.data.pendingMessages.push(message);
         }
         return;

@@ -121,6 +121,27 @@ async function stageBundle(): Promise<void> {
   await resolveSymlinksInDist();
 }
 
+async function runPostinstallForLite(): Promise<void> {
+  // AdvantageScope's upstream `postinstall` runs five steps. The last
+  // (`npm run download-owlet`) downloads ~7 platform binaries used by the
+  // desktop OCR/AprilTag tooling and is not needed for AS Lite. The docs
+  // workspace install is also unused. Run only the steps Lite's compile
+  // and asset staging actually depend on.
+  console.log("Running Lite-only postinstall steps (skipping owlet, docs)...");
+  // getLicenses populates ThirdPartyLicenses.txt referenced by the bundle.
+  await run("node", ["getLicenses.mjs"], { cwd: ascopeRoot }).catch((error) => {
+    console.warn(`getLicenses.mjs failed (non-fatal): ${error instanceof Error ? error.message : error}`);
+  });
+  // tesseract language data is referenced by Lite's optional OCR features;
+  // failure is non-fatal because Lite's NT4 view does not need OCR.
+  await run("node", ["tesseractLangDownload.mjs"], { cwd: ascopeRoot }).catch((error) => {
+    console.warn(`tesseractLangDownload.mjs failed (non-fatal): ${error instanceof Error ? error.message : error}`);
+  });
+  // bundleLiteAssets stages lite/static, which the build script copies into
+  // dist/advantagescope. This step is required.
+  await run("node", ["bundleLiteAssets.mjs"], { cwd: ascopeRoot });
+}
+
 async function main(): Promise<void> {
   await ensureSubmodule();
   await applyAdvantageScopePatches();
@@ -130,7 +151,11 @@ async function main(): Promise<void> {
   if (Bun.env.ASCOPE_SKIP_NPM_INSTALL === "1") {
     console.log("Skipping npm install because ASCOPE_SKIP_NPM_INSTALL=1.");
   } else {
-    await run(npmCommand, ["install"], { cwd: ascopeRoot });
+    // --ignore-scripts skips the upstream postinstall (which downloads owlet
+    // binaries we don't need for AS Lite). We then run only the Lite-relevant
+    // postinstall steps explicitly.
+    await run(npmCommand, ["install", "--ignore-scripts"], { cwd: ascopeRoot });
+    await runPostinstallForLite();
   }
   await run(npmCommand, ["run", "compile"], {
     cwd: ascopeRoot,

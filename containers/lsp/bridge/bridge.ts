@@ -9,6 +9,9 @@ const jdtLsConfig = Bun.env.JDTLS_CONFIG ?? `${jdtLsHome}/config_linux`;
 const jdtLsData = Bun.env.JDTLS_DATA ?? "/workspace/jdtls-data";
 const jdtLsHeapMax = Bun.env.JDTLS_HEAP_MAX ?? "1G";
 const logMessages = Bun.env.LSP_LOG_MESSAGES === "1";
+// Time to wait on first connection after bridge boot, in case a stale JDT LS
+// from before the bridge restart is still releasing /workspace/jdtls-data.
+const firstConnectionWarmupMs = Number(Bun.env.LSP_FIRST_CONNECTION_WARMUP_MS ?? 2_000);
 
 function findLauncherJar(): string {
   const explicit = Bun.env.JDTLS_LAUNCHER;
@@ -26,12 +29,18 @@ function findLauncherJar(): string {
   return join(pluginsDir, launcher);
 }
 
-const jdtLsLauncher = findLauncherJar();
+let cachedLauncherJar: string | null = null;
+function jdtLsLauncher(): string {
+  if (cachedLauncherJar === null) {
+    cachedLauncherJar = findLauncherJar();
+  }
+  return cachedLauncherJar;
+}
 
 type Subprocess = ReturnType<typeof Bun.spawn>;
 
 type LspSocketData = {
-  process: Subprocess | null;
+  process: Subprocess;
   pumpStdout: Promise<void> | null;
   pumpStderr: Promise<void> | null;
   closed: boolean;
@@ -39,6 +48,22 @@ type LspSocketData = {
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
+
+// Module-level serialization. JDT LS holds a lock on $JDTLS_DATA/.metadata/.lock,
+// so two concurrent JDT LS instances pointing at the same data dir conflict.
+// Each new connection awaits the previous JDT LS subprocess's exit before spawning.
+let previousProcessExit: Promise<unknown> = Promise.resolve();
+let hasSpawnedAtLeastOnce = false;
+
+export type SpawnFn = (args: string[], env: Record<string, string | undefined>) => Subprocess;
+
+const defaultSpawn: SpawnFn = (args, env) =>
+  Bun.spawn(args, {
+    stdin: "pipe",
+    stdout: "pipe",
+    stderr: "pipe",
+    env,
+  });
 
 function jdtLsArgs(): string[] {
   return [
@@ -54,7 +79,7 @@ function jdtLsArgs(): string[] {
     "--add-opens",
     "java.base/java.lang=ALL-UNNAMED",
     "-jar",
-    jdtLsLauncher,
+    jdtLsLauncher(),
     "-configuration",
     jdtLsConfig,
     "-data",
@@ -156,43 +181,78 @@ function writeFramed(stdin: Subprocess["stdin"], json: string): void {
   sink.flush?.();
 }
 
-const server = Bun.serve<LspSocketData, undefined>({
-  hostname: host,
-  port,
-  fetch(request, instance) {
-    const url = new URL(request.url);
-    if (url.pathname !== lspPath) {
-      return new Response(`JDT LS bridge listening at ${lspPath}.\n`);
-    }
+export type CreateServerOptions = {
+  spawn?: SpawnFn;
+};
 
-    const upgraded = instance.upgrade(request, {
-      data: { process: null, pumpStdout: null, pumpStderr: null, closed: false },
-    });
-    if (upgraded) {
-      return undefined;
-    }
-    return new Response("WebSocket upgrade failed.", { status: 400 });
-  },
-  websocket: {
-    perMessageDeflate: false,
-    open(ws) {
+export function createBridgeServer(options: CreateServerOptions = {}) {
+  const spawn = options.spawn ?? defaultSpawn;
+
+  return Bun.serve<LspSocketData, undefined>({
+    hostname: host,
+    port,
+    async fetch(request, instance) {
+      const url = new URL(request.url);
+      if (url.pathname !== lspPath) {
+        return new Response(`JDT LS bridge listening at ${lspPath}.\n`);
+      }
+
+      // Wait for any prior JDT LS to release its workspace lock before
+      // spawning the next one. On the very first connection, also pause
+      // briefly in case a pre-restart JDT LS from a previous bridge process
+      // is still holding the lock inside the bind-mounted jdtls-data dir.
+      await previousProcessExit;
+      if (!hasSpawnedAtLeastOnce && firstConnectionWarmupMs > 0) {
+        hasSpawnedAtLeastOnce = true;
+        await Bun.sleep(firstConnectionWarmupMs);
+      } else {
+        hasSpawnedAtLeastOnce = true;
+      }
+
+      let subprocess: Subprocess;
       try {
-        const subprocess = Bun.spawn(jdtLsArgs(), {
-          stdin: "pipe",
-          stdout: "pipe",
-          stderr: "pipe",
-          env: {
-            ...process.env,
-            HOME: process.env.HOME ?? "/home/frc",
+        subprocess = spawn(jdtLsArgs(), {
+          ...process.env,
+          HOME: process.env.HOME ?? "/home/frc",
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Failed to start JDT LS.";
+        console.error(`failed to spawn JDT LS: ${message}`);
+        return new Response(message, { status: 500 });
+      }
+
+      previousProcessExit = subprocess.exited.catch(() => undefined);
+
+      const data: LspSocketData = {
+        process: subprocess,
+        pumpStdout: null,
+        pumpStderr: null,
+        closed: false,
+      };
+      const upgraded = instance.upgrade(request, { data });
+      if (!upgraded) {
+        try {
+          subprocess.kill("SIGTERM");
+        } catch {
+          // best-effort cleanup
+        }
+        return new Response("WebSocket upgrade failed.", { status: 400 });
+      }
+      return undefined;
+    },
+    websocket: {
+      perMessageDeflate: false,
+      open(ws) {
+        const subprocess = ws.data.process;
+        ws.data.pumpStdout = pumpStdout(
+          subprocess.stdout as ReadableStream<Uint8Array>,
+          (json) => {
+            if (ws.data.closed) {
+              return;
+            }
+            ws.send(json);
           },
-        });
-        ws.data.process = subprocess;
-        ws.data.pumpStdout = pumpStdout(subprocess.stdout as ReadableStream<Uint8Array>, (json) => {
-          if (ws.data.closed) {
-            return;
-          }
-          ws.send(json);
-        });
+        );
         ws.data.pumpStderr = pumpStderr(subprocess.stderr as ReadableStream<Uint8Array>);
         void subprocess.exited.then((code) => {
           if (!ws.data.closed) {
@@ -202,43 +262,35 @@ const server = Bun.serve<LspSocketData, undefined>({
         if (logMessages) {
           console.log(`spawned JDT LS pid ${subprocess.pid}`);
         }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to start JDT LS.";
-        console.error(`failed to spawn JDT LS: ${message}`);
-        ws.close(1011, message);
-      }
-    },
-    message(ws, raw) {
-      const subprocess = ws.data.process;
-      if (!subprocess) {
-        return;
-      }
-      const text = typeof raw === "string" ? raw : decoder.decode(raw);
-      try {
-        writeFramed(subprocess.stdin, text);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "JDT LS write failed.";
-        console.error(`bridge write error: ${message}`);
-        ws.close(1011, message);
-      }
-    },
-    close(ws) {
-      ws.data.closed = true;
-      const subprocess = ws.data.process;
-      if (subprocess) {
+      },
+      message(ws, raw) {
+        const text = typeof raw === "string" ? raw : decoder.decode(raw);
         try {
-          subprocess.kill("SIGTERM");
+          writeFramed(ws.data.process.stdin, text);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "JDT LS write failed.";
+          console.error(`bridge write error: ${message}`);
+          ws.close(1011, message);
+        }
+      },
+      close(ws) {
+        ws.data.closed = true;
+        try {
+          ws.data.process.kill("SIGTERM");
         } catch {
           // Subprocess may already be exiting; ignore.
         }
-      }
+      },
     },
-  },
-});
+  });
+}
 
-console.log(`JDT LS bridge listening on ws://${host}:${server.port}${lspPath}`);
+if (import.meta.main) {
+  const server = createBridgeServer();
+  console.log(`JDT LS bridge listening on ws://${host}:${server.port}${lspPath}`);
 
-process.on("SIGTERM", () => {
-  server.stop(true);
-  process.exit(0);
-});
+  process.on("SIGTERM", () => {
+    server.stop(true);
+    process.exit(0);
+  });
+}
