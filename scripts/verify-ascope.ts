@@ -83,6 +83,10 @@ async function verifyStagedBundle(): Promise<void> {
   const hubBundle = await readFile(resolve(distDir, "bundles", "hub.js"), "utf8");
   assert(mainBundle.includes("frc-sim:set-nt4-endpoint"), "AS Lite main bundle is missing postMessage config support.");
   assert(mainBundle.includes("frc-sim:nt4-endpoint-ready"), "AS Lite main bundle is missing endpoint acknowledgement.");
+  assert(
+    mainBundle.includes("did not receive an endpoint configuration"),
+    "AS Lite main bundle is missing the embedded-mode endpoint timeout banner.",
+  );
   assert(hubBundle.includes("frcSimNt4Endpoint"), "AS Lite hub bundle is missing injected NT4 endpoint support.");
   assert(hubBundle.includes("websocketUrl"), "AS Lite hub bundle is missing injected WebSocket URL support.");
   assert(hubBundle.includes("aliveUrl"), "AS Lite hub bundle is missing injected alive URL support.");
