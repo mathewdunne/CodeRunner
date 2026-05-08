@@ -98,6 +98,14 @@ async function resolveSymlinksInDist(): Promise<void> {
       continue;
     }
 
+    // On Linux, cp copies symlinks as symlinks (or follows them), so the
+    // placeholder may already be a directory rather than a text-file stub.
+    // Only attempt readFile on regular files; skip resolved directories.
+    const placeholderStat = await stat(placeholder);
+    if (!placeholderStat.isFile()) {
+      continue;
+    }
+
     const linkText = (await readFile(placeholder, "utf8")).trim();
     const linkSourceDir = dirname(resolve(ascopeRoot, ...repoRelativePath.split("/")));
     const target = resolve(linkSourceDir, ...linkText.split(posix.sep));
