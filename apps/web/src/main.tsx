@@ -414,18 +414,25 @@ function App() {
       return;
     }
 
-    const sendHeartbeat = () => {
+    const sendHeartbeat = (closing = false) => {
       void fetch(`/u/${workspaceSlug}/api/heartbeat`, {
         method: "POST",
         credentials: "same-origin",
         headers: { "content-type": "application/json" },
-        body: "{}",
+        body: JSON.stringify({ closing }),
+        keepalive: true,
       });
     };
 
+    const onPageHide = () => sendHeartbeat(true);
+
     sendHeartbeat();
-    const interval = window.setInterval(sendHeartbeat, 30_000);
-    return () => window.clearInterval(interval);
+    const interval = window.setInterval(() => sendHeartbeat(), 60_000);
+    window.addEventListener("pagehide", onPageHide);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("pagehide", onPageHide);
+    };
   }, [workspaceSlug]);
 
   useEffect(() => {

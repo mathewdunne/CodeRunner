@@ -506,6 +506,107 @@ export class AppStorage {
     return this.upsertContainerLease({ ...input, role: "lsp" });
   }
 
+  touchContainerLeaseActivity(workspaceId: WorkspaceId): void {
+    const timestamp = nowIso();
+    this.db
+      .query("UPDATE container_leases SET last_used_at = ? WHERE workspace_id = ?")
+      .run(timestamp, workspaceId);
+  }
+
+  listAllWorkspacesWithLeases(): Array<{
+    workspace: WorkspaceRow;
+    user: UserRow;
+    lease: ContainerLeaseRow | null;
+  }> {
+    const rows = this.db
+      .query(
+        `
+          SELECT
+            w.id AS w_id, w.user_id AS w_user_id, w.slug AS w_slug,
+            w.project_path AS w_project_path, w.created_at AS w_created_at,
+            w.last_accessed_at AS w_last_accessed_at,
+            u.id AS u_id, u.display_name AS u_display_name, u.slug AS u_slug,
+            u.created_at AS u_created_at, u.last_seen_at AS u_last_seen_at,
+            cl.workspace_id AS cl_workspace_id, cl.sim_container, cl.lsp_container,
+            cl.sim_port, cl.lsp_port, cl.state AS cl_state, cl.lsp_state AS cl_lsp_state,
+            cl.last_used_at AS cl_last_used_at, cl.created_at AS cl_created_at
+          FROM workspaces w
+          JOIN users u ON u.id = w.user_id
+          LEFT JOIN container_leases cl ON cl.workspace_id = w.id
+          ORDER BY w.last_accessed_at DESC
+        `,
+      )
+      .all() as Array<{
+        w_id: WorkspaceId;
+        w_user_id: UserId;
+        w_slug: WorkspaceSlug;
+        w_project_path: string;
+        w_created_at: string;
+        w_last_accessed_at: string;
+        u_id: UserId;
+        u_display_name: string;
+        u_slug: WorkspaceSlug;
+        u_created_at: string;
+        u_last_seen_at: string;
+        cl_workspace_id: WorkspaceId | null;
+        sim_container: string | null;
+        lsp_container: string | null;
+        sim_port: number | null;
+        lsp_port: number | null;
+        cl_state: ContainerState | null;
+        cl_lsp_state: ContainerState | null;
+        cl_last_used_at: string | null;
+        cl_created_at: string | null;
+      }>;
+
+    return rows.map((row) => ({
+      workspace: {
+        id: row.w_id,
+        user_id: row.w_user_id,
+        slug: row.w_slug,
+        project_path: row.w_project_path,
+        created_at: row.w_created_at,
+        last_accessed_at: row.w_last_accessed_at,
+      },
+      user: {
+        id: row.u_id,
+        display_name: row.u_display_name,
+        slug: row.u_slug,
+        created_at: row.u_created_at,
+        last_seen_at: row.u_last_seen_at,
+      },
+      lease: row.cl_workspace_id
+        ? {
+            workspace_id: row.cl_workspace_id,
+            sim_container: row.sim_container,
+            lsp_container: row.lsp_container,
+            sim_port: row.sim_port,
+            lsp_port: row.lsp_port,
+            state: row.cl_state as ContainerState,
+            lsp_state: row.cl_lsp_state as ContainerState,
+            last_used_at: row.cl_last_used_at!,
+            created_at: row.cl_created_at!,
+          }
+        : null,
+    }));
+  }
+
+  listIdleWorkspaceIds(idleMinutes: number): WorkspaceId[] {
+    const cutoff = new Date(Date.now() - idleMinutes * 60_000).toISOString();
+    const rows = this.db
+      .query(
+        `
+          SELECT w.id
+          FROM workspaces w
+          JOIN container_leases cl ON cl.workspace_id = w.id
+          WHERE w.last_accessed_at < ?
+            AND (cl.state IN ('running', 'starting') OR cl.lsp_state IN ('running', 'starting'))
+        `,
+      )
+      .all(cutoff) as Array<{ id: WorkspaceId }>;
+    return rows.map((row) => row.id);
+  }
+
   createRunJob(input: {
     workspaceId: WorkspaceId;
     logPath: string;

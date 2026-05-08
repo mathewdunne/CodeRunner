@@ -177,6 +177,10 @@ export class RunManager {
     return this.queue.length;
   }
 
+  activeBuildCount(): number {
+    return this.activeBuilds.size;
+  }
+
   start(workspace: WorkspaceRow, connection?: RunConnection | null): string {
     this.cancelWorkspace(workspace.id);
 

@@ -18,6 +18,7 @@
     "verify:ascope": "bun scripts/verify-ascope.ts",
     "docker:build:sim": "bun scripts/build-sim-image.ts",
     "docker:build:lsp": "bun scripts/build-lsp-image.ts",
+    "docker:cleanup": "bun scripts/cleanup-containers.ts",
     "verify:v1:two-user": "bun scripts/verify-v1-two-user.ts",
     "migrate": "bun apps/control/src/migrate.ts apply",
     "migrate:status": "bun apps/control/src/migrate.ts status",

@@ -143,8 +143,23 @@ function createFakeDocker(options: { failRunPortsOnce?: number[]; onRunPort?: (p
     if (args[0] === "container" && args[1] === "ls") {
       const workspaceFilter = args.find((arg) => arg.startsWith("label=frc-sim.workspace="));
       const workspaceId = workspaceFilter?.slice("label=frc-sim.workspace=".length);
+      const roleFilter = args.find((arg) => arg.startsWith("label=frc-sim.role="));
+      const roleValue = roleFilter?.slice("label=frc-sim.role=".length);
+      const statusFilter = args.find((arg) => arg.startsWith("status="));
+      const statusValue = statusFilter?.slice("status=".length);
       const names = [...containers.values()]
-        .filter((container) => container.labels["frc-sim.workspace"] === workspaceId)
+        .filter((container) => {
+          if (workspaceId && container.labels["frc-sim.workspace"] !== workspaceId) {
+            return false;
+          }
+          if (roleValue && container.labels["frc-sim.role"] !== roleValue) {
+            return false;
+          }
+          if (statusValue === "exited" && container.running) {
+            return false;
+          }
+          return true;
+        })
         .map((container) => container.name);
       return ok(`${names.join("\n")}${names.length ? "\n" : ""}`);
     }
@@ -192,6 +207,20 @@ function createFakeDocker(options: { failRunPortsOnce?: number[]; onRunPort?: (p
     if (args[0] === "rm" && args[1] === "-f") {
       containers.delete(args[2] ?? "");
       return ok();
+    }
+
+    if (args[0] === "rm" && args[1] && args[1] !== "-f") {
+      containers.delete(args[1]);
+      return ok();
+    }
+
+    if (args[0] === "stop") {
+      const container = containers.get(args[1] ?? "");
+      if (!container) {
+        return missing("No such container");
+      }
+      container.running = false;
+      return ok(`${container.name}\n`);
     }
 
     return missing(`unhandled docker args: ${args.join(" ")}`);
@@ -1403,6 +1432,433 @@ describe("V1-7 Java LSP container and proxy", () => {
         simPortRange: { start: 25970, end: 25970 },
         lspImage: "frc-lsp:test",
         lspPortRange: { start: 30023, end: 30023 },
+      },
+    );
+  });
+});
+
+describe("V1-8 idle teardown, recovery, and operator controls", () => {
+  test("heartbeat touches container lease activity", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        const response = await login(app, "alice");
+        const cookie = cookieFrom(response);
+        const workspace = workspaceBySlug(app, "alice");
+
+        await app.containers.ensureSimContainer(workspace);
+
+        const leaseBefore = app.storage.getContainerLease(workspace.id);
+        expect(leaseBefore).toBeTruthy();
+        const lastUsedBefore = leaseBefore!.last_used_at;
+
+        await Bun.sleep(20);
+
+        const heartbeat = await app.fetch(
+          new Request("http://localhost/u/alice/api/heartbeat", {
+            method: "POST",
+            headers: { cookie, "content-type": "application/json" },
+            body: "{}",
+          }),
+        );
+        expect(heartbeat.status).toBe(200);
+        const body = (await heartbeat.json()) as { ok: boolean };
+        expect(body.ok).toBe(true);
+
+        const leaseAfter = app.storage.getContainerLease(workspace.id);
+        expect(leaseAfter).toBeTruthy();
+        expect(leaseAfter!.last_used_at >= lastUsedBefore).toBe(true);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25980, end: 25980 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30030, end: 30030 },
+      },
+    );
+  });
+
+  test("heartbeat accepts a closing flag", async () => {
+    await withApp(async (app) => {
+      const response = await login(app, "alice");
+      const cookie = cookieFrom(response);
+
+      const heartbeat = await app.fetch(
+        new Request("http://localhost/u/alice/api/heartbeat", {
+          method: "POST",
+          headers: { cookie, "content-type": "application/json" },
+          body: JSON.stringify({ closing: true }),
+        }),
+      );
+      expect(heartbeat.status).toBe(200);
+      const body = (await heartbeat.json()) as { ok: boolean; closing: boolean };
+      expect(body.ok).toBe(true);
+      expect(body.closing).toBe(true);
+    });
+  });
+
+  test("admin status returns workspace and container info", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        await login(app, "bob");
+
+        const status = await app.fetch(new Request("http://localhost/admin/status"));
+        expect(status.status).toBe(200);
+        const body = (await status.json()) as {
+          ok: boolean;
+          workspaces: Array<{ workspace: { slug: string }; user: { displayName: string } }>;
+          idleStopMinutes: number;
+          runConcurrency: number;
+          activeBuilds: number;
+          queueDepth: number;
+        };
+        expect(body.ok).toBe(true);
+        expect(body.workspaces.length).toBe(2);
+        const slugs = body.workspaces.map((w) => w.workspace.slug).sort();
+        expect(slugs).toEqual(["alice", "bob"]);
+        expect(body.idleStopMinutes).toBe(30);
+        expect(body.runConcurrency).toBe(2);
+        expect(body.activeBuilds).toBe(0);
+        expect(body.queueDepth).toBe(0);
+      },
+      { dockerRunner: fakeDocker.runner },
+    );
+  });
+
+  test("admin status is rejected with wrong token when adminToken is configured", async () => {
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+
+        const noToken = await app.fetch(new Request("http://localhost/admin/status"));
+        expect(noToken.status).toBe(401);
+
+        const wrongToken = await app.fetch(
+          new Request("http://localhost/admin/status", {
+            headers: { authorization: "Bearer wrong-token" },
+          }),
+        );
+        expect(wrongToken.status).toBe(401);
+
+        const correctToken = await app.fetch(
+          new Request("http://localhost/admin/status", {
+            headers: { authorization: "Bearer test-admin-token" },
+          }),
+        );
+        expect(correctToken.status).toBe(200);
+      },
+      { adminToken: "test-admin-token" },
+    );
+  });
+
+  test("admin can restart a sim container", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        const workspace = workspaceBySlug(app, "alice");
+
+        await app.containers.ensureSimContainer(workspace);
+        expect(fakeDocker.containers.has(`frc-v1-sim-${workspace.id}`)).toBe(true);
+
+        const response = await app.fetch(
+          new Request(`http://localhost/admin/workspaces/${workspace.id}/restart-sim`, {
+            method: "POST",
+          }),
+        );
+        expect(response.status).toBe(200);
+        const body = (await response.json()) as { ok: boolean; action: string };
+        expect(body.ok).toBe(true);
+        expect(body.action).toBe("restart-sim");
+
+        expect(fakeDocker.containers.has(`frc-v1-sim-${workspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25981, end: 25982 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30031, end: 30032 },
+      },
+    );
+  });
+
+  test("admin can restart an LSP container", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        const workspace = workspaceBySlug(app, "alice");
+
+        await app.containers.ensureLspContainer(workspace);
+        expect(fakeDocker.containers.has(`frc-v1-lsp-${workspace.id}`)).toBe(true);
+
+        const response = await app.fetch(
+          new Request(`http://localhost/admin/workspaces/${workspace.id}/restart-lsp`, {
+            method: "POST",
+          }),
+        );
+        expect(response.status).toBe(200);
+        const body = (await response.json()) as { ok: boolean; action: string };
+        expect(body.ok).toBe(true);
+        expect(body.action).toBe("restart-lsp");
+
+        expect(fakeDocker.containers.has(`frc-v1-lsp-${workspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v1-lsp-${workspace.id}`)?.running).toBe(true);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25983, end: 25984 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30033, end: 30034 },
+      },
+    );
+  });
+
+  test("admin can reset LSP data without deleting project files", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        const workspace = workspaceBySlug(app, "alice");
+
+        await app.containers.ensureLspContainer(workspace);
+
+        const jdtlsDataDir = join(workspace.project_path, "..", "jdtls-data");
+        await writeFile(join(jdtlsDataDir, "test-cache.txt"), "cached data");
+
+        const robotFile = join(workspace.project_path, "src", "main", "java", "frc", "robot", "Robot.java");
+        await writeFile(robotFile, "// modified by test");
+
+        const response = await app.fetch(
+          new Request(`http://localhost/admin/workspaces/${workspace.id}/reset-lsp-data`, {
+            method: "POST",
+          }),
+        );
+        expect(response.status).toBe(200);
+        const body = (await response.json()) as { ok: boolean; action: string };
+        expect(body.ok).toBe(true);
+        expect(body.action).toBe("reset-lsp-data");
+
+        expect(await exists(jdtlsDataDir)).toBe(true);
+        expect(await exists(join(jdtlsDataDir, "test-cache.txt"))).toBe(false);
+
+        expect(await readFile(robotFile, "utf8")).toBe("// modified by test");
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25985, end: 25986 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30035, end: 30036 },
+      },
+    );
+  });
+
+  test("admin can stop all containers for a workspace", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        const workspace = workspaceBySlug(app, "alice");
+
+        await app.containers.ensureSimContainer(workspace);
+        await app.containers.ensureLspContainer(workspace);
+        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v1-lsp-${workspace.id}`)?.running).toBe(true);
+
+        const response = await app.fetch(
+          new Request(`http://localhost/admin/workspaces/${workspace.id}/stop-containers`, {
+            method: "POST",
+          }),
+        );
+        expect(response.status).toBe(200);
+        const body = (await response.json()) as { ok: boolean; action: string };
+        expect(body.ok).toBe(true);
+        expect(body.action).toBe("stop-containers");
+
+        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(false);
+        expect(fakeDocker.containers.get(`frc-v1-lsp-${workspace.id}`)?.running).toBe(false);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25987, end: 25988 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30037, end: 30038 },
+      },
+    );
+  });
+
+  test("admin returns 404 for unknown workspace", async () => {
+    await withApp(async (app) => {
+      await login(app, "alice");
+
+      const response = await app.fetch(
+        new Request("http://localhost/admin/workspaces/ws_0000000000000000deadbeef00000000/restart-sim", {
+          method: "POST",
+        }),
+      );
+      expect(response.status).toBe(404);
+    });
+  });
+
+  test("idle sweep stops containers for idle workspaces", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        const workspace = workspaceBySlug(app, "alice");
+
+        await app.containers.ensureSimContainer(workspace);
+        await app.containers.ensureLspContainer(workspace);
+        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
+
+        const pastTime = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+        app.storage.db
+          .query("UPDATE workspaces SET last_accessed_at = ? WHERE id = ?")
+          .run(pastTime, workspace.id);
+
+        const stopped = await app.idle.sweep();
+        expect(stopped).toContain(workspace.id);
+
+        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(false);
+        expect(fakeDocker.containers.get(`frc-v1-lsp-${workspace.id}`)?.running).toBe(false);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25989, end: 25990 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30039, end: 30040 },
+        idleStopMinutes: 30,
+      },
+    );
+  });
+
+  test("idle sweep does not stop active workspaces", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        const workspace = workspaceBySlug(app, "alice");
+
+        await app.containers.ensureSimContainer(workspace);
+        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
+
+        const stopped = await app.idle.sweep();
+        expect(stopped).not.toContain(workspace.id);
+        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25991, end: 25992 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30041, end: 30042 },
+        idleStopMinutes: 30,
+      },
+    );
+  });
+
+  test("returning user gets new containers after idle teardown", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        const workspace = workspaceBySlug(app, "alice");
+
+        await app.containers.ensureSimContainer(workspace);
+        await app.containers.ensureLspContainer(workspace);
+
+        await app.containers.stopWorkspaceContainers(workspace.id);
+        await app.containers.removeContainer("sim", workspace.id);
+        await app.containers.removeContainer("lsp", workspace.id);
+        expect(fakeDocker.containers.has(`frc-v1-sim-${workspace.id}`)).toBe(false);
+        expect(fakeDocker.containers.has(`frc-v1-lsp-${workspace.id}`)).toBe(false);
+
+        expect(await exists(join(workspace.project_path, "src", "main", "java", "frc", "robot", "Robot.java"))).toBe(true);
+
+        await app.containers.ensureSimContainer(workspace);
+        await app.containers.ensureLspContainer(workspace);
+        expect(fakeDocker.containers.has(`frc-v1-sim-${workspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.has(`frc-v1-lsp-${workspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v1-lsp-${workspace.id}`)?.running).toBe(true);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25993, end: 25994 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30043, end: 30044 },
+      },
+    );
+  });
+
+  test("cleanup removes stopped managed containers", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        const workspace = workspaceBySlug(app, "alice");
+
+        await app.containers.ensureSimContainer(workspace);
+        await app.containers.stopContainer("sim", workspace.id);
+        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(false);
+
+        const removed = await app.containers.cleanupStoppedContainers();
+        expect(removed).toContain(`frc-v1-sim-${workspace.id}`);
+        expect(fakeDocker.containers.has(`frc-v1-sim-${workspace.id}`)).toBe(false);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25995, end: 25996 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30045, end: 30046 },
+      },
+    );
+  });
+
+  test("operator restart does not affect other student's containers", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+        await login(app, "bob");
+        const aliceWorkspace = workspaceBySlug(app, "alice");
+        const bobWorkspace = workspaceBySlug(app, "bob");
+
+        await Promise.all([
+          app.containers.ensureLspContainer(aliceWorkspace),
+          app.containers.ensureLspContainer(bobWorkspace),
+        ]);
+
+        expect(fakeDocker.containers.get(`frc-v1-lsp-${aliceWorkspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v1-lsp-${bobWorkspace.id}`)?.running).toBe(true);
+
+        const response = await app.fetch(
+          new Request(`http://localhost/admin/workspaces/${bobWorkspace.id}/restart-lsp`, {
+            method: "POST",
+          }),
+        );
+        expect(response.status).toBe(200);
+
+        expect(fakeDocker.containers.get(`frc-v1-lsp-${aliceWorkspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v1-lsp-${bobWorkspace.id}`)?.running).toBe(true);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        simImage: "frc-sim:test",
+        simPortRange: { start: 25800, end: 25809 },
+        lspImage: "frc-lsp:test",
+        lspPortRange: { start: 30050, end: 30059 },
       },
     );
   });

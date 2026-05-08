@@ -12,6 +12,9 @@ import {
   runClientMessageSchema,
   writeFileRequestSchema,
   workspaceSlugSchema,
+  type AdminActionResponse,
+  type AdminStatusResponse,
+  type AdminWorkspaceStatus,
   type CreateFileRequest,
   type ContainersStatusResponse,
   type FileMutationResponse,
@@ -24,6 +27,7 @@ import {
   type RenameFileRequest,
   type SessionResponse,
   type UserId,
+  type WorkspaceId,
   type WriteFileRequest,
   type WorkspaceSlug,
 } from "@frc-sim/contracts";
@@ -34,6 +38,7 @@ import {
   serializeExpiredSessionCookie,
   serializeSessionCookie,
 } from "./cookies";
+import { IdleManager } from "./idle";
 import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
 import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from "./storage";
 
@@ -47,6 +52,7 @@ export type ControlApp = {
   storage: AppStorage;
   containers: ContainerOrchestrator;
   runs: RunManager;
+  idle: IdleManager;
   close(): void;
 };
 
@@ -623,10 +629,11 @@ function apiErrorResponse(error: unknown, fallback: string): Response {
   return jsonResponse({ error: message }, { status });
 }
 
-async function readHeartbeatRequest(request: Request): Promise<HeartbeatResponse> {
+async function readHeartbeatRequest(request: Request, storage: AppStorage, auth: AuthContext): Promise<HeartbeatResponse> {
   const text = await request.text();
   const input = text.trim() ? JSON.parse(text) : {};
   const parsed = heartbeatRequestSchema.parse(input);
+  storage.touchContainerLeaseActivity(auth.workspace.id);
   return { ok: true, closing: parsed.closing ?? false };
 }
 
@@ -932,17 +939,80 @@ async function lspWebSocketResponse(
   return undefined as unknown as Response;
 }
 
+function isAdminAuthorized(storage: AppStorage, request: Request): boolean {
+  const token = storage.config.adminToken;
+  if (token) {
+    const header = request.headers.get("authorization") ?? "";
+    return header === `Bearer ${token}`;
+  }
+  // No token configured: allow localhost-only access.
+  const host = request.headers.get("host") ?? new URL(request.url).host;
+  return /^(localhost|127\.0\.0\.1|::1)(:\d+)?$/i.test(host);
+}
+
+function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatusResponse {
+  const entries = storage.listAllWorkspacesWithLeases();
+  const idleMinutes = storage.config.idleStopMinutes;
+  const cutoff = Date.now() - idleMinutes * 60_000;
+
+  const workspaces: AdminWorkspaceStatus[] = entries.map((entry) => {
+    const lastActivity = entry.lease?.last_used_at ?? entry.workspace.last_accessed_at;
+    const isIdle = Date.parse(entry.workspace.last_accessed_at) < cutoff;
+    return {
+      workspace: {
+        id: entry.workspace.id,
+        slug: entry.workspace.slug,
+        lastAccessedAt: entry.workspace.last_accessed_at,
+      },
+      user: {
+        displayName: entry.user.display_name,
+        slug: entry.user.slug,
+        lastSeenAt: entry.user.last_seen_at,
+      },
+      sim: {
+        state: entry.lease?.state ?? "missing",
+        containerName: entry.lease?.sim_container ?? null,
+        port: entry.lease?.sim_port ?? null,
+      },
+      lsp: {
+        state: entry.lease?.lsp_state ?? "missing",
+        containerName: entry.lease?.lsp_container ?? null,
+        port: entry.lease?.lsp_port ?? null,
+      },
+      idle: isIdle,
+      lastActivity,
+    };
+  });
+
+  return {
+    ok: true,
+    workspaces,
+    idleStopMinutes: idleMinutes,
+    runConcurrency: storage.config.runConcurrency,
+    activeBuilds: runs.activeBuildCount(),
+    queueDepth: runs.queueDepth(),
+  };
+}
+
 export async function createApp(configInput: ControlAppOptions = {}): Promise<ControlApp> {
   const { dockerRunner, runCommandFactory, ...storageConfig } = configInput;
   const storage = await createStorage(storageConfig);
   const containers = new ContainerOrchestrator(storage, { dockerRunner });
   const runs = new RunManager(storage, containers, { commandFactory: runCommandFactory });
+  const idle = new IdleManager({
+    storage,
+    containers,
+    onStop: (workspaceId) => {
+      console.log(`Idle sweep stopped containers for workspace ${workspaceId}`);
+    },
+  });
+  idle.start();
 
   async function fetch(request: Request, server?: BunUpgradeServer): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === "/healthz") {
-      return Response.json({ ok: true, service: "control", version: "v1-7" });
+      return Response.json({ ok: true, service: "control", version: "v1-8" });
     }
 
     if ((url.pathname === "/scope" || url.pathname.startsWith("/scope/")) && request.method === "GET") {
@@ -990,6 +1060,73 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
           "set-cookie": serializeExpiredSessionCookie(),
         },
       });
+    }
+
+    // --- Admin / operator routes ---
+    if (url.pathname.startsWith("/admin/")) {
+      if (!isAdminAuthorized(storage, request)) {
+        return jsonResponse({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      if (url.pathname === "/admin/status" && request.method === "GET") {
+        return jsonResponse(adminStatusResponse(storage, runs));
+      }
+
+      const adminWorkspaceMatch = /^\/admin\/workspaces\/([^/]+)\/(.+)$/.exec(url.pathname);
+      if (adminWorkspaceMatch && request.method === "POST") {
+        const targetWorkspaceId = adminWorkspaceMatch[1] ?? "";
+        const action = adminWorkspaceMatch[2] ?? "";
+        const workspace = storage.findWorkspaceById(targetWorkspaceId as WorkspaceId);
+        if (!workspace) {
+          return jsonResponse({ error: "Workspace not found." }, { status: 404 });
+        }
+
+        try {
+          if (action === "restart-sim") {
+            await containers.restartSimContainer(workspace);
+            return jsonResponse({
+              ok: true,
+              action: "restart-sim",
+              workspaceId: workspace.id,
+              detail: "Sim container restarted.",
+            } satisfies AdminActionResponse);
+          }
+
+          if (action === "restart-lsp") {
+            await containers.restartLspContainer(workspace);
+            return jsonResponse({
+              ok: true,
+              action: "restart-lsp",
+              workspaceId: workspace.id,
+              detail: "LSP container restarted.",
+            } satisfies AdminActionResponse);
+          }
+
+          if (action === "reset-lsp-data") {
+            await containers.resetLspData(workspace);
+            return jsonResponse({
+              ok: true,
+              action: "reset-lsp-data",
+              workspaceId: workspace.id,
+              detail: "LSP data reset and container restarted.",
+            } satisfies AdminActionResponse);
+          }
+
+          if (action === "stop-containers") {
+            await containers.stopWorkspaceContainers(workspace.id);
+            return jsonResponse({
+              ok: true,
+              action: "stop-containers",
+              workspaceId: workspace.id,
+              detail: "All containers stopped.",
+            } satisfies AdminActionResponse);
+          }
+        } catch (error) {
+          return apiErrorResponse(error, `Admin action ${action} failed.`);
+        }
+      }
+
+      return notFound();
     }
 
     const workspaceMatch = /^\/u\/([^/]+)(\/.*)?$/.exec(url.pathname);
@@ -1118,7 +1255,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
       if (suffix === "/api/heartbeat" && request.method === "POST") {
         try {
-          return jsonResponse(await readHeartbeatRequest(request));
+          return jsonResponse(await readHeartbeatRequest(request, storage, auth));
         } catch (error) {
           const message = error instanceof Error ? error.message : "Invalid heartbeat request.";
           return jsonResponse({ error: message }, { status: 400 });
@@ -1252,7 +1389,9 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     storage,
     containers,
     runs,
+    idle,
     close() {
+      idle.stop();
       storage.close();
     },
   };

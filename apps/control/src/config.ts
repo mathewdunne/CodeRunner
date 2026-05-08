@@ -27,11 +27,16 @@ export type ControlConfig = {
   simStartupTimeoutMs: number;
   containerUser: string | null;
   containerAutoStart: boolean;
+  idleStopMinutes: number;
+  idleCheckIntervalMs: number;
+  adminToken: string | null;
 };
 
 export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "lspPortRange">> & {
   simPortRange?: PortRange | string;
   lspPortRange?: PortRange | string;
+  idleStopMinutes?: number | string;
+  idleCheckIntervalMs?: number | string;
 };
 
 const repoRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
@@ -143,5 +148,16 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     ),
     containerUser: input.containerUser === undefined ? defaultContainerUser() : input.containerUser,
     containerAutoStart: parseBoolean(input.containerAutoStart ?? Bun.env.FRC_CONTAINER_AUTO_START ?? Bun.env.CONTAINER_AUTO_START, true),
+    idleStopMinutes: parsePositiveInteger(
+      input.idleStopMinutes ?? Bun.env.IDLE_STOP_MINUTES,
+      30,
+      "IDLE_STOP_MINUTES",
+    ),
+    idleCheckIntervalMs: parsePositiveInteger(
+      input.idleCheckIntervalMs ?? Bun.env.IDLE_CHECK_INTERVAL_MS,
+      60_000,
+      "IDLE_CHECK_INTERVAL_MS",
+    ),
+    adminToken: input.adminToken ?? Bun.env.ADMIN_TOKEN ?? null,
   };
 }

@@ -289,3 +289,50 @@ export type ProjectFileResponse = z.infer<typeof projectFileResponseSchema>;
 export type FileMutationResponse = z.infer<typeof fileMutationResponseSchema>;
 export type RunClientMessage = z.infer<typeof runClientMessageSchema>;
 export type RunServerMessage = z.infer<typeof runServerMessageSchema>;
+
+// --- Admin / operator schemas ---
+
+export const adminWorkspaceStatusSchema = z.object({
+  workspace: z.object({
+    id: workspaceIdSchema,
+    slug: workspaceSlugSchema,
+    lastAccessedAt: z.string(),
+  }),
+  user: z.object({
+    displayName: z.string(),
+    slug: workspaceSlugSchema,
+    lastSeenAt: z.string(),
+  }),
+  sim: z.object({
+    state: containerStateSchema,
+    containerName: z.string().nullable(),
+    port: z.number().int().nullable(),
+  }),
+  lsp: z.object({
+    state: containerStateSchema,
+    containerName: z.string().nullable(),
+    port: z.number().int().nullable(),
+  }),
+  idle: z.boolean(),
+  lastActivity: z.string(),
+});
+
+export const adminStatusResponseSchema = z.object({
+  ok: z.literal(true),
+  workspaces: z.array(adminWorkspaceStatusSchema),
+  idleStopMinutes: z.number().int().min(1),
+  runConcurrency: z.number().int().min(1),
+  activeBuilds: z.number().int().min(0),
+  queueDepth: z.number().int().min(0),
+});
+
+export const adminActionResponseSchema = z.object({
+  ok: z.literal(true),
+  action: z.string(),
+  workspaceId: workspaceIdSchema,
+  detail: z.string().optional(),
+});
+
+export type AdminWorkspaceStatus = z.infer<typeof adminWorkspaceStatusSchema>;
+export type AdminStatusResponse = z.infer<typeof adminStatusResponseSchema>;
+export type AdminActionResponse = z.infer<typeof adminActionResponseSchema>;

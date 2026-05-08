@@ -1,4 +1,4 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, rm } from "node:fs/promises";
 import { createServer } from "node:net";
 import { dirname, resolve } from "node:path";
 import type {
@@ -291,6 +291,119 @@ export class ContainerOrchestrator {
       sim,
       lsp,
     };
+  }
+
+  async stopContainer(role: ContainerRole, workspaceId: WorkspaceId): Promise<void> {
+    const name = containerName(role, workspaceId);
+    const existing = await this.inspectContainer(name);
+    if (existing?.State?.Running) {
+      await this.runDocker(["stop", name], true);
+    }
+    this.storage.upsertContainerLease({
+      workspaceId,
+      role,
+      containerName: name,
+      port: leasePortFor(role, this.storage.getContainerLease(workspaceId)),
+      state: "stopped",
+    });
+  }
+
+  async removeContainer(role: ContainerRole, workspaceId: WorkspaceId): Promise<void> {
+    const name = containerName(role, workspaceId);
+    await this.runDocker(["rm", "-f", name], true);
+    const lease = this.storage.getContainerLease(workspaceId);
+    if (lease) {
+      this.storage.upsertContainerLease({
+        workspaceId,
+        role,
+        containerName: null,
+        port: null,
+        state: "missing",
+      });
+    }
+  }
+
+  async stopWorkspaceContainers(workspaceId: WorkspaceId): Promise<void> {
+    await Promise.all([
+      this.stopContainer("sim", workspaceId),
+      this.stopContainer("lsp", workspaceId),
+    ]);
+  }
+
+  async restartSimContainer(workspace: WorkspaceRow): Promise<SimStatus> {
+    await this.stopContainer("sim", workspace.id);
+    await this.removeContainer("sim", workspace.id);
+    this.activeEnsures.delete(`sim:${workspace.id}`);
+    return this.ensureSimContainer(workspace);
+  }
+
+  async restartLspContainer(workspace: WorkspaceRow): Promise<LspStatus> {
+    await this.stopContainer("lsp", workspace.id);
+    await this.removeContainer("lsp", workspace.id);
+    this.activeEnsures.delete(`lsp:${workspace.id}`);
+    return this.ensureLspContainer(workspace);
+  }
+
+  async resetLspData(workspace: WorkspaceRow): Promise<LspStatus> {
+    await this.stopContainer("lsp", workspace.id);
+    await this.removeContainer("lsp", workspace.id);
+    this.activeEnsures.delete(`lsp:${workspace.id}`);
+
+    const jdtLsDataPath = workspaceJdtLsDataPath(workspace);
+    await rm(jdtLsDataPath, { recursive: true, force: true });
+    await mkdir(jdtLsDataPath, { recursive: true });
+
+    if (this.storage.config.containerUser) {
+      const [uidStr, gidStr] = this.storage.config.containerUser.split(":");
+      const uid = Number(uidStr);
+      const gid = Number(gidStr);
+      if (Number.isInteger(uid) && Number.isInteger(gid)) {
+        try {
+          const { chown } = await import("node:fs/promises");
+          await chown(jdtLsDataPath, uid, gid);
+        } catch {
+          // Windows or non-root may not support chown; safe to skip.
+        }
+      }
+    }
+
+    return this.ensureLspContainer(workspace);
+  }
+
+  async cleanupStoppedContainers(): Promise<string[]> {
+    const result = await this.runDocker(
+      [
+        "container",
+        "ls",
+        "-a",
+        "--filter",
+        "label=frc-sim.managed=true",
+        "--filter",
+        "label=frc-sim.version=v1",
+        "--filter",
+        "status=exited",
+        "--format",
+        "{{.Names}}",
+      ],
+      true,
+    );
+    if (result.exitCode !== 0) {
+      return [];
+    }
+
+    const names = result.stdout
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    const removed: string[] = [];
+    for (const name of names) {
+      const removeResult = await this.runDocker(["rm", name], true);
+      if (removeResult.exitCode === 0) {
+        removed.push(name);
+      }
+    }
+    return removed;
   }
 
   async ensureSimContainer(workspace: WorkspaceRow): Promise<SimStatus> {
