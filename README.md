@@ -2,7 +2,7 @@
 
 A browser-based IDE for learning FRC robot programming. Students write Java in Monaco, run a WPILib simulation, and view telemetry through AdvantageScope Lite.
 
-Status: V1-0 through V1-9 are implemented. See [`docs/runbook.md`](docs/runbook.md) for operator setup and [`V1-Design.md`](V1-Design.md) for architecture. The working MVP has been archived under `mvp/` for reference.
+Status: **V1 complete.** See [`docs/runbook.md`](docs/runbook.md) for operator setup, [`docs/manual-tests.md`](docs/manual-tests.md) for acceptance test procedures, and [`V1-Design.md`](V1-Design.md) for architecture. The working MVP has been archived under `mvp/` for reference.
 
 ## Prerequisites
 
