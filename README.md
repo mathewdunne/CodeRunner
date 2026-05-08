@@ -2,7 +2,7 @@
 
 A browser-based IDE for learning FRC robot programming. Students write Java in Monaco, run a WPILib simulation, and view telemetry through AdvantageScope Lite.
 
-Status: V1-0 through V1-6 are implemented. The current root contains the Bun workspace scaffold, shared contracts, SQLite migrations, signed-cookie login/session flow, first-login workspace creation from the WPILib Java command template, authenticated workspace routing, the React/Vite multi-file shell, project file APIs, the V1 sim image, Docker lease orchestration, loopback sim port allocation, sim container status reporting, a global run queue, per-workspace run replacement/stop, persistent run logs, browser Run/Stop log streaming, `/scope/` AdvantageScope Lite serving, authenticated NT4 proxy routes, and AS Lite endpoint-injection patches. The working MVP has been archived under `mvp/` for reference.
+Status: V1-0 through V1-9 are implemented. See [`docs/runbook.md`](docs/runbook.md) for operator setup and [`V1-Design.md`](V1-Design.md) for architecture. The working MVP has been archived under `mvp/` for reference.
 
 ## Prerequisites
 
@@ -43,10 +43,20 @@ mvp/                           Archived MVP implementation and docs
 | `bun run build:ascope` | Apply AS Lite patches, rebuild AdvantageScope Lite, and stage `dist/advantagescope/` |
 | `bun run verify:ascope` | Smoke-check the staged AS Lite bundle and `/scope/` serving contract |
 | `bun run docker:build:sim` | Build the mounted-project V1 sim image as `frc-sim:v1` |
-| `bun run verify:v1:two-user` | Run the real-Docker Alice/Bob V1 sim smoke |
+| `bun run docker:build:lsp` | Build the V1 JDT LS image as `frc-lsp:v1` |
+| `bun run verify:v1:two-user` | Run the real-Docker Alice/Bob V1 two-user smoke |
+| `bun run verify:v1:three-user` | Run the 3-user classroom smoke with queue/LSP isolation |
+| `bun run measure` | Report host resources and container memory, extrapolate for 10 students |
+| `bun run backup` | Back up all workspace project directories |
+| `bun run restore` | Restore workspace projects from a backup |
+| `bun run docker:cleanup` | Remove stopped V1 managed containers |
 | `bun run migrate` | Apply pending SQLite migrations |
 | `bun run migrate:status` | Show SQLite migration status |
-| `bun run dev:control` | Start the V1-6 Bun control plane on `:4000` |
+| `bun run dev:control` | Start the V1 Bun control plane on `:4000` |
 | `bun run dev:web` | Start the Vite web shell directly for frontend-only work |
+
+## Operator Runbook
+
+See [`docs/runbook.md`](docs/runbook.md) for complete setup, deployment, backup/restore, monitoring, and troubleshooting instructions.
 
 The source of truth for the V1 rewrite is [`V1-Design.md`](./V1-Design.md). The old MVP source is intentionally not evolved in place; copy proven behavior from `mvp/` only when a V1 task calls for it.

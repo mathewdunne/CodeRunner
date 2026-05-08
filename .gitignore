@@ -7,6 +7,10 @@ dist/
 # V1 runtime data
 data/
 
+# Environment (secrets)
+.env
+!.env.example
+
 # Gradle / Java
 .gradle/
 build/
