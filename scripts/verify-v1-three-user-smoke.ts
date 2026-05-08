@@ -144,6 +144,15 @@ async function assertSimProcessAlive(app: ControlApp, workspace: WorkspaceRow): 
   ]);
 }
 
+async function assertNt4AliveProbe(app: ControlApp, login: Login): Promise<void> {
+  const response = await app.fetch(
+    new Request(`http://localhost/u/${login.workspace.slug}/sim/alive`, {
+      headers: { cookie: login.cookie },
+    }),
+  );
+  assert(response.status === 200, `Expected NT4 alive probe for ${login.workspace.slug} to return 200, got ${response.status}.`);
+}
+
 async function removeManagedContainers(app: ControlApp): Promise<void> {
   const rows = app.storage.db
     .query(
@@ -427,6 +436,12 @@ try {
   for (let i = 0; i < logins.length; i++) {
     await assertSimProcessAlive(app, logins[i]!.workspace);
     console.log(`  ✓ ${users[i]} sim process alive`);
+  }
+
+  // Verify NT4 alive probe for each user
+  for (let i = 0; i < logins.length; i++) {
+    await assertNt4AliveProbe(app, logins[i]!);
+    console.log(`  ✓ ${users[i]} NT4 alive probe passed`);
   }
 
   // Stop all runs

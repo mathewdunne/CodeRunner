@@ -956,8 +956,8 @@ function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatus
   const cutoff = Date.now() - idleMinutes * 60_000;
 
   const workspaces: AdminWorkspaceStatus[] = entries.map((entry) => {
-    const lastActivity = entry.lease?.last_used_at ?? entry.workspace.last_accessed_at;
-    const isIdle = Date.parse(entry.workspace.last_accessed_at) < cutoff;
+    const lastActivity = entry.workspace.last_accessed_at;
+    const isIdle = Date.parse(lastActivity) < cutoff;
     return {
       workspace: {
         id: entry.workspace.id,

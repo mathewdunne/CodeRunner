@@ -9,6 +9,7 @@ export type IdleManagerOptions = {
 
 export class IdleManager {
   private timer: ReturnType<typeof setInterval> | null = null;
+  private initialTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly storage: AppStorage;
   private readonly containers: ContainerOrchestrator;
   private readonly onStop: (workspaceId: string) => void;
@@ -27,13 +28,17 @@ export class IdleManager {
     this.timer = setInterval(() => void this.sweep(), intervalMs);
     // Run an initial sweep shortly after startup so containers orphaned by a
     // restart are caught quickly rather than waiting a full interval.
-    setTimeout(() => void this.sweep(), 5_000);
+    this.initialTimer = setTimeout(() => void this.sweep(), 5_000);
   }
 
   stop(): void {
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
+    }
+    if (this.initialTimer) {
+      clearTimeout(this.initialTimer);
+      this.initialTimer = null;
     }
   }
 
