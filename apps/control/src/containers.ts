@@ -687,7 +687,7 @@ export class ContainerOrchestrator {
       "-e",
       "HOME=/home/frc",
       "-e",
-      "GRADLE_USER_HOME=/home/frc/.gradle",
+      `GRADLE_USER_HOME=/home/frc/.gradle-${role}`,
     ];
 
     if (role === "lsp") {
