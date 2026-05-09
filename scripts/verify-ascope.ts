@@ -87,6 +87,10 @@ async function verifyStagedBundle(): Promise<void> {
     mainBundle.includes("did not receive an endpoint configuration"),
     "AS Lite main bundle is missing the embedded-mode endpoint timeout banner.",
   );
+  assert(
+    mainBundle.includes("frcSimNt4Endpoint=window.frcSimNt4Endpoint"),
+    "AS Lite main bundle is not copying the injected endpoint into the hub iframe.",
+  );
   assert(hubBundle.includes("frcSimNt4Endpoint"), "AS Lite hub bundle is missing injected NT4 endpoint support.");
   assert(hubBundle.includes("websocketUrl"), "AS Lite hub bundle is missing injected WebSocket URL support.");
   assert(hubBundle.includes("aliveUrl"), "AS Lite hub bundle is missing injected alive URL support.");

@@ -90,15 +90,25 @@ index f3f7427..d794648 100644
      if (rttWs) {
        this.rttWs = ws;
 diff --git a/src/main/lite/main.ts b/src/main/lite/main.ts
-index f8e6a0d..30d0031 100644
+index f8e6a0d..a93a42b 100644
 --- a/src/main/lite/main.ts
 +++ b/src/main/lite/main.ts
-@@ -45,6 +45,79 @@ let popupMenu = new TinyPopupMenu();
+@@ -12,7 +12,7 @@ import ButtonRect from "../../shared/ButtonRect";
+ import { ensureThemeContrast } from "../../shared/Colors";
+ import LineGraphFilter from "../../shared/LineGraphFilter";
+ import NamedMessage from "../../shared/NamedMessage";
+-import {
++import Preferences, {
+   DEFAULT_PREFS,
+   getLiveModeName,
+   LITE_ALLOWED_LIVE_MODES,
+@@ -45,6 +45,105 @@ let popupMenu = new TinyPopupMenu();
  let assetsPromise: Promise<AdvantageScopeAssets>;
  let downloadInterval: number | null = null;
  let popupRequiresForceClose = false;
 +let frcSimStartLivePending = false;
 +let frcSimEndpointTimeoutId: number | null = null;
++let frcSimPendingPrefs: Preferences | null = null;
 +
 +type FrcSimNt4Endpoint = {
 +  aliveUrl: string;
@@ -134,13 +144,38 @@ index f8e6a0d..30d0031 100644
 +  document.body.appendChild(banner);
 +}
 +
++function syncFrcSimEndpointToHub(): boolean {
++  if (!frcSimEndpointMode || window.frcSimNt4Endpoint === undefined) return false;
++  let hubWindow = typeof HUB_FRAME === "undefined" ? null : HUB_FRAME.contentWindow;
++  if (hubWindow === null) return false;
++  hubWindow.frcSimNt4Endpoint = window.frcSimNt4Endpoint;
++  return true;
++}
++
++function flushFrcSimPendingPrefs() {
++  if (!frcSimEndpointMode || hubPort === null || frcSimPendingPrefs === null) return;
++  if (!syncFrcSimEndpointToHub()) return;
++  sendMessage(hubPort, "set-preferences", frcSimPendingPrefs);
++  frcSimPendingPrefs = null;
++}
++
 +function requestFrcSimLiveStart() {
 +  if (!frcSimEndpointMode || window.frcSimNt4Endpoint === undefined) return;
-+  if (hubPort === null) {
++  let hadPendingPrefs = frcSimPendingPrefs !== null;
++  flushFrcSimPendingPrefs();
++  if (hadPendingPrefs && frcSimPendingPrefs === null) {
++    frcSimStartLivePending = false;
++    return;
++  }
++  if (frcSimPendingPrefs !== null) {
 +    frcSimStartLivePending = true;
-+  } else {
++  } else if (hubPort === null) {
++    frcSimStartLivePending = true;
++  } else if (syncFrcSimEndpointToHub()) {
 +    frcSimStartLivePending = false;
 +    sendMessage(hubPort, "start-live", false);
++  } else {
++    frcSimStartLivePending = true;
 +  }
 +}
 +
@@ -173,21 +208,26 @@ index f8e6a0d..30d0031 100644
 
  /**
   * Open a new popup menu
-@@ -257,6 +330,7 @@ async function initHub() {
+@@ -257,13 +356,22 @@ async function initHub() {
    let prefs = DEFAULT_PREFS;
    let prefsRaw = localStorage.getItem(LocalStorageKeys.PREFS);
    if (prefsRaw !== null) mergePreferences(prefs, JSON.parse(prefsRaw));
-+  if (frcSimEndpointMode) prefs.liveMode = "nt4";
-   sendMessage(hubPort, "set-preferences", prefs);
+-  sendMessage(hubPort, "set-preferences", prefs);
++  if (frcSimEndpointMode) {
++    prefs.liveMode = "nt4";
++    frcSimPendingPrefs = prefs;
++    flushFrcSimPendingPrefs();
++  } else {
++    sendMessage(hubPort, "set-preferences", prefs);
++  }
    sendMessage(hubPort, "set-assets", await assetsPromise);
    let typeMemory = localStorage.getItem(LocalStorageKeys.TYPE_MEMORY);
-@@ -264,6 +338,10 @@ async function initHub() {
+   if (typeMemory !== null) sendMessage(hubPort, "restore-type-memory", JSON.parse(typeMemory));
    let state = localStorage.getItem(LocalStorageKeys.STATE);
    if (state !== null) sendMessage(hubPort, "restore-state", JSON.parse(state));
    sendMessage(hubPort, "show-when-ready");
-+  if (frcSimStartLivePending && window.frcSimNt4Endpoint !== undefined) {
++  if (frcSimStartLivePending && window.frcSimNt4Endpoint !== undefined && frcSimPendingPrefs === null) {
 +    frcSimStartLivePending = false;
-+    sendMessage(hubPort, "start-live", false);
 +  }
 
    // Add cursor event handlers
