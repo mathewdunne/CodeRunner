@@ -3,6 +3,7 @@ set -euo pipefail
 
 HOME="${HOME:-/home/frc}"
 GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.gradle}"
+GRADLE_PROJECT_CACHE_DIR="${GRADLE_PROJECT_CACHE_DIR:-$HOME/.gradle-project-sim}"
 pid_file="${SIM_PID_FILE:-$HOME/sim.pid}"
 log_file="${SIM_LOG_FILE:-$HOME/sim.log}"
 
@@ -23,7 +24,7 @@ is_running_process() {
   [[ -n "$state" && "$state" != "Z" ]]
 }
 
-mkdir -p "$(dirname "$pid_file")" "$(dirname "$log_file")" "$GRADLE_USER_HOME"
+mkdir -p "$(dirname "$pid_file")" "$(dirname "$log_file")" "$GRADLE_USER_HOME" "$GRADLE_PROJECT_CACHE_DIR"
 
 if [[ -f "$pid_file" ]]; then
   pid="$(cat "$pid_file")"
@@ -43,6 +44,6 @@ sed -i 's/\r$//' gradlew 2>/dev/null || true
 chmod +x gradlew 2>/dev/null || true
 rm -f "$log_file"
 
-setsid ./gradlew --no-daemon --console=plain simulateJava >"$log_file" 2>&1 &
+setsid ./gradlew --no-daemon --console=plain --project-cache-dir "$GRADLE_PROJECT_CACHE_DIR" simulateJava >"$log_file" 2>&1 &
 echo "$!" >"$pid_file"
 echo "started sim with pid $(cat "$pid_file")"

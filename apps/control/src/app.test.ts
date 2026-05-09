@@ -873,6 +873,12 @@ describe("V1-4 sim container orchestration", () => {
     expect(entrypoint).not.toContain("/usr/local/bin/start-sim.sh");
   });
 
+  test("sim Gradle uses a project cache outside the mounted project", async () => {
+    const startSim = await readFile(join(process.cwd(), "containers", "sim", "start-sim.sh"), "utf8");
+    expect(startSim).toContain("GRADLE_PROJECT_CACHE_DIR");
+    expect(startSim).toContain("--project-cache-dir \"$GRADLE_PROJECT_CACHE_DIR\"");
+  });
+
   test("a restarted control plane rediscovers the labeled sim container", async () => {
     const root = await mkdtemp(join(tmpdir(), "frc-v1-control-"));
     const templateDir = await createTemplate(root);

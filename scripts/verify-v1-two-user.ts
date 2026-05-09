@@ -418,6 +418,7 @@ try {
   const bobRun = connectRun(app, bob.workspace);
   let aliceRunningAt = 0;
   let bobBuildingAt = 0;
+  let bobRunningAt = 0;
   aliceRun.messages.length = 0;
   bobRun.messages.length = 0;
   const aliceOriginalSend = aliceRun.connection.send;
@@ -433,6 +434,9 @@ try {
     if (message.type === "status" && message.status === "building" && bobBuildingAt === 0) {
       bobBuildingAt = Date.now();
     }
+    if (message.type === "status" && message.status === "running" && bobRunningAt === 0) {
+      bobRunningAt = Date.now();
+    }
   };
 
   app.runs.start(alice.workspace, aliceRun.connection);
@@ -441,7 +445,9 @@ try {
   assert(bobBuildingAt === 0 || bobBuildingAt >= aliceRunningAt, "Bob started building before Alice reached running.");
   await waitFor("Bob to start after Alice readiness", () => bobBuildingAt > 0);
   assert(lastStatus(bobRun) === "building" || hasStatus(bobRun, "running"), "Expected Bob to leave the queue.");
+  await waitFor("Bob to reach running", () => bobRunningAt > 0, 300_000);
   await assertSimProcessAlive(app, alice.workspace);
+  await assertSimProcessAlive(app, bob.workspace);
 
   console.log("Checking NT4 alive probe for each user...");
   await assertNt4AliveProbe(app, alice);
@@ -450,7 +456,10 @@ try {
 
   app.runs.stopWorkspace(alice.workspace.id);
   app.runs.stopWorkspace(bob.workspace.id);
-  await Bun.sleep(1_000);
+  await waitFor("Alice and Bob runs to stop before LSP smoke", () =>
+    hasStatus(aliceRun, "stopped") && hasStatus(bobRun, "stopped"),
+    60_000,
+  );
   app.runs.disconnect(aliceRun.connection);
   app.runs.disconnect(bobRun.connection);
 

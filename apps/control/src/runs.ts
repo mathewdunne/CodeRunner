@@ -85,13 +85,40 @@ export function defaultRunCommandFactory(context: RunCommandContext): RunCommand
       stdin: "ignore",
     },
   );
+  let stopRequested = false;
 
   return {
     stdout: subprocess.stdout,
     stderr: subprocess.stderr,
     exited: subprocess.exited.then((code) => ({ code, signal: null })),
-    kill() {
-      subprocess.kill("SIGTERM");
+    kill(signal = "SIGTERM") {
+      if (stopRequested) {
+        return;
+      }
+      stopRequested = true;
+      const forwardedSignal = signal === "SIGKILL" ? "SIGKILL" : "SIGTERM";
+
+      const stop = Bun.spawn([context.dockerPath, "exec", context.containerName, "/usr/local/bin/stop-sim.sh"], {
+        stdin: "ignore",
+        stdout: "ignore",
+        stderr: "ignore",
+      });
+      void stop.exited.finally(() => {
+        try {
+          subprocess.kill(forwardedSignal);
+        } catch {
+          // The docker exec wrapper may have exited naturally after the sim stopped.
+        }
+      });
+
+      const fallback = setTimeout(() => {
+        try {
+          subprocess.kill(forwardedSignal);
+        } catch {
+          // best effort
+        }
+      }, 12_000);
+      fallback.unref?.();
     },
   };
 }

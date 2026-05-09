@@ -29,12 +29,14 @@ The image primes Gradle/WPILib dependencies into `/opt/frc-gradle-cache`. On fir
 `/home/frc`, the entrypoint copies that cache into the workspace home and then idles while tailing the sim log. Opening
 the IDE starts the container, but it does not start Gradle; only the control-plane run queue calls `start-sim.sh`. Sim
 logs and PID files also live under `/home/frc`, so generated cache/runtime files are outside the authoritative student
-project directory. Gradle build output still lands in the bind-mounted project, and the UID/GID strategy keeps those
-files readable and removable by the host control plane.
+project directory. Sim Gradle uses `/home/frc/.gradle-project-sim` as its project cache so a running simulator does
+not lock `/workspace/project/.gradle` while JDT LS imports the same mounted project. Gradle build output still lands
+in the bind-mounted project, and the UID/GID strategy keeps those files readable and removable by the host control
+plane.
 
 ## Scripts
 
-- `/usr/local/bin/start-sim.sh` starts `./gradlew --no-daemon --console=plain simulateJava`.
+- `/usr/local/bin/start-sim.sh` starts `./gradlew --no-daemon --console=plain --project-cache-dir "$GRADLE_PROJECT_CACHE_DIR" simulateJava`.
 - `/usr/local/bin/stop-sim.sh` stops the saved Gradle/sim process group.
 - `/usr/local/bin/entrypoint.sh` prepares the mounted home, validates the mounted project, and tails `/home/frc/sim.log`.
 

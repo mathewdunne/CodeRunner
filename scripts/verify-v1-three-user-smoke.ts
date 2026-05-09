@@ -448,7 +448,7 @@ try {
   for (let i = 0; i < logins.length; i++) {
     app.runs.stopWorkspace(logins[i]!.workspace.id);
   }
-  await Bun.sleep(1_000);
+  await waitFor("all 3 users stopped before LSP phase", () => probes.every((probe) => hasStatus(probe, "stopped")), 60_000);
   for (const probe of probes) {
     app.runs.disconnect(probe.connection);
   }
