@@ -60,12 +60,12 @@ ARG MAVEN_VERSION=0.45.3
 ARG GRADLE_VERSION=3.17.3
 ARG JAVA_DEPS_VERSION=0.27.2
 ARG JAVA_PACK_VERSION=0.30.5
+ARG SPOTLESS_GRADLE_VERSION=1.2.1
 
 ENV OPENVSCODE_SERVER_ROOT=/home/.openvscode-server
 ENV OPENVSCODE=${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server
 
-# Download extensions from Open VSX and GitHub Releases.
-# Spotless Gradle is only on the MS marketplace; use the gallery asset API.
+# Download extensions from pinned Open VSX, GitHub Release, and Marketplace artifacts.
 RUN mkdir -p /tmp/exts \
     && wget -q "https://open-vsx.org/api/redhat/java/${REDHAT_JAVA_VERSION}/file/redhat.java-${REDHAT_JAVA_VERSION}.vsix" \
        -O /tmp/exts/redhat.java.vsix \
@@ -83,7 +83,7 @@ RUN mkdir -p /tmp/exts \
        -O /tmp/exts/vscode-java-dependency.vsix \
     && wget -q "https://open-vsx.org/api/vscjava/vscode-java-pack/${JAVA_PACK_VERSION}/file/vscjava.vscode-java-pack-${JAVA_PACK_VERSION}.vsix" \
        -O /tmp/exts/vscode-java-pack.vsix \
-    && wget -q "https://richardwillis.gallery.vsassets.io/_apis/public/gallery/publisher/richardwillis/extension/vscode-spotless-gradle/latest/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage" \
+    && wget -q "https://richardwillis.gallery.vsassets.io/_apis/public/gallery/publisher/richardwillis/extension/vscode-spotless-gradle/${SPOTLESS_GRADLE_VERSION}/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage" \
        -O /tmp/exts/vscode-spotless-gradle.vsix
 
 # Install to a baked cache directory; the entrypoint seeds per-workspace homes.

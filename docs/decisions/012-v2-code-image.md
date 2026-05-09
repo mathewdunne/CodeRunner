@@ -46,6 +46,14 @@ Extensions are downloaded from public registries during `docker build` instead o
 - Building the image requires internet access. This is acceptable for initial setup; the built image runs offline.
 - The design doc's "build succeeds with the host offline" DoD item is relaxed. The image itself runs offline; only the build needs internet.
 
+### Spotless Gradle extension included as a pinned Marketplace artifact
+
+The V2 image includes `richardwillis.vscode-spotless-gradle` for code formatting. The extension is only published on the VS Code Marketplace, not Open VSX, so the Dockerfile downloads it from the Marketplace gallery asset endpoint. To avoid unnecessary build drift, the URL pins version `1.2.1` instead of using the mutable `latest` asset URL. The extension has not been updated in several years; if it does change later, treat updates as an explicit version bump in `containers/code/Dockerfile` and `vendor/vscode-extensions/README.md`.
+
+### Direct launch base path handling
+
+The entrypoint omits `--server-base-path` when `VSCODE_BASE_PATH` is empty or `/`. Passing `--server-base-path /` caused openvscode-server 1.105.1 to generate invalid WebSocket URLs such as `ws://127.0.0.1:33334stable-...` during direct hand-launched smoke tests. Proxied V2 containers still pass `VSCODE_BASE_PATH=/u/<slug>/vscode/`, which keeps the editor's HTTP and WebSocket URLs under the authenticated control-plane route.
+
 ### Extension cache seeding pattern
 
 Extensions are installed at build time into `/opt/frc-extensions-cache/`. The entrypoint copies them to the bind-mounted `/home/frc/.openvscode-server/extensions/` on first run, mirroring the V1 Gradle cache seeding pattern. This ensures:

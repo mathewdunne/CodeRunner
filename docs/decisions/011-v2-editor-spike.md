@@ -44,15 +44,17 @@ The `vscode-java-1.38.0-403.vsix` bundles JDT LS with `config_linux/`, `config_m
 
 ### Auto-import on Tab (additionalTextEdits)
 
-**Status:** REQUIRES MANUAL BROWSER VERIFICATION.
+✅ **PASS.** Verified during the Stage 0 browser spike.
 
-To test: open `http://localhost:3000/?folder=/workspace/project` in a browser, open `Robot.java`, type a WPILib type like `Pose2d` and accept the completion with Tab. Verify that `import edu.wpi.first.math.geometry.Pose2d;` is automatically added at the top of the file.
+The author manually verified that accepting an unimported WPILib symbol completion in openvscode-server applies the redhat.java `additionalTextEdits` import. Future stages should not spend time re-verifying this extension-owned behavior unless the openvscode-server, `redhat.java`, or WPILib extension versions change.
 
 ### Ctrl-click into library source (jdt:// URI)
 
-**Status:** REQUIRES MANUAL BROWSER VERIFICATION.
+✅ **PASS.** Verified during the Stage 0 browser spike.
 
-To test: in the same session, Ctrl-click on `Pose2d` (or any WPILib class). Verify the editor opens a read-only buffer showing the decompiled/attached class source via a `jdt://` virtual URI.
+The author manually verified that F12/Ctrl-click on `Pose2d` opens the WPILib class source through redhat.java's `jdt://` content provider.
+
+Future stages should not re-run F12/ctrl-click proof checks for `Pose2d` or other WPILib symbols unless the editor or extension versions change. These checks validate upstream extension behavior, not simulator integration.
 
 ## Spike Dockerfile
 

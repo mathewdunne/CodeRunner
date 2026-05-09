@@ -1,13 +1,17 @@
-# FRC Web Simulator V1
+# FRC Web Simulator
 
-A browser-based IDE for learning FRC robot programming. Students write Java in Monaco, run a WPILib simulation, and view telemetry through AdvantageScope Lite.
+A browser-based IDE for learning FRC robot programming. Students write Java, run a WPILib simulation, and view telemetry through AdvantageScope Lite.
 
-Status: **V1 complete.** See [`docs/runbook.md`](docs/runbook.md) for operator setup, [`docs/manual-tests.md`](docs/manual-tests.md) for acceptance test procedures, and [`V1-Design.md`](V1-Design.md) for architecture. The working MVP has been archived under `mvp/` for reference.
+Status: **V1 complete; V2 in progress.** V2 replaces the custom Monaco/JDT LS editor stack with per-student openvscode-server containers; see [`V2-Design.md`](V2-Design.md). V2 Stage 0 through Stage 3 are implemented, and the next planned stage is Stage 4, the web shell swap.
+
+The V2 editor spike is accepted in [`docs/decisions/011-v2-editor-spike.md`](docs/decisions/011-v2-editor-spike.md). Do not spend future-stage verification on upstream extension-owned behavior such as `redhat.java` auto-import, hover, diagnostics, or F12/Ctrl-click into WPILib classes unless the pinned editor or extension versions change. Future V2 checks should focus on this project’s integration behavior: proxying, auth, persistence, run orchestration, logs, telemetry, and cleanup.
+
+See [`docs/runbook.md`](docs/runbook.md) for V1 operator setup, [`docs/manual-tests.md`](docs/manual-tests.md) for V1 acceptance test procedures, and [`V1-Design.md`](V1-Design.md) for V1 architecture. The working MVP has been archived under `mvp/` for reference.
 
 ## Prerequisites
 
 - Bun 1.3.13 or newer
-- Docker, for later sim and LSP container tasks
+- Docker, for sim, LSP, and V2 code container tasks
 - Git with submodule support
 - PowerShell 7 (`pwsh`) on Windows
 
@@ -22,11 +26,12 @@ bun run typecheck
 ## Layout
 
 ```text
-apps/control/                  Bun control plane with login, sessions, storage, routing, and V1 APIs
+apps/control/                  Bun control plane with login, sessions, storage, routing, and APIs
 apps/web/                      React + Vite browser shell served by the control plane
-packages/contracts/            Shared V1 schemas, message types, and path rules
+packages/contracts/            Shared schemas, message types, and path rules
+containers/code/               V2 merged openvscode-server + sim container
 templates/wpilib-java-command/ WPILib Java command-based starter template
-scripts/                       V1 utility scripts
+scripts/                       Bun utility scripts
 patches/advantagescope/        Source-level AS Lite patches
 vendor/AdvantageScope/         Pinned upstream submodule
 mvp/                           Archived MVP implementation and docs
@@ -42,8 +47,7 @@ mvp/                           Archived MVP implementation and docs
 | `bun run build:web` | Build the static Vite shell into `apps/web/dist/` |
 | `bun run build:ascope` | Apply AS Lite patches, rebuild AdvantageScope Lite, and stage `dist/advantagescope/` |
 | `bun run verify:ascope` | Smoke-check the staged AS Lite bundle and `/scope/` serving contract |
-| `bun run docker:build:sim` | Build the mounted-project V1 sim image as `frc-sim:v1` |
-| `bun run docker:build:lsp` | Build the V1 JDT LS image as `frc-lsp:v1` |
+| `bun run docker:build:code` | Build the V2 merged openvscode-server + sim image as `frc-code:v2` |
 | `bun run verify:v1:two-user` | Run the real-Docker Alice/Bob V1 two-user smoke |
 | `bun run verify:v1:three-user` | Run the 3-user classroom smoke with queue/LSP isolation |
 | `bun run measure` | Report host resources and container memory, extrapolate for 10 students |

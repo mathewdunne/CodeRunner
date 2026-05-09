@@ -588,6 +588,8 @@ Suggested unit tests:
 
 Each stage is independently executable. A fresh agent given only this design document and the repo state at the end of the previous stage must be able to deliver the stage's definition of done.
 
+Extension-owned Java IDE behavior was validated in Stage 0 and recorded in `docs/decisions/011-v2-editor-spike.md`. Later stages should not repeat manual or automated checks for redhat.java/WPILib extension features such as auto-import, F12/ctrl-click into `Pose2d`, hover, or diagnostics unless the openvscode-server, `redhat.java`, or `wpilibsuite.vscode-wpilib` versions change. Later verification should focus on simulator integration: the editor iframe loads through the control-plane proxy, the Java extension reaches a ready state, files persist in the mounted project, runs execute, and telemetry routes correctly.
+
 ### Stage 0: Spike outside the repo
 
 **Purpose.** Prove that openvscode-server with `redhat.java` and the upstream `wpilibsuite.vscode-wpilib` extension delivers Java auto-import on Tab and ctrl-click into `Pose2d` for a real WPILib project. This is a kill switch; if it fails, the V2 plan needs revisiting before any other stage runs.
@@ -632,7 +634,7 @@ docker run --rm -p 3000:3000 -v $PWD/project:/workspace/project frc-spike-openvs
 - [ ] redhat.java activates against the WPILib starter project (status bar shows "Java is ready").
 - [ ] Auto-import on Tab adds the `import` line for `Pose2d`.
 - [ ] Ctrl-click on `Pose2d` opens the class source in a `jdt://` virtual buffer.
-- [ ] Decision log `docs/decisions/007-v2-editor-spike.md` records: openvscode-server version, redhat.java version, wpilib extension version, and screenshots or copy-pasted symptoms for both behaviors.
+- [ ] Decision log `docs/decisions/011-v2-editor-spike.md` records: openvscode-server version, redhat.java version, wpilib extension version, and screenshots or copy-pasted symptoms for both behaviors.
 
 If any check fails: stop. Open a follow-up question on the design document before proceeding.
 
@@ -689,7 +691,8 @@ docker run --rm -d \
 curl -fsS http://127.0.0.1:3000/ | head -c 200      # should return openvscode-server HTML
 # Editor check (manual):
 #   open http://127.0.0.1:3000/?folder=/workspace/project
-#   confirm Java starts; type Pose2d; accept on Tab; ctrl-click works.
+#   confirm Java reaches ready. Do not repeat Stage 0 auto-import/F12 checks
+#   unless editor or extension versions changed.
 
 # Run check:
 docker exec frc-code-spike bash -lc "/usr/local/bin/start-sim.sh"
@@ -705,7 +708,7 @@ docker rm -f frc-code-spike
 - [ ] Image size is documented in `containers/code/README.md` (informational only).
 - [ ] `containers/code/Dockerfile` references vendored `.vsix` files; build succeeds with the host offline.
 - [ ] Hand-launched container serves openvscode-server on `:3000` and answers HTTP within 30 seconds of `docker run`.
-- [ ] Auto-import and ctrl-click on `Pose2d` work in the hand-launched container against a real `templates/wpilib-java-command/` project.
+- [ ] Java reaches ready in the hand-launched container against a real `templates/wpilib-java-command/` project. Stage 0 already covers redhat.java auto-import and WPILib source navigation; repeat those only after editor or extension version changes.
 - [ ] `docker exec ... /usr/local/bin/start-sim.sh` produces an NT4 endpoint reachable on `127.0.0.1:5810`.
 - [ ] `vendor/vscode-extensions/README.md` records the source URL or local path and version of every bundled `.vsix`.
 
@@ -768,7 +771,8 @@ curl -fsS -b cookies.txt http://localhost:4000/u/<slug>/vscode/ | head -c 200
 
 # Browser smoke:
 #   open http://localhost:4000/u/<slug>/vscode/?folder=/workspace/project
-#   confirm the editor loads, redhat.java activates, and auto-import works.
+#   confirm the editor loads through the proxy and Java reaches ready.
+#   Do not repeat Stage 0 auto-import/F12 checks unless versions changed.
 
 # Cross-workspace negative:
 curl -i -b cookies.txt http://localhost:4000/u/<other>/vscode/   # expect 403
@@ -780,7 +784,7 @@ bun test
 **Definition of Done.**
 
 - [ ] Authenticated user can load `/u/<slug>/vscode/?folder=/workspace/project` in a browser and see openvscode-server.
-- [ ] WebSocket upgrade succeeds; the editor's terminal, file watcher, and language server all work end to end (auto-import + ctrl-click verified).
+- [ ] WebSocket upgrade succeeds; the editor's terminal, file watcher, and language server initialize through the proxy. Auto-import and ctrl-click source navigation remain covered by Stage 0 unless editor or extension versions changed.
 - [ ] Cross-workspace access returns `403`.
 - [ ] Unauthenticated access returns `401` for API kind, `303` redirect for page kind.
 - [ ] `bun test` covers the four scenarios listed under "In scope".
@@ -924,8 +928,8 @@ bun run dev:control
 #   editor iframe loads.
 #   AS Lite iframe loads and shows "scope connected" within 2 seconds of sim run.
 
-#   Edit Robot.java in the editor, type Pose2d, accept Tab -> import added.
-#   Ctrl-click Pose2d -> source opens.
+#   Confirm the editor iframe loads through the control-plane proxy and Java reaches ready.
+#   Do not re-test extension-owned auto-import/F12 behavior unless extension versions changed.
 #   Click Run in header -> console streams build logs, status flips to running.
 #   Click Stop -> status flips to stopped.
 
@@ -1164,19 +1168,17 @@ curl -fsS -X POST http://localhost:4000/login \
 
 2. **Editor loads.** The editor iframe shows the WPILib starter project with `Robot.java` open, a file tree on the left, and "Java is ready" in the status bar.
 
-3. **Auto-import on Tab.** In `Robot.java`, type a reference to `Pose2d` (e.g. inside `robotInit()`). Accept the suggestion with Tab. Confirm `import edu.wpi.first.math.geometry.Pose2d;` appears at the top of the file.
+3. **Java extension ready.** Confirm the editor status bar reaches "Java is ready". Do not re-run auto-import/F12 checks here unless the pinned editor or Java extension versions changed after Decision 011.
 
-4. **Ctrl-click into library.** Hold Ctrl and click on `Pose2d`. Confirm the editor opens a read-only buffer showing the class source.
+4. **Run streams.** Click Run in the header. Confirm Gradle build logs stream into the console panel. The status pill flips through `building` to `running`.
 
-5. **Run streams.** Click Run in the header. Confirm Gradle build logs stream into the console panel. The status pill flips through `building` to `running`.
+5. **NT4 telemetry.** Wait for the AS Lite iframe to flip from "scope connecting" to "scope connected". Confirm telemetry from the running sim appears (the WPILib starter publishes counters).
 
-6. **NT4 telemetry.** Wait for the AS Lite iframe to flip from "scope connecting" to "scope connected". Confirm telemetry from the running sim appears (the WPILib starter publishes counters).
+6. **Stop.** Click Stop. Confirm the status pill flips to `stopped` and the sim process inside the container exits.
 
-7. **Stop.** Click Stop. Confirm the status pill flips to `stopped` and the sim process inside the container exits.
+7. **Persistence across logout/login.** Click Logout. Wait 5 seconds. Login as `Alice` again. Confirm the editor reopens with any code the operator added.
 
-8. **Persistence across logout/login.** Click Logout. Wait 5 seconds. Login as `Alice` again. Confirm the editor reopens with the modified `Robot.java` (the `import` line and any code the operator added persists).
-
-9. **Persistence across container restart.** As an admin, run:
+8. **Persistence across container restart.** As an admin, run:
 
    ```
    curl -fsS -X POST http://localhost:4000/admin/workspaces/<aliceWsId>/restart-code
@@ -1184,13 +1186,13 @@ curl -fsS -X POST http://localhost:4000/login \
 
    Reload Alice's browser. Confirm the editor reloads with the same buffer state and the same Java state.
 
-10. **Idle teardown.** Set `IDLE_STOP_MINUTES=2` in `.env`, restart the control plane, log in as Alice, then leave the tab idle for 3 minutes. Run `docker ps`. Confirm `frc-v2-code-<aliceWsId>` is gone. Reload the tab. Confirm the editor comes back and Alice's files are intact.
+9. **Idle teardown.** Set `IDLE_STOP_MINUTES=2` in `.env`, restart the control plane, log in as Alice, then leave the tab idle for 3 minutes. Run `docker ps`. Confirm `frc-v2-code-<aliceWsId>` is gone. Reload the tab. Confirm the editor comes back and Alice's files are intact.
 
-11. **Multi-user isolation.** In a second browser profile, log in as `Bob`. Make a unique change in Bob's `Robot.java`. Reload Alice. Confirm Alice's file is unchanged.
+10. **Multi-user isolation.** In a second browser profile, log in as `Bob`. Make a unique change in Bob's `Robot.java`. Reload Alice. Confirm Alice's file is unchanged.
 
-12. **Run queue.** With `RUN_CONCURRENCY=1`, click Run for both Alice and Bob within 2 seconds. Confirm one of them shows `queued` with a queue position; the other reaches `running`. After the first finishes, the queued run advances.
+11. **Run queue.** With `RUN_CONCURRENCY=1`, click Run for both Alice and Bob within 2 seconds. Confirm one of them shows `queued` with a queue position; the other reaches `running`. After the first finishes, the queued run advances.
 
-13. **Operator restart.** While a build is running, hit:
+12. **Operator restart.** While a build is running, hit:
 
     ```
     curl -fsS -X POST http://localhost:4000/admin/workspaces/<aliceWsId>/stop-containers
@@ -1226,4 +1228,5 @@ Resolve before or during the named stage:
 - Keep openvscode-server tokenless behind the auth proxy. Do not introduce a connection token unless the proxy story changes.
 - Do not bake authentication or workspace identity into the editor image; the proxy is responsible.
 - Keep the AS Lite source patches and postMessage handshake unchanged.
+- Do not re-verify upstream extension-owned behavior such as redhat.java auto-import, hover, diagnostics, or F12/ctrl-click into WPILib classes in later stages unless an editor or extension version changed. Decision 011 is the evidence record for those checks.
 - After modifying code, run `bun run typecheck`, `bun test`, and the relevant `verify:v2:*` script. Update graphify per `AGENTS.md`.

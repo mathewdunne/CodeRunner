@@ -11,7 +11,7 @@ Merged per-student container for V2. Combines the V1 sim and LSP containers into
 | redhat.java | 1.38.0 | Java language support (JDT LS) |
 | vscode-wpilib | 2026.1.1 | WPILib project tooling |
 | Java Extension Pack | 0.30.5 | Debugger, test runner, Maven/Gradle, project manager |
-| Spotless Gradle | latest | Code formatting via Spotless |
+| Spotless Gradle | 1.2.1 | Code formatting via Spotless |
 | Gradle cache | Primed from template | Fast first builds (~seconds vs ~minutes) |
 
 ## Build
@@ -59,7 +59,7 @@ frc-sim.workspace=<workspaceId>
 
 | Variable | Required | Description |
 |---|---|---|
-| `VSCODE_BASE_PATH` | Yes (at runtime) | Reverse proxy base path, e.g. `/u/<slug>/vscode/` |
+| `VSCODE_BASE_PATH` | Yes behind proxy | Reverse proxy base path, e.g. `/u/<slug>/vscode/`. Omit or set `/` for direct hand-launched smoke tests. |
 
 ### Example run
 

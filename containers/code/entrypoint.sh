@@ -32,11 +32,18 @@ elif [[ ! -f /workspace/project/build.gradle || ! -f /workspace/project/gradlew 
   echo "WARNING: Mounted project is missing build.gradle or gradlew."
 fi
 
+openvscode_args=(
+  --host 0.0.0.0
+  --port 3000
+  --without-connection-token
+  --extensions-dir "$EXTENSIONS_DIR"
+  --user-data-dir "$DATA_DIR"
+)
+
+if [[ -n "${VSCODE_BASE_PATH:-}" && "${VSCODE_BASE_PATH:-/}" != "/" ]]; then
+  openvscode_args+=(--server-base-path "$VSCODE_BASE_PATH")
+fi
+
 exec "${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server" \
-  --host 0.0.0.0 \
-  --port 3000 \
-  --without-connection-token \
-  --server-base-path "${VSCODE_BASE_PATH:-/}" \
-  --extensions-dir "$EXTENSIONS_DIR" \
-  --user-data-dir "$DATA_DIR" \
+  "${openvscode_args[@]}" \
   /workspace/project

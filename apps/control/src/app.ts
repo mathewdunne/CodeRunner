@@ -884,6 +884,11 @@ async function vscodeHttpProxyResponse(
     return new Response(code.error ?? "Editor is not running.", { status: 503 });
   }
 
+  const basePath = `/u/${auth.workspace.slug}/vscode/`;
+  if (!(await probeVscodeReady(lease.vscode_port, basePath, 30_000))) {
+    return new Response("Editor upstream did not become ready.", { status: 503 });
+  }
+
   const upstreamUrl = `http://127.0.0.1:${lease.vscode_port}${fullPath}`;
   const forwardHeaders = stripHopByHopHeaders(request.headers);
 
@@ -1064,6 +1069,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
   const { dockerRunner, runCommandFactory, ...storageConfig } = configInput;
   const storage = await createStorage(storageConfig);
   const containers = new ContainerOrchestrator(storage, { dockerRunner });
+  await containers.cleanupV1Containers();
   const runs = new RunManager(storage, containers, { commandFactory: runCommandFactory });
   const idle = new IdleManager({
     storage,

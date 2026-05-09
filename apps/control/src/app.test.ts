@@ -845,8 +845,8 @@ describe("V2 code container orchestration", () => {
         expect(runCall).toContain(`frc-sim.role=code`);
         expect(runCall).toContain(`type=bind,src=${workspace.project_path},dst=/workspace/project`);
         expect(runCall).toContain(`type=bind,src=${join(app.storage.config.dataDir, "users", workspace.id, "home")},dst=/home/frc`);
-        expect(runCall).toContain("127.0.0.1:25810:5810");
-        expect(runCall).toContain("127.0.0.1:33000:3000");
+        expect(runCall).toContain("127.0.0.1:45910:5810");
+        expect(runCall).toContain("127.0.0.1:46000:3000");
         expect(runCall).toContain("--user");
         expect(runCall?.[runCall.indexOf("--user") + 1]).toBe("123:456");
 
@@ -861,8 +861,8 @@ describe("V2 code container orchestration", () => {
         expect(lease).toMatchObject({
           sim_container: expectedName,
           vscode_container: expectedName,
-          sim_port: 25810,
-          vscode_port: 33000,
+          sim_port: 45910,
+          vscode_port: 46000,
           state: "running",
           code_state: "running",
         });
@@ -870,8 +870,8 @@ describe("V2 code container orchestration", () => {
       {
         dockerRunner: fakeDocker.runner,
         codeImage: "frc-code:test",
-        simPortRange: { start: 25810, end: 25810 },
-        vscodePortRange: { start: 33000, end: 33000 },
+        simPortRange: { start: 45910, end: 45910 },
+        vscodePortRange: { start: 46000, end: 46000 },
         containerUser: "123:456",
       },
     );
@@ -957,6 +957,40 @@ describe("V2 code container orchestration", () => {
     } finally {
       await rm(root, { recursive: true, force: true });
     }
+  });
+
+  test("app startup removes managed V1 containers", async () => {
+    const fakeDocker = createFakeDocker();
+    fakeDocker.containers.set("frc-v1-sim-leftover", {
+      name: "frc-v1-sim-leftover",
+      running: true,
+      labels: {
+        "frc-sim.managed": "true",
+        "frc-sim.version": "v1",
+        "frc-sim.role": "sim",
+        "frc-sim.workspace": "ws_00000000000000000000000000000000",
+      },
+      ports: [],
+    });
+
+    await withApp(
+      async () => {
+        expect(fakeDocker.containers.has("frc-v1-sim-leftover")).toBe(false);
+        expect(fakeDocker.calls).toContainEqual([
+          "container",
+          "ls",
+          "-a",
+          "--filter",
+          "label=frc-sim.managed=true",
+          "--filter",
+          "label=frc-sim.version=v1",
+          "--format",
+          "{{.Names}}",
+        ]);
+        expect(fakeDocker.calls).toContainEqual(["rm", "-f", "frc-v1-sim-leftover"]);
+      },
+      { dockerRunner: fakeDocker.runner },
+    );
   });
 
   test("recreating a removed container preserves project files", async () => {
@@ -1755,22 +1789,26 @@ describe("V2 Stage 2 editor proxy", () => {
     });
   });
 
-  test("authenticated GET /u/<slug>/vscode/ without upstream returns error", async () => {
-    // Without a code container running, the vscode proxy should return an error
-    await withApp(async (app) => {
-      const aliceResponse = await login(app, "alice");
-      const aliceCookie = cookieFrom(aliceResponse);
+  test("authenticated GET /u/<slug>/vscode/ returns an error when the image is unavailable", async () => {
+    const dockerRunner: DockerRunner = async () => missing("No such image");
 
-      const response = await app.fetch(
-        new Request("http://localhost/u/alice/vscode/", {
-          method: "GET",
-          headers: { cookie: aliceCookie },
-        }),
-      );
+    await withApp(
+      async (app) => {
+        const aliceResponse = await login(app, "alice");
+        const aliceCookie = cookieFrom(aliceResponse);
 
-      // The code container will fail to start since no docker runner / image → 503 or 502
-      expect([502, 503]).toContain(response.status);
-    });
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/vscode/", {
+            method: "GET",
+            headers: { cookie: aliceCookie },
+          }),
+        );
+
+        expect(response.status).toBe(503);
+        expect(await response.text()).toContain("CODE image");
+      },
+      { dockerRunner },
+    );
   });
 
   test("authenticated GET /u/<slug>/vscode/ proxies to upstream when code container runs", async () => {
@@ -1821,6 +1859,61 @@ describe("V2 Stage 2 editor proxy", () => {
           codeImage: "frc-code:test",
           simPortRange: { start: 25920, end: 25920 },
           vscodePortRange: { start: 33200, end: 33200 },
+        },
+      );
+    } finally {
+      for (const server of upstreamServers) {
+        server.stop(true);
+      }
+    }
+  });
+
+  test("authenticated GET /u/<slug>/vscode/ waits for upstream readiness", async () => {
+    const upstreamServers: Array<ReturnType<typeof Bun.serve>> = [];
+    const fakeDocker = createFakeDocker({
+      onRun(_name, ports) {
+        const vscodePort = ports.find((p) => p.containerPort === 3000);
+        if (vscodePort) {
+          setTimeout(() => {
+            upstreamServers.push(
+              Bun.serve({
+                port: vscodePort.hostPort,
+                hostname: "127.0.0.1",
+                fetch() {
+                  return new Response("delayed editor ready", {
+                    headers: { "content-type": "text/plain" },
+                  });
+                },
+              }),
+            );
+          }, 150);
+        }
+      },
+    });
+
+    try {
+      await withApp(
+        async (app) => {
+          const aliceResponse = await login(app, "alice");
+          const aliceCookie = cookieFrom(aliceResponse);
+          const startedAt = Date.now();
+
+          const response = await app.fetch(
+            new Request("http://localhost/u/alice/vscode/", {
+              method: "GET",
+              headers: { cookie: aliceCookie },
+            }),
+          );
+
+          expect(response.status).toBe(200);
+          expect(Date.now() - startedAt).toBeGreaterThanOrEqual(100);
+          expect(await response.text()).toBe("delayed editor ready");
+        },
+        {
+          dockerRunner: fakeDocker.runner,
+          codeImage: "frc-code:test",
+          simPortRange: { start: 25924, end: 25924 },
+          vscodePortRange: { start: 33204, end: 33204 },
         },
       );
     } finally {

@@ -22,11 +22,11 @@ This directory documents the VS Code extensions bundled into the V2 code contain
 | vscjava.vscode-gradle (Gradle for Java) | 3.17.3 | [Open VSX](https://open-vsx.org/api/vscjava/vscode-gradle/3.17.3) |
 | vscjava.vscode-java-dependency (Project Manager for Java) | 0.27.2 | [Open VSX](https://open-vsx.org/api/vscjava/vscode-java-dependency/0.27.2) |
 
-### Code formatting
+### Formatting
 
 | Extension | Version | Source |
 |---|---|---|
-| richardwillis.vscode-spotless-gradle (Spotless Gradle) | latest | [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=richardwillis.vscode-spotless-gradle) |
+| richardwillis.vscode-spotless-gradle (Spotless Gradle) | 1.2.1 | [VS Code Marketplace](https://richardwillis.gallery.vsassets.io/_apis/public/gallery/publisher/richardwillis/extension/vscode-spotless-gradle/1.2.1/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage) |
 
 ## Provenance
 
@@ -36,11 +36,11 @@ This directory documents the VS Code extensions bundled into the V2 code contain
 
 - **Java Extension Pack + sub-extensions**: Published by Microsoft/vscjava on Open VSX. The pack is a meta-extension that declares `extensionPack` dependencies. We install both the pack and all its sub-extensions explicitly to ensure they are available offline.
 
-- **Spotless Gradle**: Published by Richard Willis on the VS Code Marketplace only (not on Open VSX). Downloaded from the marketplace gallery asset API at build time. This extension integrates the Spotless code formatter with the Gradle build system.
+- **Spotless Gradle 1.2.1**: Published by Richard Willis on the VS Code Marketplace. The extension has not been updated in several years, so the image pins the current Marketplace package version directly instead of using the mutable `latest` asset URL.
 
 ## Version Pinning
 
-Extension versions are pinned as Docker build args in `containers/code/Dockerfile`. To update:
+Extension versions are pinned as Docker build args in `containers/code/Dockerfile`. The image downloads versioned Open VSX, GitHub Release, and Marketplace artifacts; unpinned Marketplace "latest" URLs are intentionally avoided so builds remain reproducible. To update:
 
 1. Change the build arg default in the Dockerfile.
 2. Rebuild: `bun run docker:build:code`
