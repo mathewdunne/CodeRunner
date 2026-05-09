@@ -50,6 +50,9 @@ export type ContainerLeaseRow = {
   lsp_port: number | null;
   state: SimContainerState;
   lsp_state: ContainerState;
+  vscode_container: string | null;
+  vscode_port: number | null;
+  code_state: ContainerState;
   last_used_at: string;
   created_at: string;
 };
@@ -112,7 +115,6 @@ async function ensureWorkspaceFiles(config: ControlConfig, workspaceId: Workspac
   const homeDir = resolve(workspaceDir, "home");
 
   await mkdir(projectDir, { recursive: true });
-  await mkdir(resolve(workspaceDir, "jdtls-data"), { recursive: true });
   await mkdir(homeDir, { recursive: true, mode: 0o700 });
   await mkdir(resolve(workspaceDir, "logs", "runs"), { recursive: true });
 
@@ -353,7 +355,7 @@ export class AppStorage {
   }
 
   listLeasedPorts(role: ContainerRole, exceptWorkspaceId?: WorkspaceId): number[] {
-    const column = role === "sim" ? "sim_port" : "lsp_port";
+    const column = role === "sim" ? "sim_port" : role === "lsp" ? "lsp_port" : "vscode_port";
     const rows = (
       exceptWorkspaceId
         ? this.db
@@ -384,6 +386,19 @@ export class AppStorage {
                 last_used_at = ?
             WHERE workspace_id = ?
               AND sim_port = ?
+          `,
+        )
+        .run("error", timestamp, workspaceId, port);
+    } else if (role === "code") {
+      this.db
+        .query(
+          `
+            UPDATE container_leases
+            SET vscode_port = NULL,
+                code_state = ?,
+                last_used_at = ?
+            WHERE workspace_id = ?
+              AND vscode_port = ?
           `,
         )
         .run("error", timestamp, workspaceId, port);
@@ -429,10 +444,11 @@ export class AppStorage {
               sim_port,
               state,
               lsp_state,
+              code_state,
               last_used_at,
               created_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(workspace_id) DO UPDATE SET
               sim_container = excluded.sim_container,
               sim_port = excluded.sim_port,
@@ -446,6 +462,39 @@ export class AppStorage {
           input.port,
           input.state,
           "missing",
+          "missing",
+          timestamp,
+          timestamp,
+        );
+    } else if (input.role === "code") {
+      this.db
+        .query(
+          `
+            INSERT INTO container_leases (
+              workspace_id,
+              vscode_container,
+              vscode_port,
+              state,
+              lsp_state,
+              code_state,
+              last_used_at,
+              created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(workspace_id) DO UPDATE SET
+              vscode_container = excluded.vscode_container,
+              vscode_port = excluded.vscode_port,
+              code_state = excluded.code_state,
+              last_used_at = excluded.last_used_at
+          `,
+        )
+        .run(
+          input.workspaceId,
+          input.containerName,
+          input.port,
+          "missing",
+          "missing",
+          input.state,
           timestamp,
           timestamp,
         );
@@ -459,10 +508,11 @@ export class AppStorage {
               lsp_port,
               state,
               lsp_state,
+              code_state,
               last_used_at,
               created_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(workspace_id) DO UPDATE SET
               lsp_container = excluded.lsp_container,
               lsp_port = excluded.lsp_port,
@@ -476,6 +526,7 @@ export class AppStorage {
           input.port,
           "missing",
           input.state,
+          "missing",
           timestamp,
           timestamp,
         );
@@ -506,6 +557,60 @@ export class AppStorage {
     return this.upsertContainerLease({ ...input, role: "lsp" });
   }
 
+  upsertCodeContainerLease(input: {
+    workspaceId: WorkspaceId;
+    containerName: string;
+    simPort: number | null;
+    vscodePort: number | null;
+    state: ContainerState;
+  }): ContainerLeaseRow {
+    const timestamp = nowIso();
+    this.db
+      .query(
+        `
+          INSERT INTO container_leases (
+            workspace_id,
+            sim_container,
+            vscode_container,
+            sim_port,
+            vscode_port,
+            state,
+            lsp_state,
+            code_state,
+            last_used_at,
+            created_at
+          )
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ON CONFLICT(workspace_id) DO UPDATE SET
+            sim_container = excluded.sim_container,
+            vscode_container = excluded.vscode_container,
+            sim_port = excluded.sim_port,
+            vscode_port = excluded.vscode_port,
+            state = excluded.state,
+            code_state = excluded.code_state,
+            last_used_at = excluded.last_used_at
+        `,
+      )
+      .run(
+        input.workspaceId,
+        input.containerName,
+        input.containerName,
+        input.simPort,
+        input.vscodePort,
+        input.state,
+        "missing",
+        input.state,
+        timestamp,
+        timestamp,
+      );
+
+    const lease = this.getContainerLease(input.workspaceId);
+    if (!lease) {
+      throw new Error(`Failed to reload container lease for workspace ${input.workspaceId}.`);
+    }
+    return lease;
+  }
+
   touchContainerLeaseActivity(workspaceId: WorkspaceId): void {
     const timestamp = nowIso();
     this.db
@@ -529,6 +634,7 @@ export class AppStorage {
             u.created_at AS u_created_at, u.last_seen_at AS u_last_seen_at,
             cl.workspace_id AS cl_workspace_id, cl.sim_container, cl.lsp_container,
             cl.sim_port, cl.lsp_port, cl.state AS cl_state, cl.lsp_state AS cl_lsp_state,
+            cl.vscode_container, cl.vscode_port, cl.code_state AS cl_code_state,
             cl.last_used_at AS cl_last_used_at, cl.created_at AS cl_created_at
           FROM workspaces w
           JOIN users u ON u.id = w.user_id
@@ -555,6 +661,9 @@ export class AppStorage {
         lsp_port: number | null;
         cl_state: ContainerState | null;
         cl_lsp_state: ContainerState | null;
+        vscode_container: string | null;
+        vscode_port: number | null;
+        cl_code_state: ContainerState | null;
         cl_last_used_at: string | null;
         cl_created_at: string | null;
       }>;
@@ -584,6 +693,9 @@ export class AppStorage {
             lsp_port: row.lsp_port,
             state: row.cl_state as ContainerState,
             lsp_state: row.cl_lsp_state as ContainerState,
+            vscode_container: row.vscode_container,
+            vscode_port: row.vscode_port,
+            code_state: (row.cl_code_state ?? "missing") as ContainerState,
             last_used_at: row.cl_last_used_at!,
             created_at: row.cl_created_at!,
           }
@@ -600,7 +712,7 @@ export class AppStorage {
           FROM workspaces w
           JOIN container_leases cl ON cl.workspace_id = w.id
           WHERE w.last_accessed_at < ?
-            AND (cl.state IN ('running', 'starting') OR cl.lsp_state IN ('running', 'starting'))
+            AND (cl.state IN ('running', 'starting') OR cl.code_state IN ('running', 'starting'))
         `,
       )
       .all(cutoff) as Array<{ id: WorkspaceId }>;

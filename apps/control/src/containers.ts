@@ -1,8 +1,7 @@
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import { createServer } from "node:net";
 import { dirname, resolve } from "node:path";
 import type {
-  ContainerRole,
   ContainerState,
   ContainersStatusResponse,
   WorkspaceId,
@@ -21,8 +20,7 @@ type ContainerOrchestratorOptions = {
   dockerRunner?: DockerRunner | undefined;
 };
 
-type SimStatus = ContainersStatusResponse["sim"];
-type LspStatus = ContainersStatusResponse["lsp"];
+export type CodeContainerStatus = ContainersStatusResponse["code"];
 
 type DockerInspectContainer = {
   Name?: string;
@@ -44,30 +42,9 @@ type PublishedPort = {
   loopback: boolean;
 };
 
-const simContainerPort = 5810;
-const lspContainerPort = 30003;
-
-type RoleConfig = {
-  role: ContainerRole;
-  containerPort: number;
-  namePrefix: string;
-};
-
-const simRoleConfig: RoleConfig = {
-  role: "sim",
-  containerPort: simContainerPort,
-  namePrefix: "frc-v1-sim-",
-};
-
-const lspRoleConfig: RoleConfig = {
-  role: "lsp",
-  containerPort: lspContainerPort,
-  namePrefix: "frc-v1-lsp-",
-};
-
-function roleConfig(role: ContainerRole): RoleConfig {
-  return role === "sim" ? simRoleConfig : lspRoleConfig;
-}
+const SIM_CONTAINER_PORT = 5810;
+const VSCODE_CONTAINER_PORT = 3000;
+const CODE_NAME_PREFIX = "frc-v2-code-";
 
 async function runDockerCli(dockerPath: string, args: string[]): Promise<DockerCommandResult> {
   const subprocess = Bun.spawn([dockerPath, ...args], {
@@ -98,16 +75,12 @@ function dockerPortBindError(error: unknown): boolean {
   return /port is already allocated|bind for .* failed|address already in use/i.test(message);
 }
 
-function containerName(role: ContainerRole, workspaceId: WorkspaceId): string {
-  return `${roleConfig(role).namePrefix}${workspaceId}`;
+function codeContainerName(workspaceId: WorkspaceId): string {
+  return `${CODE_NAME_PREFIX}${workspaceId}`;
 }
 
 function workspaceHomePath(workspace: WorkspaceRow): string {
   return resolve(dirname(workspace.project_path), "home");
-}
-
-function workspaceJdtLsDataPath(workspace: WorkspaceRow): string {
-  return resolve(dirname(workspace.project_path), "jdtls-data");
 }
 
 function isLoopbackHost(hostIp: string): boolean {
@@ -137,84 +110,32 @@ function containerRuntimeState(container: DockerInspectContainer): ContainerStat
   return "stopped";
 }
 
-function labelsMatch(container: DockerInspectContainer, role: ContainerRole, workspaceId: WorkspaceId): boolean {
+function v2LabelsMatch(container: DockerInspectContainer, workspaceId: WorkspaceId): boolean {
   const labels = container.Config?.Labels ?? {};
   return (
     labels["frc-sim.managed"] === "true" &&
-    labels["frc-sim.version"] === "v1" &&
-    labels["frc-sim.role"] === role &&
+    labels["frc-sim.version"] === "v2" &&
+    labels["frc-sim.role"] === "code" &&
     labels["frc-sim.workspace"] === workspaceId
   );
 }
 
-function leasePortFor(role: ContainerRole, lease: ContainerLeaseRow | null): number | null {
-  if (!lease) {
-    return null;
-  }
-  return role === "sim" ? lease.sim_port : lease.lsp_port;
-}
-
-function leaseContainerNameFor(role: ContainerRole, lease: ContainerLeaseRow | null): string | null {
-  if (!lease) {
-    return null;
-  }
-  return role === "sim" ? lease.sim_container : lease.lsp_container;
-}
-
-function leaseStateFor(role: ContainerRole, lease: ContainerLeaseRow | null): ContainerState {
-  if (!lease) {
-    return "missing";
-  }
-  return role === "sim" ? lease.state : lease.lsp_state;
-}
-
 function statusFromLease(
-  role: ContainerRole,
-  configImage: string,
+  image: string,
   lease: ContainerLeaseRow | null,
   state: ContainerState,
   error: string | null = null,
-): SimStatus | LspStatus {
+): CodeContainerStatus {
   return {
-    role,
+    role: "code",
     state,
-    image: configImage,
-    containerName: leaseContainerNameFor(role, lease),
-    portAllocated: leasePortFor(role, lease) !== null,
+    image,
+    containerName: lease?.vscode_container ?? null,
+    simPortAllocated: (lease?.sim_port ?? null) !== null,
+    vscodePortAllocated: (lease?.vscode_port ?? null) !== null,
     lastUsedAt: lease?.last_used_at ?? null,
     error,
-  } as SimStatus | LspStatus;
-}
-
-// Counting semaphore used to cap concurrent `docker run` invocations for the
-// LSP role. Class-start bursts (10 students opening the IDE at once) would
-// otherwise spawn 10 simultaneous JDT LS Java processes during image-create.
-class Semaphore {
-  private available: number;
-  private waiters: Array<() => void> = [];
-
-  constructor(permits: number) {
-    this.available = permits;
-  }
-
-  async acquire(): Promise<() => void> {
-    if (this.available > 0) {
-      this.available -= 1;
-      return () => this.release();
-    }
-    return new Promise<() => void>((resolveAcquire) => {
-      this.waiters.push(() => resolveAcquire(() => this.release()));
-    });
-  }
-
-  private release(): void {
-    const next = this.waiters.shift();
-    if (next) {
-      next();
-    } else {
-      this.available += 1;
-    }
-  }
+  };
 }
 
 async function portIsFree(port: number): Promise<boolean> {
@@ -241,133 +162,79 @@ async function portIsFree(port: number): Promise<boolean> {
 
 export class ContainerOrchestrator {
   private readonly dockerRunner: DockerRunner;
-  private readonly activeEnsures = new Map<string, Promise<SimStatus | LspStatus>>();
+  private readonly activeEnsures = new Map<string, Promise<CodeContainerStatus>>();
   private portReservationLock: Promise<void> = Promise.resolve();
-  private readonly lspStartupSemaphore: Semaphore;
 
   constructor(
     private readonly storage: AppStorage,
     options: ContainerOrchestratorOptions = {},
   ) {
     this.dockerRunner = options.dockerRunner ?? ((args) => runDockerCli(this.storage.config.dockerPath, args));
-    this.lspStartupSemaphore = new Semaphore(this.storage.config.lspStartupConcurrency);
   }
 
-  startSimContainer(workspace: WorkspaceRow): void {
+  startWorkspaceContainers(workspace: WorkspaceRow): void {
     if (!this.storage.config.containerAutoStart) {
       return;
     }
 
-    void this.ensureSimContainer(workspace).catch(() => {
+    void this.ensureCodeContainer(workspace).catch(() => {
       // The status endpoint exposes startup failures; opening the IDE should not be blocked by Docker.
     });
   }
 
-  startLspContainer(workspace: WorkspaceRow): void {
-    if (!this.storage.config.containerAutoStart) {
-      return;
-    }
-
-    void this.ensureLspContainer(workspace).catch(() => {
-      // Opening the IDE never blocks on LSP container startup.
-    });
-  }
-
-  startWorkspaceContainers(workspace: WorkspaceRow): void {
-    this.startSimContainer(workspace);
-    this.startLspContainer(workspace);
-  }
-
   async containersStatus(workspace: WorkspaceRow): Promise<ContainersStatusResponse> {
-    const [sim, lsp] = await Promise.all([
-      this.ensureSimContainer(workspace),
-      this.ensureLspContainer(workspace),
-    ]);
+    const code = await this.ensureCodeContainer(workspace);
     return {
       workspace: {
         id: workspace.id,
         slug: workspace.slug,
       },
-      sim,
-      lsp,
+      code,
     };
   }
 
-  async stopContainer(role: ContainerRole, workspaceId: WorkspaceId): Promise<void> {
-    const name = containerName(role, workspaceId);
+  async stopCodeContainer(workspaceId: WorkspaceId): Promise<void> {
+    const name = codeContainerName(workspaceId);
     const existing = await this.inspectContainer(name);
     if (existing?.State?.Running) {
       await this.runDocker(["stop", name], true);
     }
-    this.storage.upsertContainerLease({
-      workspaceId,
-      role,
-      containerName: name,
-      port: leasePortFor(role, this.storage.getContainerLease(workspaceId)),
-      state: "stopped",
-    });
+    const lease = this.storage.getContainerLease(workspaceId);
+    if (lease) {
+      this.storage.upsertCodeContainerLease({
+        workspaceId,
+        containerName: name,
+        simPort: lease.sim_port,
+        vscodePort: lease.vscode_port,
+        state: "stopped",
+      });
+    }
   }
 
-  async removeContainer(role: ContainerRole, workspaceId: WorkspaceId): Promise<void> {
-    const name = containerName(role, workspaceId);
+  async removeCodeContainer(workspaceId: WorkspaceId): Promise<void> {
+    const name = codeContainerName(workspaceId);
     await this.runDocker(["rm", "-f", name], true);
     const lease = this.storage.getContainerLease(workspaceId);
     if (lease) {
-      this.storage.upsertContainerLease({
+      this.storage.upsertCodeContainerLease({
         workspaceId,
-        role,
-        containerName: null,
-        port: null,
+        containerName: name,
+        simPort: null,
+        vscodePort: null,
         state: "missing",
       });
     }
   }
 
   async stopWorkspaceContainers(workspaceId: WorkspaceId): Promise<void> {
-    await Promise.all([
-      this.stopContainer("sim", workspaceId),
-      this.stopContainer("lsp", workspaceId),
-    ]);
+    await this.stopCodeContainer(workspaceId);
   }
 
-  async restartSimContainer(workspace: WorkspaceRow): Promise<SimStatus> {
-    await this.stopContainer("sim", workspace.id);
-    await this.removeContainer("sim", workspace.id);
-    this.activeEnsures.delete(`sim:${workspace.id}`);
-    return this.ensureSimContainer(workspace);
-  }
-
-  async restartLspContainer(workspace: WorkspaceRow): Promise<LspStatus> {
-    await this.stopContainer("lsp", workspace.id);
-    await this.removeContainer("lsp", workspace.id);
-    this.activeEnsures.delete(`lsp:${workspace.id}`);
-    return this.ensureLspContainer(workspace);
-  }
-
-  async resetLspData(workspace: WorkspaceRow): Promise<LspStatus> {
-    await this.stopContainer("lsp", workspace.id);
-    await this.removeContainer("lsp", workspace.id);
-    this.activeEnsures.delete(`lsp:${workspace.id}`);
-
-    const jdtLsDataPath = workspaceJdtLsDataPath(workspace);
-    await rm(jdtLsDataPath, { recursive: true, force: true });
-    await mkdir(jdtLsDataPath, { recursive: true });
-
-    if (this.storage.config.containerUser) {
-      const [uidStr, gidStr] = this.storage.config.containerUser.split(":");
-      const uid = Number(uidStr);
-      const gid = Number(gidStr);
-      if (Number.isInteger(uid) && Number.isInteger(gid)) {
-        try {
-          const { chown } = await import("node:fs/promises");
-          await chown(jdtLsDataPath, uid, gid);
-        } catch {
-          // Windows or non-root may not support chown; safe to skip.
-        }
-      }
-    }
-
-    return this.ensureLspContainer(workspace);
+  async restartCodeContainer(workspace: WorkspaceRow): Promise<CodeContainerStatus> {
+    await this.stopCodeContainer(workspace.id);
+    await this.removeCodeContainer(workspace.id);
+    this.activeEnsures.delete(`code:${workspace.id}`);
+    return this.ensureCodeContainer(workspace);
   }
 
   async cleanupStoppedContainers(): Promise<string[]> {
@@ -378,8 +245,6 @@ export class ContainerOrchestrator {
         "-a",
         "--filter",
         "label=frc-sim.managed=true",
-        "--filter",
-        "label=frc-sim.version=v1",
         "--filter",
         "status=exited",
         "--format",
@@ -406,23 +271,51 @@ export class ContainerOrchestrator {
     return removed;
   }
 
-  async ensureSimContainer(workspace: WorkspaceRow): Promise<SimStatus> {
-    return (await this.ensureContainer("sim", workspace)) as SimStatus;
+  /** Remove any V1 sim or LSP containers found on the Docker daemon. */
+  async cleanupV1Containers(): Promise<string[]> {
+    const result = await this.runDocker(
+      [
+        "container",
+        "ls",
+        "-a",
+        "--filter",
+        "label=frc-sim.managed=true",
+        "--filter",
+        "label=frc-sim.version=v1",
+        "--format",
+        "{{.Names}}",
+      ],
+      true,
+    );
+    if (result.exitCode !== 0) {
+      return [];
+    }
+
+    const names = result.stdout
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    const removed: string[] = [];
+    for (const name of names) {
+      await this.runDocker(["stop", name], true);
+      const removeResult = await this.runDocker(["rm", "-f", name], true);
+      if (removeResult.exitCode === 0) {
+        removed.push(name);
+      }
+    }
+    return removed;
   }
 
-  async ensureLspContainer(workspace: WorkspaceRow): Promise<LspStatus> {
-    return (await this.ensureContainer("lsp", workspace)) as LspStatus;
-  }
-
-  private async ensureContainer(role: ContainerRole, workspace: WorkspaceRow): Promise<SimStatus | LspStatus> {
-    const key = `${role}:${workspace.id}`;
+  async ensureCodeContainer(workspace: WorkspaceRow): Promise<CodeContainerStatus> {
+    const key = `code:${workspace.id}`;
     const existing = this.activeEnsures.get(key);
     if (existing) {
       return existing;
     }
 
-    const pending = this.ensureContainerInner(role, workspace).catch((error) =>
-      this.recordError(role, workspace, error),
+    const pending = this.ensureCodeContainerInner(workspace).catch((error) =>
+      this.recordError(workspace, error),
     );
     this.activeEnsures.set(key, pending);
     try {
@@ -450,73 +343,11 @@ export class ContainerOrchestrator {
     return parsed[0] ?? null;
   }
 
-  private async listManagedContainerNames(role: ContainerRole, workspaceId: WorkspaceId): Promise<string[]> {
-    const result = await this.runDocker(
-      [
-        "container",
-        "ls",
-        "-a",
-        "--filter",
-        "label=frc-sim.managed=true",
-        "--filter",
-        "label=frc-sim.version=v1",
-        "--filter",
-        `label=frc-sim.role=${role}`,
-        "--filter",
-        `label=frc-sim.workspace=${workspaceId}`,
-        "--format",
-        "{{.Names}}",
-      ],
-      true,
-    );
-    if (result.exitCode !== 0) {
-      return [];
-    }
-    return result.stdout
-      .split(/\r?\n/u)
-      .map((line) => line.trim())
-      .filter(Boolean);
-  }
-
-  private async findManagedContainer(
-    role: ContainerRole,
-    workspaceId: WorkspaceId,
-  ): Promise<{ name: string; container: DockerInspectContainer } | null> {
-    const expectedName = containerName(role, workspaceId);
-    const expected = await this.inspectContainer(expectedName);
-    if (expected) {
-      return { name: expectedName, container: expected };
-    }
-
-    for (const name of await this.listManagedContainerNames(role, workspaceId)) {
-      const container = await this.inspectContainer(name);
-      if (container) {
-        return { name, container };
-      }
-    }
-
-    return null;
-  }
-
-  private imageFor(role: ContainerRole): string {
-    return role === "sim" ? this.storage.config.simImage : this.storage.config.lspImage;
-  }
-
-  private memoryLimitFor(role: ContainerRole): string {
-    return role === "sim" ? this.storage.config.simMemoryLimit : this.storage.config.lspMemoryLimit;
-  }
-
-  private portRangeFor(role: ContainerRole): { start: number; end: number } {
-    return role === "sim" ? this.storage.config.simPortRange : this.storage.config.lspPortRange;
-  }
-
-  private async ensureImage(role: ContainerRole): Promise<void> {
-    const image = this.imageFor(role);
+  private async ensureImage(): Promise<void> {
+    const image = this.storage.config.codeImage;
     const result = await this.runDocker(["image", "inspect", image], true);
     if (result.exitCode !== 0) {
-      const buildHint =
-        role === "sim" ? "bun run docker:build:sim" : "bun run docker:build:lsp";
-      throw new Error(`${role.toUpperCase()} image ${image} is not available. Build it with ${buildHint}.`);
+      throw new Error(`CODE image ${image} is not available. Build it with bun run docker:build:code.`);
     }
   }
 
@@ -535,13 +366,13 @@ export class ContainerOrchestrator {
     }
   }
 
-  private async allocatePort(
-    role: ContainerRole,
+  private async allocatePortFromRange(
+    role: "sim" | "code",
     workspaceId: WorkspaceId,
     preferredPort: number | null,
     rejectedPorts: Set<number>,
   ): Promise<number> {
-    const range = this.portRangeFor(role);
+    const range = role === "sim" ? this.storage.config.simPortRange : this.storage.config.vscodePortRange;
     const leasedPorts = new Set(this.storage.listLeasedPorts(role, workspaceId));
     const candidates: number[] = [];
     if (preferredPort !== null) {
@@ -569,52 +400,63 @@ export class ContainerOrchestrator {
     throw new Error(`No free ${role} ports are available in ${range.start}-${range.end}.`);
   }
 
-  private async reservePort(
-    role: ContainerRole,
+  private async reserveCodePorts(
     workspace: WorkspaceRow,
-    rejectedPorts: Set<number>,
-  ): Promise<number> {
+    rejectedSimPorts: Set<number>,
+    rejectedVscodePorts: Set<number>,
+  ): Promise<{ simPort: number; vscodePort: number }> {
     return await this.withPortReservationLock(async () => {
       const lease = this.storage.getContainerLease(workspace.id);
-      const port = await this.allocatePort(role, workspace.id, leasePortFor(role, lease), rejectedPorts);
-      this.storage.upsertContainerLease({
+      const simPort = await this.allocatePortFromRange(
+        "sim",
+        workspace.id,
+        lease?.sim_port ?? null,
+        rejectedSimPorts,
+      );
+      const vscodePort = await this.allocatePortFromRange(
+        "code",
+        workspace.id,
+        lease?.vscode_port ?? null,
+        rejectedVscodePorts,
+      );
+      const name = codeContainerName(workspace.id);
+      this.storage.upsertCodeContainerLease({
         workspaceId: workspace.id,
-        role,
-        containerName: leaseContainerNameFor(role, lease) ?? containerName(role, workspace.id),
-        port,
+        containerName: name,
+        simPort,
+        vscodePort,
         state: "starting",
       });
-      return port;
+      return { simPort, vscodePort };
     });
   }
 
-  private async adoptContainer(
-    role: ContainerRole,
+  private async adoptCodeContainer(
     workspace: WorkspaceRow,
     name: string,
     container: DockerInspectContainer,
-  ): Promise<SimStatus | LspStatus | null> {
-    if (!labelsMatch(container, role, workspace.id)) {
+  ): Promise<CodeContainerStatus | null> {
+    if (!v2LabelsMatch(container, workspace.id)) {
       await this.runDocker(["rm", "-f", name], true);
       return null;
     }
 
-    const cfg = roleConfig(role);
-    const published = publishedPortFor(container, cfg.containerPort);
-    if (!published || !published.loopback) {
+    const simPublished = publishedPortFor(container, SIM_CONTAINER_PORT);
+    const vscodePublished = publishedPortFor(container, VSCODE_CONTAINER_PORT);
+    if (!simPublished?.loopback || !vscodePublished?.loopback) {
       await this.runDocker(["rm", "-f", name], true);
       return null;
     }
 
     if (container.State?.Running) {
-      const lease = this.storage.upsertContainerLease({
+      const lease = this.storage.upsertCodeContainerLease({
         workspaceId: workspace.id,
-        role,
         containerName: name,
-        port: published?.port ?? null,
+        simPort: simPublished.port,
+        vscodePort: vscodePublished.port,
         state: "running",
       });
-      return statusFromLease(role, this.imageFor(role), lease, "running");
+      return statusFromLease(this.storage.config.codeImage, lease, "running");
     }
 
     const start = await this.runDocker(["start", name], true);
@@ -624,45 +466,46 @@ export class ContainerOrchestrator {
     }
 
     const restarted = await this.inspectContainer(name);
-    const restartedPort = restarted ? publishedPortFor(restarted, cfg.containerPort) : null;
-    if (!restarted || !labelsMatch(restarted, role, workspace.id) || !restartedPort || !restartedPort.loopback) {
+    if (!restarted || !v2LabelsMatch(restarted, workspace.id)) {
       await this.runDocker(["rm", "-f", name], true);
       return null;
     }
 
-    const lease = this.storage.upsertContainerLease({
-      workspaceId: workspace.id,
-      role,
-      containerName: name,
-      port: restartedPort?.port ?? published?.port ?? null,
-      state: containerRuntimeState(restarted),
-    });
-    return statusFromLease(role, this.imageFor(role), lease, leaseStateFor(role, lease));
-  }
-
-  private async createContainer(
-    role: ContainerRole,
-    workspace: WorkspaceRow,
-    port: number,
-  ): Promise<SimStatus | LspStatus> {
-    await this.ensureImage(role);
-    const homePath = workspaceHomePath(workspace);
-    await mkdir(homePath, { recursive: true, mode: 0o700 });
-    const jdtLsDataPath = workspaceJdtLsDataPath(workspace);
-    if (role === "lsp") {
-      await mkdir(jdtLsDataPath, { recursive: true });
+    const rSim = publishedPortFor(restarted, SIM_CONTAINER_PORT);
+    const rVscode = publishedPortFor(restarted, VSCODE_CONTAINER_PORT);
+    if (!rSim?.loopback || !rVscode?.loopback) {
+      await this.runDocker(["rm", "-f", name], true);
+      return null;
     }
 
-    const name = containerName(role, workspace.id);
-    let lease = this.storage.upsertContainerLease({
+    const lease = this.storage.upsertCodeContainerLease({
       workspaceId: workspace.id,
-      role,
       containerName: name,
-      port,
+      simPort: rSim.port,
+      vscodePort: rVscode.port,
+      state: containerRuntimeState(restarted),
+    });
+    return statusFromLease(this.storage.config.codeImage, lease, lease.code_state);
+  }
+
+  private async createCodeContainer(
+    workspace: WorkspaceRow,
+    simPort: number,
+    vscodePort: number,
+  ): Promise<CodeContainerStatus> {
+    await this.ensureImage();
+    const homePath = workspaceHomePath(workspace);
+    await mkdir(homePath, { recursive: true, mode: 0o700 });
+
+    const name = codeContainerName(workspace.id);
+    this.storage.upsertCodeContainerLease({
+      workspaceId: workspace.id,
+      containerName: name,
+      simPort,
+      vscodePort,
       state: "starting",
     });
 
-    const cfg = roleConfig(role);
     const args = [
       "run",
       "-d",
@@ -671,9 +514,9 @@ export class ContainerOrchestrator {
       "--label",
       "frc-sim.managed=true",
       "--label",
-      "frc-sim.version=v1",
+      "frc-sim.version=v2",
       "--label",
-      `frc-sim.role=${role}`,
+      "frc-sim.role=code",
       "--label",
       `frc-sim.workspace=${workspace.id}`,
       "--mount",
@@ -681,85 +524,88 @@ export class ContainerOrchestrator {
       "--mount",
       `type=bind,src=${homePath},dst=/home/frc`,
       "-p",
-      `127.0.0.1:${port}:${cfg.containerPort}`,
+      `127.0.0.1:${vscodePort}:${VSCODE_CONTAINER_PORT}`,
+      "-p",
+      `127.0.0.1:${simPort}:${SIM_CONTAINER_PORT}`,
       "--memory",
-      this.memoryLimitFor(role),
+      this.storage.config.codeMemoryLimit,
       "-e",
-      "HOME=/home/frc",
-      "-e",
-      `GRADLE_USER_HOME=/home/frc/.gradle-${role}`,
+      `VSCODE_BASE_PATH=/u/${workspace.slug}/vscode/`,
     ];
-
-    if (role === "lsp") {
-      args.push("--mount", `type=bind,src=${jdtLsDataPath},dst=/workspace/jdtls-data`);
-    }
 
     if (this.storage.config.containerUser) {
       args.push("--user", this.storage.config.containerUser);
     }
 
-    args.push(this.imageFor(role));
+    args.push(this.storage.config.codeImage);
     await this.runDocker(args);
 
     const created = await this.inspectContainer(name);
-    const published = created ? publishedPortFor(created, cfg.containerPort) : null;
-    lease = this.storage.upsertContainerLease({
+    const createdSim = created ? publishedPortFor(created, SIM_CONTAINER_PORT) : null;
+    const createdVscode = created ? publishedPortFor(created, VSCODE_CONTAINER_PORT) : null;
+    const lease = this.storage.upsertCodeContainerLease({
       workspaceId: workspace.id,
-      role,
       containerName: name,
-      port: published?.port ?? port,
+      simPort: createdSim?.port ?? simPort,
+      vscodePort: createdVscode?.port ?? vscodePort,
       state: created ? containerRuntimeState(created) : "starting",
     });
 
-    return statusFromLease(role, this.imageFor(role), lease, leaseStateFor(role, lease));
+    return statusFromLease(this.storage.config.codeImage, lease, lease.code_state);
   }
 
-  private async ensureContainerInner(role: ContainerRole, workspace: WorkspaceRow): Promise<SimStatus | LspStatus> {
-    const existing = await this.findManagedContainer(role, workspace.id);
+  private async ensureCodeContainerInner(workspace: WorkspaceRow): Promise<CodeContainerStatus> {
+    const expectedName = codeContainerName(workspace.id);
+    const existing = await this.inspectContainer(expectedName);
     if (existing) {
-      const adopted = await this.adoptContainer(role, workspace, existing.name, existing.container);
+      const adopted = await this.adoptCodeContainer(workspace, expectedName, existing);
       if (adopted) {
         return adopted;
       }
     }
 
-    // Throttle docker-create bursts for LSP only. Sim creates are already
-    // throttled implicitly by the global run queue. Adoption above does not
-    // need a permit because it's just `docker start` on an existing image.
-    const release = role === "lsp" ? await this.lspStartupSemaphore.acquire() : null;
-    try {
-      const range = this.portRangeFor(role);
-      const rejectedPorts = new Set<number>();
-      const maxAttempts = range.end - range.start + 1;
-      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-        const port = await this.reservePort(role, workspace, rejectedPorts);
-        try {
-          return await this.createContainer(role, workspace, port);
-        } catch (error) {
-          if (!dockerPortBindError(error)) {
-            throw error;
-          }
-          rejectedPorts.add(port);
-          this.storage.clearReservedPort(role, workspace.id, port);
-        }
-      }
+    const simRange = this.storage.config.simPortRange;
+    const vscodeRange = this.storage.config.vscodePortRange;
+    const maxAttempts = Math.max(
+      simRange.end - simRange.start + 1,
+      vscodeRange.end - vscodeRange.start + 1,
+    );
+    const rejectedSimPorts = new Set<number>();
+    const rejectedVscodePorts = new Set<number>();
 
-      throw new Error(`No free ${role} ports are available in ${range.start}-${range.end}.`);
-    } finally {
-      release?.();
+    for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+      const { simPort, vscodePort } = await this.reserveCodePorts(
+        workspace,
+        rejectedSimPorts,
+        rejectedVscodePorts,
+      );
+      try {
+        return await this.createCodeContainer(workspace, simPort, vscodePort);
+      } catch (error) {
+        if (!dockerPortBindError(error)) {
+          throw error;
+        }
+        rejectedSimPorts.add(simPort);
+        rejectedVscodePorts.add(vscodePort);
+        this.storage.clearReservedPort("sim", workspace.id, simPort);
+        this.storage.clearReservedPort("code", workspace.id, vscodePort);
+      }
     }
+
+    throw new Error("No free ports are available for the code container.");
   }
 
-  private recordError(role: ContainerRole, workspace: WorkspaceRow, error: unknown): SimStatus | LspStatus {
-    const message = error instanceof Error ? error.message : `Unable to start ${role} container.`;
+  private recordError(workspace: WorkspaceRow, error: unknown): CodeContainerStatus {
+    const message = error instanceof Error ? error.message : "Unable to start code container.";
     const previous = this.storage.getContainerLease(workspace.id);
-    const lease = this.storage.upsertContainerLease({
+    const name = codeContainerName(workspace.id);
+    const lease = this.storage.upsertCodeContainerLease({
       workspaceId: workspace.id,
-      role,
-      containerName: leaseContainerNameFor(role, previous) ?? containerName(role, workspace.id),
-      port: leasePortFor(role, previous),
+      containerName: name,
+      simPort: previous?.sim_port ?? null,
+      vscodePort: previous?.vscode_port ?? null,
       state: "error",
     });
-    return statusFromLease(role, this.imageFor(role), lease, "error", message);
+    return statusFromLease(this.storage.config.codeImage, lease, "error", message);
   }
 }

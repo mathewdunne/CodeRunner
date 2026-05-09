@@ -83,13 +83,17 @@ async function withApp<T>(
   }
 }
 
+type FakeContainerPort = {
+  hostPort: number;
+  containerPort: number;
+  hostIp: string;
+};
+
 type FakeContainer = {
   name: string;
   running: boolean;
   labels: Record<string, string>;
-  hostIp: string;
-  port: number;
-  containerPort: number;
+  ports: FakeContainerPort[];
 };
 
 function ok(stdout = ""): DockerCommandResult {
@@ -101,6 +105,14 @@ function missing(message = "missing"): DockerCommandResult {
 }
 
 function dockerInspect(container: FakeContainer): unknown {
+  const portsMap: Record<string, Array<{ HostIp: string; HostPort: string }>> = {};
+  for (const p of container.ports) {
+    const key = `${p.containerPort}/tcp`;
+    if (!portsMap[key]) {
+      portsMap[key] = [];
+    }
+    portsMap[key].push({ HostIp: p.hostIp, HostPort: String(p.hostPort) });
+  }
   return {
     Name: `/${container.name}`,
     State: {
@@ -111,19 +123,15 @@ function dockerInspect(container: FakeContainer): unknown {
       Labels: container.labels,
     },
     NetworkSettings: {
-      Ports: {
-        [`${container.containerPort}/tcp`]: [
-          {
-            HostIp: container.hostIp,
-            HostPort: String(container.port),
-          },
-        ],
-      },
+      Ports: portsMap,
     },
   };
 }
 
-function createFakeDocker(options: { failRunPortsOnce?: number[]; onRunPort?: (port: number) => void } = {}) {
+function createFakeDocker(options: {
+  failRunPortsOnce?: number[];
+  onRun?: (name: string, ports: FakeContainerPort[]) => void;
+} = {}) {
   const containers = new Map<string, FakeContainer>();
   const calls: string[][] = [];
   const failRunPortsOnce = new Set(options.failRunPortsOnce ?? []);
@@ -145,6 +153,8 @@ function createFakeDocker(options: { failRunPortsOnce?: number[]; onRunPort?: (p
       const workspaceId = workspaceFilter?.slice("label=frc-sim.workspace=".length);
       const roleFilter = args.find((arg) => arg.startsWith("label=frc-sim.role="));
       const roleValue = roleFilter?.slice("label=frc-sim.role=".length);
+      const versionFilter = args.find((arg) => arg.startsWith("label=frc-sim.version="));
+      const versionValue = versionFilter?.slice("label=frc-sim.version=".length);
       const statusFilter = args.find((arg) => arg.startsWith("status="));
       const statusValue = statusFilter?.slice("status=".length);
       const names = [...containers.values()]
@@ -153,6 +163,9 @@ function createFakeDocker(options: { failRunPortsOnce?: number[]; onRunPort?: (p
             return false;
           }
           if (roleValue && container.labels["frc-sim.role"] !== roleValue) {
+            return false;
+          }
+          if (versionValue && container.labels["frc-sim.version"] !== versionValue) {
             return false;
           }
           if (statusValue === "exited" && container.running) {
@@ -166,13 +179,27 @@ function createFakeDocker(options: { failRunPortsOnce?: number[]; onRunPort?: (p
 
     if (args[0] === "run") {
       const name = args[args.indexOf("--name") + 1] ?? "";
-      const portMapping = args[args.indexOf("-p") + 1] ?? "";
-      const portMatch = /^127\.0\.0\.1:(\d+):(\d+)$/u.exec(portMapping);
-      const port = Number(portMatch?.[1]);
-      const containerPort = Number(portMatch?.[2]);
-      if (failRunPortsOnce.has(port)) {
-        failRunPortsOnce.delete(port);
-        return missing(`Bind for 127.0.0.1:${port} failed: port is already allocated`);
+      // Parse all -p flags for dual-port support
+      const parsedPorts: FakeContainerPort[] = [];
+      for (let i = 0; i < args.length; i += 1) {
+        if (args[i] === "-p") {
+          const mapping = args[i + 1] ?? "";
+          const portMatch = /^([\d.]+):(\d+):(\d+)$/u.exec(mapping);
+          if (portMatch) {
+            parsedPorts.push({
+              hostIp: portMatch[1]!,
+              hostPort: Number(portMatch[2]),
+              containerPort: Number(portMatch[3]),
+            });
+          }
+        }
+      }
+      // Check if any port should trigger a failure
+      for (const p of parsedPorts) {
+        if (failRunPortsOnce.has(p.hostPort)) {
+          failRunPortsOnce.delete(p.hostPort);
+          return missing(`Bind for ${p.hostIp}:${p.hostPort} failed: port is already allocated`);
+        }
       }
       const labels: Record<string, string> = {};
       for (let index = 0; index < args.length; index += 1) {
@@ -187,11 +214,9 @@ function createFakeDocker(options: { failRunPortsOnce?: number[]; onRunPort?: (p
         name,
         running: true,
         labels,
-        hostIp: "127.0.0.1",
-        port,
-        containerPort,
+        ports: parsedPorts,
       });
-      options.onRunPort?.(port);
+      options.onRun?.(name, parsedPorts);
       return ok("fake-container-id\n");
     }
 
@@ -776,8 +801,8 @@ describe("V1-3 project file APIs", () => {
   });
 });
 
-describe("V1-4 sim container orchestration", () => {
-  test("container status creates a managed sim container and lease", async () => {
+describe("V2 code container orchestration", () => {
+  test("container status creates a managed code container with dual ports and lease", async () => {
     const fakeDocker = createFakeDocker();
 
     await withApp(
@@ -795,11 +820,12 @@ describe("V1-4 sim container orchestration", () => {
         const body = await status.json();
         expect(body).toMatchObject({
           workspace: { slug: "alice" },
-          sim: {
-            role: "sim",
+          code: {
+            role: "code",
             state: "running",
-            image: "frc-sim:test",
-            portAllocated: true,
+            image: "frc-code:test",
+            simPortAllocated: true,
+            vscodePortAllocated: true,
             error: null,
           },
         });
@@ -808,40 +834,50 @@ describe("V1-4 sim container orchestration", () => {
           id: string;
           project_path: string;
         };
-        const expectedName = `frc-v1-sim-${workspace.id}`;
-        expect(body.sim.containerName).toBe(expectedName);
+        const expectedName = `frc-v2-code-${workspace.id}`;
+        expect(body.code.containerName).toBe(expectedName);
         expect(fakeDocker.containers.has(expectedName)).toBe(true);
 
         const runCall = fakeDocker.calls.find((call) => call[0] === "run");
         expect(runCall).toBeTruthy();
         expect(runCall).toContain(`frc-sim.workspace=${workspace.id}`);
+        expect(runCall).toContain(`frc-sim.version=v2`);
+        expect(runCall).toContain(`frc-sim.role=code`);
         expect(runCall).toContain(`type=bind,src=${workspace.project_path},dst=/workspace/project`);
         expect(runCall).toContain(`type=bind,src=${join(app.storage.config.dataDir, "users", workspace.id, "home")},dst=/home/frc`);
         expect(runCall).toContain("127.0.0.1:25810:5810");
+        expect(runCall).toContain("127.0.0.1:33000:3000");
         expect(runCall).toContain("--user");
         expect(runCall?.[runCall.indexOf("--user") + 1]).toBe("123:456");
 
         const lease = app.storage.db.query("SELECT * FROM container_leases WHERE workspace_id = ?").get(workspace.id) as {
           sim_container: string;
+          vscode_container: string;
           sim_port: number;
+          vscode_port: number;
           state: string;
+          code_state: string;
         };
         expect(lease).toMatchObject({
           sim_container: expectedName,
+          vscode_container: expectedName,
           sim_port: 25810,
+          vscode_port: 33000,
           state: "running",
+          code_state: "running",
         });
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25810, end: 25810 },
+        vscodePortRange: { start: 33000, end: 33000 },
         containerUser: "123:456",
       },
     );
   });
 
-  test("opening a workspace kicks off sim startup without blocking the shell", async () => {
+  test("opening a workspace kicks off code container startup without blocking the shell", async () => {
     const fakeDocker = createFakeDocker();
 
     await withApp(
@@ -861,26 +897,20 @@ describe("V1-4 sim container orchestration", () => {
       {
         dockerRunner: fakeDocker.runner,
         containerAutoStart: true,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25811, end: 25811 },
+        vscodePortRange: { start: 33001, end: 33001 },
       },
     );
   });
 
-  test("sim entrypoint idles until the run queue starts the sim", async () => {
-    const entrypoint = await readFile(join(process.cwd(), "containers", "sim", "entrypoint.sh"), "utf8");
-    expect(entrypoint).toContain("Waiting for a queued run request");
-    expect(entrypoint).not.toContain("/usr/local/bin/start-sim.sh");
+  test("code entrypoint runs openvscode-server as primary process", async () => {
+    const entrypoint = await readFile(join(process.cwd(), "containers", "code", "entrypoint.sh"), "utf8");
+    expect(entrypoint).toContain("openvscode-server");
   });
 
-  test("sim Gradle uses a project cache outside the mounted project", async () => {
-    const startSim = await readFile(join(process.cwd(), "containers", "sim", "start-sim.sh"), "utf8");
-    expect(startSim).toContain("GRADLE_PROJECT_CACHE_DIR");
-    expect(startSim).toContain("--project-cache-dir \"$GRADLE_PROJECT_CACHE_DIR\"");
-  });
-
-  test("a restarted control plane rediscovers the labeled sim container", async () => {
-    const root = await mkdtemp(join(tmpdir(), "frc-v1-control-"));
+  test("a restarted control plane rediscovers the labeled code container", async () => {
+    const root = await mkdtemp(join(tmpdir(), "frc-v2-control-"));
     const templateDir = await createTemplate(root);
     const webDistDir = await createWebDist(root);
     const fakeDocker = createFakeDocker();
@@ -891,8 +921,9 @@ describe("V1-4 sim container orchestration", () => {
       sessionSecret: "test-session-secret",
       containerAutoStart: false,
       dockerRunner: fakeDocker.runner,
-      simImage: "frc-sim:test",
+      codeImage: "frc-code:test",
       simPortRange: { start: 25812, end: 25812 },
+      vscodePortRange: { start: 33002, end: 33002 },
     };
 
     const app1 = await createApp(config);
@@ -917,7 +948,7 @@ describe("V1-4 sim container orchestration", () => {
         );
         expect(secondStatus.status).toBe(200);
         expect(await secondStatus.json()).toMatchObject({
-          sim: { state: "running", portAllocated: true },
+          code: { state: "running", simPortAllocated: true, vscodePortAllocated: true },
         });
         expect(fakeDocker.calls.filter((call) => call[0] === "run").length).toBe(runCount);
       } finally {
@@ -946,7 +977,7 @@ describe("V1-4 sim container orchestration", () => {
         );
         expect(firstStatus.status).toBe(200);
         const firstBody = await firstStatus.json();
-        fakeDocker.containers.delete(firstBody.sim.containerName);
+        fakeDocker.containers.delete(firstBody.code.containerName);
 
         const secondStatus = await app.fetch(
           new Request("http://localhost/u/alice/api/containers/status", {
@@ -955,19 +986,20 @@ describe("V1-4 sim container orchestration", () => {
         );
         expect(secondStatus.status).toBe(200);
         expect(await secondStatus.json()).toMatchObject({
-          sim: { state: "running" },
+          code: { state: "running" },
         });
         expect(await readFile(robotPath, "utf8")).toContain("sentinel");
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25813, end: 25813 },
+        vscodePortRange: { start: 33003, end: 33003 },
       },
     );
   });
 
-  test("concurrent workspace startup reserves distinct sim ports", async () => {
+  test("concurrent workspace startup reserves distinct port pairs", async () => {
     const fakeDocker = createFakeDocker();
 
     await withApp(
@@ -978,25 +1010,31 @@ describe("V1-4 sim container orchestration", () => {
         const bobWorkspace = workspaceBySlug(app, "bob");
 
         const [aliceStatus, bobStatus] = await Promise.all([
-          app.containers.ensureSimContainer(aliceWorkspace),
-          app.containers.ensureSimContainer(bobWorkspace),
+          app.containers.ensureCodeContainer(aliceWorkspace),
+          app.containers.ensureCodeContainer(bobWorkspace),
         ]);
 
         expect(aliceStatus.state).toBe("running");
         expect(bobStatus.state).toBe("running");
-        const ports = [...fakeDocker.containers.values()].map((container) => container.port);
-        expect(new Set(ports).size).toBe(2);
-        expect(ports.sort()).toEqual([25814, 25815]);
+        const simPorts = [...fakeDocker.containers.values()]
+          .flatMap((c) => c.ports.filter((p) => p.containerPort === 5810).map((p) => p.hostPort));
+        const vscodePorts = [...fakeDocker.containers.values()]
+          .flatMap((c) => c.ports.filter((p) => p.containerPort === 3000).map((p) => p.hostPort));
+        expect(new Set(simPorts).size).toBe(2);
+        expect(new Set(vscodePorts).size).toBe(2);
+        expect(simPorts.sort()).toEqual([25814, 25815]);
+        expect(vscodePorts.sort()).toEqual([33004, 33005]);
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25814, end: 25815 },
+        vscodePortRange: { start: 33004, end: 33005 },
       },
     );
   });
 
-  test("retries the next sim port when Docker reports a bind conflict", async () => {
+  test("retries the next port when Docker reports a bind conflict", async () => {
     const fakeDocker = createFakeDocker({ failRunPortsOnce: [25816] });
 
     await withApp(
@@ -1004,19 +1042,18 @@ describe("V1-4 sim container orchestration", () => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
 
-        const status = await app.containers.ensureSimContainer(workspace);
+        const status = await app.containers.ensureCodeContainer(workspace);
 
         expect(status.state).toBe("running");
-        const runPorts = fakeDocker.calls
-          .filter((call) => call[0] === "run")
-          .map((call) => Number(/^127\.0\.0\.1:(\d+):5810$/u.exec(call[call.indexOf("-p") + 1] ?? "")?.[1]));
-        expect(runPorts).toEqual([25816, 25817]);
+        const runCalls = fakeDocker.calls.filter((call) => call[0] === "run");
+        expect(runCalls.length).toBe(2);
         expect(app.storage.getContainerLease(workspace.id)).toMatchObject({ sim_port: 25817 });
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25816, end: 25817 },
+        vscodePortRange: { start: 33006, end: 33007 },
       },
     );
   });
@@ -1132,8 +1169,9 @@ describe("V1-5 run queue and log streaming", () => {
         dockerRunner: fakeDocker.runner,
         runCommandFactory: controlled.commandFactory,
         runConcurrency: 1,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25820, end: 25829 },
+        vscodePortRange: { start: 33020, end: 33029 },
       },
     );
   });
@@ -1170,8 +1208,9 @@ describe("V1-5 run queue and log streaming", () => {
         runConcurrency: 1,
         runBuildTimeoutMs: 20,
         simStartupTimeoutMs: 20,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25840, end: 25849 },
+        vscodePortRange: { start: 33040, end: 33049 },
       },
     );
   });
@@ -1201,8 +1240,9 @@ describe("V1-5 run queue and log streaming", () => {
         dockerRunner: fakeDocker.runner,
         runCommandFactory: controlled.commandFactory,
         runConcurrency: 1,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25830, end: 25839 },
+        vscodePortRange: { start: 33030, end: 33039 },
       },
     );
   });
@@ -1240,16 +1280,19 @@ describe("V1-6 AdvantageScope Lite and NT4 routing", () => {
   test("proxies authenticated sim alive checks to the workspace sim port", async () => {
     const nt4Servers: Array<ReturnType<typeof Bun.serve>> = [];
     const fakeDocker = createFakeDocker({
-      onRunPort(port) {
-        nt4Servers.push(
-          Bun.serve({
-            hostname: "127.0.0.1",
-            port,
-            fetch() {
-              return new Response("nt4 alive\n");
-            },
-          }),
-        );
+      onRun(_name, ports) {
+        const simPort = ports.find((p) => p.containerPort === 5810);
+        if (simPort) {
+          nt4Servers.push(
+            Bun.serve({
+              hostname: "127.0.0.1",
+              port: simPort.hostPort,
+              fetch() {
+                return new Response("nt4 alive\n");
+              },
+            }),
+          );
+        }
       },
     });
 
@@ -1278,8 +1321,9 @@ describe("V1-6 AdvantageScope Lite and NT4 routing", () => {
         },
         {
           dockerRunner: fakeDocker.runner,
-          simImage: "frc-sim:test",
+          codeImage: "frc-code:test",
           simPortRange: { start: 25910, end: 25910 },
+          vscodePortRange: { start: 33100, end: 33100 },
         },
       );
     } finally {
@@ -1290,8 +1334,8 @@ describe("V1-6 AdvantageScope Lite and NT4 routing", () => {
   });
 });
 
-describe("V1-7 Java LSP container and proxy", () => {
-  test("container status reports per-workspace sim and LSP containers", async () => {
+describe("V2 code container status", () => {
+  test("container status reports a single code container with dual ports", async () => {
     const fakeDocker = createFakeDocker();
 
     await withApp(
@@ -1309,141 +1353,35 @@ describe("V1-7 Java LSP container and proxy", () => {
         const body = await status.json();
         const workspace = workspaceBySlug(app, "alice");
         expect(body).toMatchObject({
-          sim: {
-            role: "sim",
+          code: {
+            role: "code",
             state: "running",
-            image: "frc-sim:test",
-            portAllocated: true,
-            error: null,
-          },
-          lsp: {
-            role: "lsp",
-            state: "running",
-            image: "frc-lsp:test",
-            portAllocated: true,
+            image: "frc-code:test",
+            simPortAllocated: true,
+            vscodePortAllocated: true,
             error: null,
           },
         });
-        expect(body.sim.containerName).toBe(`frc-v1-sim-${workspace.id}`);
-        expect(body.lsp.containerName).toBe(`frc-v1-lsp-${workspace.id}`);
-
-        const lspRunCall = fakeDocker.calls.find(
-          (call) => call[0] === "run" && call.includes("frc-sim.role=lsp"),
-        );
-        expect(lspRunCall).toBeTruthy();
-        expect(lspRunCall).toContain(`frc-sim.workspace=${workspace.id}`);
-        expect(lspRunCall).toContain(
-          `type=bind,src=${join(app.storage.config.dataDir, "users", workspace.id, "jdtls-data")},dst=/workspace/jdtls-data`,
-        );
-        expect(lspRunCall).toContain("127.0.0.1:30003:30003");
-        expect(lspRunCall).toContain("frc-lsp:test");
+        expect(body.code.containerName).toBe(`frc-v2-code-${workspace.id}`);
 
         const lease = app.storage.getContainerLease(workspace.id);
         expect(lease).toMatchObject({
-          lsp_container: `frc-v1-lsp-${workspace.id}`,
-          lsp_port: 30003,
-          lsp_state: "running",
+          vscode_container: `frc-v2-code-${workspace.id}`,
+          vscode_port: 33110,
+          code_state: "running",
         });
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25950, end: 25950 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30003, end: 30003 },
-      },
-    );
-  });
-
-  test("a restarted control plane rediscovers the labeled LSP container", async () => {
-    const root = await mkdtemp(join(tmpdir(), "frc-v1-lsp-"));
-    const templateDir = await createTemplate(root);
-    const webDistDir = await createWebDist(root);
-    const fakeDocker = createFakeDocker();
-    const config: ControlAppOptions = {
-      dataDir: join(root, "data"),
-      templateDir,
-      webDistDir,
-      sessionSecret: "test-session-secret",
-      containerAutoStart: false,
-      dockerRunner: fakeDocker.runner,
-      simImage: "frc-sim:test",
-      simPortRange: { start: 25960, end: 25960 },
-      lspImage: "frc-lsp:test",
-      lspPortRange: { start: 30013, end: 30013 },
-    };
-
-    const app1 = await createApp(config);
-    try {
-      const response = await login(app1, "alice");
-      const cookie = cookieFrom(response);
-      const firstStatus = await app1.fetch(
-        new Request("http://localhost/u/alice/api/containers/status", {
-          headers: { cookie },
-        }),
-      );
-      expect(firstStatus.status).toBe(200);
-      const lspRunsBefore = fakeDocker.calls.filter(
-        (call) => call[0] === "run" && call.includes("frc-sim.role=lsp"),
-      ).length;
-      app1.close();
-
-      const app2 = await createApp(config);
-      try {
-        const secondStatus = await app2.fetch(
-          new Request("http://localhost/u/alice/api/containers/status", {
-            headers: { cookie },
-          }),
-        );
-        expect(secondStatus.status).toBe(200);
-        expect(await secondStatus.json()).toMatchObject({
-          lsp: { state: "running", portAllocated: true },
-        });
-        const lspRunsAfter = fakeDocker.calls.filter(
-          (call) => call[0] === "run" && call.includes("frc-sim.role=lsp"),
-        ).length;
-        expect(lspRunsAfter).toBe(lspRunsBefore);
-      } finally {
-        app2.close();
-      }
-    } finally {
-      await rm(root, { recursive: true, force: true });
-    }
-  });
-
-  test("rejects /ws/lsp upgrade for another workspace", async () => {
-    const fakeDocker = createFakeDocker();
-
-    await withApp(
-      async (app) => {
-        const aliceLogin = await login(app, "alice");
-        const aliceCookie = cookieFrom(aliceLogin);
-        const bobLogin = await login(app, "bob");
-        expect(bobLogin.status).toBe(303);
-
-        const bobReadsAlice = await app.fetch(
-          new Request("http://localhost/u/bob/ws/lsp", {
-            headers: {
-              cookie: aliceCookie,
-              upgrade: "websocket",
-              connection: "upgrade",
-            },
-          }),
-        );
-        expect(bobReadsAlice.status).toBe(403);
-      },
-      {
-        dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
-        simPortRange: { start: 25970, end: 25970 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30023, end: 30023 },
+        vscodePortRange: { start: 33110, end: 33110 },
       },
     );
   });
 });
 
-describe("V1-8 idle teardown, recovery, and operator controls", () => {
+describe("V2 idle teardown, recovery, and operator controls", () => {
   test("heartbeat touches container lease activity", async () => {
     const fakeDocker = createFakeDocker();
     await withApp(
@@ -1452,7 +1390,7 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
         const cookie = cookieFrom(response);
         const workspace = workspaceBySlug(app, "alice");
 
-        await app.containers.ensureSimContainer(workspace);
+        await app.containers.ensureCodeContainer(workspace);
 
         const leaseBefore = app.storage.getContainerLease(workspace.id);
         expect(leaseBefore).toBeTruthy();
@@ -1477,10 +1415,9 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25980, end: 25980 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30030, end: 30030 },
+        vscodePortRange: { start: 33120, end: 33120 },
       },
     );
   });
@@ -1560,108 +1497,34 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
     );
   });
 
-  test("admin can restart a sim container", async () => {
+  test("admin can restart a code container", async () => {
     const fakeDocker = createFakeDocker();
     await withApp(
       async (app) => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
 
-        await app.containers.ensureSimContainer(workspace);
-        expect(fakeDocker.containers.has(`frc-v1-sim-${workspace.id}`)).toBe(true);
+        await app.containers.ensureCodeContainer(workspace);
+        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(true);
 
         const response = await app.fetch(
-          new Request(`http://localhost/admin/workspaces/${workspace.id}/restart-sim`, {
+          new Request(`http://localhost/admin/workspaces/${workspace.id}/restart-code`, {
             method: "POST",
           }),
         );
         expect(response.status).toBe(200);
         const body = (await response.json()) as { ok: boolean; action: string };
         expect(body.ok).toBe(true);
-        expect(body.action).toBe("restart-sim");
+        expect(body.action).toBe("restart-code");
 
-        expect(fakeDocker.containers.has(`frc-v1-sim-${workspace.id}`)).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25981, end: 25982 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30031, end: 30032 },
-      },
-    );
-  });
-
-  test("admin can restart an LSP container", async () => {
-    const fakeDocker = createFakeDocker();
-    await withApp(
-      async (app) => {
-        await login(app, "alice");
-        const workspace = workspaceBySlug(app, "alice");
-
-        await app.containers.ensureLspContainer(workspace);
-        expect(fakeDocker.containers.has(`frc-v1-lsp-${workspace.id}`)).toBe(true);
-
-        const response = await app.fetch(
-          new Request(`http://localhost/admin/workspaces/${workspace.id}/restart-lsp`, {
-            method: "POST",
-          }),
-        );
-        expect(response.status).toBe(200);
-        const body = (await response.json()) as { ok: boolean; action: string };
-        expect(body.ok).toBe(true);
-        expect(body.action).toBe("restart-lsp");
-
-        expect(fakeDocker.containers.has(`frc-v1-lsp-${workspace.id}`)).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v1-lsp-${workspace.id}`)?.running).toBe(true);
-      },
-      {
-        dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
-        simPortRange: { start: 25983, end: 25984 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30033, end: 30034 },
-      },
-    );
-  });
-
-  test("admin can reset LSP data without deleting project files", async () => {
-    const fakeDocker = createFakeDocker();
-    await withApp(
-      async (app) => {
-        await login(app, "alice");
-        const workspace = workspaceBySlug(app, "alice");
-
-        await app.containers.ensureLspContainer(workspace);
-
-        const jdtlsDataDir = join(workspace.project_path, "..", "jdtls-data");
-        await writeFile(join(jdtlsDataDir, "test-cache.txt"), "cached data");
-
-        const robotFile = join(workspace.project_path, "src", "main", "java", "frc", "robot", "Robot.java");
-        await writeFile(robotFile, "// modified by test");
-
-        const response = await app.fetch(
-          new Request(`http://localhost/admin/workspaces/${workspace.id}/reset-lsp-data`, {
-            method: "POST",
-          }),
-        );
-        expect(response.status).toBe(200);
-        const body = (await response.json()) as { ok: boolean; action: string };
-        expect(body.ok).toBe(true);
-        expect(body.action).toBe("reset-lsp-data");
-
-        expect(await exists(jdtlsDataDir)).toBe(true);
-        expect(await exists(join(jdtlsDataDir, "test-cache.txt"))).toBe(false);
-
-        expect(await readFile(robotFile, "utf8")).toBe("// modified by test");
-      },
-      {
-        dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
-        simPortRange: { start: 25985, end: 25986 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30035, end: 30036 },
+        vscodePortRange: { start: 33121, end: 33122 },
       },
     );
   });
@@ -1673,10 +1536,8 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
 
-        await app.containers.ensureSimContainer(workspace);
-        await app.containers.ensureLspContainer(workspace);
-        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v1-lsp-${workspace.id}`)?.running).toBe(true);
+        await app.containers.ensureCodeContainer(workspace);
+        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
 
         const response = await app.fetch(
           new Request(`http://localhost/admin/workspaces/${workspace.id}/stop-containers`, {
@@ -1688,15 +1549,13 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
         expect(body.ok).toBe(true);
         expect(body.action).toBe("stop-containers");
 
-        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(false);
-        expect(fakeDocker.containers.get(`frc-v1-lsp-${workspace.id}`)?.running).toBe(false);
+        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(false);
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25987, end: 25988 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30037, end: 30038 },
+        vscodePortRange: { start: 33127, end: 33128 },
       },
     );
   });
@@ -1706,7 +1565,7 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
       await login(app, "alice");
 
       const response = await app.fetch(
-        new Request("http://localhost/admin/workspaces/ws_0000000000000000deadbeef00000000/restart-sim", {
+        new Request("http://localhost/admin/workspaces/ws_0000000000000000deadbeef00000000/restart-code", {
           method: "POST",
         }),
       );
@@ -1721,9 +1580,8 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
 
-        await app.containers.ensureSimContainer(workspace);
-        await app.containers.ensureLspContainer(workspace);
-        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
+        await app.containers.ensureCodeContainer(workspace);
+        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
 
         const pastTime = new Date(Date.now() - 60 * 60 * 1000).toISOString();
         app.storage.db
@@ -1733,15 +1591,13 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
         const stopped = await app.idle.sweep();
         expect(stopped).toContain(workspace.id);
 
-        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(false);
-        expect(fakeDocker.containers.get(`frc-v1-lsp-${workspace.id}`)?.running).toBe(false);
+        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(false);
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25989, end: 25990 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30039, end: 30040 },
+        vscodePortRange: { start: 33129, end: 33130 },
         idleStopMinutes: 30,
       },
     );
@@ -1754,19 +1610,18 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
 
-        await app.containers.ensureSimContainer(workspace);
-        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
+        await app.containers.ensureCodeContainer(workspace);
+        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
 
         const stopped = await app.idle.sweep();
         expect(stopped).not.toContain(workspace.id);
-        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25991, end: 25992 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30041, end: 30042 },
+        vscodePortRange: { start: 33131, end: 33132 },
         idleStopMinutes: 30,
       },
     );
@@ -1779,30 +1634,23 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
 
-        await app.containers.ensureSimContainer(workspace);
-        await app.containers.ensureLspContainer(workspace);
+        await app.containers.ensureCodeContainer(workspace);
 
         await app.containers.stopWorkspaceContainers(workspace.id);
-        await app.containers.removeContainer("sim", workspace.id);
-        await app.containers.removeContainer("lsp", workspace.id);
-        expect(fakeDocker.containers.has(`frc-v1-sim-${workspace.id}`)).toBe(false);
-        expect(fakeDocker.containers.has(`frc-v1-lsp-${workspace.id}`)).toBe(false);
+        await app.containers.removeCodeContainer(workspace.id);
+        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(false);
 
         expect(await exists(join(workspace.project_path, "src", "main", "java", "frc", "robot", "Robot.java"))).toBe(true);
 
-        await app.containers.ensureSimContainer(workspace);
-        await app.containers.ensureLspContainer(workspace);
-        expect(fakeDocker.containers.has(`frc-v1-sim-${workspace.id}`)).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(true);
-        expect(fakeDocker.containers.has(`frc-v1-lsp-${workspace.id}`)).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v1-lsp-${workspace.id}`)?.running).toBe(true);
+        await app.containers.ensureCodeContainer(workspace);
+        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25993, end: 25994 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30043, end: 30044 },
+        vscodePortRange: { start: 33133, end: 33134 },
       },
     );
   });
@@ -1814,20 +1662,19 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
 
-        await app.containers.ensureSimContainer(workspace);
-        await app.containers.stopContainer("sim", workspace.id);
-        expect(fakeDocker.containers.get(`frc-v1-sim-${workspace.id}`)?.running).toBe(false);
+        await app.containers.ensureCodeContainer(workspace);
+        await app.containers.stopCodeContainer(workspace.id);
+        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(false);
 
         const removed = await app.containers.cleanupStoppedContainers();
-        expect(removed).toContain(`frc-v1-sim-${workspace.id}`);
-        expect(fakeDocker.containers.has(`frc-v1-sim-${workspace.id}`)).toBe(false);
+        expect(removed).toContain(`frc-v2-code-${workspace.id}`);
+        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(false);
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25995, end: 25996 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30045, end: 30046 },
+        vscodePortRange: { start: 33135, end: 33136 },
       },
     );
   });
@@ -1842,29 +1689,28 @@ describe("V1-8 idle teardown, recovery, and operator controls", () => {
         const bobWorkspace = workspaceBySlug(app, "bob");
 
         await Promise.all([
-          app.containers.ensureLspContainer(aliceWorkspace),
-          app.containers.ensureLspContainer(bobWorkspace),
+          app.containers.ensureCodeContainer(aliceWorkspace),
+          app.containers.ensureCodeContainer(bobWorkspace),
         ]);
 
-        expect(fakeDocker.containers.get(`frc-v1-lsp-${aliceWorkspace.id}`)?.running).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v1-lsp-${bobWorkspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v2-code-${aliceWorkspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v2-code-${bobWorkspace.id}`)?.running).toBe(true);
 
         const response = await app.fetch(
-          new Request(`http://localhost/admin/workspaces/${bobWorkspace.id}/restart-lsp`, {
+          new Request(`http://localhost/admin/workspaces/${bobWorkspace.id}/restart-code`, {
             method: "POST",
           }),
         );
         expect(response.status).toBe(200);
 
-        expect(fakeDocker.containers.get(`frc-v1-lsp-${aliceWorkspace.id}`)?.running).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v1-lsp-${bobWorkspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v2-code-${aliceWorkspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`frc-v2-code-${bobWorkspace.id}`)?.running).toBe(true);
       },
       {
         dockerRunner: fakeDocker.runner,
-        simImage: "frc-sim:test",
+        codeImage: "frc-code:test",
         simPortRange: { start: 25800, end: 25809 },
-        lspImage: "frc-lsp:test",
-        lspPortRange: { start: 30050, end: 30059 },
+        vscodePortRange: { start: 33140, end: 33149 },
       },
     );
   });
@@ -1909,12 +1755,12 @@ describe("V2 Stage 2 editor proxy", () => {
     });
   });
 
-  test("authenticated GET /u/<slug>/vscode/ without upstream returns 503", async () => {
+  test("authenticated GET /u/<slug>/vscode/ without upstream returns error", async () => {
+    // Without a code container running, the vscode proxy should return an error
     await withApp(async (app) => {
       const aliceResponse = await login(app, "alice");
       const aliceCookie = cookieFrom(aliceResponse);
 
-      // No VSCODE_DEV_UPSTREAM_PORT configured (default null)
       const response = await app.fetch(
         new Request("http://localhost/u/alice/vscode/", {
           method: "GET",
@@ -1922,23 +1768,33 @@ describe("V2 Stage 2 editor proxy", () => {
         }),
       );
 
-      expect(response.status).toBe(503);
+      // The code container will fail to start since no docker runner / image → 503 or 502
+      expect([502, 503]).toContain(response.status);
     });
   });
 
-  test("authenticated GET /u/<slug>/vscode/ proxies to upstream when configured", async () => {
-    // Start a tiny upstream server to act as openvscode-server
-    const upstreamServer = Bun.serve({
-      port: 0,
-      hostname: "127.0.0.1",
-      fetch(request) {
-        const url = new URL(request.url);
-        return new Response(`upstream hit: ${url.pathname}`, {
-          headers: {
-            "content-type": "text/plain",
-            "x-upstream-marker": "openvscode-test",
-          },
-        });
+  test("authenticated GET /u/<slug>/vscode/ proxies to upstream when code container runs", async () => {
+    const upstreamServers: Array<ReturnType<typeof Bun.serve>> = [];
+    const fakeDocker = createFakeDocker({
+      onRun(_name, ports) {
+        const vscodePort = ports.find((p) => p.containerPort === 3000);
+        if (vscodePort) {
+          upstreamServers.push(
+            Bun.serve({
+              port: vscodePort.hostPort,
+              hostname: "127.0.0.1",
+              fetch(request) {
+                const url = new URL(request.url);
+                return new Response(`upstream hit: ${url.pathname}`, {
+                  headers: {
+                    "content-type": "text/plain",
+                    "x-upstream-marker": "openvscode-test",
+                  },
+                });
+              },
+            }),
+          );
+        }
       },
     });
 
@@ -1960,33 +1816,49 @@ describe("V2 Stage 2 editor proxy", () => {
           expect(body).toContain("upstream hit: /u/alice/vscode/");
           expect(response.headers.get("x-upstream-marker")).toBe("openvscode-test");
         },
-        { vscodeDevUpstreamPort: upstreamServer.port as number },
+        {
+          dockerRunner: fakeDocker.runner,
+          codeImage: "frc-code:test",
+          simPortRange: { start: 25920, end: 25920 },
+          vscodePortRange: { start: 33200, end: 33200 },
+        },
       );
     } finally {
-      upstreamServer.stop();
+      for (const server of upstreamServers) {
+        server.stop(true);
+      }
     }
   });
 
   test("hop-by-hop headers are stripped from proxy requests", async () => {
     let receivedHeaders: Record<string, string> = {};
-    const upstreamServer = Bun.serve({
-      port: 0,
-      hostname: "127.0.0.1",
-      fetch(request) {
-        receivedHeaders = {};
-        request.headers.forEach((value, key) => {
-          receivedHeaders[key] = value;
-        });
-        return new Response("ok", {
-          headers: {
-            "content-type": "text/plain",
-            // Upstream returns hop-by-hop headers too
-            "connection": "keep-alive",
-            "keep-alive": "timeout=5",
-            "transfer-encoding": "chunked",
-            "x-real-header": "should-pass",
-          },
-        });
+    const upstreamServers: Array<ReturnType<typeof Bun.serve>> = [];
+    const fakeDocker = createFakeDocker({
+      onRun(_name, ports) {
+        const vscodePort = ports.find((p) => p.containerPort === 3000);
+        if (vscodePort) {
+          upstreamServers.push(
+            Bun.serve({
+              port: vscodePort.hostPort,
+              hostname: "127.0.0.1",
+              fetch(request) {
+                receivedHeaders = {};
+                request.headers.forEach((value, key) => {
+                  receivedHeaders[key] = value;
+                });
+                return new Response("ok", {
+                  headers: {
+                    "content-type": "text/plain",
+                    "connection": "keep-alive",
+                    "keep-alive": "timeout=5",
+                    "transfer-encoding": "chunked",
+                    "x-real-header": "should-pass",
+                  },
+                });
+              },
+            }),
+          );
+        }
       },
     });
 
@@ -2012,39 +1884,48 @@ describe("V2 Stage 2 editor proxy", () => {
 
           expect(response.status).toBe(200);
 
-          // Verify hop-by-hop headers NOT forwarded to upstream.
-          // Note: Bun's fetch() may add its own Connection header for
-          // HTTP keep-alive. We verify the *client-supplied* hop-by-hop
-          // headers are stripped (proxy-authorization, custom hop headers).
           expect(receivedHeaders["proxy-authorization"]).toBeUndefined();
-          // connection listed x-custom-hop, so it should also be stripped
           expect(receivedHeaders["x-custom-hop"]).toBeUndefined();
-          // Normal headers should be forwarded
           expect(receivedHeaders["x-normal-header"]).toBe("should-pass-through");
 
-          // Verify hop-by-hop headers stripped from response
           expect(response.headers.get("connection")).toBeNull();
           expect(response.headers.get("keep-alive")).toBeNull();
           expect(response.headers.get("transfer-encoding")).toBeNull();
-          // Normal headers should come through
           expect(response.headers.get("x-real-header")).toBe("should-pass");
         },
-        { vscodeDevUpstreamPort: upstreamServer.port as number },
+        {
+          dockerRunner: fakeDocker.runner,
+          codeImage: "frc-code:test",
+          simPortRange: { start: 25921, end: 25921 },
+          vscodePortRange: { start: 33201, end: 33201 },
+        },
       );
     } finally {
-      upstreamServer.stop();
+      for (const server of upstreamServers) {
+        server.stop(true);
+      }
     }
   });
 
   test("vscode proxy passes query strings through", async () => {
     let receivedPath = "";
-    const upstreamServer = Bun.serve({
-      port: 0,
-      hostname: "127.0.0.1",
-      fetch(request) {
-        const url = new URL(request.url);
-        receivedPath = url.pathname + url.search;
-        return new Response("ok");
+    const upstreamServers: Array<ReturnType<typeof Bun.serve>> = [];
+    const fakeDocker = createFakeDocker({
+      onRun(_name, ports) {
+        const vscodePort = ports.find((p) => p.containerPort === 3000);
+        if (vscodePort) {
+          upstreamServers.push(
+            Bun.serve({
+              port: vscodePort.hostPort,
+              hostname: "127.0.0.1",
+              fetch(request) {
+                const url = new URL(request.url);
+                receivedPath = url.pathname + url.search;
+                return new Response("ok");
+              },
+            }),
+          );
+        }
       },
     });
 
@@ -2063,22 +1944,39 @@ describe("V2 Stage 2 editor proxy", () => {
 
           expect(receivedPath).toBe("/u/alice/vscode/?folder=/workspace/project&some=extra");
         },
-        { vscodeDevUpstreamPort: upstreamServer.port as number },
+        {
+          dockerRunner: fakeDocker.runner,
+          codeImage: "frc-code:test",
+          simPortRange: { start: 25922, end: 25922 },
+          vscodePortRange: { start: 33202, end: 33202 },
+        },
       );
     } finally {
-      upstreamServer.stop();
+      for (const server of upstreamServers) {
+        server.stop(true);
+      }
     }
   });
 
   test("vscode proxy handles sub-paths correctly", async () => {
     let receivedPath = "";
-    const upstreamServer = Bun.serve({
-      port: 0,
-      hostname: "127.0.0.1",
-      fetch(request) {
-        const url = new URL(request.url);
-        receivedPath = url.pathname;
-        return new Response("ok");
+    const upstreamServers: Array<ReturnType<typeof Bun.serve>> = [];
+    const fakeDocker = createFakeDocker({
+      onRun(_name, ports) {
+        const vscodePort = ports.find((p) => p.containerPort === 3000);
+        if (vscodePort) {
+          upstreamServers.push(
+            Bun.serve({
+              port: vscodePort.hostPort,
+              hostname: "127.0.0.1",
+              fetch(request) {
+                const url = new URL(request.url);
+                receivedPath = url.pathname;
+                return new Response("ok");
+              },
+            }),
+          );
+        }
       },
     });
 
@@ -2097,10 +1995,17 @@ describe("V2 Stage 2 editor proxy", () => {
 
           expect(receivedPath).toBe("/u/alice/vscode/static/workbench.js");
         },
-        { vscodeDevUpstreamPort: upstreamServer.port as number },
+        {
+          dockerRunner: fakeDocker.runner,
+          codeImage: "frc-code:test",
+          simPortRange: { start: 25923, end: 25923 },
+          vscodePortRange: { start: 33203, end: 33203 },
+        },
       );
     } finally {
-      upstreamServer.stop();
+      for (const server of upstreamServers) {
+        server.stop(true);
+      }
     }
   });
 });

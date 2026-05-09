@@ -16,8 +16,6 @@
     "apply:ascope-patches": "bun scripts/apply-ascope-patches.ts",
     "build:ascope": "bun scripts/build-ascope-lite.ts",
     "verify:ascope": "bun scripts/verify-ascope.ts",
-    "docker:build:sim": "bun scripts/build-sim-image.ts",
-    "docker:build:lsp": "bun scripts/build-lsp-image.ts",
     "docker:build:code": "bun scripts/build-code-image.ts",
     "docker:cleanup": "bun scripts/cleanup-containers.ts",
     "verify:v1:two-user": "bun scripts/verify-v1-two-user.ts",

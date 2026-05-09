@@ -15,13 +15,10 @@ export type ControlConfig = {
   advantageScopeDistDir: string;
   sessionSecret: string;
   dockerPath: string;
-  simImage: string;
-  simMemoryLimit: string;
+  codeImage: string;
+  codeMemoryLimit: string;
   simPortRange: PortRange;
-  lspImage: string;
-  lspMemoryLimit: string;
-  lspPortRange: PortRange;
-  lspStartupConcurrency: number;
+  vscodePortRange: PortRange;
   runConcurrency: number;
   runBuildTimeoutMs: number;
   simStartupTimeoutMs: number;
@@ -30,24 +27,19 @@ export type ControlConfig = {
   idleStopMinutes: number;
   idleCheckIntervalMs: number;
   adminToken: string | null;
-  // Temporary Stage 2 knob: when set, the editor proxy targets this port
-  // on 127.0.0.1 for all workspaces instead of reading from a per-workspace
-  // lease. Stage 3 replaces this with proper orchestration.
-  vscodeDevUpstreamPort: number | null;
 };
 
-export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "lspPortRange">> & {
+export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "vscodePortRange">> & {
   simPortRange?: PortRange | string;
-  lspPortRange?: PortRange | string;
+  vscodePortRange?: PortRange | string;
   idleStopMinutes?: number | string;
   idleCheckIntervalMs?: number | string;
-  vscodeDevUpstreamPort?: number | string | null;
 };
 
 const repoRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
 const defaultDataDir = resolve(repoRoot, "data");
 const defaultSimPortRange: PortRange = { start: 25810, end: 25899 };
-const defaultLspPortRange: PortRange = { start: 30003, end: 30102 };
+const defaultVscodePortRange: PortRange = { start: 33000, end: 33099 };
 
 function parsePortRange(value: string | PortRange | undefined, fallback: PortRange): PortRange {
   if (!value) {
@@ -106,17 +98,6 @@ function defaultContainerUser(): string | null {
   return null;
 }
 
-function parseOptionalPort(value: string | number | null | undefined): number | null {
-  if (value === null || value === undefined || value === "") {
-    return null;
-  }
-  const parsed = typeof value === "number" ? value : Number(value);
-  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 65535) {
-    throw new Error(`Invalid port "${value}". Must be an integer 1-65535.`);
-  }
-  return parsed;
-}
-
 export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig {
   const dataDir = resolve(input.dataDir ?? Bun.env.FRC_DATA_DIR ?? defaultDataDir);
 
@@ -140,17 +121,10 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
       Bun.env.FRC_SESSION_SECRET ??
       "frc-v1-local-dev-session-secret-change-me",
     dockerPath: input.dockerPath ?? Bun.env.FRC_DOCKER_PATH ?? "docker",
-    simImage: input.simImage ?? Bun.env.SIM_IMAGE ?? "frc-sim:v1",
-    simMemoryLimit: input.simMemoryLimit ?? Bun.env.SIM_MEMORY_LIMIT ?? "1536m",
+    codeImage: input.codeImage ?? Bun.env.CODE_IMAGE ?? "frc-code:v2",
+    codeMemoryLimit: input.codeMemoryLimit ?? Bun.env.CODE_MEMORY_LIMIT ?? "2560m",
     simPortRange: parsePortRange(input.simPortRange ?? Bun.env.SIM_PORT_RANGE, defaultSimPortRange),
-    lspImage: input.lspImage ?? Bun.env.LSP_IMAGE ?? "frc-lsp:v1",
-    lspMemoryLimit: input.lspMemoryLimit ?? Bun.env.LSP_MEMORY_LIMIT ?? "1536m",
-    lspPortRange: parsePortRange(input.lspPortRange ?? Bun.env.LSP_PORT_RANGE, defaultLspPortRange),
-    lspStartupConcurrency: parsePositiveInteger(
-      input.lspStartupConcurrency ?? Bun.env.LSP_STARTUP_CONCURRENCY,
-      2,
-      "LSP_STARTUP_CONCURRENCY",
-    ),
+    vscodePortRange: parsePortRange(input.vscodePortRange ?? Bun.env.VSCODE_PORT_RANGE, defaultVscodePortRange),
     runConcurrency: parsePositiveInteger(input.runConcurrency ?? Bun.env.RUN_CONCURRENCY, 2, "RUN_CONCURRENCY"),
     runBuildTimeoutMs: parsePositiveInteger(
       input.runBuildTimeoutMs ?? Bun.env.RUN_BUILD_TIMEOUT_MS,
@@ -175,8 +149,5 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
       "IDLE_CHECK_INTERVAL_MS",
     ),
     adminToken: input.adminToken ?? Bun.env.ADMIN_TOKEN ?? null,
-    vscodeDevUpstreamPort: parseOptionalPort(
-      input.vscodeDevUpstreamPort ?? Bun.env.VSCODE_DEV_UPSTREAM_PORT,
-    ),
   };
 }

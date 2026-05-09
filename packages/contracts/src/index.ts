@@ -205,21 +205,13 @@ export const containersStatusResponseSchema = z.object({
     id: workspaceIdSchema,
     slug: workspaceSlugSchema,
   }),
-  sim: z.object({
-    role: z.literal("sim"),
+  code: z.object({
+    role: z.literal("code"),
     state: containerStateSchema,
     image: z.string().min(1),
     containerName: z.string().min(1).nullable(),
-    portAllocated: z.boolean(),
-    lastUsedAt: z.string().nullable(),
-    error: z.string().nullable(),
-  }),
-  lsp: z.object({
-    role: z.literal("lsp"),
-    state: containerStateSchema,
-    image: z.string().min(1),
-    containerName: z.string().min(1).nullable(),
-    portAllocated: z.boolean(),
+    simPortAllocated: z.boolean(),
+    vscodePortAllocated: z.boolean(),
     lastUsedAt: z.string().nullable(),
     error: z.string().nullable(),
   }),
@@ -281,7 +273,7 @@ export type HeartbeatRequest = z.infer<typeof heartbeatRequestSchema>;
 export type SessionResponse = z.infer<typeof sessionResponseSchema>;
 export type ProjectTreeResponse = z.infer<typeof projectTreeResponseSchema>;
 export type HeartbeatResponse = z.infer<typeof heartbeatResponseSchema>;
-export type ContainerRole = "sim" | "lsp";
+export type ContainerRole = "sim" | "lsp" | "code";
 export type ContainerState = z.infer<typeof containerStateSchema>;
 export type SimContainerState = ContainerState;
 export type ContainersStatusResponse = z.infer<typeof containersStatusResponseSchema>;
@@ -303,15 +295,11 @@ export const adminWorkspaceStatusSchema = z.object({
     slug: workspaceSlugSchema,
     lastSeenAt: z.string(),
   }),
-  sim: z.object({
+  code: z.object({
     state: containerStateSchema,
     containerName: z.string().nullable(),
-    port: z.number().int().nullable(),
-  }),
-  lsp: z.object({
-    state: containerStateSchema,
-    containerName: z.string().nullable(),
-    port: z.number().int().nullable(),
+    simPort: z.number().int().nullable(),
+    vscodePort: z.number().int().nullable(),
   }),
   idle: z.boolean(),
   lastActivity: z.string(),

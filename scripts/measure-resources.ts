@@ -7,7 +7,7 @@
  *
  * Reports:
  *   - Host OS, CPU, total/available RAM, disk space
- *   - Running V1 managed containers with memory usage
+ *   - Running managed containers with memory usage
  *   - Per-container and total resource consumption
  *   - Extrapolated capacity for 10 students
  */
@@ -90,12 +90,11 @@ function parseMemory(memStr: string): number {
 }
 
 async function getContainerStats(): Promise<ContainerStats[]> {
-  // Get running V1 managed containers
+  // Get running managed containers (V1 and V2)
   const list = await dockerRun([
     "container",
     "ls",
     "--filter", "label=frc-sim.managed=true",
-    "--filter", "label=frc-sim.version=v1",
     "--filter", "status=running",
     "--format", "{{.Names}}",
   ]);

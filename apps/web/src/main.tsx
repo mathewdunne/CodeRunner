@@ -862,9 +862,9 @@ function App() {
     dirtyCount === 0 ? "Save idle" : openFiles.some((file) => file.saving) ? "Saving" : `${dirtyCount} unsaved`;
   const simLabel = !containerStatus
     ? "Sim pending"
-    : containerStatus.sim.state === "error"
+    : containerStatus.code.state === "error"
       ? "Sim error"
-      : `Sim ${containerStatus.sim.state}`;
+      : `Sim ${containerStatus.code.state}`;
   const runBusy = ["queued", "building", "running", "stopping"].includes(runStatus);
   const runLabel =
     runStatus === "queued" && queueInfo
@@ -898,7 +898,7 @@ function App() {
           <span>Workspace {workspaceLabel}</span>
           <span>{saveLabel}</span>
           <span title={lspDetail ?? undefined}>{lspLabel}</span>
-          <span title={containerStatus?.sim.error ?? undefined}>{simLabel}</span>
+          <span title={containerStatus?.code.error ?? undefined}>{simLabel}</span>
           <span>{runLabel}</span>
           <span>{scopeLabel}</span>
         </div>

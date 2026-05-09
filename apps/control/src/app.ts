@@ -85,13 +85,7 @@ type Nt4SocketData = {
   pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
 };
 
-type LspSocketData = {
-  kind: "lsp";
-  upstreamUrl: string;
-  upstream?: WebSocket | undefined;
-  upstreamOpen: boolean;
-  pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
-};
+type LspSocketData = never;
 
 type VscodeSocketData = {
   kind: "vscode";
@@ -102,7 +96,7 @@ type VscodeSocketData = {
   pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
 };
 
-type SocketData = RunSocketData | Nt4SocketData | LspSocketData | VscodeSocketData;
+type SocketData = RunSocketData | Nt4SocketData | VscodeSocketData;
 
 type AppSocket = {
   data: SocketData;
@@ -879,16 +873,18 @@ async function probeVscodeReady(port: number, basePath: string, timeoutMs: numbe
 
 async function vscodeHttpProxyResponse(
   storage: AppStorage,
+  containers: ContainerOrchestrator,
   auth: AuthContext,
   request: Request,
   fullPath: string,
 ): Promise<Response> {
-  const vscodePort = storage.config.vscodeDevUpstreamPort;
-  if (!vscodePort) {
-    return new Response("Editor proxy is not configured. Set VSCODE_DEV_UPSTREAM_PORT or wait for Stage 3 orchestration.", { status: 503 });
+  const code = await containers.ensureCodeContainer(auth.workspace);
+  const lease = storage.getContainerLease(auth.workspace.id);
+  if (code.state !== "running" || !lease?.vscode_port) {
+    return new Response(code.error ?? "Editor is not running.", { status: 503 });
   }
 
-  const upstreamUrl = `http://127.0.0.1:${vscodePort}${fullPath}`;
+  const upstreamUrl = `http://127.0.0.1:${lease.vscode_port}${fullPath}`;
   const forwardHeaders = stripHopByHopHeaders(request.headers);
 
   try {
@@ -913,6 +909,7 @@ async function vscodeHttpProxyResponse(
 
 async function vscodeWebSocketResponse(
   storage: AppStorage,
+  containers: ContainerOrchestrator,
   auth: AuthContext,
   request: Request,
   fullPath: string,
@@ -922,19 +919,20 @@ async function vscodeWebSocketResponse(
     return new Response("Expected WebSocket upgrade.", { status: 426 });
   }
 
-  const vscodePort = storage.config.vscodeDevUpstreamPort;
-  if (!vscodePort) {
-    return new Response("Editor proxy is not configured.", { status: 503 });
+  const code = await containers.ensureCodeContainer(auth.workspace);
+  const lease = storage.getContainerLease(auth.workspace.id);
+  if (code.state !== "running" || !lease?.vscode_port) {
+    return new Response(code.error ?? "Editor is not running.", { status: 503 });
   }
 
   const slug = auth.workspace.slug;
   const basePath = `/u/${slug}/vscode/`;
-  if (!(await probeVscodeReady(vscodePort, basePath, 30_000))) {
+  if (!(await probeVscodeReady(lease.vscode_port, basePath, 30_000))) {
     return new Response("Editor upstream did not become ready.", { status: 503 });
   }
 
   const protocols = requestedProtocols(request);
-  const upstreamUrl = `ws://127.0.0.1:${vscodePort}${fullPath}`;
+  const upstreamUrl = `ws://127.0.0.1:${lease.vscode_port}${fullPath}`;
   const upgradeOptions: { data: SocketData; headers?: HeadersInit } = {
     data: {
       kind: "vscode",
@@ -955,10 +953,10 @@ async function vscodeWebSocketResponse(
 }
 
 async function nt4AliveResponse(storage: AppStorage, containers: ContainerOrchestrator, auth: AuthContext): Promise<Response> {
-  const sim = await containers.ensureSimContainer(auth.workspace);
+  const code = await containers.ensureCodeContainer(auth.workspace);
   const lease = storage.getContainerLease(auth.workspace.id);
-  if (sim.state !== "running" || !lease?.sim_port) {
-    return new Response(sim.error ?? "Simulator is not running.", { status: 503 });
+  if (code.state !== "running" || !lease?.sim_port) {
+    return new Response(code.error ?? "Simulator is not running.", { status: 503 });
   }
 
   try {
@@ -985,10 +983,10 @@ async function nt4WebSocketResponse(
     return new Response("Expected WebSocket upgrade.", { status: 426 });
   }
 
-  const sim = await containers.ensureSimContainer(auth.workspace);
+  const code = await containers.ensureCodeContainer(auth.workspace);
   const lease = storage.getContainerLease(auth.workspace.id);
-  if (sim.state !== "running" || !lease?.sim_port) {
-    return new Response(sim.error ?? "Simulator is not running.", { status: 503 });
+  if (code.state !== "running" || !lease?.sim_port) {
+    return new Response(code.error ?? "Simulator is not running.", { status: 503 });
   }
 
   const protocols = requestedProtocols(request);
@@ -1004,70 +1002,6 @@ async function nt4WebSocketResponse(
   if (protocols.length > 0) {
     upgradeOptions.headers = { "sec-websocket-protocol": protocols[0] ?? "" };
   }
-  const upgraded = server.upgrade(request, upgradeOptions);
-  if (!upgraded) {
-    return new Response("WebSocket upgrade failed.", { status: 400 });
-  }
-  return undefined as unknown as Response;
-}
-
-// Docker reports a container as "running" the moment its entrypoint starts,
-// which is well before the in-container Bun bridge calls Bun.serve(). If the
-// proxy upgrades the browser WS too eagerly, the immediate upstream connection
-// fails and the browser-side socket gets closed with 1011. Probe the bridge's
-// HTTP path until it answers (or we time out) before upgrading.
-async function probeLspBridgeReady(port: number, timeoutMs: number): Promise<boolean> {
-  const deadline = Date.now() + timeoutMs;
-  while (Date.now() < deadline) {
-    try {
-      const response = await fetch(`http://127.0.0.1:${port}/healthz`, {
-        signal: AbortSignal.timeout(500),
-      });
-      // Any HTTP response means the bridge's Bun.serve is up. The bridge
-      // returns 200 with a "listening at /jdtls" body for non-/jdtls paths,
-      // which is exactly what we want to confirm here without upgrading.
-      if (response.status >= 200 && response.status < 500) {
-        return true;
-      }
-    } catch {
-      // Connection refused or aborted; keep retrying.
-    }
-    await new Promise((resolveSleep) => setTimeout(resolveSleep, 250));
-  }
-  return false;
-}
-
-async function lspWebSocketResponse(
-  storage: AppStorage,
-  containers: ContainerOrchestrator,
-  auth: AuthContext,
-  request: Request,
-  server?: BunUpgradeServer,
-): Promise<Response> {
-  if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
-    return new Response("Expected WebSocket upgrade.", { status: 426 });
-  }
-
-  const lsp = await containers.ensureLspContainer(auth.workspace);
-  const lease = storage.getContainerLease(auth.workspace.id);
-  if (lsp.state !== "running" || !lease?.lsp_port) {
-    return new Response(lsp.error ?? "Java language server is not running.", { status: 503 });
-  }
-
-  // Cap the probe at 30s. On a cold container, bridge boot + first-connection
-  // warmup takes ~3-5s. Leaving headroom for slow disks / first-time gradle.
-  if (!(await probeLspBridgeReady(lease.lsp_port, 30_000))) {
-    return new Response("Java language server bridge did not become ready.", { status: 503 });
-  }
-
-  const upgradeOptions: { data: SocketData } = {
-    data: {
-      kind: "lsp",
-      upstreamUrl: `ws://127.0.0.1:${lease.lsp_port}/jdtls`,
-      upstreamOpen: false,
-      pendingMessages: [],
-    },
-  };
   const upgraded = server.upgrade(request, upgradeOptions);
   if (!upgraded) {
     return new Response("WebSocket upgrade failed.", { status: 400 });
@@ -1105,15 +1039,11 @@ function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatus
         slug: entry.user.slug,
         lastSeenAt: entry.user.last_seen_at,
       },
-      sim: {
-        state: entry.lease?.state ?? "missing",
-        containerName: entry.lease?.sim_container ?? null,
-        port: entry.lease?.sim_port ?? null,
-      },
-      lsp: {
-        state: entry.lease?.lsp_state ?? "missing",
-        containerName: entry.lease?.lsp_container ?? null,
-        port: entry.lease?.lsp_port ?? null,
+      code: {
+        state: entry.lease?.code_state ?? "missing",
+        containerName: entry.lease?.vscode_container ?? null,
+        simPort: entry.lease?.sim_port ?? null,
+        vscodePort: entry.lease?.vscode_port ?? null,
       },
       idle: isIdle,
       lastActivity,
@@ -1148,7 +1078,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     const url = new URL(request.url);
 
     if (url.pathname === "/healthz") {
-      return Response.json({ ok: true, service: "control", version: "v1-8" });
+      return Response.json({ ok: true, service: "control", version: "v2-3" });
     }
 
     if ((url.pathname === "/scope" || url.pathname.startsWith("/scope/")) && request.method === "GET") {
@@ -1218,33 +1148,13 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         }
 
         try {
-          if (action === "restart-sim") {
-            await containers.restartSimContainer(workspace);
+          if (action === "restart-code") {
+            await containers.restartCodeContainer(workspace);
             return jsonResponse({
               ok: true,
-              action: "restart-sim",
+              action: "restart-code",
               workspaceId: workspace.id,
-              detail: "Sim container restarted.",
-            } satisfies AdminActionResponse);
-          }
-
-          if (action === "restart-lsp") {
-            await containers.restartLspContainer(workspace);
-            return jsonResponse({
-              ok: true,
-              action: "restart-lsp",
-              workspaceId: workspace.id,
-              detail: "LSP container restarted.",
-            } satisfies AdminActionResponse);
-          }
-
-          if (action === "reset-lsp-data") {
-            await containers.resetLspData(workspace);
-            return jsonResponse({
-              ok: true,
-              action: "reset-lsp-data",
-              workspaceId: workspace.id,
-              detail: "LSP data reset and container restarted.",
+              detail: "Code container restarted.",
             } satisfies AdminActionResponse);
           }
 
@@ -1308,10 +1218,6 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         return nt4WebSocketResponse(storage, containers, auth, request, server);
       }
 
-      if (suffix === "/ws/lsp" && request.method === "GET") {
-        return lspWebSocketResponse(storage, containers, auth, request, server);
-      }
-
       // --- Editor proxy: openvscode-server ---
       // Match /vscode or /vscode/* (the suffix starts with /vscode).
       // The full URL path including /u/<slug>/vscode/ is passed through
@@ -1320,9 +1226,9 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       if (suffix === "/vscode" || suffix.startsWith("/vscode/")) {
         const fullPath = url.pathname + (url.search || "");
         if (request.headers.get("upgrade")?.toLowerCase() === "websocket") {
-          return vscodeWebSocketResponse(storage, auth, request, fullPath, server);
+          return vscodeWebSocketResponse(storage, containers, auth, request, fullPath, server);
         }
-        return vscodeHttpProxyResponse(storage, auth, request, fullPath);
+        return vscodeHttpProxyResponse(storage, containers, auth, request, fullPath);
       }
 
       if (suffix.startsWith("/assets/") && request.method === "GET") {
@@ -1424,10 +1330,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
   function openProxyUpstream(
     ws: AppSocket,
-    label: "NT4" | "LSP" | "VSCode",
+    label: "NT4" | "VSCode",
     protocols: string[] | undefined,
   ): void {
-    if (ws.data.kind !== "nt4" && ws.data.kind !== "lsp" && ws.data.kind !== "vscode") {
+    if (ws.data.kind !== "nt4" && ws.data.kind !== "vscode") {
       return;
     }
     const upstream = new WebSocket(ws.data.upstreamUrl, protocols && protocols.length > 0 ? protocols : undefined);
@@ -1435,7 +1341,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     upstream.binaryType = "arraybuffer";
 
     upstream.addEventListener("open", () => {
-      if (ws.data.kind !== "nt4" && ws.data.kind !== "lsp" && ws.data.kind !== "vscode") {
+      if (ws.data.kind !== "nt4" && ws.data.kind !== "vscode") {
         return;
       }
       // The browser was told (in the upgrade handshake) that we picked
@@ -1484,10 +1390,6 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         openProxyUpstream(ws, "NT4", ws.data.protocols);
         return;
       }
-      if (ws.data.kind === "lsp") {
-        openProxyUpstream(ws, "LSP", undefined);
-        return;
-      }
       if (ws.data.kind === "vscode") {
         openProxyUpstream(ws, "VSCode", ws.data.protocols);
         return;
@@ -1497,7 +1399,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       });
     },
     message(ws: AppSocket, message: string | ArrayBuffer | Uint8Array): void {
-      if (ws.data.kind === "nt4" || ws.data.kind === "lsp" || ws.data.kind === "vscode") {
+      if (ws.data.kind === "nt4" || ws.data.kind === "vscode") {
         if (ws.data.upstreamOpen && ws.data.upstream) {
           ws.data.upstream.send(message);
         } else {
@@ -1524,7 +1426,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       }
     },
     close(ws: AppSocket): void {
-      if (ws.data.kind === "nt4" || ws.data.kind === "lsp" || ws.data.kind === "vscode") {
+      if (ws.data.kind === "nt4" || ws.data.kind === "vscode") {
         ws.data.upstream?.close();
         ws.data.pendingMessages.length = 0;
         return;

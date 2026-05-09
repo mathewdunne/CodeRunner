@@ -176,7 +176,7 @@ curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/stop-container
 Or stop containers manually:
 
 ```bash
-docker stop $(docker ps -q --filter label=frc-sim.managed=true --filter label=frc-sim.version=v1)
+docker stop $(docker ps -q --filter label=frc-sim.managed=true)
 ```
 
 ### Between class sessions
@@ -368,8 +368,8 @@ bun run measure -- --json
 ### Docker container status
 
 ```bash
-# All V1 managed containers
-docker ps --filter label=frc-sim.managed=true --filter label=frc-sim.version=v1
+# All managed containers
+docker ps --filter label=frc-sim.managed=true
 
 # Container resource usage
 docker stats --filter label=frc-sim.managed=true --no-stream
@@ -379,7 +379,6 @@ docker stats --filter label=frc-sim.managed=true --no-stream
 
 - **High memory:** `docker stats` shows containers near their limit → OOM risk
 - **Queue depth growing:** `/admin/status` queueDepth > 0 persistently → raise `RUN_CONCURRENCY` or wait for builds
-- **LSP stuck:** Diagnostics never appear → use admin API to restart or reset LSP data
 
 ---
 
@@ -553,21 +552,19 @@ Host:
   CPU:         Intel Core i7-12700 (20 cores)
   RAM:         12.3 GB used / 32.0 GB total (19.7 GB free)
 
-V1 Containers:
+V2 Containers:
   Name                                Role  Mem Used   Mem Limit  Mem%    CPU%
-  frc-v1-sim-ws_abc123...             sim   742.1 MB   1536.0 MB  48.3%   0.1%
-  frc-v1-lsp-ws_abc123...             lsp   621.4 MB   1536.0 MB  40.5%   0.0%
+  frc-v2-code-ws_abc123...            code  1280.5 MB  2560.0 MB  50.0%   0.1%
   ...
 
-  Total: 3 sim + 3 lsp = 6 containers, 4086 MB memory
+  Total: 3 code containers, 3841 MB memory
 
 Extrapolation for 10 Students:
-  Avg sim memory:   742 MB × 10 = 7.2 GB
-  Avg LSP memory:   621 MB × 10 = 6.1 GB
-  Estimated total:  13.3 GB (+ ~4 GB OS/Docker/browser overhead)
-  Host headroom:    14.7 GB
+  Avg code memory:  1280 MB × 10 = 12.5 GB
+  Estimated total:  12.5 GB (+ ~4 GB OS/Docker/browser overhead)
+  Host headroom:    15.5 GB
 
-  → Host has ample capacity for 10 students (14.7 GB headroom).
+  → Host has ample capacity for 10 students (15.5 GB headroom).
 ```
 
 ### Tuning memory limits
