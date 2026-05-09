@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtemp, mkdir, readdir, rm, writeFile, access, readFile, symlink } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, rm, writeFile, access, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createApp, type ControlApp, type ControlAppOptions } from "./app";
@@ -301,19 +301,6 @@ function workspaceBySlug(app: ControlApp, slug: string) {
   return workspace!;
 }
 
-async function tryCreateSymlink(target: string, path: string, type: "file" | "dir"): Promise<boolean> {
-  try {
-    await symlink(target, path, process.platform === "win32" && type === "dir" ? "junction" : type);
-    return true;
-  } catch (error) {
-    const code = error instanceof Error ? (error as Error & { code?: unknown }).code : undefined;
-    if (code === "EPERM" || code === "EACCES" || code === "ENOSYS") {
-      return false;
-    }
-    throw error;
-  }
-}
-
 describe("V1-1 session skeleton", () => {
   test("creating alice writes user, workspace, session, and project files", async () => {
     await withApp(async (app) => {
@@ -427,7 +414,7 @@ describe("V1-2 routing and shell APIs", () => {
     });
   });
 
-  test("returns session, project tree, and heartbeat for the signed workspace", async () => {
+  test("returns session and heartbeat for the signed workspace", async () => {
     await withApp(async (app) => {
       const response = await login(app, "alice");
       const cookie = cookieFrom(response);
@@ -442,16 +429,6 @@ describe("V1-2 routing and shell APIs", () => {
         user: { displayName: "alice" },
         workspace: { slug: "alice" },
       });
-
-      const tree = await app.fetch(
-        new Request("http://localhost/u/alice/api/project/tree", {
-          headers: { cookie },
-        }),
-      );
-      expect(tree.status).toBe(200);
-      const treeText = JSON.stringify(await tree.json());
-      expect(treeText).toContain("Robot.java");
-      expect(treeText).not.toContain("gradle-wrapper.jar");
 
       const heartbeat = await app.fetch(
         new Request("http://localhost/u/alice/api/heartbeat", {
@@ -492,311 +469,6 @@ describe("V1-2 routing and shell APIs", () => {
         user: { displayName: "bob" },
         workspace: { slug: "bob" },
       });
-    });
-  });
-});
-
-describe("V1-3 project file APIs", () => {
-  test("creates, edits, reloads, renames, and deletes allowlisted project files", async () => {
-    await withApp(async (app) => {
-      const response = await login(app, "alice");
-      const cookie = cookieFrom(response);
-      const authHeaders = {
-        cookie,
-        "content-type": "application/json",
-      };
-
-      const createDirectory = await app.fetch(
-        new Request("http://localhost/u/alice/api/files", {
-          method: "POST",
-          headers: authHeaders,
-          body: JSON.stringify({ kind: "directory", path: "src/main/java/frc/robot/subsystems" }),
-        }),
-      );
-      expect(createDirectory.status).toBe(200);
-
-      const filePath = "src/main/java/frc/robot/subsystems/ExampleSubsystem.java";
-      const createFile = await app.fetch(
-        new Request("http://localhost/u/alice/api/files", {
-          method: "POST",
-          headers: authHeaders,
-          body: JSON.stringify({
-            kind: "file",
-            path: filePath,
-            contents: "package frc.robot.subsystems;\n\npublic class ExampleSubsystem {}\n",
-          }),
-        }),
-      );
-      expect(createFile.status).toBe(200);
-
-      const write = await app.fetch(
-        new Request(`http://localhost/u/alice/api/files?path=${encodeURIComponent(filePath)}`, {
-          method: "PUT",
-          headers: authHeaders,
-          body: JSON.stringify({
-            contents: "package frc.robot.subsystems;\n\npublic final class ExampleSubsystem {}\n",
-          }),
-        }),
-      );
-      expect(write.status).toBe(200);
-
-      const read = await app.fetch(
-        new Request(`http://localhost/u/alice/api/files?path=${encodeURIComponent(filePath)}`, {
-          headers: { cookie },
-        }),
-      );
-      expect(read.status).toBe(200);
-      expect(await read.json()).toMatchObject({
-        path: filePath,
-        contents: "package frc.robot.subsystems;\n\npublic final class ExampleSubsystem {}\n",
-        access: "editable",
-      });
-
-      const projectPath = workspaceProjectPath(app, "alice");
-      expect(await readFile(join(projectPath, ...filePath.split("/")), "utf8")).toContain("final class");
-      const parentEntries = await readdir(join(projectPath, "src", "main", "java", "frc", "robot", "subsystems"));
-      expect(parentEntries.some((entry) => entry.startsWith(".frc-sim-write-"))).toBe(false);
-
-      const renamedPath = "src/main/java/frc/robot/subsystems/RenamedSubsystem.java";
-      const renameResponse = await app.fetch(
-        new Request("http://localhost/u/alice/api/files/rename", {
-          method: "PATCH",
-          headers: authHeaders,
-          body: JSON.stringify({ from: filePath, to: renamedPath }),
-        }),
-      );
-      expect(renameResponse.status).toBe(200);
-
-      const deleteResponse = await app.fetch(
-        new Request(`http://localhost/u/alice/api/files?path=${encodeURIComponent(renamedPath)}`, {
-          method: "DELETE",
-          headers: authHeaders,
-        }),
-      );
-      expect(deleteResponse.status).toBe(200);
-    });
-  });
-
-  test("deletes empty directories and rejects non-empty directories", async () => {
-    await withApp(async (app) => {
-      const response = await login(app, "alice");
-      const cookie = cookieFrom(response);
-      const authHeaders = {
-        cookie,
-        "content-type": "application/json",
-      };
-
-      const emptyPath = "src/main/java/frc/robot/empty";
-      const createEmpty = await app.fetch(
-        new Request("http://localhost/u/alice/api/files", {
-          method: "POST",
-          headers: authHeaders,
-          body: JSON.stringify({ kind: "directory", path: emptyPath }),
-        }),
-      );
-      expect(createEmpty.status).toBe(200);
-
-      const deleteEmpty = await app.fetch(
-        new Request(`http://localhost/u/alice/api/files?path=${encodeURIComponent(emptyPath)}`, {
-          method: "DELETE",
-          headers: authHeaders,
-        }),
-      );
-      expect(deleteEmpty.status).toBe(200);
-
-      const nonEmptyPath = "src/main/java/frc/robot/nonempty";
-      const createNonEmpty = await app.fetch(
-        new Request("http://localhost/u/alice/api/files", {
-          method: "POST",
-          headers: authHeaders,
-          body: JSON.stringify({ kind: "directory", path: nonEmptyPath }),
-        }),
-      );
-      expect(createNonEmpty.status).toBe(200);
-
-      const createChild = await app.fetch(
-        new Request("http://localhost/u/alice/api/files", {
-          method: "POST",
-          headers: authHeaders,
-          body: JSON.stringify({ kind: "file", path: `${nonEmptyPath}/Child.java`, contents: "" }),
-        }),
-      );
-      expect(createChild.status).toBe(200);
-
-      const deleteNonEmpty = await app.fetch(
-        new Request(`http://localhost/u/alice/api/files?path=${encodeURIComponent(nonEmptyPath)}`, {
-          method: "DELETE",
-          headers: authHeaders,
-        }),
-      );
-      expect(deleteNonEmpty.status).toBe(409);
-    });
-  });
-
-  test("rejects symlink targets in allowlisted file paths", async () => {
-    await withApp(async (app, root) => {
-      const response = await login(app, "alice");
-      const cookie = cookieFrom(response);
-      const projectPath = workspaceProjectPath(app, "alice");
-      const outsidePath = join(root, "outside.txt");
-      const linkPath = join(projectPath, "src", "main", "java", "frc", "robot", "Linked.java");
-      await writeFile(outsidePath, "outside\n", "utf8");
-
-      const symlinkCreated = await tryCreateSymlink(outsidePath, linkPath, "file");
-      if (!symlinkCreated) {
-        return;
-      }
-
-      const read = await app.fetch(
-        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/Linked.java", {
-          headers: { cookie },
-        }),
-      );
-      expect(read.status).toBe(403);
-    });
-  });
-
-  test("rejects read and write through symlinked ancestor directories", async () => {
-    await withApp(async (app, root) => {
-      const response = await login(app, "alice");
-      const cookie = cookieFrom(response);
-      const projectPath = workspaceProjectPath(app, "alice");
-      const outsideDir = join(root, "outside-dir");
-      const linkDir = join(projectPath, "src", "main", "java", "frc", "robot", "linked");
-      await mkdir(outsideDir);
-      await writeFile(join(outsideDir, "Escape.java"), "outside\n", "utf8");
-
-      const symlinkCreated = await tryCreateSymlink(outsideDir, linkDir, "dir");
-      if (!symlinkCreated) {
-        return;
-      }
-
-      const read = await app.fetch(
-        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/linked/Escape.java", {
-          headers: { cookie },
-        }),
-      );
-      expect(read.status).toBe(403);
-
-      const write = await app.fetch(
-        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/linked/Escape.java", {
-          method: "PUT",
-          headers: {
-            cookie,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ contents: "package frc.robot;\n" }),
-        }),
-      );
-      expect(write.status).toBe(403);
-    });
-  });
-
-  test("omits leftover atomic write temp files from the project tree", async () => {
-    await withApp(async (app) => {
-      const response = await login(app, "alice");
-      const cookie = cookieFrom(response);
-      const projectPath = workspaceProjectPath(app, "alice");
-      await writeFile(
-        join(projectPath, "src", "main", "java", "frc", "robot", ".frc-sim-write-deadbeef.tmp"),
-        "temporary\n",
-        "utf8",
-      );
-
-      const tree = await app.fetch(
-        new Request("http://localhost/u/alice/api/project/tree", {
-          headers: { cookie },
-        }),
-      );
-      expect(tree.status).toBe(200);
-      expect(JSON.stringify(await tree.json())).not.toContain(".frc-sim-write-deadbeef.tmp");
-    });
-  });
-
-  test("does not let another session read or mutate a workspace's files", async () => {
-    await withApp(async (app) => {
-      const alice = await login(app, "alice");
-      const bob = await login(app, "bob");
-      const bobCookie = cookieFrom(bob);
-      const aliceCookie = cookieFrom(alice);
-
-      const bobReadsAlice = await app.fetch(
-        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/Robot.java", {
-          headers: { cookie: bobCookie },
-        }),
-      );
-      expect(bobReadsAlice.status).toBe(403);
-
-      const bobMutatesAlice = await app.fetch(
-        new Request("http://localhost/u/alice/api/files", {
-          method: "POST",
-          headers: {
-            cookie: bobCookie,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ kind: "file", path: "src/main/java/frc/robot/Bob.java" }),
-        }),
-      );
-      expect(bobMutatesAlice.status).toBe(403);
-
-      const aliceReadsAlice = await app.fetch(
-        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/Robot.java", {
-          headers: { cookie: aliceCookie },
-        }),
-      );
-      expect(aliceReadsAlice.status).toBe(200);
-    });
-  });
-
-  test("rejects hidden, generated, readonly, and outside-allowlist paths", async () => {
-    await withApp(async (app) => {
-      const response = await login(app, "alice");
-      const cookie = cookieFrom(response);
-
-      const hiddenRead = await app.fetch(
-        new Request("http://localhost/u/alice/api/files?path=gradle/wrapper/gradle-wrapper.jar", {
-          headers: { cookie },
-        }),
-      );
-      expect(hiddenRead.status).toBe(403);
-
-      const generatedRead = await app.fetch(
-        new Request("http://localhost/u/alice/api/files?path=build/classes/Robot.class", {
-          headers: { cookie },
-        }),
-      );
-      expect(generatedRead.status).toBe(403);
-
-      const readonlyWrite = await app.fetch(
-        new Request("http://localhost/u/alice/api/files?path=build.gradle", {
-          method: "PUT",
-          headers: {
-            cookie,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ contents: "plugins {}\n" }),
-        }),
-      );
-      expect(readonlyWrite.status).toBe(403);
-
-      const outsideCreate = await app.fetch(
-        new Request("http://localhost/u/alice/api/files", {
-          method: "POST",
-          headers: {
-            cookie,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ kind: "file", path: "vendordeps/Extra.json" }),
-        }),
-      );
-      expect(outsideCreate.status).toBe(403);
-
-      const badPath = await app.fetch(
-        new Request("http://localhost/u/alice/api/files?path=../Robot.java", {
-          headers: { cookie },
-        }),
-      );
-      expect(badPath.status).toBe(400);
     });
   });
 });
@@ -1604,6 +1276,149 @@ describe("V2 idle teardown, recovery, and operator controls", () => {
         }),
       );
       expect(response.status).toBe(404);
+    });
+  });
+
+  test("admin seed-template copies template into an empty workspace project directory", async () => {
+    await withApp(async (app) => {
+      await login(app, "alice");
+      const workspace = workspaceBySlug(app, "alice");
+      const projectPath = workspaceProjectPath(app, "alice");
+
+      // The workspace is seeded on first login, so seed-template should return 409.
+      const conflict = await app.fetch(
+        new Request(`http://localhost/admin/workspaces/${workspace.id}/seed-template`, {
+          method: "POST",
+        }),
+      );
+      expect(conflict.status).toBe(409);
+
+      // Clear the project directory contents.
+      const { rm: rmFs } = await import("node:fs/promises");
+      const entries = await readdir(projectPath);
+      for (const entry of entries) {
+        await rmFs(join(projectPath, entry), { recursive: true, force: true });
+      }
+
+      // Now seed-template should succeed.
+      const response = await app.fetch(
+        new Request(`http://localhost/admin/workspaces/${workspace.id}/seed-template`, {
+          method: "POST",
+        }),
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { ok: boolean; action: string };
+      expect(body.ok).toBe(true);
+      expect(body.action).toBe("seed-template");
+
+      // Verify the template was copied.
+      expect(await exists(join(projectPath, "build.gradle"))).toBe(true);
+      expect(await exists(join(projectPath, "src", "main", "java", "frc", "robot", "Robot.java"))).toBe(true);
+    });
+  });
+
+  test("admin backup creates a backup of a workspace project", async () => {
+    await withApp(async (app) => {
+      await login(app, "alice");
+      const workspace = workspaceBySlug(app, "alice");
+
+      const response = await app.fetch(
+        new Request(`http://localhost/admin/workspaces/${workspace.id}/backup`, {
+          method: "POST",
+        }),
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { ok: boolean; action: string; detail: string };
+      expect(body.ok).toBe(true);
+      expect(body.action).toBe("backup");
+
+      // Verify backup directory was created.
+      const backupsDir = join(app.storage.config.dataDir, "backups");
+      const backupDirs = await readdir(backupsDir);
+      expect(backupDirs.length).toBeGreaterThan(0);
+
+      const latestBackup = backupDirs.sort().at(-1)!;
+      const backedUpProject = join(backupsDir, latestBackup, workspace.id, "project");
+      expect(await exists(join(backedUpProject, "build.gradle"))).toBe(true);
+    });
+  });
+
+  test("admin restore restores a workspace project from backup", async () => {
+    await withApp(async (app) => {
+      await login(app, "alice");
+      const workspace = workspaceBySlug(app, "alice");
+      const projectPath = workspaceProjectPath(app, "alice");
+
+      // First backup.
+      const backupResponse = await app.fetch(
+        new Request(`http://localhost/admin/workspaces/${workspace.id}/backup`, {
+          method: "POST",
+        }),
+      );
+      expect(backupResponse.status).toBe(200);
+
+      // Write a marker file into the project.
+      await writeFile(join(projectPath, "src", "main", "java", "frc", "robot", "Marker.java"), "marker\n", "utf8");
+      expect(await exists(join(projectPath, "src", "main", "java", "frc", "robot", "Marker.java"))).toBe(true);
+
+      // Find backup path.
+      const backupsDir = join(app.storage.config.dataDir, "backups");
+      const backupDirs = await readdir(backupsDir);
+      const latestBackup = backupDirs.sort().at(-1)!;
+      const restorePath = join(backupsDir, latestBackup, workspace.id, "project");
+
+      // Restore should overwrite project from backup (which has no Marker.java).
+      const response = await app.fetch(
+        new Request(`http://localhost/admin/workspaces/${workspace.id}/restore`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ path: restorePath }),
+        }),
+      );
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { ok: boolean; action: string };
+      expect(body.ok).toBe(true);
+      expect(body.action).toBe("restore");
+
+      // The base template file should still exist.
+      expect(await exists(join(projectPath, "build.gradle"))).toBe(true);
+    });
+  });
+
+  test("admin restore rejects paths outside data/backups/", async () => {
+    await withApp(async (app) => {
+      await login(app, "alice");
+      const workspace = workspaceBySlug(app, "alice");
+
+      const response = await app.fetch(
+        new Request(`http://localhost/admin/workspaces/${workspace.id}/restore`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ path: "/tmp/evil" }),
+        }),
+      );
+      expect(response.status).toBe(403);
+    });
+  });
+
+  test("removed file API routes return 404", async () => {
+    await withApp(async (app) => {
+      const response = await login(app, "alice");
+      const cookie = cookieFrom(response);
+
+      const fileRead = await app.fetch(
+        new Request("http://localhost/u/alice/api/files?path=src/main/java/frc/robot/Robot.java", {
+          headers: { cookie },
+        }),
+      );
+      expect(fileRead.status).toBe(404);
+
+      const treeRead = await app.fetch(
+        new Request("http://localhost/u/alice/api/project/tree", {
+          headers: { cookie },
+        }),
+      );
+      expect(treeRead.status).toBe(404);
     });
   });
 

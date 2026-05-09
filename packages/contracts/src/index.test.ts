@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
 import {
-  createFileRequestSchema,
   getProjectPathAccess,
   isProjectPath,
   isWorkspaceSlug,
@@ -57,32 +56,6 @@ describe("project path validation", () => {
     expect(getProjectPathAccess("build/classes/Robot.class")).toBe("blocked");
     expect(getProjectPathAccess("gradle/wrapper/gradle-wrapper.jar")).toBe("blocked");
     expect(getProjectPathAccess("vendordeps/WPILibNewCommands.json")).toBe("outside-allowlist");
-  });
-});
-
-describe("file API schemas", () => {
-  test("parses create file requests with safe paths", () => {
-    const parsed = createFileRequestSchema.parse({
-      kind: "file",
-      path: "src/main/java/frc/robot/Example.java",
-      contents: "",
-    });
-
-    expect(parsed).toEqual({
-      kind: "file",
-      path: parsed.path,
-      contents: "",
-    });
-    expect(String(parsed.path)).toBe("src/main/java/frc/robot/Example.java");
-  });
-
-  test("rejects create requests with invalid paths", () => {
-    expect(() =>
-      createFileRequestSchema.parse({
-        kind: "directory",
-        path: "../outside",
-      }),
-    ).toThrow();
   });
 });
 

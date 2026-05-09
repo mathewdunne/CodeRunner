@@ -1,34 +1,19 @@
-import { randomBytes } from "node:crypto";
-import type { Stats } from "node:fs";
-import { lstat, mkdir, readdir, readFile, realpath, rename, rmdir, stat, unlink, writeFile } from "node:fs/promises";
-import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path";
+import { cp, mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { extname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
-  createFileRequestSchema,
   displayNameSchema,
-  getProjectPathAccess,
   heartbeatRequestSchema,
   projectPathSchema,
-  renameFileRequestSchema,
   runClientMessageSchema,
-  writeFileRequestSchema,
   workspaceSlugSchema,
   type AdminActionResponse,
   type AdminStatusResponse,
   type AdminWorkspaceStatus,
-  type CreateFileRequest,
   type ContainersStatusResponse,
-  type FileMutationResponse,
   type HeartbeatResponse,
-  type ProjectPathAccess,
-  type ProjectPath,
-  type ProjectFileResponse,
-  type ProjectTreeNode,
-  type ProjectTreeResponse,
-  type RenameFileRequest,
   type SessionResponse,
   type UserId,
   type WorkspaceId,
-  type WriteFileRequest,
   type WorkspaceSlug,
 } from "@frc-sim/contracts";
 import type { ControlConfigInput } from "./config";
@@ -239,390 +224,6 @@ function sessionResponse(auth: AuthContext): SessionResponse {
       slug: auth.workspace.slug,
     },
   };
-}
-
-function sortProjectNodes(left: ProjectTreeNode, right: ProjectTreeNode): number {
-  if (left.kind !== right.kind) {
-    return left.kind === "directory" ? -1 : 1;
-  }
-
-  return left.name.localeCompare(right.name);
-}
-
-function isReservedProjectTempName(name: string): boolean {
-  return /^\.frc-sim-write-[a-f0-9]+\.tmp$/u.test(name);
-}
-
-async function readProjectTreeNode(projectRoot: string, relativePath: string): Promise<ProjectTreeNode | null> {
-  const absolutePath = relativePath ? resolve(projectRoot, ...relativePath.split("/")) : projectRoot;
-  const entries = await readdir(absolutePath, { withFileTypes: true });
-  const children: ProjectTreeNode[] = [];
-
-  for (const entry of entries) {
-    if (isReservedProjectTempName(entry.name)) {
-      continue;
-    }
-
-    const childPath = relativePath ? `${relativePath}/${entry.name}` : entry.name;
-    const access = getProjectPathAccess(childPath);
-    if (access === "blocked") {
-      continue;
-    }
-
-    if (entry.isDirectory()) {
-      const child = await readProjectTreeNode(projectRoot, childPath);
-      if (child && ((child.children?.length ?? 0) > 0 || access !== "outside-allowlist")) {
-        children.push(child);
-      }
-      continue;
-    }
-
-    if (entry.isFile()) {
-      if (access === "outside-allowlist") {
-        continue;
-      }
-
-      children.push({
-        name: entry.name,
-        path: childPath,
-        kind: "file",
-        access,
-      });
-    }
-  }
-
-  children.sort(sortProjectNodes);
-
-  if (!relativePath) {
-    return {
-      name: "project",
-      path: "",
-      kind: "directory",
-      access: "root",
-      children,
-    };
-  }
-
-  const access = getProjectPathAccess(relativePath);
-  return {
-    name: relativePath.split("/").at(-1) ?? relativePath,
-    path: relativePath,
-    kind: "directory",
-    access,
-    children,
-  };
-}
-
-async function projectTreeResponse(auth: AuthContext): Promise<ProjectTreeResponse> {
-  const tree = await readProjectTreeNode(auth.workspace.project_path, "");
-  if (!tree) {
-    throw new Error(`Failed to read project tree for workspace ${auth.workspace.id}.`);
-  }
-
-  return {
-    workspace: {
-      id: auth.workspace.id,
-      slug: auth.workspace.slug,
-    },
-    tree,
-  };
-}
-
-async function mutationResponse(auth: AuthContext): Promise<FileMutationResponse> {
-  return {
-    ok: true,
-    tree: await projectTreeResponse(auth),
-  };
-}
-
-function projectPathFromQuery(url: URL): string {
-  const value = url.searchParams.get("path");
-  if (value === null) {
-    throw Object.assign(new Error("Missing project path."), { status: 400 });
-  }
-  return value;
-}
-
-type ResolvedProjectPath = {
-  path: ProjectPath;
-  absolutePath: string;
-  access: Exclude<ProjectPathAccess, "blocked" | "outside-allowlist">;
-  stats: Stats | null;
-};
-
-type ResolveProjectPathOptions = {
-  mode: "read" | "write";
-  existingTarget: "required" | "optional";
-  missingTargetMessage?: string;
-  parentMissingMessage?: string;
-  parentMissingStatus?: number;
-};
-
-function apiError(message: string, status: number): Error & { status: number } {
-  return Object.assign(new Error(message), { status });
-}
-
-function fsErrorCode(error: unknown): unknown {
-  return error instanceof Error ? (error as Error & { code?: unknown }).code : undefined;
-}
-
-function isMissingPathError(error: unknown): boolean {
-  return fsErrorCode(error) === "ENOENT";
-}
-
-function isNonEmptyDirectoryError(error: unknown): boolean {
-  const code = fsErrorCode(error);
-  return code === "ENOTEMPTY" || code === "EEXIST";
-}
-
-function symlinkError(): Error & { status: number } {
-  return apiError("Project path cannot include symlinks.", 403);
-}
-
-async function lstatRequired(path: string, message: string, status: number): Promise<Stats> {
-  try {
-    return await lstat(path);
-  } catch (error) {
-    if (isMissingPathError(error)) {
-      throw apiError(message, status);
-    }
-    throw error;
-  }
-}
-
-async function assertRealPathInside(rootRealPath: string, targetPath: string): Promise<string> {
-  const targetRealPath = await realpath(targetPath);
-  if (!isInsideDirectory(rootRealPath, targetRealPath)) {
-    throw apiError("Project path resolved outside the workspace.", 403);
-  }
-  return targetRealPath;
-}
-
-async function resolveProjectFilePath(
-  auth: AuthContext,
-  pathInput: string,
-  options: ResolveProjectPathOptions,
-): Promise<ResolvedProjectPath> {
-  const parsed = projectPathSchema.safeParse(pathInput);
-  if (!parsed.success) {
-    throw apiError("Invalid project path.", 400);
-  }
-
-  const projectPath = parsed.data;
-  const access = getProjectPathAccess(projectPath);
-  if (access === "blocked" || access === "outside-allowlist") {
-    throw apiError("Project path is not available.", 403);
-  }
-
-  if (options.mode === "write" && access !== "editable") {
-    throw apiError("Project path is read-only.", 403);
-  }
-
-  const rootRealPath = await realpath(auth.workspace.project_path);
-  const segments = projectPath.split("/");
-  const parentSegments = segments.slice(0, -1);
-  let parentPath = rootRealPath;
-
-  for (const segment of parentSegments) {
-    parentPath = resolve(parentPath, segment);
-    if (!isInsideDirectory(rootRealPath, parentPath)) {
-      throw apiError("Project path resolved outside the workspace.", 403);
-    }
-
-    const segmentStats = await lstatRequired(
-      parentPath,
-      options.parentMissingMessage ?? "Parent directory does not exist.",
-      options.parentMissingStatus ?? 409,
-    );
-    if (segmentStats.isSymbolicLink()) {
-      throw symlinkError();
-    }
-    if (!segmentStats.isDirectory()) {
-      throw apiError(
-        options.parentMissingMessage ?? "Parent directory does not exist.",
-        options.parentMissingStatus ?? 409,
-      );
-    }
-
-    parentPath = await assertRealPathInside(rootRealPath, parentPath);
-  }
-
-  const absolutePath = resolve(parentPath, segments.at(-1) ?? "");
-  if (!isInsideDirectory(rootRealPath, absolutePath)) {
-    throw apiError("Project path resolved outside the workspace.", 403);
-  }
-
-  let stats: Stats | null = null;
-  try {
-    stats = await lstat(absolutePath);
-  } catch (error) {
-    if (options.existingTarget === "required" && isMissingPathError(error)) {
-      throw apiError(options.missingTargetMessage ?? "Project path was not found.", 404);
-    }
-    if (!isMissingPathError(error)) {
-      throw error;
-    }
-  }
-
-  if (stats?.isSymbolicLink()) {
-    throw symlinkError();
-  }
-
-  if (stats) {
-    await assertRealPathInside(rootRealPath, absolutePath);
-  }
-
-  return { path: projectPath, absolutePath, access, stats };
-}
-
-async function readJsonRequest<T>(request: Request, parse: (input: unknown) => T): Promise<T> {
-  let input: unknown;
-  try {
-    input = await request.json();
-  } catch {
-    throw Object.assign(new Error("Request body must be valid JSON."), { status: 400 });
-  }
-
-  try {
-    return parse(input);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Request body did not match the API contract.";
-    throw Object.assign(new Error(message), { status: 400 });
-  }
-}
-
-function writeTempPathFor(absolutePath: string): string {
-  return resolve(dirname(absolutePath), `.frc-sim-write-${randomBytes(12).toString("hex")}.tmp`);
-}
-
-async function writeFileAtomically(absolutePath: string, contents: string): Promise<void> {
-  const tempPath = writeTempPathFor(absolutePath);
-  try {
-    await writeFile(tempPath, contents, { encoding: "utf8", flag: "wx" });
-    await rename(tempPath, absolutePath);
-  } catch (error) {
-    await unlink(tempPath).catch(() => {
-      // Best effort cleanup; the project tree hides any crash leftovers with this prefix.
-    });
-    throw error;
-  }
-}
-
-async function readProjectFile(auth: AuthContext, pathInput: string): Promise<ProjectFileResponse> {
-  const resolvedPath = await resolveProjectFilePath(auth, pathInput, {
-    mode: "read",
-    existingTarget: "required",
-    missingTargetMessage: "Project file was not found.",
-    parentMissingMessage: "Project file was not found.",
-    parentMissingStatus: 404,
-  });
-  if (!resolvedPath.stats?.isFile()) {
-    throw apiError("Project path is not a file.", 400);
-  }
-
-  return {
-    path: resolvedPath.path,
-    contents: await readFile(resolvedPath.absolutePath, "utf8"),
-    access: resolvedPath.access,
-  };
-}
-
-async function writeProjectFile(
-  auth: AuthContext,
-  pathInput: string,
-  requestBody: WriteFileRequest,
-): Promise<FileMutationResponse> {
-  const resolvedPath = await resolveProjectFilePath(auth, pathInput, {
-    mode: "write",
-    existingTarget: "optional",
-  });
-  if (resolvedPath.stats && !resolvedPath.stats.isFile()) {
-    throw apiError("Project path is not a file.", 400);
-  }
-
-  await writeFileAtomically(resolvedPath.absolutePath, requestBody.contents);
-  return mutationResponse(auth);
-}
-
-async function createProjectEntry(auth: AuthContext, requestBody: CreateFileRequest): Promise<FileMutationResponse> {
-  const resolvedPath = await resolveProjectFilePath(auth, requestBody.path, {
-    mode: "write",
-    existingTarget: "optional",
-  });
-  if (resolvedPath.stats) {
-    throw apiError("Project path already exists.", 409);
-  }
-
-  if (requestBody.kind === "directory") {
-    try {
-      await mkdir(resolvedPath.absolutePath);
-    } catch (error) {
-      if (fsErrorCode(error) === "EEXIST") {
-        throw apiError("Project path already exists.", 409);
-      }
-      throw error;
-    }
-  } else {
-    try {
-      await writeFile(resolvedPath.absolutePath, requestBody.contents ?? "", { encoding: "utf8", flag: "wx" });
-    } catch (error) {
-      if (fsErrorCode(error) === "EEXIST") {
-        throw apiError("Project path already exists.", 409);
-      }
-      throw error;
-    }
-  }
-
-  return mutationResponse(auth);
-}
-
-async function renameProjectEntry(auth: AuthContext, requestBody: RenameFileRequest): Promise<FileMutationResponse> {
-  const from = await resolveProjectFilePath(auth, requestBody.from, {
-    mode: "write",
-    existingTarget: "required",
-    missingTargetMessage: "Source path was not found.",
-    parentMissingMessage: "Source path was not found.",
-    parentMissingStatus: 404,
-  });
-  const to = await resolveProjectFilePath(auth, requestBody.to, {
-    mode: "write",
-    existingTarget: "optional",
-    parentMissingMessage: "Destination parent directory does not exist.",
-  });
-
-  if (to.stats) {
-    throw apiError("Destination path already exists.", 409);
-  }
-
-  await rename(from.absolutePath, to.absolutePath);
-  return mutationResponse(auth);
-}
-
-async function deleteProjectEntry(auth: AuthContext, pathInput: string): Promise<FileMutationResponse> {
-  const resolvedPath = await resolveProjectFilePath(auth, pathInput, {
-    mode: "write",
-    existingTarget: "required",
-    missingTargetMessage: "Project path was not found.",
-    parentMissingMessage: "Project path was not found.",
-    parentMissingStatus: 404,
-  });
-  const fileStat = resolvedPath.stats;
-
-  try {
-    if (fileStat?.isDirectory()) {
-      await rmdir(resolvedPath.absolutePath);
-    } else if (fileStat?.isFile()) {
-      await unlink(resolvedPath.absolutePath);
-    } else {
-      throw apiError("Project path is not a file or directory.", 400);
-    }
-  } catch (error) {
-    if (isNonEmptyDirectoryError(error)) {
-      throw apiError("Directory is not empty.", 409);
-    }
-    throw error;
-  }
-  return mutationResponse(auth);
 }
 
 function apiErrorResponse(error: unknown, fallback: string): Response {
@@ -1173,6 +774,88 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
               detail: "All containers stopped.",
             } satisfies AdminActionResponse);
           }
+
+          if (action === "seed-template") {
+            const projectDir = workspace.project_path;
+            let entries: string[] = [];
+            try {
+              entries = await readdir(projectDir);
+            } catch {
+              // Directory doesn't exist yet — treat as empty.
+            }
+            if (entries.length > 0) {
+              return jsonResponse(
+                { error: "Workspace project directory is not empty." },
+                { status: 409 },
+              );
+            }
+            await mkdir(projectDir, { recursive: true });
+            await cp(storage.config.templateDir, projectDir, { recursive: true });
+            return jsonResponse({
+              ok: true,
+              action: "seed-template",
+              workspaceId: workspace.id,
+              detail: "Template seeded.",
+            } satisfies AdminActionResponse);
+          }
+
+          if (action === "backup") {
+            const projectDir = workspace.project_path;
+            try {
+              const s = await stat(projectDir);
+              if (!s.isDirectory()) {
+                return jsonResponse({ error: "Project directory does not exist." }, { status: 404 });
+              }
+            } catch {
+              return jsonResponse({ error: "Project directory does not exist." }, { status: 404 });
+            }
+            const now = new Date();
+            const pad = (n: number) => String(n).padStart(2, "0");
+            const ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+            const dest = resolve(storage.config.dataDir, "backups", ts, workspace.id, "project");
+            await mkdir(dest, { recursive: true });
+            await cp(projectDir, dest, { recursive: true });
+            return jsonResponse({
+              ok: true,
+              action: "backup",
+              workspaceId: workspace.id,
+              detail: `Backed up to ${resolve(storage.config.dataDir, "backups", ts)}`,
+            } satisfies AdminActionResponse);
+          }
+
+          if (action === "restore") {
+            let body: { path?: string };
+            try {
+              body = await request.json() as { path?: string };
+            } catch {
+              return jsonResponse({ error: "Request body must be valid JSON." }, { status: 400 });
+            }
+            if (typeof body.path !== "string" || body.path.trim().length === 0) {
+              return jsonResponse({ error: "Missing or empty 'path' in request body." }, { status: 400 });
+            }
+            const backupsRoot = resolve(storage.config.dataDir, "backups");
+            const sourcePath = resolve(body.path);
+            if (!isInsideDirectory(backupsRoot, sourcePath)) {
+              return jsonResponse({ error: "Restore path must be under data/backups/." }, { status: 403 });
+            }
+            try {
+              const s = await stat(sourcePath);
+              if (!s.isDirectory()) {
+                return jsonResponse({ error: "Restore source is not a directory." }, { status: 404 });
+              }
+            } catch {
+              return jsonResponse({ error: "Restore source not found." }, { status: 404 });
+            }
+            const projectDir = workspace.project_path;
+            await mkdir(projectDir, { recursive: true });
+            await cp(sourcePath, projectDir, { recursive: true, force: true });
+            return jsonResponse({
+              ok: true,
+              action: "restore",
+              workspaceId: workspace.id,
+              detail: `Restored from ${sourcePath}`,
+            } satisfies AdminActionResponse);
+          }
         } catch (error) {
           return apiErrorResponse(error, `Admin action ${action} failed.`);
         }
@@ -1245,15 +928,6 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         return jsonResponse(sessionResponse(auth));
       }
 
-      if (suffix === "/api/project/tree" && request.method === "GET") {
-        try {
-          return jsonResponse(await projectTreeResponse(auth));
-        } catch (error) {
-          const message = error instanceof Error ? error.message : "Unable to read project tree.";
-          return jsonResponse({ error: message }, { status: 500 });
-        }
-      }
-
       if (suffix === "/api/containers/status" && request.method === "GET") {
         try {
           return jsonResponse(await containersStatusResponse(containers, auth));
@@ -1269,49 +943,6 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
       if (suffix === "/api/run/stop" && request.method === "POST") {
         return jsonResponse({ ok: true, stopped: runs.stopWorkspace(auth.workspace.id) });
-      }
-
-      if (suffix === "/api/files" && request.method === "GET") {
-        try {
-          return jsonResponse(await readProjectFile(auth, projectPathFromQuery(url)));
-        } catch (error) {
-          return apiErrorResponse(error, "Unable to read project file.");
-        }
-      }
-
-      if (suffix === "/api/files" && request.method === "PUT") {
-        try {
-          const body = await readJsonRequest(request, (input) => writeFileRequestSchema.parse(input));
-          return jsonResponse(await writeProjectFile(auth, projectPathFromQuery(url), body));
-        } catch (error) {
-          return apiErrorResponse(error, "Unable to write project file.");
-        }
-      }
-
-      if (suffix === "/api/files" && request.method === "POST") {
-        try {
-          const body = await readJsonRequest(request, (input) => createFileRequestSchema.parse(input));
-          return jsonResponse(await createProjectEntry(auth, body));
-        } catch (error) {
-          return apiErrorResponse(error, "Unable to create project entry.");
-        }
-      }
-
-      if (suffix === "/api/files/rename" && request.method === "PATCH") {
-        try {
-          const body = await readJsonRequest(request, (input) => renameFileRequestSchema.parse(input));
-          return jsonResponse(await renameProjectEntry(auth, body));
-        } catch (error) {
-          return apiErrorResponse(error, "Unable to rename project entry.");
-        }
-      }
-
-      if (suffix === "/api/files" && request.method === "DELETE") {
-        try {
-          return jsonResponse(await deleteProjectEntry(auth, projectPathFromQuery(url)));
-        } catch (error) {
-          return apiErrorResponse(error, "Unable to delete project entry.");
-        }
       }
 
       if (suffix === "/api/heartbeat" && request.method === "POST") {
