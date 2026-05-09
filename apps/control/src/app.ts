@@ -93,7 +93,16 @@ type LspSocketData = {
   pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
 };
 
-type SocketData = RunSocketData | Nt4SocketData | LspSocketData;
+type VscodeSocketData = {
+  kind: "vscode";
+  upstreamUrl: string;
+  protocols: string[];
+  upstream?: WebSocket | undefined;
+  upstreamOpen: boolean;
+  pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
+};
+
+type SocketData = RunSocketData | Nt4SocketData | LspSocketData | VscodeSocketData;
 
 type AppSocket = {
   data: SocketData;
@@ -818,6 +827,133 @@ function requestedProtocols(request: Request): string[] {
     .filter(Boolean);
 }
 
+// Headers that must not be forwarded by a proxy (RFC 7230 § 6.1 / RFC 9110 § 7.6.1).
+const HOP_BY_HOP_HEADERS = new Set([
+  "connection",
+  "keep-alive",
+  "proxy-authenticate",
+  "proxy-authorization",
+  "te",
+  "trailer",
+  "transfer-encoding",
+  "upgrade",
+]);
+
+export function stripHopByHopHeaders(source: Headers): Headers {
+  // The `Connection` header may list additional hop-by-hop header names.
+  const connectionExtras = (source.get("connection") ?? "")
+    .split(",")
+    .map((token) => token.trim().toLowerCase())
+    .filter(Boolean);
+
+  const stripped = new Headers();
+  source.forEach((value, key) => {
+    const lower = key.toLowerCase();
+    if (HOP_BY_HOP_HEADERS.has(lower) || connectionExtras.includes(lower)) {
+      return;
+    }
+    stripped.set(key, value);
+  });
+
+  return stripped;
+}
+
+async function probeVscodeReady(port: number, basePath: string, timeoutMs: number): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs;
+  const probeUrl = `http://127.0.0.1:${port}${basePath}`;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(probeUrl, {
+        signal: AbortSignal.timeout(500),
+      });
+      if (response.status >= 200 && response.status < 500) {
+        return true;
+      }
+    } catch {
+      // Connection refused or aborted; keep retrying.
+    }
+    await new Promise((resolveSleep) => setTimeout(resolveSleep, 250));
+  }
+  return false;
+}
+
+async function vscodeHttpProxyResponse(
+  storage: AppStorage,
+  auth: AuthContext,
+  request: Request,
+  fullPath: string,
+): Promise<Response> {
+  const vscodePort = storage.config.vscodeDevUpstreamPort;
+  if (!vscodePort) {
+    return new Response("Editor proxy is not configured. Set VSCODE_DEV_UPSTREAM_PORT or wait for Stage 3 orchestration.", { status: 503 });
+  }
+
+  const upstreamUrl = `http://127.0.0.1:${vscodePort}${fullPath}`;
+  const forwardHeaders = stripHopByHopHeaders(request.headers);
+
+  try {
+    const upstream = await fetch(upstreamUrl, {
+      method: request.method,
+      headers: forwardHeaders,
+      body: request.body,
+      redirect: "manual",
+      decompress: false,
+    });
+
+    const responseHeaders = stripHopByHopHeaders(upstream.headers);
+    return new Response(upstream.body, {
+      status: upstream.status,
+      statusText: upstream.statusText,
+      headers: responseHeaders,
+    });
+  } catch {
+    return new Response("Editor upstream is not reachable.", { status: 502 });
+  }
+}
+
+async function vscodeWebSocketResponse(
+  storage: AppStorage,
+  auth: AuthContext,
+  request: Request,
+  fullPath: string,
+  server?: BunUpgradeServer,
+): Promise<Response> {
+  if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
+    return new Response("Expected WebSocket upgrade.", { status: 426 });
+  }
+
+  const vscodePort = storage.config.vscodeDevUpstreamPort;
+  if (!vscodePort) {
+    return new Response("Editor proxy is not configured.", { status: 503 });
+  }
+
+  const slug = auth.workspace.slug;
+  const basePath = `/u/${slug}/vscode/`;
+  if (!(await probeVscodeReady(vscodePort, basePath, 30_000))) {
+    return new Response("Editor upstream did not become ready.", { status: 503 });
+  }
+
+  const protocols = requestedProtocols(request);
+  const upstreamUrl = `ws://127.0.0.1:${vscodePort}${fullPath}`;
+  const upgradeOptions: { data: SocketData; headers?: HeadersInit } = {
+    data: {
+      kind: "vscode",
+      upstreamUrl,
+      protocols,
+      upstreamOpen: false,
+      pendingMessages: [],
+    },
+  };
+  if (protocols.length > 0) {
+    upgradeOptions.headers = { "sec-websocket-protocol": protocols[0] ?? "" };
+  }
+  const upgraded = server.upgrade(request, upgradeOptions);
+  if (!upgraded) {
+    return new Response("WebSocket upgrade failed.", { status: 400 });
+  }
+  return undefined as unknown as Response;
+}
+
 async function nt4AliveResponse(storage: AppStorage, containers: ContainerOrchestrator, auth: AuthContext): Promise<Response> {
   const sim = await containers.ensureSimContainer(auth.workspace);
   const lease = storage.getContainerLease(auth.workspace.id);
@@ -1176,6 +1312,19 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         return lspWebSocketResponse(storage, containers, auth, request, server);
       }
 
+      // --- Editor proxy: openvscode-server ---
+      // Match /vscode or /vscode/* (the suffix starts with /vscode).
+      // The full URL path including /u/<slug>/vscode/ is passed through
+      // unchanged because openvscode-server is launched with
+      // --server-base-path /u/<slug>/vscode/.
+      if (suffix === "/vscode" || suffix.startsWith("/vscode/")) {
+        const fullPath = url.pathname + (url.search || "");
+        if (request.headers.get("upgrade")?.toLowerCase() === "websocket") {
+          return vscodeWebSocketResponse(storage, auth, request, fullPath, server);
+        }
+        return vscodeHttpProxyResponse(storage, auth, request, fullPath);
+      }
+
       if (suffix.startsWith("/assets/") && request.method === "GET") {
         return webAssetResponse(storage, `assets/${suffix.slice("/assets/".length)}`);
       }
@@ -1275,10 +1424,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
   function openProxyUpstream(
     ws: AppSocket,
-    label: "NT4" | "LSP",
+    label: "NT4" | "LSP" | "VSCode",
     protocols: string[] | undefined,
   ): void {
-    if (ws.data.kind !== "nt4" && ws.data.kind !== "lsp") {
+    if (ws.data.kind !== "nt4" && ws.data.kind !== "lsp" && ws.data.kind !== "vscode") {
       return;
     }
     const upstream = new WebSocket(ws.data.upstreamUrl, protocols && protocols.length > 0 ? protocols : undefined);
@@ -1286,7 +1435,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     upstream.binaryType = "arraybuffer";
 
     upstream.addEventListener("open", () => {
-      if (ws.data.kind !== "nt4" && ws.data.kind !== "lsp") {
+      if (ws.data.kind !== "nt4" && ws.data.kind !== "lsp" && ws.data.kind !== "vscode") {
         return;
       }
       // The browser was told (in the upgrade handshake) that we picked
@@ -1339,12 +1488,16 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         openProxyUpstream(ws, "LSP", undefined);
         return;
       }
+      if (ws.data.kind === "vscode") {
+        openProxyUpstream(ws, "VSCode", ws.data.protocols);
+        return;
+      }
       ws.data.connection = runs.connect(ws.data.workspace, (message) => {
         ws.send(JSON.stringify(message));
       });
     },
     message(ws: AppSocket, message: string | ArrayBuffer | Uint8Array): void {
-      if (ws.data.kind === "nt4" || ws.data.kind === "lsp") {
+      if (ws.data.kind === "nt4" || ws.data.kind === "lsp" || ws.data.kind === "vscode") {
         if (ws.data.upstreamOpen && ws.data.upstream) {
           ws.data.upstream.send(message);
         } else {
@@ -1371,7 +1524,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       }
     },
     close(ws: AppSocket): void {
-      if (ws.data.kind === "nt4" || ws.data.kind === "lsp") {
+      if (ws.data.kind === "nt4" || ws.data.kind === "lsp" || ws.data.kind === "vscode") {
         ws.data.upstream?.close();
         ws.data.pendingMessages.length = 0;
         return;

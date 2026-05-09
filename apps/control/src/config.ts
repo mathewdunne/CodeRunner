@@ -30,6 +30,10 @@ export type ControlConfig = {
   idleStopMinutes: number;
   idleCheckIntervalMs: number;
   adminToken: string | null;
+  // Temporary Stage 2 knob: when set, the editor proxy targets this port
+  // on 127.0.0.1 for all workspaces instead of reading from a per-workspace
+  // lease. Stage 3 replaces this with proper orchestration.
+  vscodeDevUpstreamPort: number | null;
 };
 
 export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "lspPortRange">> & {
@@ -37,6 +41,7 @@ export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "l
   lspPortRange?: PortRange | string;
   idleStopMinutes?: number | string;
   idleCheckIntervalMs?: number | string;
+  vscodeDevUpstreamPort?: number | string | null;
 };
 
 const repoRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
@@ -101,6 +106,17 @@ function defaultContainerUser(): string | null {
   return null;
 }
 
+function parseOptionalPort(value: string | number | null | undefined): number | null {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+  const parsed = typeof value === "number" ? value : Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1 || parsed > 65535) {
+    throw new Error(`Invalid port "${value}". Must be an integer 1-65535.`);
+  }
+  return parsed;
+}
+
 export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig {
   const dataDir = resolve(input.dataDir ?? Bun.env.FRC_DATA_DIR ?? defaultDataDir);
 
@@ -159,5 +175,8 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
       "IDLE_CHECK_INTERVAL_MS",
     ),
     adminToken: input.adminToken ?? Bun.env.ADMIN_TOKEN ?? null,
+    vscodeDevUpstreamPort: parseOptionalPort(
+      input.vscodeDevUpstreamPort ?? Bun.env.VSCODE_DEV_UPSTREAM_PORT,
+    ),
   };
 }
