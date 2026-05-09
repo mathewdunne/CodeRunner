@@ -938,12 +938,12 @@ bun run dev:control
 
 **Definition of Done.**
 
-- [ ] `apps/web/src` no longer imports `monaco-editor`.
-- [ ] `apps/web/dist/` build output does not include Monaco bundles.
-- [ ] Editor iframe is the only way the user reads or writes files.
-- [ ] Run/Stop, console panel, AS Lite iframe all function as before.
-- [ ] `bun run typecheck` passes.
-- [ ] `bun test` passes.
+- [x] `apps/web/src` no longer imports `monaco-editor`.
+- [x] `apps/web/dist/` build output does not include Monaco bundles.
+- [x] Editor iframe is the only way the user reads or writes files.
+- [x] Run/Stop, console panel, AS Lite iframe all function as before.
+- [x] `bun run typecheck` passes.
+- [x] `bun test` passes.
 
 ---
 

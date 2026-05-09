@@ -93,31 +93,51 @@ button {
   white-space: nowrap;
 }
 
+.status-strip span.pill-error {
+  border-color: #7f3333;
+  background: #2a1719;
+  color: #ffc6c6;
+}
+
 .ide-grid {
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(190px, 250px) minmax(320px, 1fr) minmax(260px, 34vw);
+  grid-template-columns: minmax(320px, 1fr) minmax(260px, 34vw);
   grid-template-rows: minmax(0, 1fr) 180px;
 }
 
-.file-pane,
-.editor-pane,
-.scope-pane,
-.console-pane {
+.editor-pane {
   min-width: 0;
   min-height: 0;
-  border-color: #2a3440;
   background: #151b22;
 }
 
-.file-pane {
-  overflow: auto;
-  border-right: 1px solid #2a3440;
+.editor-pane iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
 }
 
-.file-pane > header,
-.scope-pane > header,
-.console-pane > header {
+.editor-empty {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: #151b22;
+  color: #8f9ba8;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.scope-pane {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 38px 1fr;
+  border-left: 1px solid #2a3440;
+  background: #151b22;
+}
+
+.scope-pane header {
   height: 38px;
   display: flex;
   align-items: center;
@@ -128,156 +148,6 @@ button {
   color: #c9d2dc;
   font-size: 13px;
   font-weight: 700;
-}
-
-.file-actions {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-}
-
-.file-actions button {
-  height: 24px;
-  min-width: 28px;
-  padding: 0 6px;
-  font-size: 11px;
-}
-
-.file-actions button:disabled,
-.tree-row:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.file-pane p {
-  margin: 12px;
-  color: #a9b4c0;
-}
-
-.tree-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tree-row {
-  min-height: 28px;
-  width: 100%;
-  display: flex;
-  gap: 7px;
-  align-items: center;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #dce4ec;
-  font-size: 13px;
-  text-align: left;
-}
-
-.tree-row:hover,
-.tree-row.selected {
-  background: #1d2731;
-}
-
-.tree-row.active {
-  background: #223246;
-  color: #ffffff;
-}
-
-.tree-icon {
-  width: 12px;
-  flex: 0 0 12px;
-  color: #7e8b98;
-  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-}
-
-.editor-pane {
-  display: grid;
-  position: relative;
-  grid-template-rows: 38px 1fr;
-}
-
-.tabbar {
-  display: flex;
-  gap: 2px;
-  align-items: end;
-  overflow-x: auto;
-  border-bottom: 1px solid #2a3440;
-  background: #131920;
-}
-
-.tabbar button {
-  max-width: 210px;
-  height: 32px;
-  margin-left: 8px;
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  border-bottom-color: #151b22;
-  border-radius: 6px 6px 0 0;
-  padding: 0 12px;
-  background: #111820;
-  white-space: nowrap;
-}
-
-.tabbar button.active {
-  background: #151b22;
-}
-
-.tabbar button span:first-child {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.tab-state {
-  min-width: 12px;
-  color: #8cc7ff;
-  font-size: 11px;
-}
-
-.tab-close {
-  color: #9aa6b2;
-  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-}
-
-.tab-close:hover {
-  color: #ffffff;
-}
-
-.editor-host {
-  min-height: 0;
-  position: relative;
-}
-
-.editor-empty {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  background: #151b22;
-  color: #8f9ba8;
-  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  pointer-events: none;
-}
-
-.save-error {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  max-width: min(520px, calc(100% - 24px));
-  border: 1px solid #7f3333;
-  border-radius: 6px;
-  padding: 8px 10px;
-  background: #2a1719;
-  color: #ffc6c6;
-  font-size: 12px;
-}
-
-.scope-pane {
-  display: grid;
-  grid-template-rows: 38px 1fr;
-  border-left: 1px solid #2a3440;
 }
 
 .scope-pane header span:last-child {
@@ -294,10 +164,25 @@ button {
 }
 
 .console-pane {
+  min-width: 0;
+  min-height: 0;
   grid-column: 1 / -1;
   display: grid;
   grid-template-rows: 38px 1fr;
   border-top: 1px solid #2a3440;
+  background: #151b22;
+}
+
+.console-pane header {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #2a3440;
+  padding: 0 12px;
+  color: #c9d2dc;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .console-pane pre {
@@ -319,7 +204,7 @@ button {
   }
 
   .ide-grid {
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .scope-pane {
