@@ -6,7 +6,7 @@ interface ConsolePaneProps {
 
 export function ConsolePane({ lines }: ConsolePaneProps) {
   return (
-    <section className="flex min-h-0 min-w-0 flex-col border-t border-border bg-card">
+    <section className="flex h-full min-h-0 min-w-0 flex-col border-t border-border bg-card">
       <header className="flex h-[38px] shrink-0 items-center gap-2 border-b border-border px-3 text-xs font-bold text-muted-foreground">
         Console
       </header>
