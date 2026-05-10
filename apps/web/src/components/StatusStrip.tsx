@@ -3,6 +3,7 @@ import type { ContainersStatusResponse } from "@/lib/contracts";
 import type { RunConnection, RunStatus } from "@/hooks/useRunChannel";
 import type { EditorStatus } from "@/hooks/useEditorReachability";
 import type { ScopeStatus } from "@/hooks/useScopeHandshake";
+import type { HalSimConnection } from "@/hooks/useHalSim";
 
 interface StatusStripProps {
   workspaceSlug: string | null;
@@ -11,6 +12,7 @@ interface StatusStripProps {
   runStatus: RunStatus;
   runConnection: RunConnection;
   scopeStatus: ScopeStatus;
+  halSimConnection: HalSimConnection;
 }
 
 function pillVariant(
@@ -26,6 +28,7 @@ export function StatusStrip({
   runStatus,
   runConnection,
   scopeStatus,
+  halSimConnection,
 }: StatusStripProps) {
   const simLabel = !containerStatus
     ? "Sim pending"
@@ -52,6 +55,13 @@ export function StatusStrip({
         ? "Editor error"
         : "Editor loading";
 
+  const halSimLabel =
+    halSimConnection === "connected"
+      ? "DS connected"
+      : halSimConnection === "reconnecting"
+        ? "DS reconnecting"
+        : "DS disconnected";
+
   return (
     <div className="hidden items-center gap-1.5 md:flex">
       <Badge variant="secondary">
@@ -76,6 +86,9 @@ export function StatusStrip({
       </Badge>
       <Badge variant={pillVariant(scopeStatus !== "timeout")}>
         {scopeLabel}
+      </Badge>
+      <Badge variant={pillVariant(halSimConnection !== "disconnected")}>
+        {halSimLabel}
       </Badge>
     </div>
   );

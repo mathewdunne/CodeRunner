@@ -6,11 +6,12 @@ import { useRunChannel } from "@/hooks/useRunChannel";
 import { useContainerStatus } from "@/hooks/useContainerStatus";
 import { useEditorReachability } from "@/hooks/useEditorReachability";
 import { useScopeHandshake } from "@/hooks/useScopeHandshake";
+import { useHalSim } from "@/hooks/useHalSim";
 import { Topbar } from "@/components/Topbar";
 import { IDELayout } from "@/components/IDELayout";
 import { EditorPane } from "@/components/EditorPane";
 import { ScopePane } from "@/components/ScopePane";
-import { ConsolePane } from "@/components/ConsolePane";
+import { DriverStation } from "@/components/DriverStation";
 
 export function WorkspacePage() {
   const { slug } = useParams<{ slug: string }>();
@@ -23,6 +24,7 @@ export function WorkspacePage() {
   const { runStatus, connection, consoleLines, startRun, stopRun } =
     useRunChannel(workspaceSlug);
   const containerStatus = useContainerStatus(workspaceSlug);
+  const halSim = useHalSim(workspaceSlug);
   const editorUrl = workspaceSlug
     ? `/u/${workspaceSlug}/vscode/?folder=/workspace/project`
     : null;
@@ -49,6 +51,7 @@ export function WorkspacePage() {
         runStatus={runStatus}
         runConnection={connection}
         scopeStatus={scopeStatus}
+        halSimConnection={halSim.connection}
         sessionReady={sessionReady}
         onStartRun={startRun}
         onStopRun={stopRun}
@@ -64,7 +67,17 @@ export function WorkspacePage() {
         scope={
           <ScopePane ref={scopeFrameRef} scopeStatus={scopeStatus} />
         }
-        console={<ConsolePane lines={consoleLines} />}
+        driverStation={
+          <DriverStation
+            halSim={halSim}
+            runStatus={runStatus}
+            runConnection={connection}
+            sessionReady={sessionReady}
+            consoleLines={consoleLines}
+            onStartRun={startRun}
+            onStopRun={stopRun}
+          />
+        }
       />
     </div>
   );

@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { StatusStrip } from "@/components/StatusStrip";
-import { RunControls } from "@/components/RunControls";
 import type { ContainersStatusResponse } from "@/lib/contracts";
 import type { RunConnection, RunStatus } from "@/hooks/useRunChannel";
 import type { EditorStatus } from "@/hooks/useEditorReachability";
 import type { ScopeStatus } from "@/hooks/useScopeHandshake";
+import type { HalSimConnection } from "@/hooks/useHalSim";
 
 interface TopbarProps {
   displayName: string;
@@ -14,6 +14,7 @@ interface TopbarProps {
   runStatus: RunStatus;
   runConnection: RunConnection;
   scopeStatus: ScopeStatus;
+  halSimConnection: HalSimConnection;
   sessionReady: boolean;
   onStartRun: () => void;
   onStopRun: () => void;
@@ -27,9 +28,7 @@ export function Topbar({
   runStatus,
   runConnection,
   scopeStatus,
-  sessionReady,
-  onStartRun,
-  onStopRun,
+  halSimConnection,
 }: TopbarProps) {
   return (
     <header className="flex h-[52px] items-center gap-3 border-b border-border px-3.5">
@@ -49,15 +48,10 @@ export function Topbar({
         runStatus={runStatus}
         runConnection={runConnection}
         scopeStatus={scopeStatus}
+        halSimConnection={halSimConnection}
       />
 
       <div className="ml-auto flex items-center gap-2">
-        <RunControls
-          runStatus={runStatus}
-          sessionReady={sessionReady}
-          onStart={onStartRun}
-          onStop={onStopRun}
-        />
         <form method="post" action="/logout">
           <Button type="submit" variant="outline" size="sm">
             Logout

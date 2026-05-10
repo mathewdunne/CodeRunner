@@ -8,10 +8,10 @@ import type { ReactNode } from "react";
 interface IDELayoutProps {
   editor: ReactNode;
   scope: ReactNode;
-  console: ReactNode;
+  driverStation: ReactNode;
 }
 
-export function IDELayout({ editor, scope, console: consolePart }: IDELayoutProps) {
+export function IDELayout({ editor, scope, driverStation }: IDELayoutProps) {
   return (
     <ResizablePanelGroup
       orientation="vertical"
@@ -37,7 +37,7 @@ export function IDELayout({ editor, scope, console: consolePart }: IDELayoutProp
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={25} minSize={5} data-pane="console">
-        {consolePart}
+        {driverStation}
       </ResizablePanel>
     </ResizablePanelGroup>
   );
