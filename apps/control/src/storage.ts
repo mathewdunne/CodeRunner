@@ -115,7 +115,7 @@ async function ensureWorkspaceFiles(config: ControlConfig, workspaceId: Workspac
   try {
     await chmod(homeDir, 0o700);
   } catch {
-    // Windows filesystems may ignore POSIX modes; V1-4 verifies ownership for target Docker hosts.
+    // Windows filesystems may ignore POSIX modes; the Linux Docker host enforces ownership at runtime.
   }
 
   if ((await readdir(projectDir)).length === 0) {

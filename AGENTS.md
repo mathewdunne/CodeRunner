@@ -71,8 +71,6 @@ V2 is complete. The system uses per-student merged containers (`frc-code:v2`) ru
 - Apply/check migrations: `bun run migrate`, `bun run migrate:status`
 - Start control plane: `bun run dev:control`
 - Start web shell directly: `bun run dev:web`
-- Two-user verify: `bun run verify:v2:two-user`
-- Three-user smoke: `bun run verify:v2:three-user`
 - Measure resources: `bun run measure`
 - Backup projects: `bun run backup`
 - Restore projects: `bun run restore -- <backup-dir>`

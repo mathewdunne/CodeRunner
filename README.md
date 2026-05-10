@@ -46,8 +46,6 @@ docs/archive/mvp-docs/         Archived MVP documents and decision logs
 | `bun run build:ascope` | Apply AS Lite patches, rebuild AdvantageScope Lite, and stage `dist/advantagescope/` |
 | `bun run verify:ascope` | Smoke-check the staged AS Lite bundle and `/scope/` serving contract |
 | `bun run docker:build:code` | Build the V2 merged openvscode-server + sim image as `frc-code:v2` |
-| `bun run verify:v2:two-user` | Run the real-Docker Alice/Bob V2 two-user smoke |
-| `bun run verify:v2:three-user` | Run the 3-user classroom smoke with queue behavior |
 | `bun run measure` | Report host resources and container memory, extrapolate for 10 students |
 | `bun run backup` | Back up all workspace project directories |
 | `bun run restore` | Restore workspace projects from a backup |
