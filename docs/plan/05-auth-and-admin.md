@@ -38,6 +38,12 @@ This plan does two things together because they share the user/role model:
 
 #### A.1 Install and configure betterauth
 
+**Integration principle:** build around Better Auth's default model. If Better
+Auth's user IDs, session shape, table names, or route conventions differ from
+the current cookie-era contracts, adjust this app's APIs/contracts to match
+Better Auth cleanly. Do not wrap Better Auth in compatibility hacks just to
+preserve `usr_*` IDs or the old `sessions` table semantics.
+
 - `cd apps/control && bun add better-auth` for the server side.
 - `cd apps/web && bun add better-auth` for the React client. Same
   package; the client-only entrypoint is `better-auth/react` (see A.8).
@@ -47,13 +53,13 @@ This plan does two things together because they share the user/role model:
   - `allowlist.ts` — load + validate the email allowlist.
 - Backend: SQLite (reuse the existing `data/app.db`). Betterauth supports
   Bun + SQLite directly. Let betterauth own its tables (`user`, `account`,
-  `session`, `verification`). Migrate the existing `users` table contents
-  into betterauth's `user` table or add a foreign key.
+  `session`, `verification`). Migrate the existing `users` table only where
+  preserving local dev data is useful; for production shape, prefer
+  Better Auth's generated schema and adapt our app around it.
   - **Note:** betterauth's `user` and the existing `users` table conflict.
-    Either rename ours to `legacy_users` for a transitional period or drop
-    ours after copying `username` and `workspace_slug` data into betterauth's
-    `user` (with `username` becoming a custom column via betterauth's
-    `additionalFields` config).
+    Prefer renaming/dropping ours and moving simulator-specific fields to
+    `workspaces` or Better Auth `additionalFields`, whichever is more idiomatic
+    after checking the current Better Auth docs.
   - Decide during execution which path is cleaner; document in a decision
     log (`docs/decisions/014-betterauth-integration.md`).
 
@@ -63,7 +69,11 @@ This plan does two things together because they share the user/role model:
 - Document required env vars in `docs/runbook.md`:
   - `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`
   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
-  - `OAUTH_REDIRECT_URL` (e.g., `http://localhost:4000/auth/callback`)
+  - `OAUTH_REDIRECT_URL` / base URL config required by Better Auth.
+- Choose and document the Better Auth mount path before implementation. Better
+  Auth defaults to an API auth base path; use that default unless there is a
+  strong reason to configure `/auth/*`. The public-route allowlist in A.7 must
+  match the actual chosen path exactly.
 - For local dev, document how to register OAuth apps with localhost callbacks.
 
 #### A.3 Email allowlist
@@ -97,12 +107,14 @@ This plan does two things together because they share the user/role model:
 #### A.5 Workspace creation on first login
 
 - On betterauth `signUp` / first-login event, create the `workspace` row
-  matching today's behavior:
+  linked to the Better Auth user id:
   - Generate a slug from the user's email (`first.last@team.org` →
     `first-last`). Collisions get a numeric suffix.
   - Seed `data/users/<workspaceId>/project/` from
     `templates/wpilib-java-command/`.
-- Existing `workspaces` table stays (still referenced by container leases).
+- Existing `workspaces` table stays (still referenced by container leases), but
+  its `user_id` column now stores Better Auth's user id. Update contracts and
+  tests if the id no longer matches `usr_[a-f0-9]{32}`.
 
 #### A.6 Roles
 
@@ -126,8 +138,9 @@ places to rely on memory. Flip the default during the betterauth migration.
 session. Allowed unauthenticated:
 
 - `/login` (page)
-- `/auth/*` (betterauth's signin/callback/signout endpoints — betterauth
-  manages these; we just mount them)
+- Better Auth's mounted auth routes, using the path chosen in A.2
+  (for example `/api/auth/*` if using the default). Better Auth manages these;
+  we just mount them.
 - `/scope/*` (AS Lite static assets — student-only data flows through
   the per-workspace `/u/{slug}/sim/nt4` WS, which IS gated)
 - `/health` (if added later)
@@ -152,7 +165,7 @@ non-public handler. WebSocket upgrade handlers do the same **before**
 sending the upgrade response — never accept-then-validate.
 
 **A.7.3 WebSocket upgrade auth.** Three WS endpoints today/soon:
-`/u/{slug}/run` (existing), `/u/{slug}/sim/nt4` (existing),
+`/u/{slug}/ws/run` (existing), `/u/{slug}/sim/nt4` (existing),
 `/u/{slug}/sim/halsim` (Plan 04), `/u/{slug}/project/import-stream`
 (Plan 06). All four call `requireWorkspaceOwnership` before
 `Sec-WebSocket-Accept`. The upgrade handler also validates the `Origin`
@@ -194,8 +207,10 @@ export const authClient = createAuthClient({
 Use it for:
 
 - **Login page (A.9):** the GitHub/Google buttons call
-  `authClient.signIn.social({ provider, callbackURL: "/" })`. No custom
-  fetch.
+  `authClient.signIn.social({ provider, callbackURL })`. No custom fetch.
+  `callbackURL` should land on a post-login route that resolves or creates the
+  user's workspace and redirects to `/u/<slug>/`; do not use `/` unless `/` is
+  changed to perform that redirect.
 - **Session reads:** `authClient.useSession()` returns
   `{ data: session, isPending, error }` and updates reactively. Use it
   inside the `useSession` hook stub introduced in
@@ -205,6 +220,21 @@ Use it for:
   `/api/session/heartbeat` exists to extend the cookie TTL. Betterauth
   rotates sessions automatically, so the heartbeat hook can be deleted.
 - **Logout:** `authClient.signOut()` from the topbar dropdown.
+
+#### A.8.1 Contract/API migration
+
+- Update [packages/contracts/src/index.ts](../../packages/contracts/src/index.ts)
+  to reflect Better Auth's user/session IDs and session response shape.
+  Specifically audit `USER_ID_PATTERN`, `SESSION_ID_PATTERN`,
+  `sessionResponseSchema`, admin user schemas, and any test fixtures that assume
+  `usr_*` / `ses_*` ids.
+- Expose the minimum app session payload the web shell needs:
+  authenticated user identity, role, workspace id, workspace slug, and display
+  name/email. Prefer Better Auth session customization over a separate wrapper
+  cookie.
+- Existing `/u/{slug}/api/session` may remain as an app-specific convenience
+  endpoint, but it should be backed by `auth.api.getSession(...)` and the
+  workspace table, not the deleted `sessions` table.
 
 #### A.9 Login page
 
@@ -316,6 +346,7 @@ Existing per-workspace endpoints (`restart-code`, `stop-containers`,
   new admin endpoints)
 - `apps/control/src/storage.ts` (workspace creation hooks into betterauth)
 - `apps/control/src/config.ts` (OAuth env vars)
+- `packages/contracts/src/index.ts` (Better Auth id/session shapes)
 - `apps/web/src/App.tsx` (mount admin router conditionally)
 - `docs/runbook.md` (auth setup, OAuth registration, role management)
 

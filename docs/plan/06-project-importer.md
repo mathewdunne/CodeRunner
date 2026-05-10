@@ -38,7 +38,9 @@ state as a backup, and the student's editor refreshes onto the new code.
   (shadcn `DropdownMenu` next to the user avatar). Avoids cluttering the
   editor pane.
 - **Dialog:** shadcn `Dialog`. Fields:
-  - **GitHub URL** (required): regex-validated `https://github.com/<owner>/<repo>(\.git)?(/.*)?`
+  - **GitHub URL** (required): accept repo URLs like
+    `https://github.com/<owner>/<repo>` / `.git` and optionally parse GitHub
+    tree URLs into branch/subdirectory fields.
   - **Branch** (optional, default `main`)
   - **Subdirectory** (optional, default empty — clones the whole repo into
     `project/`)
@@ -72,8 +74,15 @@ per §A.7.3. No re-auth challenge for v1; rely on the active session.
 
 Reject before doing any work:
 
-- URL must match `^https://github\.com/[\w.-]+/[\w.-]+(\.git)?(/.*)?$`. No
-  SSH URLs, no other hosts.
+- URL must be a GitHub HTTPS URL. No SSH URLs, no other hosts.
+- Normalize URL input before clone:
+  - `https://github.com/<owner>/<repo>` and `.git` become clone URL
+    `https://github.com/<owner>/<repo>.git`.
+  - `https://github.com/<owner>/<repo>/tree/<branch>/<path>` is allowed only if
+    it can be parsed into `{ cloneUrl, branch, subdir }`. If parsing is
+    ambiguous, reject with a clear message and ask the student to fill branch
+    and subdirectory manually.
+  - Other GitHub path suffixes are rejected before any clone attempt.
 - Branch name: standard git ref characters only, no leading `-`.
 - Subdir: relative path, no `..`, no leading `/`.
 
@@ -87,9 +96,12 @@ After clone, before swapping in:
 
 ### 4. Clone strategy
 
-The container has `git` installed (via the openvscode-server base + Java
-toolchain). Run the clone **inside the student's running container** so we
-share its filesystem layout and don't need to bind-mount on the host:
+First verify that the V2 code image has `git`. If it is not present, install it
+explicitly in [containers/code/Dockerfile](../../containers/code/Dockerfile)
+rather than relying on the base image.
+
+Run the clone **inside the student's running container** so we share its
+filesystem layout and don't need a host-side git dependency:
 
 1. Ensure the code container is running (use existing `ensureCodeContainer`).
 2. Stage area: `/workspace/.import-<timestamp>/` inside the container.
@@ -108,10 +120,14 @@ share its filesystem layout and don't need to bind-mount on the host:
    workspace disk usage on large repos. Imports are explicitly one-way
    snapshots — document this in the dialog ("This imports a snapshot, not
    the git history").
-9. **Swap:** `docker exec <container>` `rm -rf /workspace/project && mv
-   /workspace/.import-<timestamp>/source/<subdir-or-.> /workspace/project &&
-   rm -rf /workspace/.import-<timestamp>`.
-11. **Refresh editor:** the openvscode-server picks up FS changes
+9. **Swap contents, not the mount point.** `/workspace/project` is a bind mount,
+   so do not `rm -rf /workspace/project && mv ... /workspace/project`. Instead:
+   - Remove the existing contents inside `/workspace/project`, including dotfiles
+     but not the `/workspace/project` directory itself.
+   - Copy or move the imported project root's contents into the existing
+     `/workspace/project` mount point.
+   - Clean up `/workspace/.import-<timestamp>`.
+10. **Refresh editor:** the openvscode-server picks up FS changes
     automatically (its watcher fires). Open tabs that point at deleted files
     behave the same way they do when you switch git branches in stock
     VS Code — the tab stays open, the file is marked deleted. That's
@@ -160,6 +176,8 @@ Add `apps/control/src/__tests__/imports.test.ts`:
 
 - URL validation: SSH URL → reject; non-github host → reject; valid public
   URL → accept (mock the `git clone` so the test doesn't hit the network).
+- URL normalization: GitHub tree URL parses into clone URL + branch + subdir;
+  unsupported GitHub suffixes reject before clone.
 - Size cap: mock `du -sb` to return >100 MB → reject.
 - Build.gradle check: mock the clone to produce no `build.gradle` → reject.
 - Happy path: mock clone produces a valid tree → existing project backed up,

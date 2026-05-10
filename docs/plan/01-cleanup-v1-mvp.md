@@ -65,17 +65,21 @@ existing dev DBs at `data/app.db` migrate forward without error;
 
 **Acceptance:** Web shell login flow still works end-to-end after the rename.
 
-### 4. Archive `mvp/docs/` and delete `mvp/` source
+### 4. Archive MVP docs and delete `mvp/` source
 
-- Create `docs/archive/mvp-docs/` and move the entire contents of `mvp/docs/`
-  into it (including `Project-MVP.md`, `decisions/001…006.md`, any other
-  files). Preserve relative structure.
+- Create `docs/archive/mvp-docs/`.
+- Move the entire contents of `mvp/docs/` into it, preserving relative
+  structure.
+- Also move the root MVP docs before deleting `mvp/`:
+  - `mvp/Project-MVP.md`
+  - `mvp/README.md`
+  - `mvp/Spike-Multi-Tenancy.md`
 - Delete the rest of `mvp/` (source code, `node_modules` if present,
   `package.json`, etc.).
 - After deletion, `mvp/` no longer exists.
 
 **Acceptance:** `mvp/` is gone; `docs/archive/mvp-docs/` exists with the
-former `mvp/docs/` contents intact.
+former `mvp/docs/` contents and root MVP docs intact.
 
 ### 5. Archive obsolete V1 decisions
 

@@ -46,10 +46,10 @@ from external). The `halsim_ws_server` extension is loaded via Gradle config
 in the WPILib project (e.g., `wpi.sim.addWebsocketsServer().defaultEnabled =
 true`).
 
-When authoring this plan, **start by verifying** what the merged code
-container at [containers/code/](../../containers/code/) does today: is the HALSim WS extension
-already enabled in the project template at [templates/wpilib-java-command/](../../templates/wpilib-java-command/)?
-If not, enabling it is task 1.
+When authoring this plan, **start with a short HALSim WebSocket proof**. The
+repo currently has no HALSim WS path, and the exact Gradle API, env var, WS
+path, and message/readback behavior should be proven against the pinned WPILib
+version before building the UI around it.
 
 ## Out of scope
 
@@ -70,29 +70,59 @@ If not, enabling it is task 1.
 
 ## Tasks
 
+### 0. Prove the HALSim WS contract
+
+Before editing the production app:
+
+- Build a minimal local proof using the current
+  [templates/wpilib-java-command/build.gradle](../../templates/wpilib-java-command/build.gradle)
+  and pinned WPILib/GradleRIO versions.
+- Verify the exact Gradle call that enables the WebSocket server
+  (`wpi.sim.addWebsocketsServer()` or the current equivalent).
+- Verify how to set the listen port (`HALSIMWS_PORT`, Gradle property, or
+  current equivalent), whether it can bind only inside the container, and what
+  container port must be published.
+- Verify the exact WS path (`/`, `/v1/ws`, or other), protocol/subprotocol
+  requirements, and the message shape for:
+  - `enabled`
+  - `autonomous`
+  - `test`
+  - `eStop`
+  - `dsAttached`
+  - `allianceStationId`
+- Verify readback/ack behavior so `useHalSim` can initialize from authoritative
+  state after reconnect.
+- Record the findings in `docs/decisions/015-halsim-control-protocol.md` before
+  implementing the UI.
+
+**Acceptance:** a small proof script or manual transcript shows a running sim
+receiving an Enable/Disable command over HALSim WS and robot code observing the
+matching `DriverStation` state.
+
 ### 1. Container-side: ensure HALSim WS extension is bundled
 
 - Inspect [templates/wpilib-java-command/build.gradle](../../templates/wpilib-java-command/build.gradle).
-  Look for `wpi.sim.addWebsocketsServer()`. If absent, add it with
-  `defaultEnabled = true`.
+  Apply the exact Gradle config proven in task 0. Do not assume the method name
+  or defaults if the proof found a different current API.
 - Inspect [containers/code/](../../containers/code/) Dockerfile and entrypoint. If sim launches via
   `gradlew simulateJava` (or similar), HALSim WS is enabled automatically when
   the build flag is set. Confirm.
-- HALSim WS defaults to port 8080. Override via the
-  `HALSIMWS_PORT` env var passed to the container (or via Gradle property,
-  whichever is cleaner). Bind to loopback inside the container.
+- Use the port configuration proven in task 0. Bind/publish only through the
+  control plane's loopback proxy path.
 
 **Acceptance:** Inside a running code container, `curl
-http://127.0.0.1:<halsim-port>/v1/ws` returns a WebSocket upgrade response
-(or any HTTP 4xx that indicates the server is listening but expecting WS).
+http://127.0.0.1:<halsim-port>/<proven-path>` returns a WebSocket upgrade
+response (or any HTTP 4xx that indicates the server is listening but expecting
+WS).
 
 ### 2. Control-plane: HALSim WS proxy route
 
 - Add `HALSIM_PORT_RANGE` env var to [apps/control/src/config.ts](../../apps/control/src/config.ts) with a
   reasonable default (e.g., `34000-34099`).
 - Update [apps/control/src/containers.ts](../../apps/control/src/containers.ts) to allocate a third
-  loopback port per container and pass it as `HALSIMWS_PORT`. Update the
-  `container_leases` schema if needed (migration `006_halsim_port.sql`).
+  loopback port per container and pass it to the container using the port
+  configuration proven in task 0. Update the `container_leases` schema if
+  needed (migration `006_halsim_port.sql`).
 - In [apps/control/src/app.ts](../../apps/control/src/app.ts), add a WebSocket route:
   `/u/{slug}/sim/halsim` → loopback `ws://127.0.0.1:<halsim_port>/`
 - Reuse the existing NT4 proxy pattern. Authorization goes through

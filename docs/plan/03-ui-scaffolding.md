@@ -10,8 +10,10 @@ admin), set the table.
 
 This plan **does not change behavior**. It's a pure refactor that:
 
-1. Adds Tailwind + PostCSS to `apps/web/`.
-2. Initializes shadcn/ui with a dark theme that matches today's look.
+1. Bootstraps `apps/web/` as a fresh shadcn/ui Vite app with the current
+   installer.
+2. Copies today's working UI behavior into that scaffold instead of hand-wiring
+   Tailwind.
 3. Decomposes `main.tsx` into a tree of focused components.
 4. Extracts state into purpose-built hooks.
 
@@ -33,47 +35,53 @@ extraction. Not strictly required.
 
 ## Tasks
 
-### 1. Add Tailwind + PostCSS
+### 1. Bootstrap shadcn first
 
-- `cd apps/web && bun add -d tailwindcss postcss autoprefixer @tailwindcss/postcss`
-- Create `apps/web/tailwind.config.ts` configured for `./src/**/*.{ts,tsx}`.
-- Create `apps/web/postcss.config.js` with `tailwindcss` and `autoprefixer`.
-- Create `apps/web/src/index.css` with `@tailwind base/components/utilities`.
-- Import `index.css` from `apps/web/src/main.tsx` (or `src/App.tsx` once
-  extracted).
-- Configure the Tailwind theme to mirror today's CSS custom properties at
-  [apps/web/src/style.css:1–6](../../apps/web/src/style.css). Use the `theme.extend.colors`
-  block in `tailwind.config.ts`.
+Use the installer as the source of truth for current Tailwind/shadcn/Vite setup.
+Do not hand-roll Tailwind config unless the installer leaves a small repo-local
+gap.
 
-### 2. Initialize shadcn/ui
-
-- Run `bunx shadcn@latest init` from `apps/web/`. Configure:
-  - Style: New York
-  - Base color: Slate (closest to current `#11161c` background)
-  - CSS variables: Yes (use HSL custom properties for theming)
-  - Default dark mode
-- Confirm `apps/web/components.json` is created.
-- Add `cn()` helper at `apps/web/src/lib/utils.ts` (shadcn's init usually does
-  this for you).
-
-### 3. Path aliases
-
-- Update `apps/web/tsconfig.json`:
-  ```json
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] }
-  }
+- Preserve the current web shell for reference:
+  - Copy `apps/web/src/main.tsx`, `apps/web/src/style.css`,
+    `apps/web/package.json`, `apps/web/tsconfig.json`, and
+    `apps/web/vite.config.ts` to a temporary backup outside `apps/web/` (for
+    example `/tmp/frc-web-pre-shadcn/`).
+- From `apps/web/`, run:
+  ```bash
+  bunx --bun shadcn@latest init
   ```
-- Update `apps/web/vite.config.ts` to mirror the alias via
-  `resolve.alias["@"] = path.resolve(__dirname, "./src")`.
+- Configure:
+  - Template/framework: Vite + React + TypeScript, if prompted.
+  - Style: New York.
+  - Base color: Slate.
+  - CSS variables: Yes.
+  - Package manager/runtime: Bun.
+- Let the installer create or update the Tailwind, Vite, alias,
+  `components.json`, `src/index.css`, and `src/lib/utils.ts` setup it expects.
+- After the scaffold exists, copy today's UI behavior from the temporary backup
+  into the new `App.tsx`/component structure. Prefer the generated scaffold's
+  config files over the old app's config when they conflict.
 
-### 4. Install initial primitives
+**Acceptance:** `apps/web/components.json` exists, the app builds with the
+installer-generated Tailwind setup, and `@/components/...` imports resolve.
+
+### 2. Path aliases and config cleanup
+
+- Confirm the installer configured `@/*` to point at `./src/*` in
+  `apps/web/tsconfig.json` and `apps/web/vite.config.ts`.
+- If the installer uses Tailwind v4, keep its `@import "tailwindcss";` style.
+  Do not convert it back to v3-style `@tailwind base/components/utilities`.
+- If the installer uses `@tailwindcss/vite`, keep the Vite plugin and do not add
+  PostCSS/autoprefixer unless required by the generated scaffold.
+- Port today's CSS custom properties from [apps/web/src/style.css:1–6](../../apps/web/src/style.css)
+  into the generated theme/global CSS so the dark visual baseline remains close.
+
+### 3. Install initial primitives
 
 These primitives cover today's UI plus what Plans 04 and 05 will need:
 
 ```bash
-bunx shadcn@latest add button card dialog dropdown-menu tabs tooltip separator badge scroll-area resizable sonner
+bunx --bun shadcn@latest add button card dialog dropdown-menu tabs tooltip separator badge scroll-area resizable sonner
 ```
 
 `<Resizable>` (a wrapper around `react-resizable-panels`) replaces today's
@@ -85,7 +93,7 @@ hand-rolled splitter logic.
 through `toast.error(...)` rather than ad-hoc UI. Establish this pattern here
 so plans 04–07 don't reinvent it.
 
-### 5. Decompose `main.tsx`
+### 4. Decompose `main.tsx`
 
 Target tree under `apps/web/src/`:
 
@@ -135,7 +143,7 @@ run status via the existing HTTP status endpoint to resync state. The hook
 exposes a `connection: "connected" | "reconnecting" | "disconnected"` value
 so the topbar status pill can reflect it.
 
-### 6. State extraction
+### 5. State extraction
 
 Pick one cross-cutting state container. **Recommendation:** Zustand. Single
 store at `apps/web/src/state/store.ts` with slices:
@@ -153,7 +161,7 @@ Components are presentational where possible.
 If Zustand feels heavy for the surface area, plain React Context with a
 `useReducer` is acceptable. Don't introduce Redux Toolkit — overkill.
 
-### 7. Style cleanup
+### 6. Style cleanup
 
 - Move resets and typography from `apps/web/src/style.css` to
   `apps/web/src/index.css`.
@@ -166,7 +174,7 @@ If Zustand feels heavy for the surface area, plain React Context with a
 - Verify the responsive media query (`@media (max-width: 900px)` hiding the
   scope pane) still works — re-implement with Tailwind responsive prefixes.
 
-### 8. Editor iframe — passthrough
+### 7. Editor iframe — passthrough
 
 The editor iframe is opaque and should remain so. `EditorPane.tsx` just
 renders an `<iframe>` with `src=/u/{slug}/vscode/?folder=/workspace/project`,
@@ -174,7 +182,7 @@ the existing `allow="clipboard-read; clipboard-write"` attributes, and a
 loading skeleton from shadcn's primitives if you want one. No postMessage
 needed.
 
-### 9. AS Lite iframe — preserve handshake
+### 8. AS Lite iframe — preserve handshake
 
 `ScopePane.tsx` keeps the `useScopeHandshake` hook driving the postMessage
 exchange. The iframe `src` stays `/scope/?frcEndpoint=postMessage`. The 10-second
@@ -190,11 +198,10 @@ ACK timeout is preserved. The hook exposes `scopeStatus` ("loading" |
 - `apps/web/index.html` (no change expected, but verify)
 
 **Created:**
-- `apps/web/tailwind.config.ts`
-- `apps/web/postcss.config.js`
-- `apps/web/components.json`
+- Installer-generated Tailwind/shadcn config files as applicable
+  (`apps/web/components.json`, `apps/web/src/index.css`, and any generated
+  Vite/Tailwind config the current installer requires)
 - `apps/web/src/App.tsx`
-- `apps/web/src/index.css`
 - `apps/web/src/lib/utils.ts`
 - `apps/web/src/components/{Topbar,IDELayout,EditorPane,ScopePane,ConsolePane,RunControls,StatusStrip}.tsx`
 - `apps/web/src/components/ui/*` (shadcn-generated primitives)

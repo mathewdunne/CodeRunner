@@ -51,9 +51,13 @@ enough to bundle into one plan.
 - New helper in [apps/control/src/containers.ts](../../apps/control/src/containers.ts):
   `countRunningContainers()` returns the live count from Docker (label
   filter on `frc-sim.version=v2`).
+- Add a global admission lock around the capacity check plus container start.
+  A pure "count then start" check races when many students sign in at the same
+  time.
 - In `ensureCodeContainer()`: before allocating ports / starting a new
-  container, check `count >= MAX_ACTIVE_CONTAINERS`. If at cap, throw a
-  typed `CapacityExceededError`.
+  container, check `count >= MAX_ACTIVE_CONTAINERS`. Count Docker `running`
+  containers plus in-process pending creates/starts as active capacity. If at
+  cap, throw a typed `CapacityExceededError`.
 - App-level handler converts `CapacityExceededError` to HTTP 503 with body
   `{ error: "capacity", limit, current }`.
 - Web shell (login flow + IDE bootstrap) catches the 503 and shows a
@@ -75,6 +79,8 @@ enough to bundle into one plan.
 - Unit: `ensureCodeContainer` throws `CapacityExceededError` when at cap.
 - Integration: 11th sign-in (with cap=10) gets 503; the existing 10
   containers continue working.
+- Race test: many simultaneous first-time `ensureCodeContainer()` calls never
+  exceed the configured cap.
 - Admin override: bumping cap via admin endpoint allows the 11th to start.
 
 ### B. Audit log
