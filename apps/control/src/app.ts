@@ -1,9 +1,8 @@
-import { cp, mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
-import { extname, isAbsolute, relative, resolve, sep } from "node:path";
+import { cp, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/promises";
+import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
   displayNameSchema,
   heartbeatRequestSchema,
-  projectPathSchema,
   runClientMessageSchema,
   workspaceSlugSchema,
   type AdminActionResponse,
@@ -281,6 +280,26 @@ function isInsideDirectory(root: string, target: string): boolean {
   return relativePath === "" || (!relativePath.startsWith("..") && !isAbsolute(relativePath));
 }
 
+function safeRelativeAssetPath(value: string): string | null {
+  if (
+    value.length === 0 ||
+    value.length > 512 ||
+    value.startsWith("/") ||
+    value.startsWith("\\") ||
+    /^[a-zA-Z]:/.test(value) ||
+    value.includes("\\") ||
+    /[\u0000-\u001f\u007f]/.test(value)
+  ) {
+    return null;
+  }
+
+  const segments = value.split("/");
+  if (segments.some((segment) => segment.length === 0 || segment === "." || segment === "..")) {
+    return null;
+  }
+  return value;
+}
+
 async function staticFileResponse(root: string, path: string): Promise<Response> {
   const target = resolve(root, path);
   if (!isInsideDirectory(root, target)) {
@@ -335,12 +354,12 @@ async function webAssetResponse(storage: AppStorage, rawPath: string): Promise<R
     return new Response("Invalid static asset path.", { status: 400 });
   }
 
-  const parsed = projectPathSchema.safeParse(assetPath);
-  if (!parsed.success) {
+  const safePath = safeRelativeAssetPath(assetPath);
+  if (!safePath) {
     return new Response("Invalid static asset path.", { status: 400 });
   }
 
-  return staticFileResponse(storage.config.webDistDir, parsed.data);
+  return staticFileResponse(storage.config.webDistDir, safePath);
 }
 
 type AssetManifest = Record<string, unknown>;
@@ -626,6 +645,40 @@ function isAdminAuthorized(storage: AppStorage, request: Request): boolean {
   return /^(localhost|127\.0\.0\.1|::1)(:\d+)?$/i.test(host);
 }
 
+async function runTar(args: string[]): Promise<void> {
+  const subprocess = Bun.spawn(["tar", ...args], {
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(subprocess.stdout).text(),
+    new Response(subprocess.stderr).text(),
+    subprocess.exited,
+  ]);
+  if (exitCode !== 0) {
+    const detail = stderr.trim() || stdout.trim() || `exit ${exitCode}`;
+    throw new Error(`tar ${args.join(" ")} failed: ${detail}`);
+  }
+}
+
+async function createProjectArchive(projectDir: string, archivePath: string): Promise<void> {
+  await runTar(["-czf", archivePath, "-C", projectDir, "."]);
+}
+
+async function restoreProjectArchive(projectDir: string, archivePath: string): Promise<void> {
+  const parentDir = dirname(projectDir);
+  const tempDir = resolve(parentDir, `.restore-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  await mkdir(tempDir, { recursive: true });
+  try {
+    await runTar(["-xzf", archivePath, "-C", tempDir]);
+    await rm(projectDir, { recursive: true, force: true });
+    await rename(tempDir, projectDir);
+  } catch (error) {
+    await rm(tempDir, { recursive: true, force: true });
+    throw error;
+  }
+}
+
 function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatusResponse {
   const entries = storage.listAllWorkspacesWithLeases();
   const idleMinutes = storage.config.idleStopMinutes;
@@ -812,14 +865,16 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
             const now = new Date();
             const pad = (n: number) => String(n).padStart(2, "0");
             const ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
-            const dest = resolve(storage.config.dataDir, "backups", ts, workspace.id, "project");
-            await mkdir(dest, { recursive: true });
-            await cp(projectDir, dest, { recursive: true });
+            const backupRoot = resolve(storage.config.dataDir, "backups", ts);
+            const workspaceBackupDir = resolve(backupRoot, workspace.id);
+            const dest = resolve(workspaceBackupDir, "project.tar.gz");
+            await mkdir(workspaceBackupDir, { recursive: true });
+            await createProjectArchive(projectDir, dest);
             return jsonResponse({
               ok: true,
               action: "backup",
               workspaceId: workspace.id,
-              detail: `Backed up to ${resolve(storage.config.dataDir, "backups", ts)}`,
+              detail: `Backed up to ${dest}`,
             } satisfies AdminActionResponse);
           }
 
@@ -840,15 +895,15 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
             }
             try {
               const s = await stat(sourcePath);
-              if (!s.isDirectory()) {
-                return jsonResponse({ error: "Restore source is not a directory." }, { status: 404 });
+              if (!s.isFile()) {
+                return jsonResponse({ error: "Restore source is not a file." }, { status: 404 });
               }
             } catch {
               return jsonResponse({ error: "Restore source not found." }, { status: 404 });
             }
             const projectDir = workspace.project_path;
-            await mkdir(projectDir, { recursive: true });
-            await cp(sourcePath, projectDir, { recursive: true, force: true });
+            await mkdir(dirname(projectDir), { recursive: true });
+            await restoreProjectArchive(projectDir, sourcePath);
             return jsonResponse({
               ok: true,
               action: "restore",

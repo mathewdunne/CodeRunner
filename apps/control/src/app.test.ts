@@ -1332,14 +1332,14 @@ describe("V2 idle teardown, recovery, and operator controls", () => {
       expect(body.ok).toBe(true);
       expect(body.action).toBe("backup");
 
-      // Verify backup directory was created.
+      // Verify backup archive was created.
       const backupsDir = join(app.storage.config.dataDir, "backups");
       const backupDirs = await readdir(backupsDir);
       expect(backupDirs.length).toBeGreaterThan(0);
 
       const latestBackup = backupDirs.sort().at(-1)!;
-      const backedUpProject = join(backupsDir, latestBackup, workspace.id, "project");
-      expect(await exists(join(backedUpProject, "build.gradle"))).toBe(true);
+      const backedUpProject = join(backupsDir, latestBackup, workspace.id, "project.tar.gz");
+      expect(await exists(backedUpProject)).toBe(true);
     });
   });
 
@@ -1365,7 +1365,7 @@ describe("V2 idle teardown, recovery, and operator controls", () => {
       const backupsDir = join(app.storage.config.dataDir, "backups");
       const backupDirs = await readdir(backupsDir);
       const latestBackup = backupDirs.sort().at(-1)!;
-      const restorePath = join(backupsDir, latestBackup, workspace.id, "project");
+      const restorePath = join(backupsDir, latestBackup, workspace.id, "project.tar.gz");
 
       // Restore should overwrite project from backup (which has no Marker.java).
       const response = await app.fetch(
@@ -1382,6 +1382,7 @@ describe("V2 idle teardown, recovery, and operator controls", () => {
 
       // The base template file should still exist.
       expect(await exists(join(projectPath, "build.gradle"))).toBe(true);
+      expect(await exists(join(projectPath, "src", "main", "java", "frc", "robot", "Marker.java"))).toBe(false);
     });
   });
 
