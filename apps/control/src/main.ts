@@ -13,7 +13,6 @@ function logConfig(app: Awaited<ReturnType<typeof createApp>>): void {
   console.log(`  Code image:          ${c.codeImage}  (memory: ${c.codeMemoryLimit})`);
   console.log(`  Sim ports:           ${simRange}`);
   console.log(`  VSCode ports:        ${vscodeRange}`);
-  console.log(`  Run concurrency:     ${c.runConcurrency}`);
   console.log(`  Build timeout:       ${c.runBuildTimeoutMs / 1000}s  (sim startup: ${c.simStartupTimeoutMs / 1000}s)`);
   console.log(`  Idle stop:           ${c.idleStopMinutes} min  (check every ${c.idleCheckIntervalMs / 1000}s)`);
   console.log(`  Container user:      ${c.containerUser ?? "(auto)"}`);

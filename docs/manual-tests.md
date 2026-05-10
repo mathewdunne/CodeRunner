@@ -16,19 +16,7 @@ bun run typecheck
 bun run test
 ```
 
-Then run the smoke tests one at a time. Do not run the two-user and three-user scripts in parallel; they intentionally create real Docker containers and Gradle builds.
-
-```bash
-bun run verify:v2:two-user
-bun run verify:v2:three-user
-```
-
-If you already built `frc-code:v2` and only want to rerun the smoke logic:
-
-```bash
-VERIFY_SKIP_BUILD=1 bun run verify:v2:two-user
-VERIFY_SKIP_BUILD=1 bun run verify:v2:three-user
-```
+Use the manual checklist below after the automated suite is green. Run `bun run measure` with representative users if host capacity is uncertain.
 
 ## Start The Server
 
@@ -125,18 +113,16 @@ Success criteria:
 - Hover, completion, and diagnostics work in the editor.
 - Diagnostics stay scoped to the user who edited the file.
 
-### 5. Run, Queue, And Stop
+### 5. Run And Stop
 
 1. Click Run as `alice`.
 2. Immediately click Run as `bob`.
-3. For a forced queue test, restart with `RUN_CONCURRENCY=1`.
-4. Click Stop for one user after their sim reaches `running`.
+3. Click Stop for one user after their sim reaches `running`.
 
 Success criteria:
 
-- Console status progresses through `queued`, `building`, and `running`.
+- Console status progresses through `building` and `running`.
 - Gradle and sim logs stream only to the matching user's console.
-- Queue positions update when concurrency is saturated.
 - Stop affects only that user's sim.
 
 ### 6. AdvantageScope Lite
@@ -206,6 +192,5 @@ Success criteria:
 | AdvantageScope is blank | Run `bun run build:ascope` and verify `dist/advantagescope/index.html` exists. |
 | Editor iframe fails | Verify `frc-code:v2` exists and inspect `docker logs frc-v2-code-<workspaceId>`. |
 | Java never becomes ready | Wait for first Gradle import; then check container memory and logs. |
-| Run stays queued | Check `RUN_CONCURRENCY`, Docker health, and active containers. |
+| Run stays building | Check Docker health, active containers, Gradle logs, and `RUN_BUILD_TIMEOUT_MS`. |
 | Permission errors | Build/run with matching `FRC_UID=$(id -u)` and `FRC_GID=$(id -g)`. |
-

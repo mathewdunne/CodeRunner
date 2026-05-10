@@ -89,16 +89,10 @@ bun run migrate
 
 ```bash
 bun run typecheck
-bun run verify:v2:two-user
+bun run test
 ```
 
-The two-user verify builds images, creates test workspaces, runs builds, and confirms isolation. It takes 3–10 minutes depending on whether images are cached.
-
-For a deeper test with 3 users:
-
-```bash
-bun run verify:v2:three-user
-```
+The integration test suite covers session isolation, multi-workspace routing, run log streaming, editor proxying, NT4 proxying, lifecycle reconciliation, and admin operations.
 
 ### 2.7 Measure host resources
 
@@ -188,18 +182,30 @@ Idle teardown handles containers automatically after the configured timeout (def
 
 All configuration is via environment variables. Copy `.env.example` to `.env` and customize.
 
-### Key settings for classroom use
+### Environment variables
 
 | Variable | Default | Description |
 | --- | --- | --- |
 | `PORT` | `4000` | HTTP/WS listen port |
+| `FRC_DATA_DIR` | `data` | Runtime data root |
+| `FRC_DB_PATH` | `data/app.db` | SQLite database path |
+| `FRC_TEMPLATE_DIR` | `templates/wpilib-java-command` | Starter project template |
+| `FRC_MIGRATIONS_DIR` | auto-detected | Database migrations directory |
+| `FRC_WEB_DIST_DIR` | `apps/web/dist` | Built web shell assets |
+| `FRC_ASCOPE_DIST_DIR` | `dist/advantagescope` | Built AdvantageScope Lite assets |
 | `FRC_SESSION_SECRET` | *(dev default)* | **Change this!** HMAC secret for session cookies |
+| `FRC_DOCKER_PATH` | `docker` | Docker binary path |
+| `FRC_CONTAINER_USER` | auto-detected | UID:GID used inside code containers |
+| `FRC_UID` / `FRC_GID` | *(none)* | Alternative UID/GID inputs when `FRC_CONTAINER_USER` is unset |
+| `FRC_CONTAINER_AUTO_START` | `true` | Start the code container when a workspace opens |
 | `CODE_IMAGE` | `frc-code:v2` | Docker image for merged code containers |
 | `CODE_MEMORY_LIMIT` | `2560m` | Memory cap per code container |
 | `SIM_PORT_RANGE` | `25810-25899` | Loopback port range for sim NT4 |
 | `VSCODE_PORT_RANGE` | `33000-33099` | Loopback port range for openvscode-server |
-| `RUN_CONCURRENCY` | `2` | Max concurrent Gradle builds |
+| `RUN_BUILD_TIMEOUT_MS` | `90000` | Build timeout before a run fails |
+| `SIM_STARTUP_TIMEOUT_MS` | `30000` | Sim readiness timeout after build startup |
 | `IDLE_STOP_MINUTES` | `30` | Stop containers after N min idle |
+| `IDLE_CHECK_INTERVAL_MS` | `60000` | Idle sweep interval |
 | `ADMIN_TOKEN` | *(none)* | Bearer token for admin API; unset = localhost-only |
 
 ### Tuning for constrained hosts
@@ -208,7 +214,6 @@ For a 16 GB machine with 3–5 students:
 
 ```bash
 CODE_MEMORY_LIMIT=2048m
-RUN_CONCURRENCY=1
 IDLE_STOP_MINUTES=15
 ```
 
@@ -218,7 +223,6 @@ For a 32+ GB machine with 10 students:
 
 ```bash
 CODE_MEMORY_LIMIT=2560m
-RUN_CONCURRENCY=3
 ```
 
 See `.env.example` for the complete list of options.
@@ -344,7 +348,7 @@ curl http://localhost:4000/admin/status | jq .
 Returns:
 - All workspaces with code container state
 - Idle flags per workspace
-- Run queue depth and active build count
+- Active build count
 - Configured limits
 
 ### Resource measurement
@@ -374,7 +378,7 @@ docker stats --filter label=frc-sim.managed=true --no-stream
 ### Watch for issues
 
 - **High memory:** `docker stats` shows containers near their limit → OOM risk
-- **Queue depth growing:** `/admin/status` queueDepth > 0 persistently → raise `RUN_CONCURRENCY` or wait for builds
+- **Many active builds:** `/admin/status` activeBuilds is high while students are all starting sims → check CPU headroom and build timeouts
 
 ---
 
@@ -412,15 +416,6 @@ docker logs frc-v2-code-<workspaceId> --tail 50
 - Increase `RUN_BUILD_TIMEOUT_MS=180000` (3 minutes)
 - Ensure Gradle wrapper cache exists in `data/users/<workspaceId>/home/`
 - Second builds are much faster due to Gradle incremental cache
-
-### Build queue saturated
-
-**Symptoms:** Students see "queued" for a long time.
-
-**Recovery:**
-- Increase `RUN_CONCURRENCY` (if host has CPU headroom)
-- Wait for current builds to finish (queue is FIFO)
-- Check for stuck builds in admin status
 
 ### Host disk full
 
@@ -519,7 +514,7 @@ Each active student uses approximately:
 | Students | RAM | CPU | Disk | Notes |
 | --- | --- | --- | --- | --- |
 | 1–3 | 16 GB | 4 cores | 30 GB | Development/testing |
-| 4–6 | 16–24 GB | 4–6 cores | 40 GB | Small classroom; use RUN_CONCURRENCY=1 |
+| 4–6 | 16–24 GB | 4–6 cores | 40 GB | Small classroom; lower memory limit if needed |
 | 7–10 | 32 GB | 6+ cores | 50 GB | Full classroom; preferred target |
 | 10+ | 48+ GB | 8+ cores | 80 GB | Large classroom; raise memory limits |
 
@@ -583,8 +578,8 @@ CODE_MEMORY_LIMIT=3072m
 | **Build AS Lite** | `bun run build:ascope` |
 | **Run migrations** | `bun run migrate` |
 | **Check migration status** | `bun run migrate:status` |
-| **Two-user verify** | `bun run verify:v2:two-user` |
-| **Three-user smoke** | `bun run verify:v2:three-user` |
+| **Typecheck** | `bun run typecheck` |
+| **Test suite** | `bun run test` |
 | **Measure resources** | `bun run measure` |
 | **Backup projects** | `bun run backup` |
 | **Restore projects** | `bun run restore -- <dir>` |

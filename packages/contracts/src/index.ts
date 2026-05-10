@@ -79,18 +79,10 @@ export const runServerMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("hello"),
     runId: z.string().min(1),
-    queueDepth: z.number().int().min(0),
   }),
   z.object({
     type: z.literal("status"),
-    status: z.enum(["queued", "stopping", "building", "running", "failed", "stopped"]),
-    queueDepth: z.number().int().min(0).optional(),
-    queuePosition: z.number().int().min(0).optional(),
-  }),
-  z.object({
-    type: z.literal("queue"),
-    queueDepth: z.number().int().min(0),
-    queuePosition: z.number().int().min(0),
+    status: z.enum(["stopping", "building", "running", "failed", "stopped"]),
   }),
   z.object({
     type: z.literal("log"),
@@ -144,9 +136,7 @@ export const adminStatusResponseSchema = z.object({
   ok: z.literal(true),
   workspaces: z.array(adminWorkspaceStatusSchema),
   idleStopMinutes: z.number().int().min(1),
-  runConcurrency: z.number().int().min(1),
   activeBuilds: z.number().int().min(0),
-  queueDepth: z.number().int().min(0),
 });
 
 export const adminActionResponseSchema = z.object({

@@ -35,7 +35,7 @@ export type RunConnection = {
 type RunJob = {
   id: string;
   workspace: WorkspaceRow;
-  state: "queued" | "building" | "running" | "failed" | "stopped";
+  state: "building" | "running" | "failed" | "stopped";
   logPath: string;
   clients: Set<RunConnection>;
   command: RunCommand | null;
@@ -161,7 +161,6 @@ async function consumeLines(
 
 export class RunManager {
   private readonly commandFactory: RunCommandFactory;
-  private readonly queue: RunJob[] = [];
   private readonly activeBuilds = new Set<string>();
   private readonly jobsByWorkspace = new Map<WorkspaceId, RunJob>();
 
@@ -187,7 +186,6 @@ export class RunManager {
     connection.send({
       type: "hello",
       runId: current?.id ?? "idle",
-      queueDepth: this.queue.length,
     });
     if (current) {
       this.sendCurrentStatus(current, connection);
@@ -198,10 +196,6 @@ export class RunManager {
   disconnect(connection: RunConnection): void {
     const current = this.jobsByWorkspace.get(connection.workspaceId);
     current?.clients.delete(connection);
-  }
-
-  queueDepth(): number {
-    return this.queue.length;
   }
 
   activeBuildCount(): number {
@@ -216,7 +210,7 @@ export class RunManager {
     const job: RunJob = {
       id: runId,
       workspace,
-      state: "queued",
+      state: "building",
       logPath,
       clients: new Set(connection ? [connection] : []),
       command: null,
@@ -231,15 +225,9 @@ export class RunManager {
     writeFileSync(logPath, `Run ${runId} requested for workspace ${workspace.slug}\n`, "utf8");
     this.storage.createRunJob({ id: runId, workspaceId: workspace.id, logPath });
     this.jobsByWorkspace.set(workspace.id, job);
-    this.queue.push(job);
-    this.broadcast(job, {
-      type: "status",
-      status: "queued",
-      queueDepth: this.queue.length,
-      queuePosition: this.queue.indexOf(job),
-    });
-    this.updateQueuePositions();
-    this.pump();
+    this.activeBuilds.add(job.id);
+    job.buildSlotHeld = true;
+    void this.runJob(job);
     return runId;
   }
 
@@ -254,32 +242,9 @@ export class RunManager {
     }
 
     job.canceled = true;
-    if (job.state === "queued") {
-      const index = this.queue.indexOf(job);
-      if (index >= 0) {
-        this.queue.splice(index, 1);
-      }
-      this.finishJob(job, "stopped", null);
-      this.updateQueuePositions();
-      return true;
-    }
-
     this.broadcast(job, { type: "status", status: "stopping" });
     job.command?.kill("SIGTERM");
     return true;
-  }
-
-  private pump(): void {
-    while (this.activeBuilds.size < this.storage.config.runConcurrency && this.queue.length > 0) {
-      const job = this.queue.shift();
-      if (!job || job.canceled) {
-        continue;
-      }
-      this.activeBuilds.add(job.id);
-      job.buildSlotHeld = true;
-      this.updateQueuePositions();
-      void this.runJob(job);
-    }
   }
 
   private async runJob(job: RunJob): Promise<void> {
@@ -379,7 +344,6 @@ export class RunManager {
 
     job.buildSlotHeld = false;
     this.activeBuilds.delete(job.id);
-    this.pump();
   }
 
   private setJobState(
@@ -425,26 +389,7 @@ export class RunManager {
   }
 
   private sendCurrentStatus(job: RunJob, connection: RunConnection): void {
-    if (job.state === "queued") {
-      connection.send({
-        type: "status",
-        status: "queued",
-        queueDepth: this.queue.length,
-        queuePosition: Math.max(0, this.queue.indexOf(job)),
-      });
-      return;
-    }
     connection.send({ type: "status", status: job.state });
-  }
-
-  private updateQueuePositions(): void {
-    for (const [index, job] of this.queue.entries()) {
-      this.broadcast(job, {
-        type: "queue",
-        queueDepth: this.queue.length,
-        queuePosition: index,
-      });
-    }
   }
 
   private broadcast(job: RunJob, message: RunServerMessage): void {

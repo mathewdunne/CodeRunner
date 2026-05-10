@@ -51,7 +51,7 @@ export type ContainerLeaseRow = {
   created_at: string;
 };
 
-export type RunJobState = "queued" | "building" | "running" | "failed" | "stopped";
+export type RunJobState = "building" | "running" | "failed" | "stopped";
 
 export type RunJobRow = {
   id: string;
@@ -554,7 +554,7 @@ export class AppStorage {
           VALUES (?, ?, ?, ?, ?)
         `,
       )
-      .run(id, input.workspaceId, "queued", timestamp, input.logPath);
+      .run(id, input.workspaceId, "building", timestamp, input.logPath);
 
     const row = this.getRunJob(id);
     if (!row) {

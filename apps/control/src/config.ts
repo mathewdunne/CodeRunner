@@ -19,7 +19,6 @@ export type ControlConfig = {
   codeMemoryLimit: string;
   simPortRange: PortRange;
   vscodePortRange: PortRange;
-  runConcurrency: number;
   runBuildTimeoutMs: number;
   simStartupTimeoutMs: number;
   containerUser: string | null;
@@ -125,7 +124,6 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     codeMemoryLimit: input.codeMemoryLimit ?? Bun.env.CODE_MEMORY_LIMIT ?? "2560m",
     simPortRange: parsePortRange(input.simPortRange ?? Bun.env.SIM_PORT_RANGE, defaultSimPortRange),
     vscodePortRange: parsePortRange(input.vscodePortRange ?? Bun.env.VSCODE_PORT_RANGE, defaultVscodePortRange),
-    runConcurrency: parsePositiveInteger(input.runConcurrency ?? Bun.env.RUN_CONCURRENCY, 2, "RUN_CONCURRENCY"),
     runBuildTimeoutMs: parsePositiveInteger(
       input.runBuildTimeoutMs ?? Bun.env.RUN_BUILD_TIMEOUT_MS,
       90_000,

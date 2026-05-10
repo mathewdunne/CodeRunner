@@ -14,7 +14,7 @@ type LoadState =
   | { status: "ready"; session: SessionResponse }
   | { status: "error"; message: string };
 
-type RunStatus = "connecting" | "idle" | "queued" | "building" | "running" | "stopping" | "failed" | "stopped" | "error";
+type RunStatus = "connecting" | "idle" | "building" | "running" | "stopping" | "failed" | "stopped" | "error";
 type ScopeStatus = "loading" | "configured" | "connected" | "timeout";
 type EditorStatus = "loading" | "reachable" | "error";
 
@@ -51,7 +51,6 @@ function App() {
   const [runStatus, setRunStatus] = useState<RunStatus>("connecting");
   const [scopeStatus, setScopeStatus] = useState<ScopeStatus>("loading");
   const [editorStatus, setEditorStatus] = useState<EditorStatus>("loading");
-  const [queueInfo, setQueueInfo] = useState<{ depth: number; position: number } | null>(null);
   const [consoleLines, setConsoleLines] = useState<string[]>(["Connecting..."]);
   const scopeFrameRef = useRef<HTMLIFrameElement | null>(null);
   const runSocketRef = useRef<WebSocket | null>(null);
@@ -190,20 +189,10 @@ function App() {
       }
 
       if (message.type === "hello") {
-        setQueueInfo(message.queueDepth > 0 ? { depth: message.queueDepth, position: 0 } : null);
         return;
       }
       if (message.type === "status") {
         setRunStatus(message.status);
-        setQueueInfo(
-          message.queueDepth === undefined || message.queuePosition === undefined
-            ? null
-            : { depth: message.queueDepth, position: message.queuePosition },
-        );
-        return;
-      }
-      if (message.type === "queue") {
-        setQueueInfo({ depth: message.queueDepth, position: message.queuePosition });
         return;
       }
       if (message.type === "log") {
@@ -369,11 +358,8 @@ function App() {
     : containerStatus.code.state === "error"
       ? "Sim error"
       : `Sim ${containerStatus.code.state}`;
-  const runBusy = ["queued", "building", "running", "stopping"].includes(runStatus);
-  const runLabel =
-    runStatus === "queued" && queueInfo
-      ? `Run queued ${queueInfo.position + 1}/${queueInfo.depth}`
-      : `Run ${runStatus}`;
+  const runBusy = ["building", "running", "stopping"].includes(runStatus);
+  const runLabel = `Run ${runStatus}`;
   const scopeLabel =
     scopeStatus === "connected"
       ? "Scope connected"

@@ -7,7 +7,7 @@
 
 This document is the contract for the V2 rewrite. It should be updated only when a stage discovers evidence that changes the design. Non-obvious changes need a new decision log under `docs/decisions/`.
 
-V2 keeps the V1 control plane, run queue, NT4 proxy, AdvantageScope Lite serving, sessions, SQLite metadata, and admin/operator surface intact. It replaces the custom Monaco editor and the standalone JDT LS container with a single per-student container running upstream **openvscode-server** plus the **redhat.java** and **wpilibsuite.vscode-wpilib** extensions.
+V2 keeps the V1 control plane, run/log WebSocket, NT4 proxy, AdvantageScope Lite serving, sessions, SQLite metadata, and admin/operator surface intact. It replaces the custom Monaco editor and the standalone JDT LS container with a single per-student container running upstream **openvscode-server** plus the **redhat.java** and **wpilibsuite.vscode-wpilib** extensions.
 
 ---
 
@@ -21,7 +21,7 @@ V2 keeps the V1 control plane, run queue, NT4 proxy, AdvantageScope Lite serving
 - **Container shape:** one merged container per student, replacing the V1 sim and LSP containers. JDK 17, Gradle, WPILib cache, openvscode-server, baked extensions, all in the same image.
 - **Bind mount:** `data/users/<workspaceId>/project/` is mounted at `/workspace/project` and is the workspace folder opened by openvscode-server.
 - **Iframe URL:** `/u/<slug>/vscode/?folder=/workspace/project`, served same-origin under the existing `:4000` control plane.
-- **Run/Stop:** stays in the shell header. The run queue now executes `docker exec <container> ./gradlew simulateJava` against the merged container and streams logs over the existing `/ws/run` WebSocket.
+- **Run/Stop:** stays in the shell header. Runs execute immediately with `docker exec <container> ./gradlew simulateJava` against the merged container and stream logs over the existing `/ws/run` WebSocket.
 - **AdvantageScope:** still a sibling iframe at `/scope/`. The AdvantageScope-for-VS-Code webview extension is explicitly out of scope.
 - **Data migration:** existing `data/users/<workspaceId>/project/` directories continue to work unchanged. `jdtls-data/` and the former LSP image are obsolete.
 
@@ -52,7 +52,7 @@ V2 must deliver these capabilities on the same self-hosted classroom machine:
 - Ctrl-click on `Pose2d` (or any WPILib class) opens its source.
 - The edit/save/build/run/telemetry loop feels at least as good as V1.
 - AdvantageScope Lite still connects to the correct student's NT4 stream.
-- Idle teardown, restart adoption, signed cookies, admin operator API, and the run queue all continue to work.
+- Idle teardown, restart adoption, signed cookies, admin operator API, and run log streaming all continue to work.
 - One command starts the V2 dev/classroom stack after setup.
 - Student work persists across container restart, control-plane restart, and machine reboot.
 
@@ -88,7 +88,7 @@ Browser
 |  Router / static assets / AS Lite assets                      |
 |  Session manager and workspace resolver                       |
 |  Admin file API (seed, backup, restore)                       |
-|  Run queue and log streaming                                  |
+|  Run lifecycle and log streaming                              |
 |  Container orchestrator (one merged container per workspace)  |
 |  NT4 WebSocket proxy                                          |
 |  openvscode-server HTTP proxy and WS proxy                    |
@@ -132,7 +132,7 @@ The control plane is still the only browser-facing server, the only process that
 | App shell | `GET /u/:slug/` | Serve `apps/web/dist/index.html`, ensure container | none |
 | Editor iframe | `GET /u/:slug/vscode/*` | HTTP proxy to openvscode-server in workspace container | `http://127.0.0.1:<vscodePort>` |
 | Editor WebSocket | `WS /u/:slug/vscode/*` (upgrade) | WS proxy with subprotocol passthrough | `ws://127.0.0.1:<vscodePort>` |
-| Run control | `WS /u/:slug/ws/run` | Existing run queue, runs `docker exec` against merged container | merged container |
+| Run control | `WS /u/:slug/ws/run` | Starts/stops runs and streams `docker exec` logs from the merged container | merged container |
 | NT4 alive | `GET /u/:slug/sim/alive` | Probe sim NT4 endpoint inside merged container | `http://127.0.0.1:<nt4Port>/` |
 | NT4 telemetry | `WS /u/:slug/sim/nt4` | Existing NT4 WS proxy with subprotocol | `ws://127.0.0.1:<nt4Port>/nt/AdvantageScopeLite` |
 | AS Lite assets | `GET /scope/*` | Existing static serving from `dist/advantagescope/` | none |
@@ -147,7 +147,7 @@ The control plane is still the only browser-facing server, the only process that
 - JDK 17 on `PATH`.
 - Gradle wrapper scripts (used through `./gradlew` from the project).
 - Primed WPILib/Gradle cache under `/opt/frc-gradle-cache`, copied into the runtime `$GRADLE_USER_HOME` on first start (same trick V1 already uses).
-- `start-sim.sh` and `stop-sim.sh` (carried over from V1 sim image, unchanged behavior) so the run queue can `docker exec` them.
+- `start-sim.sh` and `stop-sim.sh` (carried over from V1 sim image, unchanged behavior) so the control plane can `docker exec` them.
 - A non-root `frc` user with configurable UID/GID, matching V1.
 - `tini` (or equivalent) as init.
 
@@ -173,7 +173,7 @@ The control plane is still the only browser-facing server, the only process that
 | File I/O | Browser to control-plane HTTP API to host FS | Editor in container writes directly to bind-mounted host FS |
 | File tree | `GET /api/project/tree` | Removed; openvscode-server has its own tree |
 | File CRUD | `GET/PUT/POST/PATCH/DELETE /api/files*` | Removed; admin seed/backup/restore endpoints replace what was kept |
-| Run queue | `WS /u/:slug/ws/run` running `docker exec` against `frc-sim` | Same protocol, same queue, runs against the merged container |
+| Run control | `WS /u/:slug/ws/run` running `docker exec` against `frc-sim` | Same protocol, runs immediately against the merged container |
 | NT4 proxy | `/u/:slug/sim/{alive,nt4}` to `frc-sim` loopback port | Same endpoints, upstream is the merged container's NT4 port |
 | AS Lite | `/scope/*` static + postMessage endpoint injection | Unchanged |
 | Sessions | Signed cookie | Cookie name is `frc_session`; existing pre-cleanup browser sessions re-login |
@@ -185,7 +185,7 @@ The control plane is still the only browser-facing server, the only process that
 Preserved exactly:
 
 - Signed-cookie session, username picker, slug rules, route shape `/u/:slug/...`.
-- Run queue semantics: 2 concurrent builds, position updates over the run WS, one active run per workspace, `start` supersedes prior run for that workspace.
+- Run semantics: runs start immediately, one active run per workspace, and `start` supersedes the prior run for that workspace.
 - Container lifecycle: idle stop after 30 min, label-based reconciliation on control-plane restart, loopback-only port publishing.
 - NT4 proxy with subprotocol preservation. Sim still binds `127.0.0.1:5810` inside the container.
 - Admin operator API for status, restart, stop. Localhost-only by default; bearer token via `ADMIN_TOKEN`.
@@ -311,7 +311,7 @@ POST  /admin/workspaces/:workspaceId/restore
 ### 7.5 WebSocket routes
 
 ```
-WS /u/:workspaceSlug/ws/run           run queue, unchanged
+WS /u/:workspaceSlug/ws/run           run control/logs, unchanged path
 WS /u/:workspaceSlug/sim/nt4          NT4 proxy, unchanged
 WS /u/:workspaceSlug/vscode/*         editor proxy, new
 ```
@@ -349,7 +349,7 @@ Build-time additions on top of the V1 sim layer:
    Run this as the `frc` user so the resulting `extensions/` directory is owned correctly.
 
 4. Keep the V1 sim's Gradle cache priming step (`./gradlew --no-daemon build` against the template, then copy `~/.gradle` to `/opt/frc-gradle-cache` for the entrypoint to seed at runtime). This prevents a 5-minute first-run dependency download for every student.
-5. Carry over `containers/sim/start-sim.sh` and `containers/sim/stop-sim.sh` to `/usr/local/bin/`. Both still drive the run queue.
+5. Carry over `containers/sim/start-sim.sh` and `containers/sim/stop-sim.sh` to `/usr/local/bin/`. The control plane drives both through `docker exec`.
 
 Entrypoint behavior:
 
@@ -377,7 +377,7 @@ exec /opt/openvscode-server/bin/openvscode-server \
   /workspace/project
 ```
 
-The container's primary process is openvscode-server. The run queue uses `docker exec` to drive sim build/run scripts, so the sim process is a child of the exec, not of the editor.
+The container's primary process is openvscode-server. The run manager uses `docker exec` to drive sim build/run scripts, so the sim process is a child of the exec, not of the editor.
 
 Runtime command shape:
 
@@ -398,13 +398,12 @@ docker run -d
   frc-code:v2
 ```
 
-### 8.2 Memory and concurrency
+### 8.2 Memory and lifecycle
 
 V1 used `1536m` per sim container and `1536m` per LSP container, totaling `3072m` per active student. V2 collapses to one container per student. Default starting point:
 
 ```
 CODE_MEMORY_LIMIT=2560m
-RUN_CONCURRENCY=2
 IDLE_STOP_MINUTES=30
 ```
 
@@ -475,7 +474,7 @@ No file tree, no Monaco editor, no LSP client, no save indicator. The console pa
 
 ### 10.2 Run/Stop
 
-The header Run button still posts to `/u/:slug/api/run` (or sends `start` over `/ws/run`). The control plane queues the run. The run command becomes:
+The header Run button still posts to `/u/:slug/api/run` (or sends `start` over `/ws/run`). The control plane starts the run immediately. The run command becomes:
 
 ```
 docker exec <containerName> bash -lc "/usr/local/bin/stop-sim.sh || true && /usr/local/bin/start-sim.sh && tail --pid=<pid> -F /home/frc/sim.log"
@@ -515,7 +514,7 @@ V1 ran two containers per active student (about 3 GiB combined). V2 runs one. In
 
 - 10 code containers at `2560m` cap = roughly 25 GiB worst case.
 - Idle code containers stop after 30 minutes; only actively edited workspaces count.
-- 32 GiB host RAM stays the recommended target; 16 GiB is workable for 5 students with `CODE_MEMORY_LIMIT=2048m` and `RUN_CONCURRENCY=1`.
+- 32 GiB host RAM stays the recommended target; 16 GiB is workable for 5 students with `CODE_MEMORY_LIMIT=2048m`.
 
 Stage 7 must measure 3 active students on the target host before the V2 acceptance pass closes.
 
@@ -527,8 +526,8 @@ Stage 7 must measure 3 active students on the target host before the V2 acceptan
 | --- | --- | --- | --- |
 | Code container OOM | Docker exit reason | Editor iframe shows "disconnected"; status pill flips to error | Recreate container; project files unchanged |
 | openvscode-server crash inside container | Health probe fails on next request | Editor iframe shows reload prompt | Operator clicks `restart-code` or container auto-restarts via Docker |
-| Gradle build timeout | Run queue timer | Run status `failed` with timeout log | Run queue stops sim process; files untouched |
-| NT4 proxy target unavailable | Alive check fails | AS Lite shows reconnecting | Ensure code container, restart sim through run queue |
+| Gradle build timeout | Run readiness timer | Run status `failed` with timeout log | Control plane stops sim process; files untouched |
+| NT4 proxy target unavailable | Alive check fails | AS Lite shows reconnecting | Ensure code container, restart sim through Run |
 | Editor WS proxy upstream error | Bun WS error event | Browser reconnects automatically (openvscode-server has retry) | None needed unless container is stopped |
 | Container stuck after restart | Lease present, container missing | Reconciliation clears lease and recreates | Background |
 | Host disk full | File writes fail inside container | Save errors show in editor; build fails | Operator prunes regenerable home/ caches; never project/ |
@@ -569,11 +568,10 @@ Required commands continue to exist:
 
 ```
 bun run typecheck
-bun test
-bun run verify:v2:two-user
+bun run test
 ```
 
-`verify:v2:two-user` replaces `verify:v1:two-user`. It boots two workspaces, opens both editor iframes (HTTP probe), runs both sims, and confirms that NT4 and run logs route to the right student.
+The integration suite covers two-workspace isolation, editor proxying, NT4 routing, run log streaming, lifecycle reconciliation, and admin operations. Use `bun run measure` and manual testing for host-specific capacity validation.
 
 Suggested unit tests:
 
@@ -667,7 +665,7 @@ If any check fails: stop. Open a follow-up question on the design document befor
 - Native-dep gotcha: if `wpilibsuite.vscode-wpilib` includes platform-specific binaries that are not for `linux-x64`, swap the vendored `.vsix` for the matching one from the WPILib `2026` install. The vendored copy is the source of truth; do not download at build time.
 - Carry over the V1 sim's gradle priming step. Run `./gradlew --no-daemon build` against `templates/wpilib-java-command/` during build, then move `~/.gradle` to `/opt/frc-gradle-cache/` and have the entrypoint copy it into `$GRADLE_USER_HOME` on first run if missing. The LSP image's priming logic is the model.
 - Do not run `--server-base-path` at build time; it is a runtime argument.
-- Make `start-sim.sh` and `stop-sim.sh` work unchanged. The run queue depends on them.
+- Make `start-sim.sh` and `stop-sim.sh` work unchanged. The run manager depends on them.
 - Set `tini` as PID 1 (same as V1).
 
 **Verification.**
@@ -794,7 +792,7 @@ bun test
 
 ### Stage 3: Orchestrator merge and run-path migration
 
-**Purpose.** Replace the V1 sim and LSP containers with a single merged code container per workspace. The control plane orchestrator now ensures, adopts, restarts, and stops one container per workspace. The run queue executes against that container. Editor proxy reads `vscode_port` from the lease.
+**Purpose.** Replace the V1 sim and LSP containers with a single merged code container per workspace. The control plane orchestrator now ensures, adopts, restarts, and stops one container per workspace. The run manager executes against that container. Editor proxy reads `vscode_port` from the lease.
 
 **Pre-conditions.** Stage 1 image builds. Stage 2 proxy works against a hand-launched container.
 
@@ -833,7 +831,7 @@ bun test
   - both bind mounts (project and home).
 - Allocate `simPort` and `vscodePort` together inside the same lease transaction so reconciliation can not see a split state.
 - The publish-port reconciliation logic must inspect both ports; a container that publishes one port on `127.0.0.1` and the other on `0.0.0.0` (or any non-loopback) is unsafe and must be removed.
-- Run queue command resolution: `runs.start()` calls `containers.ensureCodeContainer(workspace)` instead of `ensureSimContainer`. The `RunCommandContext.containerName` now points at the code container. The shell script inside `dockerRunScript()` is unchanged.
+- Run command resolution: `runs.start()` calls `containers.ensureCodeContainer(workspace)` instead of `ensureSimContainer`. The `RunCommandContext.containerName` now points at the code container. The shell script inside `dockerRunScript()` is unchanged.
 - When deleting the LSP path, remove related schemas in `packages/contracts/src/index.ts` only if they are not still used by `AdminWorkspaceStatus`. Keep the admin status response useful: replace `lsp` with `code`, drop `lsp` field.
 - Update `apps/control/src/app.ts` admin handlers: `restart-sim` becomes `restart-code` (rename), `restart-lsp` and `reset-lsp-data` are deleted, `stop-containers` keeps its name.
 
@@ -872,7 +870,7 @@ curl -fsS -b cookies.txt http://localhost:4000/u/alice/api/containers/status
 - [ ] One `docker ps` row per active workspace, named `frc-v2-code-<wsId>`.
 - [ ] `containers/lsp/` and `containers/sim/` are removed from the repo.
 - [ ] `bun run docker:build:lsp` and `bun run docker:build:sim` no longer exist.
-- [ ] Run queue runs `simulateJava` inside the merged container; logs reach the run WS.
+- [ ] Run manager runs `simulateJava` inside the merged container; logs reach the run WS.
 - [ ] NT4 alive and WS proxy still pass smoke against the merged container.
 - [ ] Editor proxy reads `vscode_port` from the live lease (no hardcoded port).
 - [ ] V1 sim and LSP containers found at startup are stopped and removed by reconciliation.
@@ -885,7 +883,7 @@ curl -fsS -b cookies.txt http://localhost:4000/u/alice/api/containers/status
 
 **Purpose.** Replace the V1 Monaco-based shell with a header + iframe(openvscode-server) + iframe(AS Lite) + console panel.
 
-**Pre-conditions.** Stage 3 ships a working merged container, editor proxy, and run queue. The browser can already load the editor at `/u/:slug/vscode/?folder=/workspace/project`.
+**Pre-conditions.** Stage 3 ships a working merged container, editor proxy, and run path. The browser can already load the editor at `/u/:slug/vscode/?folder=/workspace/project`.
 
 **In scope.**
 
@@ -906,10 +904,10 @@ curl -fsS -b cookies.txt http://localhost:4000/u/alice/api/containers/status
 - Iframe `src` for the editor: `/u/<slug>/vscode/?folder=/workspace/project`. Set `allow="clipboard-read; clipboard-write"` and `sandbox` only if it is verified not to break the editor. Default to no sandbox attribute; same-origin already provides the cookie path.
 - Iframe `src` for AS Lite: `/scope/?frcEndpoint=postMessage`. Reuse the V1 postMessage handshake from `apps/web/src/main.tsx`.
 - Header pills:
-  - container/run status (queued, building, running, failed, stopped, error)
+  - container/run status (building, running, failed, stopped, error)
   - sim/AS connection state (connecting, connected, timeout)
   - editor reachable (probed via `/u/<slug>/vscode/` GET; pill turns red on 5xx)
-- Run/Stop buttons post to the existing run queue WebSocket; no API change.
+- Run/Stop buttons post to the existing run WebSocket; no API path change.
 - Heartbeat continues to fire every 60s. Editor activity inside the iframe does not feed the heartbeat directly.
 - Save-before-run is no longer needed; openvscode-server saves to disk on the user's keystroke or auto-save preference.
 - Console panel reads from the same run WS messages.
@@ -1074,8 +1072,8 @@ curl -fsS -X POST http://localhost:4000/admin/workspaces/<wsId>/stop-containers
 
 **In scope.**
 
-- `scripts/verify-v2-two-user.ts` and `scripts/verify-v2-three-user-smoke.ts`, modeled on the V1 versions. They open editor proxies, post run starts, validate run logs, and check NT4 endpoints.
-- `package.json`: `verify:v2:two-user`, `verify:v2:three-user`. Remove the V1 `verify:v1:*` scripts.
+- Integration tests covering two-user isolation, editor proxies, run logs, NT4 endpoints, lifecycle reconciliation, and admin operations.
+- `package.json`: `test`, `typecheck`, and `measure` are the source of truth for automated verification and resource checks.
 - `docs/runbook.md` updated for V2 (build commands, env vars, idle behavior).
 - `docs/decisions/008-v2-acceptance.md` recording measurements: per-container RAM at idle, RAM under load, build time delta vs V1, editor cold-start time.
 - `AGENTS.md` updated: V2 status, V2 stack rule (openvscode-server + bundled extensions).
@@ -1087,10 +1085,10 @@ curl -fsS -X POST http://localhost:4000/admin/workspaces/<wsId>/stop-containers
 
 **Implementation guidelines.**
 
-- Smoke scripts should fail fast on first error and print the offending workspace + step.
-- Editor smoke is HTTP-only (the openvscode-server bundle is HTML+JS; we do not headlessly evaluate it). Pull `/u/<slug>/vscode/` and verify a 200 plus a marker substring like `"openvscode"` or `"vscode-workbench"` in the body.
-- Run smoke uses the same WebSocket dance as V1: connect to `/u/<slug>/ws/run`, send `start`, expect `status: running` within `RUN_BUILD_TIMEOUT_MS + SIM_STARTUP_TIMEOUT_MS`.
-- NT4 smoke uses a tiny WS client connecting to `/u/<slug>/sim/nt4` with the AS Lite subprotocol and confirms a few NT topic announcements arrive.
+- Integration tests should fail fast on first error and keep each concern in a focused test file.
+- Editor proxy tests are HTTP-only (the openvscode-server bundle is HTML+JS; we do not headlessly evaluate it).
+- Run tests use the same WebSocket contract as production: connect to `/u/<slug>/ws/run`, send `start`, and expect `building` then `running` within `RUN_BUILD_TIMEOUT_MS + SIM_STARTUP_TIMEOUT_MS`.
+- NT4 tests connect through `/u/<slug>/sim/nt4` or probe `/u/<slug>/sim/alive`; direct per-user ports stay hidden.
 
 **Verification.**
 
@@ -1100,15 +1098,15 @@ bun run build:web
 bun run build:ascope
 bun run dev:control &
 
-bun run verify:v2:two-user
-bun run verify:v2:three-user
+bun run typecheck
+bun run test
 
 bun run measure         # capture current RAM and CPU
 ```
 
 **Definition of Done.**
 
-- [x] `verify:v2:two-user` and `verify:v2:three-user` pass on the target host.
+- [x] `bun run typecheck` and `bun run test` pass.
 - [x] Decision log 013 records per-container memory and time-to-editor-ready.
 - [x] `docs/runbook.md` and `README.md` only reference V2 commands and images.
 - [x] `AGENTS.md` declares V2 done and points to this document.
@@ -1184,7 +1182,7 @@ curl -fsS -X POST http://localhost:4000/login \
 
 10. **Multi-user isolation.** In a second browser profile, log in as `Bob`. Make a unique change in Bob's `Robot.java`. Reload Alice. Confirm Alice's file is unchanged.
 
-11. **Run queue.** With `RUN_CONCURRENCY=1`, click Run for both Alice and Bob within 2 seconds. Confirm one of them shows `queued` with a queue position; the other reaches `running`. After the first finishes, the queued run advances.
+11. **Concurrent runs.** Click Run for both Alice and Bob within 2 seconds. Confirm both enter `building` without queueing, both stream only their own logs, and each reaches `running` independently.
 
 12. **Operator restart.** While a build is running, hit:
 
@@ -1223,4 +1221,4 @@ Resolve before or during the named stage:
 - Do not bake authentication or workspace identity into the editor image; the proxy is responsible.
 - Keep the AS Lite source patches and postMessage handshake unchanged.
 - Do not re-verify upstream extension-owned behavior such as redhat.java auto-import, hover, diagnostics, or F12/ctrl-click into WPILib classes in later stages unless an editor or extension version changed. Decision 011 is the evidence record for those checks.
-- After modifying code, run `bun run typecheck`, `bun test`, and the relevant `verify:v2:*` script. Update graphify per `AGENTS.md`.
+- After modifying code, run `bun run typecheck`, `bun run test`, and update graphify per `AGENTS.md`.

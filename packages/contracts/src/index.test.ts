@@ -26,15 +26,11 @@ describe("run message schemas", () => {
     expect(
       runServerMessageSchema.parse({
         type: "status",
-        status: "queued",
-        queueDepth: 1,
-        queuePosition: 0,
+        status: "building",
       }),
     ).toEqual({
       type: "status",
-      status: "queued",
-      queueDepth: 1,
-      queuePosition: 0,
+      status: "building",
     });
   });
 });

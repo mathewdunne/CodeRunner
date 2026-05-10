@@ -713,9 +713,7 @@ function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatus
     ok: true,
     workspaces,
     idleStopMinutes: idleMinutes,
-    runConcurrency: storage.config.runConcurrency,
     activeBuilds: runs.activeBuildCount(),
-    queueDepth: runs.queueDepth(),
   };
 }
 
@@ -992,7 +990,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
       if (suffix === "/api/run" && request.method === "POST") {
         const runId = runs.start(auth.workspace);
-        return jsonResponse({ ok: true, runId, queueDepth: runs.queueDepth() }, { status: 202 });
+        return jsonResponse({ ok: true, runId }, { status: 202 });
       }
 
       if (suffix === "/api/run/stop" && request.method === "POST") {
@@ -1107,7 +1105,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         const parsed = runClientMessageSchema.parse(JSON.parse(socketMessageText(message)));
         if (parsed.type === "start") {
           const runId = runs.start(ws.data.workspace, ws.data.connection);
-          ws.send(JSON.stringify({ type: "hello", runId, queueDepth: runs.queueDepth() }));
+          ws.send(JSON.stringify({ type: "hello", runId }));
         } else {
           runs.stopWorkspace(ws.data.workspace.id);
         }

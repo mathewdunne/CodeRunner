@@ -17,7 +17,7 @@ Resource measurements are intentionally deferred. V2 functional acceptance does 
 | Metric | Value |
 | --- | --- |
 | Code container RAM at idle | _(run `bun run measure` with 1+ logged-in user)_ |
-| Code container RAM under load (Gradle build) | _(observe peak during `bun run verify:v2:two-user`)_ |
+| Code container RAM under load (Gradle build) | _(observe peak while two manual users build)_ |
 | Editor cold-start time (container start → editor accessible) | _(time from login to editor iframe loading)_ |
 | Java extension ready time (editor load → "Java is ready") | _(observe VS Code status bar)_ |
 | First Gradle build time (cold cache) | _(from "building" to "running" in console)_ |
@@ -45,11 +45,11 @@ Paste the full output here after running with representative load.
 ## Automated Verification
 
 ```bash
-bun run verify:v2:two-user    # Two-user isolation, queue, NT4, editor proxy
-bun run verify:v2:three-user  # Three-user classroom smoke with concurrency=2
+bun run typecheck
+bun run test
 ```
 
-Run these scripts sequentially, not in parallel, because both create real Docker containers and Gradle builds. Both scripts must pass on the target host before V2 is declared ready for manual testing.
+The integration suite covers session isolation, multi-workspace routing, run log streaming, NT4 routing, editor proxying, lifecycle reconciliation, and admin operations. Use `bun run measure` plus the manual checklist for host-specific capacity validation.
 
 ## Manual Verification
 
