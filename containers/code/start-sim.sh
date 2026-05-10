@@ -44,6 +44,12 @@ sed -i 's/\r$//' gradlew 2>/dev/null || true
 chmod +x gradlew 2>/dev/null || true
 rm -f "$log_file"
 
+# HALSim WebSocket server: bind to all interfaces so the host can reach it
+# through the published loopback port. Port is configurable via HALSIMWS_PORT
+# (defaults to 3300 per the WPILib spec).
+export HALSIMWS_HOST="${HALSIMWS_HOST:-0.0.0.0}"
+export HALSIMWS_PORT="${HALSIMWS_PORT:-3300}"
+
 setsid ./gradlew --no-daemon --console=plain --project-cache-dir "$GRADLE_PROJECT_CACHE_DIR" simulateJava >"$log_file" 2>&1 &
 echo "$!" >"$pid_file"
 echo "started sim with pid $(cat "$pid_file")"

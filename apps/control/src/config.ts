@@ -19,6 +19,7 @@ export type ControlConfig = {
   codeMemoryLimit: string;
   simPortRange: PortRange;
   vscodePortRange: PortRange;
+  halsimPortRange: PortRange;
   runBuildTimeoutMs: number;
   simStartupTimeoutMs: number;
   containerUser: string | null;
@@ -28,9 +29,10 @@ export type ControlConfig = {
   adminToken: string | null;
 };
 
-export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "vscodePortRange">> & {
+export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "vscodePortRange" | "halsimPortRange">> & {
   simPortRange?: PortRange | string;
   vscodePortRange?: PortRange | string;
+  halsimPortRange?: PortRange | string;
   idleStopMinutes?: number | string;
   idleCheckIntervalMs?: number | string;
 };
@@ -39,6 +41,7 @@ const repoRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
 const defaultDataDir = resolve(repoRoot, "data");
 const defaultSimPortRange: PortRange = { start: 25810, end: 25899 };
 const defaultVscodePortRange: PortRange = { start: 33000, end: 33099 };
+const defaultHalsimPortRange: PortRange = { start: 34000, end: 34099 };
 
 function parsePortRange(value: string | PortRange | undefined, fallback: PortRange): PortRange {
   if (!value) {
@@ -124,6 +127,7 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     codeMemoryLimit: input.codeMemoryLimit ?? Bun.env.CODE_MEMORY_LIMIT ?? "2560m",
     simPortRange: parsePortRange(input.simPortRange ?? Bun.env.SIM_PORT_RANGE, defaultSimPortRange),
     vscodePortRange: parsePortRange(input.vscodePortRange ?? Bun.env.VSCODE_PORT_RANGE, defaultVscodePortRange),
+    halsimPortRange: parsePortRange(input.halsimPortRange ?? Bun.env.HALSIM_PORT_RANGE, defaultHalsimPortRange),
     runBuildTimeoutMs: parsePositiveInteger(
       input.runBuildTimeoutMs ?? Bun.env.RUN_BUILD_TIMEOUT_MS,
       90_000,

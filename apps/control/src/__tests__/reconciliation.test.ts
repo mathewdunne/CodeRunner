@@ -125,6 +125,7 @@ describe("container reconciliation", () => {
           ports: [
             { hostPort: 25834, containerPort: 5810, hostIp: "127.0.0.1" },
             { hostPort: 33054, containerPort: 3000, hostIp: "127.0.0.1" },
+            { hostPort: 34054, containerPort: 3300, hostIp: "127.0.0.1" },
           ],
         });
 
@@ -141,6 +142,7 @@ describe("container reconciliation", () => {
         codeImage: "frc-code:test",
         simPortRange: { start: 25834, end: 25835 },
         vscodePortRange: { start: 33054, end: 33055 },
+        halsimPortRange: { start: 34054, end: 34055 },
       },
     );
   });
@@ -160,6 +162,7 @@ describe("container reconciliation", () => {
           containerName: name,
           simPort: 25836,
           vscodePort: 33056,
+          halsimPort: 34056,
           state: "running",
         });
 
@@ -175,6 +178,7 @@ describe("container reconciliation", () => {
         codeImage: "frc-code:test",
         simPortRange: { start: 25836, end: 25837 },
         vscodePortRange: { start: 33056, end: 33057 },
+        halsimPortRange: { start: 34056, end: 34057 },
       },
     );
   });

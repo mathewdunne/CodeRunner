@@ -65,6 +65,7 @@ export const containersStatusResponseSchema = z.object({
     containerName: z.string().min(1).nullable(),
     simPortAllocated: z.boolean(),
     vscodePortAllocated: z.boolean(),
+    halsimPortAllocated: z.boolean(),
     lastUsedAt: z.string().nullable(),
     error: z.string().nullable(),
   }),
@@ -103,7 +104,7 @@ export const runServerMessageSchema = z.discriminatedUnion("type", [
 export type HeartbeatRequest = z.infer<typeof heartbeatRequestSchema>;
 export type SessionResponse = z.infer<typeof sessionResponseSchema>;
 export type HeartbeatResponse = z.infer<typeof heartbeatResponseSchema>;
-export type ContainerRole = "sim" | "code";
+export type ContainerRole = "sim" | "code" | "halsim";
 export type ContainerState = z.infer<typeof containerStateSchema>;
 export type ContainersStatusResponse = z.infer<typeof containersStatusResponseSchema>;
 export type RunClientMessage = z.infer<typeof runClientMessageSchema>;
@@ -127,6 +128,7 @@ export const adminWorkspaceStatusSchema = z.object({
     containerName: z.string().nullable(),
     simPort: z.number().int().nullable(),
     vscodePort: z.number().int().nullable(),
+    halsimPort: z.number().int().nullable(),
   }),
   idle: z.boolean(),
   lastActivity: z.string(),

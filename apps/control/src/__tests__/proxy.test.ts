@@ -425,3 +425,89 @@ describe("hop-by-hop header stripping", () => {
     expect([...result.keys()].length).toBe(0);
   });
 });
+
+describe("HALSim WS proxy", () => {
+  test("unauthenticated GET /u/<slug>/sim/halsim returns redirect to /", async () => {
+    await withApp(async (app) => {
+      await login(app, "alice");
+
+      const response = await app.fetch(
+        new Request("http://localhost/u/alice/sim/halsim", {
+          method: "GET",
+          headers: { upgrade: "websocket" },
+        }),
+      );
+
+      // page kind → 303 redirect to /
+      expect(response.status).toBe(303);
+      expect(response.headers.get("location")).toBe("/");
+    });
+  });
+
+  test("cross-workspace GET /u/<other>/sim/halsim returns 403", async () => {
+    await withApp(async (app) => {
+      const aliceResponse = await login(app, "alice");
+      const aliceCookie = cookieFrom(aliceResponse);
+      await login(app, "bob");
+
+      const response = await app.fetch(
+        new Request("http://localhost/u/bob/sim/halsim", {
+          method: "GET",
+          headers: { cookie: aliceCookie, upgrade: "websocket" },
+        }),
+      );
+
+      expect(response.status).toBe(403);
+    });
+  });
+
+  test("authenticated GET /u/<slug>/sim/halsim returns 426 when container is not running (no WS server)", async () => {
+    const dockerRunner: DockerRunner = async () => missing("No such image");
+
+    await withApp(
+      async (app) => {
+        const aliceResponse = await login(app, "alice");
+        const aliceCookie = cookieFrom(aliceResponse);
+
+        // Without a real Bun.serve, the WS upgrade path returns 426
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/sim/halsim", {
+            method: "GET",
+            headers: { cookie: aliceCookie, upgrade: "websocket" },
+          }),
+        );
+
+        expect(response.status).toBe(426);
+      },
+      { dockerRunner },
+    );
+  });
+
+  test("authenticated GET /u/<slug>/sim/halsim without upgrade header returns 426", async () => {
+    const fakeDocker = createFakeDocker();
+
+    await withApp(
+      async (app) => {
+        const aliceResponse = await login(app, "alice");
+        const aliceCookie = cookieFrom(aliceResponse);
+
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/sim/halsim", {
+            method: "GET",
+            headers: { cookie: aliceCookie },
+          }),
+        );
+
+        expect(response.status).toBe(426);
+        expect(await response.text()).toContain("WebSocket");
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 25940, end: 25940 },
+        vscodePortRange: { start: 33220, end: 33220 },
+        halsimPortRange: { start: 34220, end: 34220 },
+      },
+    );
+  });
+});

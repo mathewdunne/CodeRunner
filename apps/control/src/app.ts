@@ -80,7 +80,16 @@ type VscodeSocketData = {
   pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
 };
 
-type SocketData = RunSocketData | Nt4SocketData | VscodeSocketData;
+type HalSimSocketData = {
+  kind: "halsim";
+  upstreamUrl: string;
+  protocols: string[];
+  upstream?: WebSocket | undefined;
+  upstreamOpen: boolean;
+  pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
+};
+
+type SocketData = RunSocketData | Nt4SocketData | VscodeSocketData | HalSimSocketData;
 
 type AppSocket = {
   data: SocketData;
@@ -634,6 +643,43 @@ async function nt4WebSocketResponse(
   return undefined as unknown as Response;
 }
 
+async function halsimWebSocketResponse(
+  storage: AppStorage,
+  containers: ContainerOrchestrator,
+  auth: AuthContext,
+  request: Request,
+  server?: BunUpgradeServer,
+): Promise<Response> {
+  if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
+    return new Response("Expected WebSocket upgrade.", { status: 426 });
+  }
+
+  const code = await containers.ensureCodeContainer(auth.workspace);
+  const lease = storage.getContainerLease(auth.workspace.id);
+  if (code.state !== "running" || !lease?.halsim_port) {
+    return new Response(code.error ?? "Simulator is not running.", { status: 503 });
+  }
+
+  const protocols = requestedProtocols(request);
+  const upgradeOptions: { data: SocketData; headers?: HeadersInit } = {
+    data: {
+      kind: "halsim",
+      upstreamUrl: `ws://127.0.0.1:${lease.halsim_port}/wpilibws`,
+      protocols,
+      upstreamOpen: false,
+      pendingMessages: [],
+    },
+  };
+  if (protocols.length > 0) {
+    upgradeOptions.headers = { "sec-websocket-protocol": protocols[0] ?? "" };
+  }
+  const upgraded = server.upgrade(request, upgradeOptions);
+  if (!upgraded) {
+    return new Response("WebSocket upgrade failed.", { status: 400 });
+  }
+  return undefined as unknown as Response;
+}
+
 function isAdminAuthorized(storage: AppStorage, request: Request): boolean {
   const token = storage.config.adminToken;
   if (token) {
@@ -703,6 +749,7 @@ function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatus
         containerName: entry.lease?.vscode_container ?? null,
         simPort: entry.lease?.nt4_port ?? null,
         vscodePort: entry.lease?.vscode_port ?? null,
+        halsimPort: entry.lease?.halsim_port ?? null,
       },
       idle: isIdle,
       lastActivity,
@@ -959,6 +1006,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         return nt4WebSocketResponse(storage, containers, auth, request, server);
       }
 
+      if (suffix === "/sim/halsim" && request.method === "GET") {
+        return halsimWebSocketResponse(storage, containers, auth, request, server);
+      }
+
       // --- Editor proxy: openvscode-server ---
       // Match /vscode or /vscode/* (the suffix starts with /vscode).
       // The full URL path including /u/<slug>/vscode/ is passed through
@@ -1019,10 +1070,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
   function openProxyUpstream(
     ws: AppSocket,
-    label: "NT4" | "VSCode",
+    label: "NT4" | "VSCode" | "HALSim",
     protocols: string[] | undefined,
   ): void {
-    if (ws.data.kind !== "nt4" && ws.data.kind !== "vscode") {
+    if (ws.data.kind !== "nt4" && ws.data.kind !== "vscode" && ws.data.kind !== "halsim") {
       return;
     }
     const upstream = new WebSocket(ws.data.upstreamUrl, protocols && protocols.length > 0 ? protocols : undefined);
@@ -1030,7 +1081,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     upstream.binaryType = "arraybuffer";
 
     upstream.addEventListener("open", () => {
-      if (ws.data.kind !== "nt4" && ws.data.kind !== "vscode") {
+      if (ws.data.kind !== "nt4" && ws.data.kind !== "vscode" && ws.data.kind !== "halsim") {
         return;
       }
       // The browser was told (in the upgrade handshake) that we picked
@@ -1083,12 +1134,16 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         openProxyUpstream(ws, "VSCode", ws.data.protocols);
         return;
       }
+      if (ws.data.kind === "halsim") {
+        openProxyUpstream(ws, "HALSim", ws.data.protocols);
+        return;
+      }
       ws.data.connection = runs.connect(ws.data.workspace, (message) => {
         ws.send(JSON.stringify(message));
       });
     },
     message(ws: AppSocket, message: string | ArrayBuffer | Uint8Array): void {
-      if (ws.data.kind === "nt4" || ws.data.kind === "vscode") {
+      if (ws.data.kind === "nt4" || ws.data.kind === "vscode" || ws.data.kind === "halsim") {
         if (ws.data.upstreamOpen && ws.data.upstream) {
           ws.data.upstream.send(message);
         } else {
@@ -1115,7 +1170,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       }
     },
     close(ws: AppSocket): void {
-      if (ws.data.kind === "nt4" || ws.data.kind === "vscode") {
+      if (ws.data.kind === "nt4" || ws.data.kind === "vscode" || ws.data.kind === "halsim") {
         ws.data.upstream?.close();
         ws.data.pendingMessages.length = 0;
         return;

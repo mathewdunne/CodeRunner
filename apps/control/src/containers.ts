@@ -43,6 +43,7 @@ type PublishedPort = {
 };
 
 const SIM_CONTAINER_PORT = 5810;
+const HALSIM_CONTAINER_PORT = 3300;
 const VSCODE_CONTAINER_PORT = 3000;
 const CODE_NAME_PREFIX = "frc-v2-code-";
 
@@ -133,6 +134,7 @@ function statusFromLease(
     containerName: lease?.vscode_container ?? null,
     simPortAllocated: (lease?.nt4_port ?? null) !== null,
     vscodePortAllocated: (lease?.vscode_port ?? null) !== null,
+    halsimPortAllocated: (lease?.halsim_port ?? null) !== null,
     lastUsedAt: lease?.last_used_at ?? null,
     error,
   };
@@ -211,6 +213,7 @@ export class ContainerOrchestrator {
         containerName: name,
         simPort: lease.nt4_port,
         vscodePort: lease.vscode_port,
+        halsimPort: lease.halsim_port,
         state: "stopped",
       });
     }
@@ -226,6 +229,7 @@ export class ContainerOrchestrator {
         containerName: name,
         simPort: null,
         vscodePort: null,
+        halsimPort: null,
         state: "missing",
       });
     }
@@ -336,12 +340,17 @@ export class ContainerOrchestrator {
   }
 
   private async allocatePortFromRange(
-    role: "sim" | "code",
+    role: "sim" | "code" | "halsim",
     workspaceId: WorkspaceId,
     preferredPort: number | null,
     rejectedPorts: Set<number>,
   ): Promise<number> {
-    const range = role === "sim" ? this.storage.config.simPortRange : this.storage.config.vscodePortRange;
+    const range =
+      role === "sim"
+        ? this.storage.config.simPortRange
+        : role === "halsim"
+          ? this.storage.config.halsimPortRange
+          : this.storage.config.vscodePortRange;
     const leasedPorts = new Set(this.storage.listLeasedPorts(role, workspaceId));
     const candidates: number[] = [];
     if (preferredPort !== null) {
@@ -373,7 +382,8 @@ export class ContainerOrchestrator {
     workspace: WorkspaceRow,
     rejectedSimPorts: Set<number>,
     rejectedVscodePorts: Set<number>,
-  ): Promise<{ simPort: number; vscodePort: number }> {
+    rejectedHalsimPorts: Set<number>,
+  ): Promise<{ simPort: number; vscodePort: number; halsimPort: number }> {
     return await this.withPortReservationLock(async () => {
       const lease = this.storage.getContainerLease(workspace.id);
       const simPort = await this.allocatePortFromRange(
@@ -388,15 +398,22 @@ export class ContainerOrchestrator {
         lease?.vscode_port ?? null,
         rejectedVscodePorts,
       );
+      const halsimPort = await this.allocatePortFromRange(
+        "halsim",
+        workspace.id,
+        lease?.halsim_port ?? null,
+        rejectedHalsimPorts,
+      );
       const name = codeContainerName(workspace.id);
       this.storage.upsertCodeContainerLease({
         workspaceId: workspace.id,
         containerName: name,
         simPort,
         vscodePort,
+        halsimPort,
         state: "starting",
       });
-      return { simPort, vscodePort };
+      return { simPort, vscodePort, halsimPort };
     });
   }
 
@@ -412,7 +429,8 @@ export class ContainerOrchestrator {
 
     const simPublished = publishedPortFor(container, SIM_CONTAINER_PORT);
     const vscodePublished = publishedPortFor(container, VSCODE_CONTAINER_PORT);
-    if (!simPublished?.loopback || !vscodePublished?.loopback) {
+    const halsimPublished = publishedPortFor(container, HALSIM_CONTAINER_PORT);
+    if (!simPublished?.loopback || !vscodePublished?.loopback || !halsimPublished?.loopback) {
       await this.runDocker(["rm", "-f", name], true);
       return null;
     }
@@ -423,6 +441,7 @@ export class ContainerOrchestrator {
         containerName: name,
         simPort: simPublished.port,
         vscodePort: vscodePublished.port,
+        halsimPort: halsimPublished.port,
         state: "running",
       });
       return statusFromLease(this.storage.config.codeImage, lease, "running");
@@ -442,7 +461,8 @@ export class ContainerOrchestrator {
 
     const rSim = publishedPortFor(restarted, SIM_CONTAINER_PORT);
     const rVscode = publishedPortFor(restarted, VSCODE_CONTAINER_PORT);
-    if (!rSim?.loopback || !rVscode?.loopback) {
+    const rHalsim = publishedPortFor(restarted, HALSIM_CONTAINER_PORT);
+    if (!rSim?.loopback || !rVscode?.loopback || !rHalsim?.loopback) {
       await this.runDocker(["rm", "-f", name], true);
       return null;
     }
@@ -452,6 +472,7 @@ export class ContainerOrchestrator {
       containerName: name,
       simPort: rSim.port,
       vscodePort: rVscode.port,
+      halsimPort: rHalsim.port,
       state: containerRuntimeState(restarted),
     });
     return statusFromLease(this.storage.config.codeImage, lease, lease.code_state);
@@ -461,6 +482,7 @@ export class ContainerOrchestrator {
     workspace: WorkspaceRow,
     simPort: number,
     vscodePort: number,
+    halsimPort: number,
   ): Promise<CodeContainerStatus> {
     await this.ensureImage();
     const homePath = workspaceHomePath(workspace);
@@ -472,6 +494,7 @@ export class ContainerOrchestrator {
       containerName: name,
       simPort,
       vscodePort,
+      halsimPort,
       state: "starting",
     });
 
@@ -496,6 +519,8 @@ export class ContainerOrchestrator {
       `127.0.0.1:${vscodePort}:${VSCODE_CONTAINER_PORT}`,
       "-p",
       `127.0.0.1:${simPort}:${SIM_CONTAINER_PORT}`,
+      "-p",
+      `127.0.0.1:${halsimPort}:${HALSIM_CONTAINER_PORT}`,
       "--memory",
       this.storage.config.codeMemoryLimit,
       "-e",
@@ -512,11 +537,13 @@ export class ContainerOrchestrator {
     const created = await this.inspectContainer(name);
     const createdSim = created ? publishedPortFor(created, SIM_CONTAINER_PORT) : null;
     const createdVscode = created ? publishedPortFor(created, VSCODE_CONTAINER_PORT) : null;
+    const createdHalsim = created ? publishedPortFor(created, HALSIM_CONTAINER_PORT) : null;
     const lease = this.storage.upsertCodeContainerLease({
       workspaceId: workspace.id,
       containerName: name,
       simPort: createdSim?.port ?? simPort,
       vscodePort: createdVscode?.port ?? vscodePort,
+      halsimPort: createdHalsim?.port ?? halsimPort,
       state: created ? containerRuntimeState(created) : "starting",
     });
 
@@ -535,29 +562,35 @@ export class ContainerOrchestrator {
 
     const simRange = this.storage.config.simPortRange;
     const vscodeRange = this.storage.config.vscodePortRange;
+    const halsimRange = this.storage.config.halsimPortRange;
     const maxAttempts = Math.max(
       simRange.end - simRange.start + 1,
       vscodeRange.end - vscodeRange.start + 1,
+      halsimRange.end - halsimRange.start + 1,
     );
     const rejectedSimPorts = new Set<number>();
     const rejectedVscodePorts = new Set<number>();
+    const rejectedHalsimPorts = new Set<number>();
 
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-      const { simPort, vscodePort } = await this.reserveCodePorts(
+      const { simPort, vscodePort, halsimPort } = await this.reserveCodePorts(
         workspace,
         rejectedSimPorts,
         rejectedVscodePorts,
+        rejectedHalsimPorts,
       );
       try {
-        return await this.createCodeContainer(workspace, simPort, vscodePort);
+        return await this.createCodeContainer(workspace, simPort, vscodePort, halsimPort);
       } catch (error) {
         if (!dockerPortBindError(error)) {
           throw error;
         }
         rejectedSimPorts.add(simPort);
         rejectedVscodePorts.add(vscodePort);
+        rejectedHalsimPorts.add(halsimPort);
         this.storage.clearReservedPort("sim", workspace.id, simPort);
         this.storage.clearReservedPort("code", workspace.id, vscodePort);
+        this.storage.clearReservedPort("halsim", workspace.id, halsimPort);
       }
     }
 
@@ -573,6 +606,7 @@ export class ContainerOrchestrator {
       containerName: name,
       simPort: previous?.nt4_port ?? null,
       vscodePort: previous?.vscode_port ?? null,
+      halsimPort: previous?.halsim_port ?? null,
       state: "error",
     });
     return statusFromLease(this.storage.config.codeImage, lease, "error", message);

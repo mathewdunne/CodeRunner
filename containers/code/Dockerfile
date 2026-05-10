@@ -131,5 +131,5 @@ RUN mkdir -p /opt/frc-gradle-cache \
 USER ${FRC_UID}:${FRC_GID}
 WORKDIR /workspace/project
 
-EXPOSE 3000 5810
+EXPOSE 3000 3300 5810
 ENTRYPOINT ["tini", "--", "/usr/local/bin/entrypoint.sh"]
