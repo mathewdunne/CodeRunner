@@ -55,6 +55,46 @@ function App() {
   const [consoleLines, setConsoleLines] = useState<string[]>(["Connecting..."]);
   const scopeFrameRef = useRef<HTMLIFrameElement | null>(null);
   const runSocketRef = useRef<WebSocket | null>(null);
+  const [scopeWidth, setScopeWidth] = useState(() => Math.round(window.innerWidth * 0.34));
+  const [consoleHeight, setConsoleHeight] = useState(180);
+  const dragRef = useRef<{ type: "v" | "h"; startCoord: number; startVal: number } | null>(null);
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+      if (drag.type === "v") {
+        const delta = drag.startCoord - e.clientX;
+        setScopeWidth(Math.max(260, Math.min(drag.startVal + delta, window.innerWidth - 340)));
+      } else {
+        const delta = drag.startCoord - e.clientY;
+        setConsoleHeight(Math.max(80, Math.min(drag.startVal + delta, window.innerHeight - 140)));
+      }
+    };
+    const onMouseUp = () => {
+      if (!dragRef.current) return;
+      dragRef.current = null;
+      document.body.classList.remove("resizing", "resizing-v", "resizing-h");
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, []);
+
+  const onVHandleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    dragRef.current = { type: "v", startCoord: e.clientX, startVal: scopeWidth };
+    document.body.classList.add("resizing", "resizing-v");
+  }, [scopeWidth]);
+
+  const onHHandleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    dragRef.current = { type: "h", startCoord: e.clientY, startVal: consoleHeight };
+    document.body.classList.add("resizing", "resizing-h");
+  }, [consoleHeight]);
 
   const editorUrl = workspaceSlug ? `/u/${workspaceSlug}/vscode/?folder=/workspace/project` : null;
 
@@ -373,7 +413,13 @@ function App() {
           <button type="submit">Logout</button>
         </form>
       </header>
-      <main className="ide-grid">
+      <main
+        className="ide-grid"
+        style={{
+          gridTemplateColumns: `1fr 5px ${scopeWidth}px`,
+          gridTemplateRows: `1fr 5px ${consoleHeight}px`,
+        }}
+      >
         <section className="editor-pane">
           {editorUrl ? (
             <iframe
@@ -387,6 +433,7 @@ function App() {
             </div>
           )}
         </section>
+        <div className="v-handle" onMouseDown={onVHandleMouseDown} />
         <aside className="scope-pane">
           <header>
             <span>AdvantageScope</span>
@@ -398,6 +445,7 @@ function App() {
             src="/scope/?frcEndpoint=postMessage"
           />
         </aside>
+        <div className="h-handle" onMouseDown={onHHandleMouseDown} />
         <section className="console-pane">
           <header>Console</header>
           <pre>{consoleLines.join("\n")}</pre>

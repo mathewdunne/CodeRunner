@@ -102,8 +102,29 @@ button {
 .ide-grid {
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(320px, 1fr) minmax(260px, 34vw);
-  grid-template-rows: minmax(0, 1fr) 180px;
+}
+
+.v-handle {
+  cursor: col-resize;
+}
+
+.h-handle {
+  cursor: row-resize;
+  grid-column: 1 / -1;
+}
+
+body.resizing iframe {
+  pointer-events: none;
+}
+
+body.resizing-v {
+  cursor: col-resize !important;
+  user-select: none;
+}
+
+body.resizing-h {
+  cursor: row-resize !important;
+  user-select: none;
 }
 
 .editor-pane {
@@ -204,9 +225,10 @@ button {
   }
 
   .ide-grid {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: 1fr !important;
   }
 
+  .v-handle,
   .scope-pane {
     display: none;
   }
