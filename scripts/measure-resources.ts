@@ -45,16 +45,13 @@ type MeasurementReport = {
   host: HostInfo;
   containers: ContainerStats[];
   totals: {
-    simContainers: number;
-    lspContainers: number;
+    codeContainers: number;
     totalMemoryUsedMB: number;
-    avgSimMemoryMB: number;
-    avgLspMemoryMB: number;
+    avgCodeMemoryMB: number;
   };
   extrapolation: {
     studentsActive: number;
-    estimatedSimMemoryGB: number;
-    estimatedLspMemoryGB: number;
+    estimatedCodeMemoryGB: number;
     estimatedTotalGB: number;
     headroomGB: number;
     recommendation: string;
@@ -182,22 +179,17 @@ async function main(): Promise<void> {
   const disk = await getDiskInfo();
   const containers = await getContainerStats();
 
-  const simContainers = containers.filter((c) => c.role === "sim");
-  const lspContainers = containers.filter((c) => c.role === "lsp");
+  const codeContainers = containers.filter((c) => c.role === "code");
 
   const totalMemUsedMB = containers.reduce((sum, c) => sum + c.memoryUsageMB, 0);
 
-  const avgSimMB = simContainers.length > 0
-    ? simContainers.reduce((sum, c) => sum + c.memoryUsageMB, 0) / simContainers.length
-    : 768; // default estimate
-  const avgLspMB = lspContainers.length > 0
-    ? lspContainers.reduce((sum, c) => sum + c.memoryUsageMB, 0) / lspContainers.length
-    : 700; // default estimate
+  const avgCodeMB = codeContainers.length > 0
+    ? codeContainers.reduce((sum, c) => sum + c.memoryUsageMB, 0) / codeContainers.length
+    : 1280; // default estimate for merged code container
 
   const targetStudents = 10;
-  const estimatedSimGB = (avgSimMB * targetStudents) / 1024;
-  const estimatedLspGB = (avgLspMB * targetStudents) / 1024;
-  const estimatedTotalGB = estimatedSimGB + estimatedLspGB;
+  const estimatedCodeGB = (avgCodeMB * targetStudents) / 1024;
+  const estimatedTotalGB = estimatedCodeGB;
   const headroomGB = host.totalMemoryGB - estimatedTotalGB - 4; // 4GB for OS/Docker/browser
 
   let recommendation: string;
@@ -216,16 +208,13 @@ async function main(): Promise<void> {
     host,
     containers,
     totals: {
-      simContainers: simContainers.length,
-      lspContainers: lspContainers.length,
+      codeContainers: codeContainers.length,
       totalMemoryUsedMB: Math.round(totalMemUsedMB),
-      avgSimMemoryMB: Math.round(avgSimMB),
-      avgLspMemoryMB: Math.round(avgLspMB),
+      avgCodeMemoryMB: Math.round(avgCodeMB),
     },
     extrapolation: {
       studentsActive: targetStudents,
-      estimatedSimMemoryGB: Math.round(estimatedSimGB * 10) / 10,
-      estimatedLspMemoryGB: Math.round(estimatedLspGB * 10) / 10,
+      estimatedCodeMemoryGB: Math.round(estimatedCodeGB * 10) / 10,
       estimatedTotalGB: Math.round(estimatedTotalGB * 10) / 10,
       headroomGB: Math.round(headroomGB * 10) / 10,
       recommendation,
@@ -249,9 +238,9 @@ async function main(): Promise<void> {
     console.log(`  Disk:        ${disk.totalGB - disk.freeGB} GB used / ${disk.totalGB} GB total (${disk.freeGB} GB free)`);
   }
 
-  console.log("\nV1 Containers:");
+  console.log("\nV2 Containers:");
   if (containers.length === 0) {
-    console.log("  No running V1 managed containers found.");
+    console.log("  No running V2 managed containers found.");
     console.log("  (Start the app and log in with some users to measure actual usage.)");
   } else {
     console.log(`  ${"Name".padEnd(35)} ${"Role".padEnd(5)} ${"Mem Used".padEnd(10)} ${"Mem Limit".padEnd(10)} ${"Mem%".padEnd(7)} CPU%`);
@@ -261,12 +250,11 @@ async function main(): Promise<void> {
         `  ${c.name.padEnd(35)} ${c.role.padEnd(5)} ${(c.memoryUsageMB + " MB").padEnd(10)} ${(c.memoryLimitMB + " MB").padEnd(10)} ${(c.memoryPercent + "%").padEnd(7)} ${c.cpuPercent}%`
       );
     }
-    console.log(`\n  Total: ${simContainers.length} sim + ${lspContainers.length} lsp = ${containers.length} containers, ${Math.round(totalMemUsedMB)} MB memory`);
+    console.log(`\n  Total: ${codeContainers.length} code containers, ${Math.round(totalMemUsedMB)} MB memory`);
   }
 
   console.log("\nExtrapolation for 10 Students:");
-  console.log(`  Avg sim memory:   ${report.totals.avgSimMemoryMB} MB × 10 = ${report.extrapolation.estimatedSimMemoryGB} GB`);
-  console.log(`  Avg LSP memory:   ${report.totals.avgLspMemoryMB} MB × 10 = ${report.extrapolation.estimatedLspMemoryGB} GB`);
+  console.log(`  Avg code memory:  ${report.totals.avgCodeMemoryMB} MB × 10 = ${report.extrapolation.estimatedCodeMemoryGB} GB`);
   console.log(`  Estimated total:  ${report.extrapolation.estimatedTotalGB} GB (+ ~4 GB OS/Docker/browser overhead)`);
   console.log(`  Host headroom:    ${report.extrapolation.headroomGB} GB`);
   console.log(`\n  → ${report.extrapolation.recommendation}`);

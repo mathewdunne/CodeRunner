@@ -1114,11 +1114,11 @@ bun run measure         # capture current RAM and CPU
 
 **Definition of Done.**
 
-- [ ] `verify:v2:two-user` and `verify:v2:three-user` pass on the target host.
-- [ ] Decision log 008 records per-container memory and time-to-editor-ready.
-- [ ] `docs/runbook.md` and `README.md` only reference V2 commands and images.
-- [ ] `AGENTS.md` declares V2 done and points to this document.
-- [ ] No V1-only files remain except `mvp/` (untouched).
+- [x] `verify:v2:two-user` and `verify:v2:three-user` pass on the target host.
+- [x] Decision log 013 records per-container memory and time-to-editor-ready.
+- [x] `docs/runbook.md` and `README.md` only reference V2 commands and images.
+- [x] `AGENTS.md` declares V2 done and points to this document.
+- [x] No V1-only files remain except `mvp/` (untouched).
 
 ---
 

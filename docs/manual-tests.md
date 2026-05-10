@@ -1,6 +1,6 @@
-# FRC Web Simulator V1 — Manual Acceptance Tests
+# FRC Web Simulator V2 — Manual Acceptance Tests
 
-These tests verify the V1 Definition of Done using real browser sessions from multiple machines on a LAN. Run them after the automated `bun run verify:v1:three-user` smoke passes.
+These tests verify the V2 Definition of Done using real browser sessions from multiple machines on a LAN. Run them after the automated `bun run verify:v2:three-user` smoke passes.
 
 ---
 
@@ -8,12 +8,12 @@ These tests verify the V1 Definition of Done using real browser sessions from mu
 
 Before running manual tests, ensure:
 
-1. Docker images are built: `bun run docker:build:sim && bun run docker:build:lsp`
+1. Code container image is built: `bun run docker:build:code`
 2. Web shell is built: `bun run build:web`
 3. AdvantageScope Lite is built: `bun run build:ascope`
 4. Dependencies installed: `bun install`
 5. Typecheck passes: `bun run typecheck`
-6. Automated smoke passes: `bun run verify:v1:three-user`
+6. Automated smoke passes: `bun run verify:v2:three-user`
 
 ---
 
@@ -43,12 +43,12 @@ bun run dev:control
 You should see:
 
 ```
-─── V1 Configuration ───
+─── V2 Configuration ───
   Data dir:            data
-  Sim image:           frc-sim:v1  (memory: 1536m, ports: 25810-25899)
+  Code image:          frc-code:v2  (memory: 2560m)
   ...
 ────────────────────────
-V1 control plane listening on http://localhost:4000
+V2 control plane listening on http://localhost:4000
 ```
 
 ### 3. Connect from other machines
@@ -73,7 +73,7 @@ sudo ufw allow 4000/tcp
 sudo firewall-cmd --add-port=4000/tcp --permanent && sudo firewall-cmd --reload
 
 # Windows (PowerShell, run as admin)
-New-NetFirewallRule -DisplayName "FRC Sim V1" -Direction Inbound -Port 4000 -Protocol TCP -Action Allow
+New-NetFirewallRule -DisplayName "FRC Sim V2" -Direction Inbound -Port 4000 -Protocol TCP -Action Allow
 ```
 
 ---
@@ -99,7 +99,7 @@ Suggested names: `alice`, `bob`, `carol`
 **Success criteria:**
 
 - Each user is redirected to `/u/<username>/` (e.g. `/u/alice/`)
-- Each user sees the IDE shell with a file tree, editor, run panel, and AdvantageScope iframe
+- Each user sees the V2 IDE shell with the openvscode editor, run panel, and AdvantageScope iframe
 - The username/workspace indicator shows the correct name
 - No errors in the browser console related to session/auth
 
@@ -109,16 +109,16 @@ Suggested names: `alice`, `bob`, `carol`
 
 **Steps:**
 
-1. As `alice`, expand the file tree in the left panel
+1. As `alice`, the openvscode editor should show the file tree with the WPILib project
 2. Verify the default WPILib project structure is present:
    - `src/main/java/frc/robot/Robot.java`
    - `src/main/java/frc/robot/RobotContainer.java`
    - `src/main/java/frc/robot/Constants.java`
    - `src/main/java/frc/robot/Main.java`
-   - `build.gradle` (read-only)
+   - `build.gradle`
 3. Click on `Robot.java` to open it in the editor
 4. Make a small edit (e.g. add a comment `// Alice was here`)
-5. Wait for auto-save (dirty indicator should clear within ~1 second)
+5. Wait for auto-save (VS Code auto-saves by default)
 6. Refresh the page
 7. Re-open `Robot.java`
 
@@ -126,7 +126,7 @@ Suggested names: `alice`, `bob`, `carol`
 
 - The file tree loads the full WPILib command-based template
 - The edit is preserved after page refresh
-- Auto-save indicator shows the file was saved
+- The editor reconnects and reopens the last buffer
 
 ---
 
@@ -134,8 +134,8 @@ Suggested names: `alice`, `bob`, `carol`
 
 **Steps:**
 
-1. As `alice`, right-click the `src/main/java/frc/robot/` folder (or use the create button)
-2. Create a new file: `subsystems/DriveSubsystem.java`
+1. As `alice`, right-click in the VS Code file explorer
+2. Create a new file: `subsystems/DriveSubsystem.java` under `src/main/java/frc/robot/`
 3. Add some content: `package frc.robot.subsystems;`
 4. Rename the file to `subsystems/TankDrive.java`
 5. Delete the file
@@ -216,25 +216,28 @@ Suggested names: `alice`, `bob`, `carol`
 
 ---
 
-### Test 8: Java LSP — Hover, Completion, Diagnostics
+### Test 8: Java IDE — Hover, Completion, Diagnostics
+
+Java IDE features are provided by the redhat.java extension running inside the code container. Do not re-test auto-import or F12/Ctrl-click into WPILib classes unless extension versions changed since Decision 011.
 
 **Steps:**
 
-1. As `alice`, open `Robot.java`
-2. Hover over a class name (e.g. `TimedRobot`) — a tooltip should appear
-3. Type `this.` inside a method — completion suggestions should appear
-4. Introduce a syntax error (e.g. delete a semicolon) — a red squiggly should appear
-5. Fix the error — the diagnostic should clear
+1. As `alice`, open `Robot.java` in the VS Code editor
+2. Wait for "Java is ready" in the VS Code status bar
+3. Hover over a class name (e.g. `TimedRobot`) — a tooltip should appear
+4. Type `this.` inside a method — completion suggestions should appear
+5. Introduce a syntax error (e.g. delete a semicolon) — a red squiggly should appear
+6. Fix the error — the diagnostic should clear
 
 **Steps (isolation check):**
 
-6. As `bob`, open their `Robot.java`
-7. Introduce an error in `bob`'s file
-8. Verify `alice`'s editor remains clean (no false diagnostics)
+7. As `bob`, open their `Robot.java`
+8. Introduce an error in `bob`'s file
+9. Verify `alice`'s editor remains clean (no false diagnostics)
 
 **Success criteria:**
 
-- Hover shows type information within 1–5 seconds of opening a file
+- Hover shows type information within a few seconds of "Java is ready"
 - Completions appear for Java standard library and WPILib classes
 - Diagnostics (red squigglies) appear within a few seconds of introducing an error
 - Fixing the error clears diagnostics
@@ -242,20 +245,20 @@ Suggested names: `alice`, `bob`, `carol`
 
 ---
 
-### Test 9: LSP Across Multiple Files
+### Test 9: Cross-File Java Features
 
 **Steps:**
 
-1. As `alice`, create `src/main/java/frc/robot/subsystems/Arm.java`
+1. As `alice`, create `src/main/java/frc/robot/subsystems/Arm.java` in the VS Code file explorer
 2. Add a class definition: `package frc.robot.subsystems; public class Arm {}`
 3. Open `RobotContainer.java`
 4. Type `new Arm` — completion/import suggestion should appear
 
 **Success criteria:**
 
-- The LSP is aware of newly created files without restarting
+- The Java extension is aware of newly created files without restarting
 - Cross-file references resolve (imports, class references)
-- This confirms project-wide LSP, not single-file
+- This confirms project-wide Java features via the bundled redhat.java extension
 
 ---
 
@@ -267,16 +270,16 @@ Suggested names: `alice`, `bob`, `carol`
 2. Close `alice`'s browser tab completely
 3. Wait for the idle timeout (default: 30 minutes; for testing, you can set `IDLE_STOP_MINUTES=2` in `.env`)
 4. On the host, check Docker: `docker ps --filter label=frc-sim.workspace`
-5. After the timeout, verify `alice`'s containers have stopped
+5. After the timeout, verify `alice`'s container has stopped
 6. Re-open `alice`'s browser to `http://<host-ip>:4000`
 7. Log in as `alice` again
 
 **Success criteria:**
 
-- After the idle timeout, `docker ps` no longer shows `alice`'s containers
+- After the idle timeout, `docker ps` no longer shows `alice`'s code container
 - `alice`'s project files still exist on disk (`data/users/*/project/`)
 - Upon returning, `alice` sees their workspace with all files intact
-- Containers are re-created automatically when the IDE loads
+- Containers are re-created automatically when the workspace loads
 - No data loss
 
 ---
@@ -291,23 +294,22 @@ Suggested names: `alice`, `bob`, `carol`
 # Check overall status
 curl http://localhost:4000/admin/status
 
-# Restart alice's LSP (replace <workspaceId> with alice's workspace ID from status)
-curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-lsp
+# Restart alice's code container (replace <workspaceId> with alice's workspace ID from status)
+curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-code
 
-# Restart alice's sim
-curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-sim
+# Stop alice's containers
+curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/stop-containers
 ```
 
-2. After restarting LSP, check that `alice`'s editor reconnects and diagnostics resume
-3. After restarting sim, check that `alice` can Run again
+2. After restarting the code container, check that `alice`'s editor reconnects and Java features resume
+3. Verify `alice` can Run again
 
 **Success criteria:**
 
 - `/admin/status` returns JSON listing all workspaces and container states
-- Restarting one user's LSP does not affect other users
-- Restarting one user's sim does not affect other users
-- `alice`'s files are untouched after both restarts
-- LSP reconnects within ~10 seconds after restart
+- Restarting one user's container does not affect other users
+- `alice`'s files are untouched after restart
+- Editor reconnects within ~10 seconds after restart
 
 ---
 
@@ -354,6 +356,7 @@ Set these in `.env` (or export before `bun run dev:control`) to speed up testing
 | Login page doesn't load | `bun run build:web` may not have been run; check that `apps/web/dist/` exists |
 | AS Lite shows blank | `bun run build:ascope` may not have been run; check that `dist/advantagescope/` exists |
 | Run stays in `queued` | Check Docker is running; check `docker ps` for existing builds |
-| LSP never connects | Check `docker ps` for LSP container; check control-plane logs for bridge errors |
-| Container start fails | Check `docker images` for `frc-sim:v1` and `frc-lsp:v1`; rebuild if missing |
+| Editor iframe blank | Check container is running; check `docker logs frc-v2-code-<workspaceId>` |
+| Java not ready | Wait 1–3 minutes for redhat.java to initialize; check container logs |
+| Container start fails | Check `docker images frc-code:v2`; rebuild if missing with `bun run docker:build:code` |
 | Permission errors on Linux | Set `FRC_UID` and `FRC_GID` in `.env` to match your user's UID/GID |
