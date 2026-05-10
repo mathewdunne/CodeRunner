@@ -6,7 +6,7 @@ import {
 } from "./index";
 
 describe("isWorkspaceSlug", () => {
-  test("accepts V1 route-safe slugs", () => {
+  test("accepts route-safe workspace slugs", () => {
     expect(isWorkspaceSlug("alice")).toBe(true);
     expect(isWorkspaceSlug("team_6328-2026")).toBe(true);
   });
@@ -21,7 +21,7 @@ describe("isWorkspaceSlug", () => {
 });
 
 describe("run message schemas", () => {
-  test("parses the V1 run WebSocket contract", () => {
+  test("parses the run WebSocket contract", () => {
     expect(runClientMessageSchema.parse({ type: "start" })).toEqual({ type: "start" });
     expect(
       runServerMessageSchema.parse({

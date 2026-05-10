@@ -123,7 +123,7 @@ function loginPage(error: string | null = null, init: ResponseInit = {}): Respon
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>FRC Web Simulator V1</title>
+    <title>FRC Web Simulator V2</title>
     <style>
       body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: system-ui, sans-serif; background: #101820; color: #f5f7fb; }
       main { width: min(28rem, calc(100vw - 2rem)); }
@@ -333,7 +333,7 @@ async function webShellResponse(storage: AppStorage): Promise<Response> {
     return htmlResponse(indexHtml);
   } catch {
     return htmlResponse(
-      "The V1 web shell has not been built yet. Run `bun run build:web` before starting the control plane.",
+      "The V2 web shell has not been built yet. Run `bun run build:web` before starting the control plane.",
       { status: 503 },
     );
   }

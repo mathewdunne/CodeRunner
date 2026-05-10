@@ -10,7 +10,7 @@ V2 replaces the V1 custom Monaco editor and standalone JDT LS container with a s
 
 ## Measurements
 
-> Fill in these values after running `bun run measure` with active containers.
+Resource measurements are intentionally deferred. V2 functional acceptance does not depend on these numbers; collect them with `bun run measure` before a classroom deployment if host capacity is uncertain.
 
 ### Per-Container Resource Usage
 
@@ -49,7 +49,7 @@ bun run verify:v2:two-user    # Two-user isolation, queue, NT4, editor proxy
 bun run verify:v2:three-user  # Three-user classroom smoke with concurrency=2
 ```
 
-Both scripts must pass on the target host before V2 is declared done.
+Run these scripts sequentially, not in parallel, because both create real Docker containers and Gradle builds. Both scripts must pass on the target host before V2 is declared ready for manual testing.
 
 ## Manual Verification
 
@@ -57,4 +57,4 @@ Follow the test plan in `docs/manual-tests.md` and the end-to-end checklist in `
 
 ## Decision
 
-V2 is accepted for classroom use. The merged container reduces per-student overhead from 2 containers to 1 while providing a full VS Code editing experience with upstream Java IDE features.
+V2 is functionally accepted and ready for manual classroom testing. The merged container reduces per-student overhead from 2 containers to 1 while providing a full VS Code editing experience with upstream Java IDE features. Final classroom capacity should still be confirmed with representative resource measurements.

@@ -1,14 +1,14 @@
 import { z } from "zod";
 
-export const V1_ROUTE_SLUG_PATTERN = /^[a-zA-Z0-9_-]{1,40}$/;
-export const V1_USER_ID_PATTERN = /^usr_[a-f0-9]{32}$/;
-export const V1_WORKSPACE_ID_PATTERN = /^ws_[a-f0-9]{32}$/;
-export const V1_SESSION_ID_PATTERN = /^ses_[a-f0-9]{32}$/;
+export const ROUTE_SLUG_PATTERN = /^[a-zA-Z0-9_-]{1,40}$/;
+export const USER_ID_PATTERN = /^usr_[a-f0-9]{32}$/;
+export const WORKSPACE_ID_PATTERN = /^ws_[a-f0-9]{32}$/;
+export const SESSION_ID_PATTERN = /^ses_[a-f0-9]{32}$/;
 
-export const workspaceSlugSchema = z.string().regex(V1_ROUTE_SLUG_PATTERN);
-export const userIdSchema = z.string().regex(V1_USER_ID_PATTERN);
-export const workspaceIdSchema = z.string().regex(V1_WORKSPACE_ID_PATTERN);
-export const sessionIdSchema = z.string().regex(V1_SESSION_ID_PATTERN);
+export const workspaceSlugSchema = z.string().regex(ROUTE_SLUG_PATTERN);
+export const userIdSchema = z.string().regex(USER_ID_PATTERN);
+export const workspaceIdSchema = z.string().regex(WORKSPACE_ID_PATTERN);
+export const sessionIdSchema = z.string().regex(SESSION_ID_PATTERN);
 
 export const displayNameSchema = z
   .string()
@@ -24,7 +24,7 @@ export function isWorkspaceSlug(value: string): boolean {
   return workspaceSlugSchema.safeParse(value).success;
 }
 
-export type V1WorkspaceRoute = z.infer<typeof workspaceRouteSchema>;
+export type WorkspaceRoute = z.infer<typeof workspaceRouteSchema>;
 export type UserId = z.infer<typeof userIdSchema>;
 export type WorkspaceId = z.infer<typeof workspaceIdSchema>;
 export type SessionId = z.infer<typeof sessionIdSchema>;

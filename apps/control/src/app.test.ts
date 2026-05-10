@@ -33,10 +33,10 @@ async function createWebDist(root: string): Promise<string> {
   await mkdir(join(webDistDir, "assets"), { recursive: true });
   await writeFile(
     join(webDistDir, "index.html"),
-    '<!doctype html><html><head><script type="module" src="./assets/app.js"></script></head><body>V1 test shell</body></html>',
+    '<!doctype html><html><head><script type="module" src="./assets/app.js"></script></head><body>V2 test shell</body></html>',
     "utf8",
   );
-  await writeFile(join(webDistDir, "assets", "app.js"), "console.log('v1 shell');\n", "utf8");
+  await writeFile(join(webDistDir, "assets", "app.js"), "console.log('v2 shell');\n", "utf8");
   return webDistDir;
 }
 
@@ -61,7 +61,7 @@ async function withApp<T>(
   fn: (app: ControlApp, root: string) => Promise<T>,
   options: Partial<ControlAppOptions> = {},
 ): Promise<T> {
-  const root = await mkdtemp(join(tmpdir(), "frc-v1-control-"));
+  const root = await mkdtemp(join(tmpdir(), "frc-v2-control-"));
   const templateDir = await createTemplate(root);
   const webDistDir = await createWebDist(root);
   const advantageScopeDistDir = await createAdvantageScopeDist(root);
@@ -301,7 +301,7 @@ function workspaceBySlug(app: ControlApp, slug: string) {
   return workspace!;
 }
 
-describe("V1-1 session skeleton", () => {
+describe("session skeleton", () => {
   test("creating alice writes user, workspace, session, and project files", async () => {
     await withApp(async (app) => {
       const response = await login(app, "alice");
@@ -348,7 +348,7 @@ describe("V1-1 session skeleton", () => {
         }),
       );
       expect(workspace.status).toBe(200);
-      expect(await workspace.text()).toContain("V1 test shell");
+      expect(await workspace.text()).toContain("V2 test shell");
     });
   });
 
@@ -389,7 +389,7 @@ describe("V1-1 session skeleton", () => {
   });
 });
 
-describe("V1-2 routing and shell APIs", () => {
+describe("routing and shell APIs", () => {
   test("serves the Vite shell and workspace-prefixed assets after auth", async () => {
     await withApp(async (app) => {
       const response = await login(app, "alice");
@@ -401,7 +401,7 @@ describe("V1-2 routing and shell APIs", () => {
         }),
       );
       expect(shell.status).toBe(200);
-      expect(await shell.text()).toContain("V1 test shell");
+      expect(await shell.text()).toContain("V2 test shell");
 
       const asset = await app.fetch(
         new Request("http://localhost/u/alice/assets/app.js", {
@@ -410,7 +410,7 @@ describe("V1-2 routing and shell APIs", () => {
       );
       expect(asset.status).toBe(200);
       expect(asset.headers.get("content-type")).toContain("text/javascript");
-      expect(await asset.text()).toContain("v1 shell");
+      expect(await asset.text()).toContain("v2 shell");
     });
   });
 
@@ -765,7 +765,7 @@ describe("V2 code container orchestration", () => {
   });
 });
 
-describe("V1-5 run queue and log streaming", () => {
+describe("run queue and log streaming", () => {
   function createControlledRunCommands() {
     const encoder = new TextEncoder();
     const commands: Array<{
@@ -954,7 +954,7 @@ describe("V1-5 run queue and log streaming", () => {
   });
 });
 
-describe("V1-6 AdvantageScope Lite and NT4 routing", () => {
+describe("AdvantageScope Lite and NT4 routing", () => {
   test("serves AdvantageScope Lite under /scope with assets manifest and www redirect", async () => {
     await withApp(async (app) => {
       const index = await app.fetch(new Request("http://localhost/scope/"));
