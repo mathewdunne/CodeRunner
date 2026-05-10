@@ -6,35 +6,14 @@ GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.gradle}"
 GRADLE_PROJECT_CACHE_DIR="${GRADLE_PROJECT_CACHE_DIR:-$HOME/.gradle-project-sim}"
 pid_file="${SIM_PID_FILE:-$HOME/sim.pid}"
 log_file="${SIM_LOG_FILE:-$HOME/sim.log}"
-
-process_state() {
-  local pid="$1"
-  if [[ ! -r "/proc/$pid/stat" ]]; then
-    return 1
-  fi
-
-  awk '{ print $3 }' "/proc/$pid/stat"
-}
-
-is_running_process() {
-  local pid="$1"
-  local state
-
-  state="$(process_state "$pid" 2>/dev/null || true)"
-  [[ -n "$state" && "$state" != "Z" ]]
-}
+project_root="${SIM_PROJECT_ROOT:-/workspace/project}"
 
 mkdir -p "$(dirname "$pid_file")" "$(dirname "$log_file")" "$GRADLE_USER_HOME" "$GRADLE_PROJECT_CACHE_DIR"
 
-if [[ -f "$pid_file" ]]; then
-  pid="$(cat "$pid_file")"
-  if [[ -n "$pid" ]] && is_running_process "$pid"; then
-    echo "sim already running with pid $pid"
-    exit 0
-  fi
-fi
+export SIM_PROJECT_ROOT="$project_root"
+/usr/local/bin/stop-sim.sh >/dev/null 2>&1 || true
 
-cd /workspace/project
+cd "$project_root"
 if [[ ! -f build.gradle || ! -f gradlew ]]; then
   echo "Cannot start sim: mounted project is missing build.gradle or gradlew." >"$log_file"
   exit 1

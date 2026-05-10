@@ -29,6 +29,8 @@ type HalSimMessage = {
   data: Record<string, unknown>;
 };
 
+const DRIVER_STATION_TYPE = "DriverStation";
+
 const STATION_VALUES: Record<AllianceStation, string> = {
   red1: "red1",
   red2: "red2",
@@ -49,6 +51,21 @@ function parseDsMode(autonomous: unknown, test: unknown): DsMode {
   if (test === true) return "test";
   if (autonomous === true) return "auto";
   return "teleop";
+}
+
+function readDsField(
+  data: Record<string, unknown>,
+  ...names: string[]
+): unknown {
+  for (const name of names) {
+    for (const prefix of ["<>", ">", "<", ""]) {
+      const key = `${prefix}${name}`;
+      if (key in data) {
+        return data[key];
+      }
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -75,7 +92,7 @@ export function useHalSim(workspaceSlug: string | null): UseHalSimReturn {
     const ws = socketRef.current;
     if (ws?.readyState === WebSocket.OPEN) {
       const message: HalSimMessage = {
-        type: "DriverStation",
+        type: DRIVER_STATION_TYPE,
         device: "",
         data: fields,
       };
@@ -85,6 +102,7 @@ export function useHalSim(workspaceSlug: string | null): UseHalSimReturn {
 
   const setEnabled = useCallback(
     (value: boolean) => {
+      setEnabledState(value);
       sendDs({ ">enabled": value, ">new_data": true });
     },
     [sendDs],
@@ -92,6 +110,7 @@ export function useHalSim(workspaceSlug: string | null): UseHalSimReturn {
 
   const setMode = useCallback(
     (newMode: DsMode) => {
+      setModeState(newMode);
       sendDs({
         ">autonomous": newMode === "auto",
         ">test": newMode === "test",
@@ -103,13 +122,22 @@ export function useHalSim(workspaceSlug: string | null): UseHalSimReturn {
 
   const setEStop = useCallback(
     (value: boolean) => {
-      sendDs({ ">estop": value, ">new_data": true });
+      setEStoppedState(value);
+      if (value) {
+        setEnabledState(false);
+      }
+      sendDs({
+        ">estop": value,
+        ...(value ? { ">enabled": false } : {}),
+        ">new_data": true,
+      });
     },
     [sendDs],
   );
 
   const setAlliance = useCallback(
     (station: AllianceStation) => {
+      setAllianceState(station);
       sendDs({ ">station": STATION_VALUES[station], ">new_data": true });
     },
     [sendDs],
@@ -138,9 +166,9 @@ export function useHalSim(workspaceSlug: string | null): UseHalSimReturn {
 
         // Announce DS presence
         const announce: HalSimMessage = {
-          type: "DriverStation",
+          type: DRIVER_STATION_TYPE,
           device: "",
-          data: { ">ds": true, ">new_data": true },
+          data: { ">ds": true, ">fms": false, ">new_data": true },
         };
         ws.send(JSON.stringify(announce));
       });
@@ -149,27 +177,28 @@ export function useHalSim(workspaceSlug: string | null): UseHalSimReturn {
         if (!mountedRef.current) return;
         try {
           const msg = JSON.parse(String(event.data)) as HalSimMessage;
-          if (msg.type !== "DriverStation" || typeof msg.data !== "object") {
+          if (msg.type !== DRIVER_STATION_TYPE || typeof msg.data !== "object") {
             return;
           }
           const d = msg.data;
           // Read authoritative state from the sim (fields with `<>` or `<` prefix
           // come from the sim; `>` fields are echoed back).
-          if ("<>enabled" in d || ">enabled" in d) {
-            const val = d["<>enabled"] ?? d[">enabled"];
-            if (typeof val === "boolean") setEnabledState(val);
+          const enabledValue = readDsField(d, "enabled");
+          if (typeof enabledValue === "boolean") {
+            setEnabledState(enabledValue);
           }
-          if ("<>autonomous" in d || ">autonomous" in d || "<>test" in d || ">test" in d) {
-            const auto = d["<>autonomous"] ?? d[">autonomous"];
-            const test = d["<>test"] ?? d[">test"];
+          const auto = readDsField(d, "autonomous");
+          const test = readDsField(d, "test");
+          if (typeof auto === "boolean" || typeof test === "boolean") {
             setModeState(parseDsMode(auto, test));
           }
-          if ("<>estop" in d || ">estop" in d) {
-            const val = d["<>estop"] ?? d[">estop"];
-            if (typeof val === "boolean") setEStoppedState(val);
+          const eStopValue = readDsField(d, "estop", "eStop");
+          if (typeof eStopValue === "boolean") {
+            setEStoppedState(eStopValue);
           }
-          if ("<>station" in d || ">station" in d) {
-            const val = d["<>station"] ?? d[">station"];
+          const stationValue = readDsField(d, "station", "allianceStationId");
+          if (stationValue !== undefined) {
+            const val = stationValue;
             setAllianceState(parseStation(val));
           }
         } catch {

@@ -150,6 +150,7 @@ body.resizing iframe {
 
 [data-pane="console"] {
   min-height: 120px;
+  overflow: hidden;
 }
 
 @media (max-width: 900px) {

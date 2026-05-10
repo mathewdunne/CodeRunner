@@ -38,6 +38,7 @@ export function WorkspacePage() {
       : "Loading";
 
   const sessionReady = sessionState.status === "ready";
+  const containerRunning = containerStatus?.code.state === "running";
   const errorMessage =
     sessionState.status === "error" ? sessionState.message : undefined;
 
@@ -72,6 +73,7 @@ export function WorkspacePage() {
             halSim={halSim}
             runStatus={runStatus}
             runConnection={connection}
+            containerRunning={containerRunning}
             sessionReady={sessionReady}
             consoleLines={consoleLines}
             onStartRun={startRun}

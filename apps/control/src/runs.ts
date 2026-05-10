@@ -235,14 +235,23 @@ export class RunManager {
     return this.cancelWorkspace(workspaceId);
   }
 
+  private stopContainerSim(workspaceId: WorkspaceId): void {
+    void this.containers.stopWorkspaceSim(workspaceId).catch(() => {
+      // Best effort. The run job still transitions through command exit, and
+      // stale/missing containers are surfaced by container status endpoints.
+    });
+  }
+
   private cancelWorkspace(workspaceId: WorkspaceId): boolean {
     const job = this.jobsByWorkspace.get(workspaceId);
     if (!job) {
+      this.stopContainerSim(workspaceId);
       return false;
     }
 
     job.canceled = true;
     this.broadcast(job, { type: "status", status: "stopping" });
+    this.stopContainerSim(workspaceId);
     job.command?.kill("SIGTERM");
     return true;
   }

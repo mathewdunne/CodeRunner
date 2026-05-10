@@ -21,7 +21,7 @@ interface UseRunChannelReturn {
   stopRun: () => void;
 }
 
-const MAX_CONSOLE_LINES = 80;
+const MAX_CONSOLE_LINES = 500;
 
 export function useRunChannel(
   workspaceSlug: string | null,

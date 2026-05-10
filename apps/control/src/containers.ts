@@ -219,6 +219,17 @@ export class ContainerOrchestrator {
     }
   }
 
+  async stopWorkspaceSim(workspaceId: WorkspaceId): Promise<boolean> {
+    const name = codeContainerName(workspaceId);
+    const existing = await this.inspectContainer(name);
+    if (!existing?.State?.Running) {
+      return false;
+    }
+
+    const result = await this.runDocker(["exec", name, "/usr/local/bin/stop-sim.sh"], true);
+    return result.exitCode === 0;
+  }
+
   async removeCodeContainer(workspaceId: WorkspaceId): Promise<void> {
     const name = codeContainerName(workspaceId);
     await this.runDocker(["rm", "-f", name], true);
