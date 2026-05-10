@@ -79,7 +79,7 @@ export function Allowlist() {
 
       {isEmpty && (
         <p className="text-muted-foreground text-sm">
-          Allowlist is empty — all emails are permitted (dev mode).
+          Allowlist is empty — OAuth sign-in is blocked until an email or domain is added.
         </p>
       )}
 

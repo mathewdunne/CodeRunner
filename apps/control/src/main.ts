@@ -17,7 +17,7 @@ function logConfig(app: Awaited<ReturnType<typeof createApp>>): void {
   console.log(`  Idle stop:           ${c.idleStopMinutes} min  (check every ${c.idleCheckIntervalMs / 1000}s)`);
   console.log(`  Container user:      ${c.containerUser ?? "(auto)"}`);
   console.log(`  Container auto-start:${c.containerAutoStart ? " yes" : " no"}`);
-  console.log(`  Admin auth:          ${c.adminToken ? "bearer token" : "localhost-only"}`);
+  console.log(`  Admin auth:          Better Auth admin role${c.adminToken ? " + bearer break-glass" : ""}`);
   console.log(`  Max students (ports): ${maxStudents}`);
   console.log("────────────────────────");
 }

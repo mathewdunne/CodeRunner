@@ -18,15 +18,15 @@ The question is how to integrate without creating a compatibility mess.
 **Let Better Auth own its tables; adapt our app around it.**
 
 1. **Table names.** Better Auth's default table names (`user`, `session`,
-   `account`, `verification`) are used without customization. Our legacy
-   `users` and `sessions` tables are renamed to `legacy_users` and
-   `legacy_sessions` via migration 007. They are kept for reference but
-   not referenced by running code.
+   `account`, `verification`) are used without customization. Migration 007
+   drops the pre-OAuth `users` and `sessions` tables instead of preserving
+   compatibility copies; there are no production users of the authless model.
 
 2. **User identity.** Better Auth generates opaque string IDs for users.
    The `workspaces` table's `user_id` column now stores Better Auth user
-   IDs (not `usr_*`). The `@frc-sim/contracts` package relaxes
-   `userIdSchema` to `z.string().min(1)`.
+   IDs (not `usr_*`). The `@frc-sim/contracts` package treats user IDs as
+   bounded opaque strings and no longer exports the old `usr_*`/`ses_*`
+   pattern constants.
 
 3. **Custom fields.** `role` (`student` | `admin`, default `student`) and
    `slug` (workspace slug, derived from email) are added via Better Auth's
@@ -34,11 +34,11 @@ The question is how to integrate without creating a compatibility mess.
    co-located with the user record without a separate table.
 
 4. **Session management.** Better Auth manages sessions, cookies, and
-   token refresh. The old `cookies.ts` (HMAC signing, `frc_session` cookie)
-   is deleted. Better Auth uses cookie prefix `frc` → `frc.session_token`.
+   token refresh. The old `cookies.ts` HMAC module is deleted. Better Auth's
+   session cookie is explicitly named `frc_session`.
 
-5. **Migration strategy.** Our migration runner applies migration 007 (rename
-   legacy tables, rebuild FK-dependent tables). Then Better Auth's programmatic
+5. **Migration strategy.** Our migration runner applies migration 007 (remove
+   old auth tables, rebuild FK-dependent tables). Then Better Auth's programmatic
    `runMigrations()` creates its own tables. This ensures Better Auth's schema
    is always up to date with the installed version.
 
@@ -48,9 +48,10 @@ The question is how to integrate without creating a compatibility mess.
 
 ## Consequences
 
-- Legacy `usr_*` / `ses_*` ID patterns are no longer generated. Test
-  fixtures and any code that pattern-matches on these must be updated.
-- The `cookies.ts` module is no longer used by the auth flow. It remains
-  on disk until all references are confirmed removed.
+- Pre-OAuth `usr_*` / `ses_*` ID patterns are no longer generated or accepted
+  as a special case. Test fixtures and any code that pattern-matches on these
+  must be updated.
+- The `cookies.ts` module is removed; Better Auth is the only auth/session
+  implementation.
 - Better Auth version upgrades may introduce schema changes; running
   `runMigrations()` at startup handles this automatically.

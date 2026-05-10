@@ -38,7 +38,7 @@ async function main(): Promise<void> {
     case "list": {
       const data = await loadAllowlist();
       if (data.emails.length === 0 && data.domains.length === 0) {
-        console.log("Allowlist is empty — all emails are permitted (dev mode).");
+        console.log("Allowlist is empty — OAuth sign-in is blocked until an email or domain is added.");
         return;
       }
       if (data.emails.length > 0) {

@@ -1,18 +1,11 @@
 import { z } from "zod";
 
 export const ROUTE_SLUG_PATTERN = /^[a-zA-Z0-9_-]{1,40}$/;
-/** @deprecated Better Auth generates its own user IDs. Use `z.string().min(1)` for new code. */
-export const USER_ID_PATTERN = /^usr_[a-f0-9]{32}$/;
 export const WORKSPACE_ID_PATTERN = /^ws_[a-f0-9]{32}$/;
-/** @deprecated Better Auth manages sessions. */
-export const SESSION_ID_PATTERN = /^ses_[a-f0-9]{32}$/;
 
 export const workspaceSlugSchema = z.string().regex(ROUTE_SLUG_PATTERN);
-/** Accepts both legacy usr_* IDs and Better Auth opaque IDs. */
-export const userIdSchema = z.string().min(1);
+export const userIdSchema = z.string().trim().min(1).max(128);
 export const workspaceIdSchema = z.string().regex(WORKSPACE_ID_PATTERN);
-/** @deprecated Better Auth manages sessions. */
-export const sessionIdSchema = z.string().min(1);
 
 export const displayNameSchema = z
   .string()
@@ -31,7 +24,6 @@ export function isWorkspaceSlug(value: string): boolean {
 export type WorkspaceRoute = z.infer<typeof workspaceRouteSchema>;
 export type UserId = z.infer<typeof userIdSchema>;
 export type WorkspaceId = z.infer<typeof workspaceIdSchema>;
-export type SessionId = z.infer<typeof sessionIdSchema>;
 export type WorkspaceSlug = z.infer<typeof workspaceSlugSchema>;
 
 export const heartbeatRequestSchema = z.object({
@@ -42,9 +34,9 @@ export const sessionResponseSchema = z.object({
   user: z.object({
     id: userIdSchema,
     displayName: z.string(),
-    email: z.string().optional(),
+    email: z.string(),
     slug: workspaceSlugSchema,
-    role: z.enum(["student", "admin"]).optional(),
+    role: z.enum(["student", "admin"]),
   }),
   workspace: z.object({
     id: workspaceIdSchema,
@@ -126,6 +118,8 @@ export const adminWorkspaceStatusSchema = z.object({
   }),
   user: z.object({
     displayName: z.string(),
+    email: z.string(),
+    role: z.enum(["student", "admin"]),
     slug: workspaceSlugSchema,
     lastSeenAt: z.string(),
   }),

@@ -70,11 +70,11 @@ Copy the example environment file and edit as needed:
 cp .env.example .env
 ```
 
-**At minimum**, change the session secret and configure OAuth providers:
+**At minimum**, change the Better Auth secret and configure OAuth providers:
 
 ```bash
 # .env
-FRC_SESSION_SECRET=your-random-secret-string-here
+BETTER_AUTH_SECRET=your-random-secret-string-here
 
 # OAuth — register apps at the provider and fill in these values.
 # At least one provider (GitHub or Google) must be configured for login.
@@ -93,7 +93,21 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
   Create OAuth client ID* (type: Web application). Add
   `http://localhost:4000/api/auth/callback/google` as an authorised redirect URI.
 
-If only one provider is configured, users will see one "Sign in" button.
+Add at least one coach/admin email or team domain before testing OAuth:
+
+```bash
+bun run allowlist:add coach@frcteam.org
+# or
+bun run allowlist:add frcteam.org
+```
+
+After the first coach signs in, promote them:
+
+```bash
+bun run users:promote coach@frcteam.org
+```
+
+If only one provider is configured, users will see one working sign-in option.
 
 See [Configuration](#5-configuration) for all options.
 
@@ -154,7 +168,7 @@ Open `http://localhost:4000/` in a browser. You should see the login page.
 Check admin status:
 
 ```bash
-curl http://localhost:4000/admin/status
+curl -H "Authorization: Bearer $ADMIN_TOKEN" http://localhost:4000/admin/status
 ```
 
 ---
@@ -181,7 +195,8 @@ This removes stopped (exited) managed containers. To also stop running ones, use
 
 ```bash
 # Stop all workspaces
-curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/stop-containers
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -X POST http://localhost:4000/admin/workspaces/<workspaceId>/stop-containers
 ```
 
 Or stop containers manually:
@@ -211,7 +226,7 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `FRC_MIGRATIONS_DIR` | auto-detected | Database migrations directory |
 | `FRC_WEB_DIST_DIR` | `apps/web/dist` | Built web shell assets |
 | `FRC_ASCOPE_DIST_DIR` | `dist/advantagescope` | Built AdvantageScope Lite assets |
-| `FRC_SESSION_SECRET` | *(dev default)* | **Change this!** HMAC secret for session cookies |
+| `BETTER_AUTH_SECRET` | *(dev default)* | **Change this!** Better Auth cookie/session secret |
 | `FRC_DOCKER_PATH` | `docker` | Docker binary path |
 | `FRC_CONTAINER_USER` | auto-detected | UID:GID used inside code containers |
 | `FRC_UID` / `FRC_GID` | *(none)* | Alternative UID/GID inputs when `FRC_CONTAINER_USER` is unset |
@@ -224,7 +239,7 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `SIM_STARTUP_TIMEOUT_MS` | `30000` | Sim readiness timeout after build startup |
 | `IDLE_STOP_MINUTES` | `30` | Stop containers after N min idle |
 | `IDLE_CHECK_INTERVAL_MS` | `60000` | Idle sweep interval |
-| `ADMIN_TOKEN` | *(none)* | Bearer token for admin API; unset = localhost-only |
+| `ADMIN_TOKEN` | *(none)* | Optional break-glass bearer token for admin API bootstrap; unset = admin session only |
 | `BETTER_AUTH_URL` | `http://localhost:4000` | Base URL for Better Auth callbacks/redirects |
 | `GITHUB_CLIENT_ID` | *(none)* | GitHub OAuth app client ID |
 | `GITHUB_CLIENT_SECRET` | *(none)* | GitHub OAuth app client secret |
@@ -365,7 +380,7 @@ docker builder prune -f         # Remove build cache
 ### Admin status API
 
 ```bash
-curl http://localhost:4000/admin/status | jq .
+curl -H "Authorization: Bearer $ADMIN_TOKEN" http://localhost:4000/admin/status | jq .
 ```
 
 Returns:
@@ -414,7 +429,8 @@ docker stats --filter label=frc-sim.managed=true --no-stream
 **Recovery:**
 ```bash
 # Container is auto-recreated on next run. If persistent:
-curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-code
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-code
 # Or increase memory:
 # CODE_MEMORY_LIMIT=3072m (restart control plane)
 ```
@@ -426,7 +442,8 @@ curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-code
 **Recovery:**
 ```bash
 # Restart the code container
-curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-code
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-code
 # Check container logs
 docker logs frc-v2-code-<workspaceId> --tail 50
 ```
@@ -607,6 +624,6 @@ CODE_MEMORY_LIMIT=3072m
 | **Backup projects** | `bun run backup` |
 | **Restore projects** | `bun run restore -- <dir>` |
 | **Cleanup containers** | `bun run docker:cleanup` |
-| **Admin status** | `curl http://localhost:4000/admin/status` |
-| **Restart code container** | `curl -X POST http://localhost:4000/admin/workspaces/<id>/restart-code` |
-| **Stop workspace containers** | `curl -X POST http://localhost:4000/admin/workspaces/<id>/stop-containers` |
+| **Admin status** | `curl -H "Authorization: Bearer $ADMIN_TOKEN" http://localhost:4000/admin/status` |
+| **Restart code container** | `curl -H "Authorization: Bearer $ADMIN_TOKEN" -X POST http://localhost:4000/admin/workspaces/<id>/restart-code` |
+| **Stop workspace containers** | `curl -H "Authorization: Bearer $ADMIN_TOKEN" -X POST http://localhost:4000/admin/workspaces/<id>/stop-containers` |

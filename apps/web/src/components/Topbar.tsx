@@ -5,6 +5,7 @@ import type { RunConnection, RunStatus } from "@/hooks/useRunChannel";
 import type { EditorStatus } from "@/hooks/useEditorReachability";
 import type { ScopeStatus } from "@/hooks/useScopeHandshake";
 import type { HalSimConnection } from "@/hooks/useHalSim";
+import { authClient } from "@/lib/auth-client";
 
 interface TopbarProps {
   displayName: string;
@@ -30,6 +31,11 @@ export function Topbar({
   scopeStatus,
   halSimConnection,
 }: TopbarProps) {
+  async function signOut() {
+    await authClient.signOut();
+    window.location.assign("/login");
+  }
+
   return (
     <header className="flex h-[52px] items-center gap-3 border-b border-border px-3.5">
       <div className="flex min-w-0 items-baseline gap-2.5">
@@ -52,11 +58,9 @@ export function Topbar({
       />
 
       <div className="ml-auto flex items-center gap-2">
-        <form method="post" action="/logout">
-          <Button type="submit" variant="outline" size="sm">
-            Logout
-          </Button>
-        </form>
+        <Button type="button" variant="outline" size="sm" onClick={() => void signOut()}>
+          Logout
+        </Button>
       </div>
     </header>
   );

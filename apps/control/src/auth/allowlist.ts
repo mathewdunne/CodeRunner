@@ -4,8 +4,8 @@
  * File location: data/allowlist.json (gitignored).
  * Schema: { "emails": ["a@b.com"], "domains": ["b.com"] }
  */
-import { readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 
 export type AllowlistData = {
   emails: string[];
@@ -21,6 +21,26 @@ function normalize(s: string): string {
   return s.trim().toLowerCase();
 }
 
+function normalizeEntry(kind: "email" | "domain", value: string): string {
+  const normalized = normalize(value);
+  if (!normalized) {
+    throw new Error("Allowlist value is required.");
+  }
+
+  if (kind === "email") {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(normalized)) {
+      throw new Error("Allowlist email must be a valid email address.");
+    }
+    return normalized;
+  }
+
+  const domain = normalized.startsWith("@") ? normalized.slice(1) : normalized;
+  if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/u.test(domain)) {
+    throw new Error("Allowlist domain must be a valid domain, e.g. frcteam.org.");
+  }
+  return domain;
+}
+
 export function setAllowlistPath(dataDir: string): void {
   allowlistPath = resolve(dataDir, "allowlist.json");
 }
@@ -31,8 +51,8 @@ export async function loadAllowlist(): Promise<AllowlistData> {
     const raw = await readFile(allowlistPath, "utf8");
     const parsed = JSON.parse(raw) as Partial<AllowlistData>;
     cached = {
-      emails: (parsed.emails ?? []).map(normalize),
-      domains: (parsed.domains ?? []).map(normalize),
+      emails: (parsed.emails ?? []).map((entry) => normalizeEntry("email", entry)),
+      domains: (parsed.domains ?? []).map((entry) => normalizeEntry("domain", entry)),
     };
   } catch {
     // File missing or invalid — treat as empty allowlist (blocks everyone).
@@ -50,11 +70,6 @@ export function getAllowlist(): AllowlistData {
 }
 
 export function isEmailAllowed(email: string): boolean {
-  // If no allowlist is configured (both lists empty), allow everyone (dev mode).
-  if (cached.emails.length === 0 && cached.domains.length === 0) {
-    return true;
-  }
-
   const normalizedEmail = normalize(email);
   if (cached.emails.includes(normalizedEmail)) {
     return true;
@@ -71,16 +86,19 @@ export function isEmailAllowed(email: string): boolean {
 export async function saveAllowlist(data: AllowlistData): Promise<void> {
   if (!allowlistPath) throw new Error("Allowlist path not set");
   const sorted: AllowlistData = {
-    emails: [...data.emails].sort(),
-    domains: [...data.domains].sort(),
+    emails: [...new Set(data.emails.map((entry) => normalizeEntry("email", entry)))].sort(),
+    domains: [...new Set(data.domains.map((entry) => normalizeEntry("domain", entry)))].sort(),
   };
-  await writeFile(allowlistPath, JSON.stringify(sorted, null, 2) + "\n", "utf8");
+  await mkdir(dirname(allowlistPath), { recursive: true });
+  const tempPath = `${allowlistPath}.${process.pid}.${Date.now()}.tmp`;
+  await writeFile(tempPath, JSON.stringify(sorted, null, 2) + "\n", "utf8");
+  await rename(tempPath, allowlistPath);
   cached = sorted;
 }
 
 export async function addAllowlistEntry(kind: "email" | "domain", value: string): Promise<AllowlistData> {
   const current = { ...cached, emails: [...cached.emails], domains: [...cached.domains] };
-  const normalized = normalize(value);
+  const normalized = normalizeEntry(kind, value);
   const list = kind === "email" ? current.emails : current.domains;
   if (!list.includes(normalized)) {
     list.push(normalized);
@@ -91,7 +109,7 @@ export async function addAllowlistEntry(kind: "email" | "domain", value: string)
 
 export async function removeAllowlistEntry(kind: "email" | "domain", value: string): Promise<AllowlistData> {
   const current = { ...cached, emails: [...cached.emails], domains: [...cached.domains] };
-  const normalized = normalize(value);
+  const normalized = normalizeEntry(kind, value);
   if (kind === "email") {
     current.emails = current.emails.filter((e) => e !== normalized);
   } else {

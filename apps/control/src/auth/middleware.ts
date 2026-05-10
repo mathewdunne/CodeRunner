@@ -98,22 +98,47 @@ export async function requireAdmin(
     return session;
   }
 
-  // Localhost-only fallback: when no adminToken is set, allow unauthenticated admin access
-  if (!adminToken) {
-    return {
-      user: session?.user ?? {
-        id: "<localhost>",
-        email: "<localhost>",
-        name: "Localhost Admin",
-        role: "admin",
-        slug: "",
-      },
-    };
-  }
-
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   return new Response("Forbidden", { status: 403 });
+}
+
+function normalizeHost(host: string): string {
+  return host.trim().toLowerCase().replace(/^\[(.*)\]$/u, "$1");
+}
+
+function isLoopbackHost(host: string): boolean {
+  const normalized = normalizeHost(host);
+  return normalized === "localhost" || normalized === "127.0.0.1" || normalized === "::1";
+}
+
+export function isAllowedWebSocketOrigin(request: Request, baseUrl: string): boolean {
+  const origin = request.headers.get("origin");
+  if (!origin) {
+    // Non-browser clients often omit Origin. Browser WebSocket requests include it,
+    // so cross-site hijacking is still blocked by the checks below.
+    return true;
+  }
+
+  try {
+    const originUrl = new URL(origin);
+    const expectedUrl = new URL(baseUrl);
+    if (normalizeHost(originUrl.host) === normalizeHost(expectedUrl.host)) {
+      return true;
+    }
+
+    // Local development commonly mixes localhost and 127.0.0.1 while keeping
+    // the same control plane; allow those loopback aliases only in loopback dev.
+    return isLoopbackHost(originUrl.hostname) && isLoopbackHost(expectedUrl.hostname);
+  } catch {
+    return false;
+  }
+}
+
+export function requireWebSocketOrigin(request: Request, baseUrl: string): Response | null {
+  return isAllowedWebSocketOrigin(request, baseUrl)
+    ? null
+    : new Response("WebSocket origin is not allowed.", { status: 403 });
 }

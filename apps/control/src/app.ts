@@ -1,4 +1,4 @@
-import { cp, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/promises";
+import { cp, lstat, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/promises";
 import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
   heartbeatRequestSchema,
@@ -18,7 +18,7 @@ import { ContainerOrchestrator, type DockerRunner } from "./containers";
 import { IdleManager } from "./idle";
 import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
 import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from "./storage";
-import { getSessionFromRequest, requireAdmin, requireWorkspaceOwnership } from "./auth/middleware";
+import { getSessionFromRequest, requireAdmin, requireWebSocketOrigin, requireWorkspaceOwnership } from "./auth/middleware";
 
 export type ControlApp = {
   fetch(request: Request, server?: BunUpgradeServer): Promise<Response>;
@@ -118,8 +118,26 @@ function escapeHtml(value: string): string {
     .replaceAll('"', "&quot;");
 }
 
-function loginPage(error: string | null = null, init: ResponseInit = {}): Response {
-  const errorMarkup = error ? `<p role="alert">${escapeHtml(error)}</p>` : "";
+function loginPage(storage: AppStorage, error: string | null = null, init: ResponseInit = {}): Response {
+  const friendlyError =
+    error === "forbidden" || error?.toLowerCase().includes("roster")
+      ? "You're not on the roster yet. Ask your coach to add you."
+      : error?.replaceAll("_", " ") ?? null;
+  const errorMarkup = friendlyError ? `<p id="login-error" role="alert">${escapeHtml(friendlyError)}</p>` : `<p id="login-error" role="alert" hidden></p>`;
+  const providers = [
+    storage.config.githubClientId && storage.config.githubClientSecret
+      ? { id: "github", label: "Sign in with GitHub" }
+      : null,
+    storage.config.googleClientId && storage.config.googleClientSecret
+      ? { id: "google", label: "Sign in with Google" }
+      : null,
+  ].filter((provider): provider is { id: string; label: string } => Boolean(provider));
+  const providerMarkup =
+    providers.length > 0
+      ? providers
+          .map((provider) => `<button class="btn" type="button" data-provider="${provider.id}">${provider.label}</button>`)
+          .join("\n")
+      : `<p role="alert">No OAuth provider is configured yet. Ask an operator to set GitHub or Google OAuth credentials.</p>`;
 
   return htmlResponse(`<!doctype html>
 <html lang="en">
@@ -131,6 +149,7 @@ function loginPage(error: string | null = null, init: ResponseInit = {}): Respon
       body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: system-ui, sans-serif; background: #101820; color: #f5f7fb; }
       main { width: min(28rem, calc(100vw - 2rem)); text-align: center; }
       .btn { display: block; width: 100%; font: inherit; padding: 0.7rem 0.8rem; border-radius: 0.4rem; border: 1px solid #52606d; background: #2f80ed; color: white; cursor: pointer; margin-bottom: 0.5rem; text-decoration: none; box-sizing: border-box; }
+      .btn:disabled { opacity: 0.65; cursor: wait; }
       p[role="alert"] { color: #ffb4ab; }
       .note { color: #97a6b6; font-size: 0.85rem; margin-top: 1rem; }
     </style>
@@ -140,10 +159,35 @@ function loginPage(error: string | null = null, init: ResponseInit = {}): Respon
       <h1>FRC Web Simulator</h1>
       ${errorMarkup}
       <p>Sign in to access your workspace.</p>
-      <a class="btn" href="/api/auth/sign-in/social?provider=github&callbackURL=/">Sign in with GitHub</a>
-      <a class="btn" href="/api/auth/sign-in/social?provider=google&callbackURL=/">Sign in with Google</a>
+      ${providerMarkup}
       <p class="note">Not on the roster? Ask your coach to add you.</p>
     </main>
+    <script>
+      const error = document.getElementById("login-error");
+      async function signIn(provider) {
+        for (const button of document.querySelectorAll("button[data-provider]")) button.disabled = true;
+        try {
+          const response = await fetch("/api/auth/sign-in/social", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            credentials: "same-origin",
+            body: JSON.stringify({ provider, callbackURL: "/", errorCallbackURL: "/login" }),
+          });
+          const body = await response.json().catch(() => ({}));
+          if (!response.ok || !body.url) {
+            throw new Error(body.message || body.error || "Unable to start OAuth sign-in.");
+          }
+          window.location.assign(body.url);
+        } catch (err) {
+          error.hidden = false;
+          error.textContent = err instanceof Error ? err.message : "Unable to start OAuth sign-in.";
+          for (const button of document.querySelectorAll("button[data-provider]")) button.disabled = false;
+        }
+      }
+      for (const button of document.querySelectorAll("button[data-provider]")) {
+        button.addEventListener("click", () => signIn(button.dataset.provider));
+      }
+    </script>
   </body>
 </html>`, init);
 }
@@ -158,7 +202,7 @@ function sessionResponse(auth: AuthContext): SessionResponse {
       id: auth.user.id,
       displayName: auth.user.name,
       email: auth.user.email,
-      slug: auth.user.slug,
+      slug: auth.workspace.slug,
       role: auth.user.role as "student" | "admin",
     },
     workspace: {
@@ -486,6 +530,10 @@ async function vscodeWebSocketResponse(
   if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
     return new Response("Expected WebSocket upgrade.", { status: 426 });
   }
+  const originError = requireWebSocketOrigin(request, storage.config.baseUrl);
+  if (originError) {
+    return originError;
+  }
 
   const code = await containers.ensureCodeContainer(auth.workspace);
   const lease = storage.getContainerLease(auth.workspace.id);
@@ -550,6 +598,10 @@ async function nt4WebSocketResponse(
   if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
     return new Response("Expected WebSocket upgrade.", { status: 426 });
   }
+  const originError = requireWebSocketOrigin(request, storage.config.baseUrl);
+  if (originError) {
+    return originError;
+  }
 
   const code = await containers.ensureCodeContainer(auth.workspace);
   const lease = storage.getContainerLease(auth.workspace.id);
@@ -586,6 +638,10 @@ async function halsimWebSocketResponse(
 ): Promise<Response> {
   if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
     return new Response("Expected WebSocket upgrade.", { status: 426 });
+  }
+  const originError = requireWebSocketOrigin(request, storage.config.baseUrl);
+  if (originError) {
+    return originError;
   }
 
   const code = await containers.ensureCodeContainer(auth.workspace);
@@ -650,6 +706,37 @@ async function restoreProjectArchive(projectDir: string, archivePath: string): P
   }
 }
 
+async function directorySizeBytes(root: string): Promise<number> {
+  let total = 0;
+  async function walk(path: string): Promise<void> {
+    let info;
+    try {
+      info = await lstat(path);
+    } catch {
+      return;
+    }
+
+    if (info.isSymbolicLink()) {
+      return;
+    }
+    if (info.isFile()) {
+      total += info.size;
+      return;
+    }
+    if (!info.isDirectory()) {
+      return;
+    }
+
+    const entries = await readdir(path).catch(() => []);
+    for (const entry of entries) {
+      await walk(resolve(path, entry));
+    }
+  }
+
+  await walk(root);
+  return total;
+}
+
 function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatusResponse {
   const entries = storage.listAllWorkspacesWithLeases();
   const idleMinutes = storage.config.idleStopMinutes;
@@ -666,6 +753,8 @@ function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatus
       },
       user: {
         displayName: entry.user.name,
+        email: entry.user.email,
+        role: entry.user.role as "student" | "admin",
         slug: entry.user.slug ?? entry.workspace.slug,
         lastSeenAt: entry.workspace.last_accessed_at,
       },
@@ -727,12 +816,12 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
           return redirect(`/u/${workspace.slug}/`);
         }
       }
-      return loginPage();
+      return loginPage(storage);
     }
 
     if (url.pathname === "/login" && request.method === "GET") {
       const error = url.searchParams.get("error");
-      return loginPage(error);
+      return loginPage(storage, error);
     }
 
     // --- Default-deny: everything below requires a session (or admin token). ---
@@ -740,7 +829,15 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     // If we reach here without matching a gated route, we return 404.
 
     // --- Admin / operator routes ---
-    if (url.pathname === "/admin" || url.pathname === "/admin/") {
+    if (url.pathname === "/admin") {
+      const adminResult = await requireAdmin(storage.auth, storage, request);
+      if (adminResult instanceof Response) {
+        return adminResult;
+      }
+      return redirect("/admin/", { status: 308 });
+    }
+
+    if (url.pathname === "/admin/") {
       const adminResult = await requireAdmin(storage.auth, storage, request);
       if (adminResult instanceof Response) {
         return adminResult;
@@ -763,6 +860,42 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
       if (url.pathname === "/admin/status" && request.method === "GET") {
         return jsonResponse(adminStatusResponse(storage, runs));
+      }
+
+      if (url.pathname === "/admin/containers/stats" && request.method === "GET") {
+        const workspacesById = new Map(
+          storage.listAllWorkspacesWithLeases().map((entry) => [entry.workspace.id, entry]),
+        );
+        const stats = await containers.managedContainerStats();
+        return jsonResponse({
+          ok: true,
+          containers: stats.map((container) => {
+            const entry = container.workspaceId ? workspacesById.get(container.workspaceId as WorkspaceId) : undefined;
+            const lease = entry?.lease ?? null;
+            return {
+              ...container,
+              workspaceSlug: entry?.workspace.slug ?? null,
+              ports: {
+                nt4: lease?.nt4_port ?? null,
+                vscode: lease?.vscode_port ?? null,
+                halsim: lease?.halsim_port ?? null,
+              },
+            };
+          }),
+        });
+      }
+
+      if (url.pathname === "/admin/workspaces/disk-usage" && request.method === "GET") {
+        const entries = storage.listAllWorkspacesWithLeases();
+        const usage = await Promise.all(
+          entries.map(async (entry) => ({
+            workspaceId: entry.workspace.id,
+            workspaceSlug: entry.workspace.slug,
+            projectPath: entry.workspace.project_path,
+            bytes: await directorySizeBytes(entry.workspace.project_path),
+          })),
+        );
+        return jsonResponse({ ok: true, workspaces: usage });
       }
 
       const adminWorkspaceMatch = /^\/admin\/workspaces\/([^/]+)\/(.+)$/.exec(url.pathname);
@@ -886,8 +1019,25 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       // --- User management endpoints ---
       if (url.pathname === "/admin/users" && request.method === "GET") {
         const users = storage.db.query(
-          "SELECT id, name, email, role, slug, createdAt, updatedAt FROM user ORDER BY name",
-        ).all() as Array<{ id: string; name: string; email: string; role: string | null; slug: string | null; createdAt: string; updatedAt: string }>;
+          `
+            SELECT
+              u.id, u.name, u.email, u.role, u.slug, u.createdAt, u.updatedAt,
+              w.id AS workspaceId, w.last_accessed_at AS lastSeenAt
+            FROM user u
+            LEFT JOIN workspaces w ON w.user_id = u.id
+            ORDER BY u.name
+          `,
+        ).all() as Array<{
+          id: string;
+          name: string;
+          email: string;
+          role: string | null;
+          slug: string | null;
+          createdAt: string;
+          updatedAt: string;
+          workspaceId: string | null;
+          lastSeenAt: string | null;
+        }>;
         return jsonResponse({ ok: true, users });
       }
 
@@ -895,13 +1045,63 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       if (userActionMatch && request.method === "POST") {
         const userId = userActionMatch[1] ?? "";
         const action = userActionMatch[2] as "promote" | "demote";
-        const user = storage.db.query("SELECT id, name, email FROM user WHERE id = ?").get(userId) as { id: string; name: string; email: string } | null;
+        const user = storage.db.query("SELECT id, name, email, role FROM user WHERE id = ?").get(userId) as { id: string; name: string; email: string; role: string | null } | null;
         if (!user) {
           return jsonResponse({ error: "User not found." }, { status: 404 });
         }
         const newRole = action === "promote" ? "admin" : "student";
+        if (action === "demote" && user.role === "admin") {
+          const adminCount = storage.db.query("SELECT COUNT(*) AS count FROM user WHERE role = 'admin'").get() as { count: number };
+          if (adminCount.count <= 1) {
+            return jsonResponse({ error: "Cannot demote the last admin user." }, { status: 409 });
+          }
+        }
         storage.db.query("UPDATE user SET role = ?, updatedAt = ? WHERE id = ?").run(newRole, new Date().toISOString(), userId);
         return jsonResponse({ ok: true, userId, role: newRole });
+      }
+
+      const userDeleteMatch = /^\/admin\/users\/([^/]+)$/.exec(url.pathname);
+      if (userDeleteMatch && request.method === "DELETE") {
+        const userId = userDeleteMatch[1] ?? "";
+        const user = storage.db.query("SELECT id, name, email, role FROM user WHERE id = ?").get(userId) as { id: string; name: string; email: string; role: string | null } | null;
+        if (!user) {
+          return jsonResponse({ error: "User not found." }, { status: 404 });
+        }
+        if (user.role === "admin") {
+          const adminCount = storage.db.query("SELECT COUNT(*) AS count FROM user WHERE role = 'admin'").get() as { count: number };
+          if (adminCount.count <= 1) {
+            return jsonResponse({ error: "Cannot delete the last admin user." }, { status: 409 });
+          }
+        }
+
+        const workspace = storage.findWorkspaceByUserId(userId);
+        if (workspace) {
+          runs.stopWorkspace(workspace.id);
+          await containers.stopWorkspaceContainers(workspace.id);
+          await containers.removeCodeContainer(workspace.id);
+        }
+
+        storage.db.exec("BEGIN");
+        try {
+          if (workspace) {
+            storage.db.query("DELETE FROM run_jobs WHERE workspace_id = ?").run(workspace.id);
+            storage.db.query("DELETE FROM container_leases WHERE workspace_id = ?").run(workspace.id);
+            storage.db.query("DELETE FROM workspaces WHERE id = ?").run(workspace.id);
+          }
+          storage.db.query("DELETE FROM session WHERE userId = ?").run(userId);
+          storage.db.query("DELETE FROM account WHERE userId = ?").run(userId);
+          storage.db.query("DELETE FROM user WHERE id = ?").run(userId);
+          storage.db.exec("COMMIT");
+        } catch (error) {
+          storage.db.exec("ROLLBACK");
+          throw error;
+        }
+
+        if (workspace) {
+          await rm(dirname(workspace.project_path), { recursive: true, force: true });
+        }
+
+        return jsonResponse({ ok: true, userId });
       }
 
       // --- Allowlist endpoints ---
@@ -976,6 +1176,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       if (suffix === "/ws/run" && request.method === "GET") {
         if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
           return new Response("Expected WebSocket upgrade.", { status: 426 });
+        }
+        const originError = requireWebSocketOrigin(request, storage.config.baseUrl);
+        if (originError) {
+          return originError;
         }
         const upgraded = server.upgrade(request, {
           data: {

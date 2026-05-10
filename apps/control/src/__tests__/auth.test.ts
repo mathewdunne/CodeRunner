@@ -7,6 +7,14 @@ import {
   workspaceBySlug,
 } from "./helpers";
 import { join } from "node:path";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import {
+  addAllowlistEntry,
+  isEmailAllowed,
+  loadAllowlist,
+  setAllowlistPath,
+} from "../auth/allowlist";
 
 describe("session login and ownership", () => {
   test("new login creates a user, workspace, session, and project files", async () => {
@@ -114,5 +122,25 @@ describe("session login and ownership", () => {
       expect(sessionCount.count).toBe(2);
       expect(workspaceCount.count).toBe(1);
     });
+  });
+});
+
+describe("allowlist enforcement", () => {
+  test("empty allowlist blocks OAuth emails until a matching entry is added", async () => {
+    const root = await mkdtemp(join(tmpdir(), "frc-allowlist-"));
+    try {
+      setAllowlistPath(root);
+      await loadAllowlist();
+      expect(isEmailAllowed("student@example.com")).toBe(false);
+
+      await addAllowlistEntry("domain", "example.com");
+      expect(isEmailAllowed("student@example.com")).toBe(true);
+      expect(isEmailAllowed("student@other.test")).toBe(false);
+
+      await addAllowlistEntry("email", "coach@other.test");
+      expect(isEmailAllowed("coach@other.test")).toBe(true);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });

@@ -83,10 +83,13 @@ describe("idle lifecycle and admin controls", () => {
     const fakeDocker = createFakeDocker();
     await withApp(
       async (app) => {
-        await login(app, "alice");
+        const admin = await login(app, "alice", { role: "admin" });
+        const adminCookie = cookieFrom(admin);
         await login(app, "bob");
 
-        const status = await app.fetch(new Request("http://localhost/admin/status"));
+        const status = await app.fetch(new Request("http://localhost/admin/status", {
+          headers: { cookie: adminCookie },
+        }));
         expect(status.status).toBe(200);
         const body = (await status.json()) as {
           ok: boolean;
@@ -105,10 +108,45 @@ describe("idle lifecycle and admin controls", () => {
     );
   });
 
+  test("admin shell requires an admin session and serves assets from /admin/", async () => {
+    await withApp(async (app) => {
+      const student = await login(app, "student");
+      const studentCookie = cookieFrom(student);
+      const admin = await login(app, "coach", { role: "admin" });
+      const adminCookie = cookieFrom(admin);
+
+      const anonymous = await app.fetch(new Request("http://localhost/admin"));
+      expect(anonymous.status).toBe(401);
+
+      const studentResponse = await app.fetch(new Request("http://localhost/admin", {
+        headers: { cookie: studentCookie },
+      }));
+      expect(studentResponse.status).toBe(403);
+
+      const redirect = await app.fetch(new Request("http://localhost/admin", {
+        headers: { cookie: adminCookie },
+      }));
+      expect(redirect.status).toBe(308);
+      expect(redirect.headers.get("location")).toBe("/admin/");
+
+      const shell = await app.fetch(new Request("http://localhost/admin/", {
+        headers: { cookie: adminCookie },
+      }));
+      expect(shell.status).toBe(200);
+      expect(await shell.text()).toContain("V2 test shell");
+
+      const asset = await app.fetch(new Request("http://localhost/admin/assets/app.js", {
+        headers: { cookie: adminCookie },
+      }));
+      expect(asset.status).toBe(200);
+    });
+  });
+
   test("admin status is rejected with wrong token when adminToken is configured", async () => {
     await withApp(
       async (app) => {
-        await login(app, "alice");
+        const admin = await login(app, "alice", { role: "admin" });
+        const adminCookie = cookieFrom(admin);
 
         const noToken = await app.fetch(new Request("http://localhost/admin/status"));
         expect(noToken.status).toBe(401);
@@ -126,6 +164,13 @@ describe("idle lifecycle and admin controls", () => {
           }),
         );
         expect(correctToken.status).toBe(200);
+
+        const adminSession = await app.fetch(
+          new Request("http://localhost/admin/status", {
+            headers: { cookie: adminCookie },
+          }),
+        );
+        expect(adminSession.status).toBe(200);
       },
       { adminToken: "test-admin-token" },
     );
@@ -135,7 +180,8 @@ describe("idle lifecycle and admin controls", () => {
     const fakeDocker = createFakeDocker();
     await withApp(
       async (app) => {
-        await login(app, "alice");
+        const admin = await login(app, "alice", { role: "admin" });
+        const adminCookie = cookieFrom(admin);
         const workspace = workspaceBySlug(app, "alice");
 
         await app.containers.ensureCodeContainer(workspace);
@@ -144,6 +190,7 @@ describe("idle lifecycle and admin controls", () => {
         const response = await app.fetch(
           new Request(`http://localhost/admin/workspaces/${workspace.id}/restart-code`, {
             method: "POST",
+            headers: { cookie: adminCookie },
           }),
         );
         expect(response.status).toBe(200);
@@ -167,7 +214,8 @@ describe("idle lifecycle and admin controls", () => {
     const fakeDocker = createFakeDocker();
     await withApp(
       async (app) => {
-        await login(app, "alice");
+        const admin = await login(app, "alice", { role: "admin" });
+        const adminCookie = cookieFrom(admin);
         const workspace = workspaceBySlug(app, "alice");
 
         await app.containers.ensureCodeContainer(workspace);
@@ -176,6 +224,7 @@ describe("idle lifecycle and admin controls", () => {
         const response = await app.fetch(
           new Request(`http://localhost/admin/workspaces/${workspace.id}/stop-containers`, {
             method: "POST",
+            headers: { cookie: adminCookie },
           }),
         );
         expect(response.status).toBe(200);
@@ -196,11 +245,13 @@ describe("idle lifecycle and admin controls", () => {
 
   test("admin returns 404 for unknown workspace", async () => {
     await withApp(async (app) => {
-      await login(app, "alice");
+      const admin = await login(app, "alice", { role: "admin" });
+      const adminCookie = cookieFrom(admin);
 
       const response = await app.fetch(
         new Request("http://localhost/admin/workspaces/ws_0000000000000000deadbeef00000000/restart-code", {
           method: "POST",
+          headers: { cookie: adminCookie },
         }),
       );
       expect(response.status).toBe(404);
@@ -209,7 +260,8 @@ describe("idle lifecycle and admin controls", () => {
 
   test("admin seed-template copies template into an empty workspace project directory", async () => {
     await withApp(async (app) => {
-      await login(app, "alice");
+      const admin = await login(app, "alice", { role: "admin" });
+      const adminCookie = cookieFrom(admin);
       const workspace = workspaceBySlug(app, "alice");
       const projectPath = workspaceProjectPath(app, "alice");
 
@@ -217,6 +269,7 @@ describe("idle lifecycle and admin controls", () => {
       const conflict = await app.fetch(
         new Request(`http://localhost/admin/workspaces/${workspace.id}/seed-template`, {
           method: "POST",
+          headers: { cookie: adminCookie },
         }),
       );
       expect(conflict.status).toBe(409);
@@ -232,6 +285,7 @@ describe("idle lifecycle and admin controls", () => {
       const response = await app.fetch(
         new Request(`http://localhost/admin/workspaces/${workspace.id}/seed-template`, {
           method: "POST",
+          headers: { cookie: adminCookie },
         }),
       );
       expect(response.status).toBe(200);
@@ -247,12 +301,14 @@ describe("idle lifecycle and admin controls", () => {
 
   test("admin backup creates a backup of a workspace project", async () => {
     await withApp(async (app) => {
-      await login(app, "alice");
+      const admin = await login(app, "alice", { role: "admin" });
+      const adminCookie = cookieFrom(admin);
       const workspace = workspaceBySlug(app, "alice");
 
       const response = await app.fetch(
         new Request(`http://localhost/admin/workspaces/${workspace.id}/backup`, {
           method: "POST",
+          headers: { cookie: adminCookie },
         }),
       );
       expect(response.status).toBe(200);
@@ -273,7 +329,8 @@ describe("idle lifecycle and admin controls", () => {
 
   test("admin restore restores a workspace project from backup", async () => {
     await withApp(async (app) => {
-      await login(app, "alice");
+      const admin = await login(app, "alice", { role: "admin" });
+      const adminCookie = cookieFrom(admin);
       const workspace = workspaceBySlug(app, "alice");
       const projectPath = workspaceProjectPath(app, "alice");
 
@@ -281,6 +338,7 @@ describe("idle lifecycle and admin controls", () => {
       const backupResponse = await app.fetch(
         new Request(`http://localhost/admin/workspaces/${workspace.id}/backup`, {
           method: "POST",
+          headers: { cookie: adminCookie },
         }),
       );
       expect(backupResponse.status).toBe(200);
@@ -299,7 +357,7 @@ describe("idle lifecycle and admin controls", () => {
       const response = await app.fetch(
         new Request(`http://localhost/admin/workspaces/${workspace.id}/restore`, {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers: { cookie: adminCookie, "content-type": "application/json" },
           body: JSON.stringify({ path: restorePath }),
         }),
       );
@@ -316,13 +374,14 @@ describe("idle lifecycle and admin controls", () => {
 
   test("admin restore rejects paths outside data/backups/", async () => {
     await withApp(async (app) => {
-      await login(app, "alice");
+      const admin = await login(app, "alice", { role: "admin" });
+      const adminCookie = cookieFrom(admin);
       const workspace = workspaceBySlug(app, "alice");
 
       const response = await app.fetch(
         new Request(`http://localhost/admin/workspaces/${workspace.id}/restore`, {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers: { cookie: adminCookie, "content-type": "application/json" },
           body: JSON.stringify({ path: "/tmp/evil" }),
         }),
       );
@@ -461,7 +520,8 @@ describe("idle lifecycle and admin controls", () => {
     const fakeDocker = createFakeDocker();
     await withApp(
       async (app) => {
-        await login(app, "alice");
+        const admin = await login(app, "alice", { role: "admin" });
+        const adminCookie = cookieFrom(admin);
         await login(app, "bob");
         const aliceWorkspace = workspaceBySlug(app, "alice");
         const bobWorkspace = workspaceBySlug(app, "bob");
@@ -477,6 +537,7 @@ describe("idle lifecycle and admin controls", () => {
         const response = await app.fetch(
           new Request(`http://localhost/admin/workspaces/${bobWorkspace.id}/restart-code`, {
             method: "POST",
+            headers: { cookie: adminCookie },
           }),
         );
         expect(response.status).toBe(200);
@@ -495,10 +556,13 @@ describe("idle lifecycle and admin controls", () => {
 
   test("admin users endpoint lists users", async () => {
     await withApp(async (app) => {
-      await login(app, "alice");
+      const admin = await login(app, "alice", { role: "admin" });
+      const adminCookie = cookieFrom(admin);
       await login(app, "bob");
 
-      const response = await app.fetch(new Request("http://localhost/admin/users"));
+      const response = await app.fetch(new Request("http://localhost/admin/users", {
+        headers: { cookie: adminCookie },
+      }));
       expect(response.status).toBe(200);
       const body = (await response.json()) as { ok: boolean; users: Array<{ email: string; role: string }> };
       expect(body.ok).toBe(true);
@@ -508,17 +572,65 @@ describe("idle lifecycle and admin controls", () => {
     });
   });
 
+  test("admin stats and disk usage endpoints report managed resources", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        const admin = await login(app, "alice", { role: "admin" });
+        const adminCookie = cookieFrom(admin);
+        const workspace = workspaceBySlug(app, "alice");
+        await app.containers.ensureCodeContainer(workspace);
+
+        const stats = await app.fetch(new Request("http://localhost/admin/containers/stats", {
+          headers: { cookie: adminCookie },
+        }));
+        expect(stats.status).toBe(200);
+        const statsBody = (await stats.json()) as {
+          ok: boolean;
+          containers: Array<{ workspaceSlug: string | null; ports: { nt4: number | null; vscode: number | null } }>;
+        };
+        expect(statsBody.ok).toBe(true);
+        expect(statsBody.containers[0]?.workspaceSlug).toBe("alice");
+        expect(statsBody.containers[0]?.ports.nt4).toBe(25970);
+        expect(statsBody.containers[0]?.ports.vscode).toBe(33110);
+
+        const disk = await app.fetch(new Request("http://localhost/admin/workspaces/disk-usage", {
+          headers: { cookie: adminCookie },
+        }));
+        expect(disk.status).toBe(200);
+        const diskBody = (await disk.json()) as {
+          ok: boolean;
+          workspaces: Array<{ workspaceSlug: string; bytes: number }>;
+        };
+        expect(diskBody.ok).toBe(true);
+        expect(diskBody.workspaces.find((entry) => entry.workspaceSlug === "alice")?.bytes).toBeGreaterThan(0);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 25970, end: 25970 },
+        vscodePortRange: { start: 33110, end: 33110 },
+        halsimPortRange: { start: 34110, end: 34110 },
+      },
+    );
+  });
+
   test("admin can promote and demote users", async () => {
     await withApp(async (app) => {
-      await login(app, "alice");
-      const user = app.storage.db.query("SELECT id, role FROM user WHERE email = ?").get("alice@test.local") as {
+      const admin = await login(app, "alice", { role: "admin" });
+      const adminCookie = cookieFrom(admin);
+      await login(app, "bob");
+      const user = app.storage.db.query("SELECT id, role FROM user WHERE email = ?").get("bob@test.local") as {
         id: string;
         role: string;
       };
       expect(user.role).toBe("student");
 
       const promote = await app.fetch(
-        new Request(`http://localhost/admin/users/${user.id}/promote`, { method: "POST" }),
+        new Request(`http://localhost/admin/users/${user.id}/promote`, {
+          method: "POST",
+          headers: { cookie: adminCookie },
+        }),
       );
       expect(promote.status).toBe(200);
       const body = (await promote.json()) as { ok: boolean; role: string };
@@ -528,7 +640,10 @@ describe("idle lifecycle and admin controls", () => {
       expect(after.role).toBe("admin");
 
       const demote = await app.fetch(
-        new Request(`http://localhost/admin/users/${user.id}/demote`, { method: "POST" }),
+        new Request(`http://localhost/admin/users/${user.id}/demote`, {
+          method: "POST",
+          headers: { cookie: adminCookie },
+        }),
       );
       expect(demote.status).toBe(200);
       const dBody = (await demote.json()) as { ok: boolean; role: string };
@@ -536,10 +651,49 @@ describe("idle lifecycle and admin controls", () => {
     });
   });
 
+  test("admin can delete a user and their workspace", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        const admin = await login(app, "alice", { role: "admin" });
+        const adminCookie = cookieFrom(admin);
+        await login(app, "bob");
+        const bobWorkspace = workspaceBySlug(app, "bob");
+        await app.containers.ensureCodeContainer(bobWorkspace);
+        expect(fakeDocker.containers.has(`frc-v2-code-${bobWorkspace.id}`)).toBe(true);
+
+        const bob = app.storage.db.query("SELECT id FROM user WHERE email = ?").get("bob@test.local") as { id: string };
+        const response = await app.fetch(
+          new Request(`http://localhost/admin/users/${bob.id}`, {
+            method: "DELETE",
+            headers: { cookie: adminCookie },
+          }),
+        );
+        expect(response.status).toBe(200);
+        expect(app.storage.db.query("SELECT id FROM workspaces WHERE slug = ?").get("bob")).toBeNull();
+        expect(app.storage.db.query("SELECT id FROM user WHERE id = ?").get(bob.id)).toBeNull();
+        expect(fakeDocker.containers.has(`frc-v2-code-${bobWorkspace.id}`)).toBe(false);
+        expect(await exists(bobWorkspace.project_path)).toBe(false);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 25971, end: 25972 },
+        vscodePortRange: { start: 33111, end: 33112 },
+        halsimPortRange: { start: 34111, end: 34112 },
+      },
+    );
+  });
+
   test("admin allowlist CRUD works", async () => {
     await withApp(async (app) => {
+      const admin = await login(app, "alice", { role: "admin" });
+      const adminCookie = cookieFrom(admin);
+
       // List — should be empty
-      const list = await app.fetch(new Request("http://localhost/admin/allowlist"));
+      const list = await app.fetch(new Request("http://localhost/admin/allowlist", {
+        headers: { cookie: adminCookie },
+      }));
       expect(list.status).toBe(200);
       const body = (await list.json()) as { ok: boolean; emails: string[]; domains: string[] };
       expect(body.emails).toEqual([]);
@@ -549,7 +703,7 @@ describe("idle lifecycle and admin controls", () => {
       const add = await app.fetch(
         new Request("http://localhost/admin/allowlist", {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers: { cookie: adminCookie, "content-type": "application/json" },
           body: JSON.stringify({ kind: "email", value: "test@example.com" }),
         }),
       );
@@ -561,6 +715,7 @@ describe("idle lifecycle and admin controls", () => {
       const del = await app.fetch(
         new Request("http://localhost/admin/allowlist/test%40example.com", {
           method: "DELETE",
+          headers: { cookie: adminCookie },
         }),
       );
       expect(del.status).toBe(200);
@@ -572,7 +727,10 @@ describe("idle lifecycle and admin controls", () => {
   test("admin endpoints are gated when adminToken is set", async () => {
     await withApp(
       async (app) => {
-        await login(app, "alice");
+        const student = await login(app, "alice");
+        const studentCookie = cookieFrom(student);
+        const admin = await login(app, "coach", { role: "admin" });
+        const adminCookie = cookieFrom(admin);
 
         // No token → 401
         const noAuth = await app.fetch(new Request("http://localhost/admin/users"));
@@ -586,6 +744,13 @@ describe("idle lifecycle and admin controls", () => {
         );
         expect(wrongAuth.status).toBe(401);
 
+        const studentAuth = await app.fetch(
+          new Request("http://localhost/admin/users", {
+            headers: { cookie: studentCookie },
+          }),
+        );
+        expect(studentAuth.status).toBe(403);
+
         // Correct token → 200
         const goodAuth = await app.fetch(
           new Request("http://localhost/admin/users", {
@@ -593,6 +758,13 @@ describe("idle lifecycle and admin controls", () => {
           }),
         );
         expect(goodAuth.status).toBe(200);
+
+        const adminAuth = await app.fetch(
+          new Request("http://localhost/admin/users", {
+            headers: { cookie: adminCookie },
+          }),
+        );
+        expect(adminAuth.status).toBe(200);
       },
       { adminToken: "test-admin-token" },
     );

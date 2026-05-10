@@ -1,10 +1,12 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
-type Tab = "dashboard" | "users" | "allowlist";
+type Tab = "dashboard" | "containers" | "workspaces" | "users" | "allowlist";
 
 const tabs: Array<{ id: Tab; label: string }> = [
   { id: "dashboard", label: "Dashboard" },
+  { id: "containers", label: "Containers" },
+  { id: "workspaces", label: "Workspaces" },
   { id: "users", label: "Users" },
   { id: "allowlist", label: "Allowlist" },
 ];

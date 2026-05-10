@@ -176,7 +176,7 @@ The control plane is still the only browser-facing server, the only process that
 | Run control | `WS /u/:slug/ws/run` running `docker exec` against `frc-sim` | Same protocol, runs immediately against the merged container |
 | NT4 proxy | `/u/:slug/sim/{alive,nt4}` to `frc-sim` loopback port | Same endpoints, upstream is the merged container's NT4 port |
 | AS Lite | `/scope/*` static + postMessage endpoint injection | Unchanged |
-| Sessions | Signed cookie | Cookie name is `frc_session`; existing pre-cleanup browser sessions re-login |
+| Sessions | Signed cookie | Better Auth OAuth session; cookie name is `frc_session` |
 | Admin API | `/admin/status`, restart sim/lsp, reset-lsp-data | Restart and stop adapt to single container; `reset-lsp-data` removed (redhat.java owns its index inside the container) |
 | Containers in DB | `container_leases` with `sim_*` and `lsp_*` columns | Schema uses `nt4_port`, `vscode_*`, and `code_state`; one row per workspace |
 | Container labels | `frc-sim.role=sim` and `frc-sim.role=lsp` | New `frc-sim.role=code`, version `v2` |
@@ -184,7 +184,7 @@ The control plane is still the only browser-facing server, the only process that
 
 Preserved exactly:
 
-- Signed-cookie session, username picker, slug rules, route shape `/u/:slug/...`.
+- Slug rules and route shape `/u/:slug/...`.
 - Run semantics: runs start immediately, one active run per workspace, and `start` supersedes the prior run for that workspace.
 - Container lifecycle: idle stop after 30 min, label-based reconciliation on control-plane restart, loopback-only port publishing.
 - NT4 proxy with subprotocol preservation. Sim still binds `127.0.0.1:5810` inside the container.
@@ -257,8 +257,8 @@ data/
 
 ```
 GET  /                                login or redirect to current workspace
-POST /login                           username picker submit
-POST /logout                          clear session cookie
+GET  /login                           OAuth login page
+*    /api/auth/*                      Better Auth OAuth/session routes
 GET  /u/:workspaceSlug/               app shell
 GET  /u/:workspaceSlug/assets/*       app shell static assets
 GET  /scope/*                         shared AS Lite static assets
@@ -542,18 +542,18 @@ Every recovery path must preserve `data/users/<workspaceId>/project`.
 
 V2 is still classroom-LAN. Required:
 
-- Signed HttpOnly session cookie. Same name and shape as V1.
+- Better Auth HttpOnly session cookie (`frc_session`).
 - SameSite=Lax cookie. Editor iframe must stay same-origin with the shell so cookies attach.
 - No editor proxy access without cookie ownership of the slug.
 - openvscode-server runs `--without-connection-token`; the control plane is the only auth boundary.
 - All container ports published only on `127.0.0.1`.
 - Docker container names and command args derived from validated IDs only. Use fixed argv arrays.
 - Per-container memory caps.
-- Admin endpoints localhost-only or bearer-token gated.
+- Admin endpoints require a Better Auth user with `role = admin`; `ADMIN_TOKEN` is break-glass bootstrap only.
 
 Explicitly deferred:
 
-- TLS, OAuth, per-student passwords.
+- TLS and per-student passwords.
 - Marketplace lockdown.
 - Hardened multi-tenant isolation beyond Docker defaults.
 - Restricting which extensions a student can install at runtime.
@@ -1126,7 +1126,7 @@ cd FRC-Programming-Training-Sim
 git submodule update --init --recursive
 bun install
 cp .env.example .env
-# edit .env: set FRC_SESSION_SECRET=<random string>
+# edit .env: set BETTER_AUTH_SECRET=<random string>
 ```
 
 **Build images and assets.**

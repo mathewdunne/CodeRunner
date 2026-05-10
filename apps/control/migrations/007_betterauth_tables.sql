@@ -1,13 +1,14 @@
--- Better Auth migration: rename legacy auth tables and rebuild referencing
--- tables so that Better Auth can own the `user` and `session` table names.
+-- Better Auth migration: remove the pre-OAuth auth model and rebuild
+-- referencing tables for Better Auth user IDs.
 --
 -- FK checks are disabled by the migration runner before this runs.
 
--- 1. Rename legacy tables to free the names Better Auth expects
-ALTER TABLE users RENAME TO legacy_users;
-ALTER TABLE sessions RENAME TO legacy_sessions;
+-- 1. There are no production users of the authless system, so do not preserve
+--    compatibility tables or orphaned workspace rows with usr_* user IDs.
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS users;
 
--- 2. Rebuild workspaces: drop FK to legacy_users, keep user_id as plain column.
+-- 2. Rebuild workspaces: drop the FK to the removed users table.
 --    user_id will store Better Auth–generated user IDs going forward.
 CREATE TABLE workspaces_new (
   id TEXT PRIMARY KEY,
@@ -17,7 +18,6 @@ CREATE TABLE workspaces_new (
   created_at TEXT NOT NULL,
   last_accessed_at TEXT NOT NULL
 );
-INSERT INTO workspaces_new SELECT id, user_id, slug, project_path, created_at, last_accessed_at FROM workspaces;
 DROP TABLE workspaces;
 ALTER TABLE workspaces_new RENAME TO workspaces;
 
@@ -32,10 +32,6 @@ CREATE TABLE container_leases_new (
   last_used_at TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
-INSERT INTO container_leases_new
-  SELECT workspace_id, vscode_container, nt4_port, vscode_port, halsim_port,
-         code_state, last_used_at, created_at
-  FROM container_leases;
 DROP TABLE container_leases;
 ALTER TABLE container_leases_new RENAME TO container_leases;
 
@@ -43,6 +39,8 @@ CREATE UNIQUE INDEX idx_container_leases_nt4_port_unique
   ON container_leases(nt4_port) WHERE nt4_port IS NOT NULL;
 CREATE UNIQUE INDEX idx_container_leases_vscode_port_unique
   ON container_leases(vscode_port) WHERE vscode_port IS NOT NULL;
+CREATE UNIQUE INDEX idx_container_leases_halsim_port_unique
+  ON container_leases(halsim_port) WHERE halsim_port IS NOT NULL;
 
 -- 4. Rebuild run_jobs with FK pointing to the new workspaces table.
 CREATE TABLE run_jobs_new (
@@ -55,7 +53,6 @@ CREATE TABLE run_jobs_new (
   exit_code INTEGER,
   log_path TEXT
 );
-INSERT INTO run_jobs_new SELECT * FROM run_jobs;
 DROP TABLE run_jobs;
 ALTER TABLE run_jobs_new RENAME TO run_jobs;
 CREATE INDEX idx_run_jobs_workspace_id ON run_jobs(workspace_id);

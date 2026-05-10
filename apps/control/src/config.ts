@@ -127,7 +127,6 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     sessionSecret:
       input.sessionSecret ??
       Bun.env.BETTER_AUTH_SECRET ??
-      Bun.env.FRC_SESSION_SECRET ??
       "frc-local-dev-session-secret-change-me",
     baseUrl:
       input.baseUrl ??

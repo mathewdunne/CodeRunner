@@ -22,6 +22,18 @@ type ContainerOrchestratorOptions = {
 
 export type CodeContainerStatus = ContainersStatusResponse["code"];
 
+export type ManagedContainerStats = {
+  name: string;
+  id: string | null;
+  workspaceId: string | null;
+  role: string | null;
+  state: string | null;
+  cpuPercent: number | null;
+  memoryUsage: string | null;
+  memoryLimit: string | null;
+  memoryPercent: number | null;
+};
+
 type DockerInspectContainer = {
   Name?: string;
   State?: {
@@ -138,6 +150,40 @@ function statusFromLease(
     lastUsedAt: lease?.last_used_at ?? null,
     error,
   };
+}
+
+function parsePercent(value: string | undefined): number | null {
+  if (!value) {
+    return null;
+  }
+  const parsed = Number(value.replace("%", "").trim());
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseDockerStatsLine(line: string): Partial<ManagedContainerStats> | null {
+  try {
+    const parsed = JSON.parse(line) as {
+      Container?: string;
+      ID?: string;
+      Name?: string;
+      CPUPerc?: string;
+      MemUsage?: string;
+      MemPerc?: string;
+    };
+    const [memoryUsage = null, memoryLimit = null] = (parsed.MemUsage ?? "")
+      .split("/")
+      .map((part) => part.trim());
+    return {
+      id: parsed.Container ?? parsed.ID ?? null,
+      name: parsed.Name ?? "",
+      cpuPercent: parsePercent(parsed.CPUPerc),
+      memoryUsage,
+      memoryLimit,
+      memoryPercent: parsePercent(parsed.MemPerc),
+    };
+  } catch {
+    return null;
+  }
 }
 
 async function portIsFree(port: number): Promise<boolean> {
@@ -289,6 +335,63 @@ export class ContainerOrchestrator {
       }
     }
     return removed;
+  }
+
+  async managedContainerStats(): Promise<ManagedContainerStats[]> {
+    const list = await this.runDocker(
+      [
+        "container",
+        "ls",
+        "-a",
+        "--filter",
+        "label=frc-sim.managed=true",
+        "--format",
+        "{{.Names}}",
+      ],
+      true,
+    );
+    if (list.exitCode !== 0 || !list.stdout.trim()) {
+      return [];
+    }
+
+    const names = list.stdout
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (names.length === 0) {
+      return [];
+    }
+
+    const statsByName = new Map<string, Partial<ManagedContainerStats>>();
+    const stats = await this.runDocker(["stats", "--no-stream", "--format", "{{json .}}", ...names], true);
+    if (stats.exitCode === 0) {
+      for (const line of stats.stdout.split(/\r?\n/u)) {
+        const parsed = parseDockerStatsLine(line.trim());
+        if (parsed?.name) {
+          statsByName.set(parsed.name, parsed);
+        }
+      }
+    }
+
+    const output: ManagedContainerStats[] = [];
+    for (const name of names) {
+      const inspected = await this.inspectContainer(name);
+      const labels = inspected?.Config?.Labels ?? {};
+      const runtime = inspected ? containerRuntimeState(inspected) : null;
+      const stat = statsByName.get(name);
+      output.push({
+        name,
+        id: stat?.id ?? null,
+        workspaceId: labels["frc-sim.workspace"] ?? null,
+        role: labels["frc-sim.role"] ?? null,
+        state: runtime,
+        cpuPercent: stat?.cpuPercent ?? null,
+        memoryUsage: stat?.memoryUsage ?? null,
+        memoryLimit: stat?.memoryLimit ?? null,
+        memoryPercent: stat?.memoryPercent ?? null,
+      });
+    }
+    return output;
   }
 
   async ensureCodeContainer(workspace: WorkspaceRow): Promise<CodeContainerStatus> {

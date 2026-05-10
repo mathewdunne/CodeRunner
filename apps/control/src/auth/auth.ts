@@ -15,7 +15,7 @@ import type { ControlConfig } from "../config";
 import { buildSocialProviders } from "./providers";
 import { isEmailAllowed } from "./allowlist";
 
-function slugFromEmail(email: string): string {
+export function slugFromEmail(email: string): string {
   const local = email.split("@")[0] ?? "student";
   return local
     .toLowerCase()
@@ -66,6 +66,11 @@ export function createAuth(db: Database, config: ControlConfig, callbacks: AuthC
     },
     advanced: {
       cookiePrefix: "frc",
+      cookies: {
+        session_token: {
+          name: "frc_session",
+        },
+      },
     },
     databaseHooks: {
       user: {
@@ -106,11 +111,7 @@ export function createAuth(db: Database, config: ControlConfig, callbacks: AuthC
           if (newSession) {
             const user = newSession.user as { id: string; slug?: string };
             const slug = user.slug ?? slugFromEmail(newSession.user.email);
-            try {
-              await callbacks.ensureWorkspace(user.id, slug);
-            } catch (err) {
-              console.error("Failed to create workspace for new user:", err);
-            }
+            await callbacks.ensureWorkspace(user.id, slug);
           }
         }
       }),

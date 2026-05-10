@@ -461,6 +461,34 @@ describe("HALSim WS proxy", () => {
     });
   });
 
+  test("authenticated HALSim WebSocket rejects cross-site origins before upgrade", async () => {
+    await withApp(async (app) => {
+      const aliceResponse = await login(app, "alice");
+      const aliceCookie = cookieFrom(aliceResponse);
+      let upgraded = false;
+
+      const response = await app.fetch(
+        new Request("http://localhost/u/alice/sim/halsim", {
+          method: "GET",
+          headers: {
+            cookie: aliceCookie,
+            upgrade: "websocket",
+            origin: "https://evil.example",
+          },
+        }),
+        {
+          upgrade() {
+            upgraded = true;
+            return true;
+          },
+        },
+      );
+
+      expect(response.status).toBe(403);
+      expect(upgraded).toBe(false);
+    });
+  });
+
   test("authenticated GET /u/<slug>/sim/halsim returns 426 when container is not running (no WS server)", async () => {
     const dockerRunner: DockerRunner = async () => missing("No such image");
 

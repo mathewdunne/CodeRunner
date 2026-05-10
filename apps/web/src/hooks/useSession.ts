@@ -61,7 +61,7 @@ export function useSession(workspaceSlug: string | null) {
     };
   }, [workspaceSlug]);
 
-  // Heartbeat every 60s
+  // Workspace activity heartbeat every 60s for idle-container accounting.
   useEffect(() => {
     if (!workspaceSlug) return;
 

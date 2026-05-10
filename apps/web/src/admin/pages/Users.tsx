@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { useAdminPoll } from "../hooks/useAdminPoll";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 type UserRow = {
@@ -10,6 +10,7 @@ type UserRow = {
   role: string | null;
   slug: string | null;
   createdAt: string;
+  lastSeenAt: string | null;
 };
 
 async function fetchUsers(): Promise<UserRow[]> {
@@ -26,11 +27,27 @@ export function Users() {
   async function setRole(userId: string, action: "promote" | "demote") {
     setBusy(userId);
     try {
-      await fetch(`/admin/users/${userId}/${action}`, {
+      const response = await fetch(`/admin/users/${userId}/${action}`, {
         method: "POST",
         credentials: "same-origin",
       });
-      refetch();
+      if (!response.ok) throw new Error(`${response.status}`);
+      await refetch();
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function removeUser(user: UserRow) {
+    if (!confirm(`Delete ${user.email} and their workspace? This cannot be undone.`)) return;
+    setBusy(user.id);
+    try {
+      const response = await fetch(`/admin/users/${user.id}`, {
+        method: "DELETE",
+        credentials: "same-origin",
+      });
+      if (!response.ok) throw new Error(`${response.status}`);
+      await refetch();
     } finally {
       setBusy(null);
     }
@@ -54,6 +71,7 @@ export function Users() {
                   <th className="pb-2">Name</th>
                   <th className="pb-2">Role</th>
                   <th className="pb-2">Slug</th>
+                  <th className="pb-2">Last seen</th>
                   <th className="pb-2">Actions</th>
                 </tr>
               </thead>
@@ -70,7 +88,8 @@ export function Users() {
                       </span>
                     </td>
                     <td className="py-2 font-mono">{u.slug ?? "—"}</td>
-                    <td className="py-2">
+                    <td className="py-2">{u.lastSeenAt ? new Date(u.lastSeenAt).toLocaleString() : "—"}</td>
+                    <td className="flex gap-2 py-2">
                       {u.role === "admin" ? (
                         <Button
                           variant="outline"
@@ -90,6 +109,14 @@ export function Users() {
                           Promote
                         </Button>
                       )}
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        disabled={busy === u.id}
+                        onClick={() => void removeUser(u)}
+                      >
+                        Remove
+                      </Button>
                     </td>
                   </tr>
                 ))}

@@ -293,10 +293,15 @@ function randomToken(): string {
  * Returns a fake Response whose set-cookie header carries the signed session token,
  * keeping the existing `cookieFrom()` helper working unchanged.
  */
-export async function login(app: ControlApp, displayName: string): Promise<Response> {
+export async function login(
+  app: ControlApp,
+  displayName: string,
+  options: { role?: "student" | "admin"; email?: string } = {},
+): Promise<Response> {
   const db = app.storage.db;
   const secret = app.storage.config.sessionSecret;
-  const email = `${displayName.toLowerCase()}@test.local`;
+  const email = (options.email ?? `${displayName.toLowerCase()}@test.local`).toLowerCase();
+  const role = options.role ?? "student";
   const slug = displayName.toLowerCase().replace(/[^a-z0-9_-]/g, "-").slice(0, 40);
   const now = new Date().toISOString();
   const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
@@ -307,6 +312,9 @@ export async function login(app: ControlApp, displayName: string): Promise<Respo
     slug: string;
   } | null;
   if (existing) {
+    if (options.role) {
+      db.query("UPDATE user SET role = ?, updatedAt = ? WHERE id = ?").run(options.role, now, existing.id);
+    }
     const sessionToken = randomToken();
     const signedToken = await signToken(sessionToken, secret);
     db.query(
@@ -315,7 +323,7 @@ export async function login(app: ControlApp, displayName: string): Promise<Respo
     return new Response(null, {
       status: 303,
       headers: new Headers([
-        ["set-cookie", `frc.session_token=${signedToken}; Path=/; HttpOnly`],
+        ["set-cookie", `frc_session=${signedToken}; Path=/; HttpOnly`],
         ["location", `/u/${existing.slug}/`],
       ]),
     });
@@ -327,7 +335,7 @@ export async function login(app: ControlApp, displayName: string): Promise<Respo
   const signedToken = await signToken(sessionToken, secret);
   db.query(
     "INSERT INTO user (id, name, email, emailVerified, createdAt, updatedAt, role, slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-  ).run(userId, displayName, email, 0, now, now, "student", slug);
+  ).run(userId, displayName, email, 0, now, now, role, slug);
   db.query(
     "INSERT INTO session (id, expiresAt, token, createdAt, updatedAt, userId) VALUES (?, ?, ?, ?, ?, ?)",
   ).run(randomToken(), expiresAt, sessionToken, now, now, userId);
@@ -336,7 +344,7 @@ export async function login(app: ControlApp, displayName: string): Promise<Respo
   return new Response(null, {
     status: 303,
     headers: new Headers([
-      ["set-cookie", `frc.session_token=${signedToken}; Path=/; HttpOnly`],
+      ["set-cookie", `frc_session=${signedToken}; Path=/; HttpOnly`],
       ["location", `/u/${slug}/`],
     ]),
   });

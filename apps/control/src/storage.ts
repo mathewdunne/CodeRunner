@@ -61,7 +61,7 @@ export class SlugTakenError extends Error {
   }
 }
 
-function randomId(prefix: "usr" | "ws" | "ses" | "run"): string {
+function randomId(prefix: "ws" | "run"): string {
   return `${prefix}_${randomBytes(16).toString("hex")}`;
 }
 
@@ -106,7 +106,7 @@ export class AppStorage {
   async initialize(): Promise<void> {
     await mkdir(dirname(this.config.dbPath), { recursive: true });
 
-    // 1. Run our migrations (renames legacy tables, etc.)
+    // 1. Run our migrations (including the Better Auth schema handoff).
     await applyMigrations(this.db, this.config.migrationsDir);
 
     // 2. Initialize allowlist
@@ -158,11 +158,13 @@ export class AppStorage {
     }
 
     // Check for slug collision and add numeric suffix if needed
-    let finalSlug = slug as WorkspaceSlug;
+    const baseSlug = slug.slice(0, 40) || "student";
+    let finalSlug = baseSlug as WorkspaceSlug;
     let attempt = 0;
     while (this.findWorkspaceBySlug(finalSlug)) {
       attempt++;
-      finalSlug = `${slug}-${attempt}`.slice(0, 40) as WorkspaceSlug;
+      const suffix = `-${attempt}`;
+      finalSlug = `${baseSlug.slice(0, 40 - suffix.length)}${suffix}` as WorkspaceSlug;
     }
 
     const workspaceId = randomId("ws") as WorkspaceId;
@@ -174,6 +176,9 @@ export class AppStorage {
         "INSERT INTO workspaces (id, user_id, slug, project_path, created_at, last_accessed_at) VALUES (?, ?, ?, ?, ?, ?)",
       )
       .run(workspaceId, userId, finalSlug, projectPath, timestamp, timestamp);
+    this.db
+      .query("UPDATE user SET slug = ?, updatedAt = ? WHERE id = ?")
+      .run(finalSlug, timestamp, userId);
 
     const workspace = this.findWorkspaceById(workspaceId);
     if (!workspace) {

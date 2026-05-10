@@ -8,7 +8,7 @@ import { AdminApp } from "@/admin/AdminApp";
 
 const router = createBrowserRouter([
   {
-    path: "/admin",
+    path: "/admin/*",
     element: <AdminApp />,
   },
   {
@@ -55,4 +55,3 @@ export default function App() {
     </ThemeProvider>
   );
 }
-

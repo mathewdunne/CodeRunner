@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 type AdminStatus = {
   ok: boolean;
   workspaces: Array<{
-    workspace: { id: string; slug: string; lastAccessed: string };
+    workspace: { id: string; slug: string; lastAccessedAt: string };
     user: { displayName: string; email: string; role: string };
-    lease: { codeState: string } | null;
+    code: { state: string; containerName: string | null };
+    idle: boolean;
+    lastActivity: string;
   }>;
   idleStopMinutes: number;
   activeBuilds: number;
@@ -26,7 +28,7 @@ export function Dashboard() {
   if (error) return <p className="text-destructive p-4">Error: {error}</p>;
   if (!data) return null;
 
-  const running = data.workspaces.filter((w) => w.lease?.codeState === "running").length;
+  const running = data.workspaces.filter((w) => w.code.state === "running").length;
   const total = data.workspaces.length;
 
   return (
@@ -82,11 +84,11 @@ export function Dashboard() {
                     <td className="py-2">{w.user.displayName}</td>
                     <td className="py-2">
                       <span className={`inline-block rounded px-2 py-0.5 text-xs ${
-                        w.lease?.codeState === "running" ? "bg-green-900 text-green-300" :
-                        w.lease?.codeState === "starting" ? "bg-yellow-900 text-yellow-300" :
+                        w.code.state === "running" ? "bg-green-900 text-green-300" :
+                        w.code.state === "starting" ? "bg-yellow-900 text-yellow-300" :
                         "bg-zinc-800 text-zinc-400"
                       }`}>
-                        {w.lease?.codeState ?? "no container"}
+                        {w.code.state}
                       </span>
                     </td>
                   </tr>
