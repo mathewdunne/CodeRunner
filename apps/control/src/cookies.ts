@@ -2,7 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { SessionId } from "@frc-sim/contracts";
 import { sessionIdSchema } from "@frc-sim/contracts";
 
-export const SESSION_COOKIE_NAME = "frc_v1_session";
+export const SESSION_COOKIE_NAME = "frc_session";
 
 function base64Url(buffer: Buffer): string {
   return buffer.toString("base64").replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/u, "");

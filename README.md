@@ -4,7 +4,7 @@ A browser-based IDE for learning FRC robot programming. Students write Java in a
 
 Status: **V2 complete.** Each student gets a per-student container running openvscode-server with the redhat.java and wpilibsuite.vscode-wpilib extensions, providing auto-import, Ctrl-click into library classes, diagnostics, and full VS Code features. See [`V2-Design.md`](V2-Design.md) for architecture.
 
-See [`docs/runbook.md`](docs/runbook.md) for operator setup, [`docs/manual-tests.md`](docs/manual-tests.md) for acceptance test procedures, and [`V2-Design.md`](V2-Design.md) for architecture. The V1 design is preserved in [`V1-Design.md`](V1-Design.md). The working MVP has been archived under `mvp/` for reference.
+See [`docs/runbook.md`](docs/runbook.md) for operator setup, [`docs/manual-tests.md`](docs/manual-tests.md) for acceptance test procedures, and [`V2-Design.md`](V2-Design.md) for architecture. Historical V1 and MVP documents are preserved in [`V1-Design.md`](V1-Design.md) and [`docs/archive/mvp-docs/`](docs/archive/mvp-docs/).
 
 ## Prerequisites
 
@@ -32,7 +32,7 @@ templates/wpilib-java-command/ WPILib Java command-based starter template
 scripts/                       Bun utility scripts
 patches/advantagescope/        Source-level AS Lite patches
 vendor/AdvantageScope/         Pinned upstream submodule
-mvp/                           Archived MVP implementation and docs
+docs/archive/mvp-docs/         Archived MVP documents and decision logs
 ```
 
 ## Commands

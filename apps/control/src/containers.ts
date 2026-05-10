@@ -131,7 +131,7 @@ function statusFromLease(
     state,
     image,
     containerName: lease?.vscode_container ?? null,
-    simPortAllocated: (lease?.sim_port ?? null) !== null,
+    simPortAllocated: (lease?.nt4_port ?? null) !== null,
     vscodePortAllocated: (lease?.vscode_port ?? null) !== null,
     lastUsedAt: lease?.last_used_at ?? null,
     error,
@@ -204,7 +204,7 @@ export class ContainerOrchestrator {
       this.storage.upsertCodeContainerLease({
         workspaceId,
         containerName: name,
-        simPort: lease.sim_port,
+        simPort: lease.nt4_port,
         vscodePort: lease.vscode_port,
         state: "stopped",
       });
@@ -264,42 +264,6 @@ export class ContainerOrchestrator {
     const removed: string[] = [];
     for (const name of names) {
       const removeResult = await this.runDocker(["rm", name], true);
-      if (removeResult.exitCode === 0) {
-        removed.push(name);
-      }
-    }
-    return removed;
-  }
-
-  /** Remove any V1 sim or LSP containers found on the Docker daemon. */
-  async cleanupV1Containers(): Promise<string[]> {
-    const result = await this.runDocker(
-      [
-        "container",
-        "ls",
-        "-a",
-        "--filter",
-        "label=frc-sim.managed=true",
-        "--filter",
-        "label=frc-sim.version=v1",
-        "--format",
-        "{{.Names}}",
-      ],
-      true,
-    );
-    if (result.exitCode !== 0) {
-      return [];
-    }
-
-    const names = result.stdout
-      .split(/\r?\n/u)
-      .map((line) => line.trim())
-      .filter(Boolean);
-
-    const removed: string[] = [];
-    for (const name of names) {
-      await this.runDocker(["stop", name], true);
-      const removeResult = await this.runDocker(["rm", "-f", name], true);
       if (removeResult.exitCode === 0) {
         removed.push(name);
       }
@@ -410,7 +374,7 @@ export class ContainerOrchestrator {
       const simPort = await this.allocatePortFromRange(
         "sim",
         workspace.id,
-        lease?.sim_port ?? null,
+        lease?.nt4_port ?? null,
         rejectedSimPorts,
       );
       const vscodePort = await this.allocatePortFromRange(
@@ -602,7 +566,7 @@ export class ContainerOrchestrator {
     const lease = this.storage.upsertCodeContainerLease({
       workspaceId: workspace.id,
       containerName: name,
-      simPort: previous?.sim_port ?? null,
+      simPort: previous?.nt4_port ?? null,
       vscodePort: previous?.vscode_port ?? null,
       state: "error",
     });

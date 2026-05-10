@@ -1,5 +1,9 @@
 # FRC Web Simulator V1: Design Document
 
+> Archived historical design. V2 is the current runtime model and source of
+> truth; see [`V2-Design.md`](V2-Design.md) before implementing current system
+> behavior.
+
 **Status:** V1 implementation baseline  
 **Date:** 2026-05-04  
 **Audience:** Multiple coding agents implementing the rewrite in coordinated tasks  

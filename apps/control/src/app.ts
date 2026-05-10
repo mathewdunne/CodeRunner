@@ -580,12 +580,12 @@ async function vscodeWebSocketResponse(
 async function nt4AliveResponse(storage: AppStorage, containers: ContainerOrchestrator, auth: AuthContext): Promise<Response> {
   const code = await containers.ensureCodeContainer(auth.workspace);
   const lease = storage.getContainerLease(auth.workspace.id);
-  if (code.state !== "running" || !lease?.sim_port) {
+  if (code.state !== "running" || !lease?.nt4_port) {
     return new Response(code.error ?? "Simulator is not running.", { status: 503 });
   }
 
   try {
-    const upstream = await fetch(`http://127.0.0.1:${lease.sim_port}/`, {
+    const upstream = await fetch(`http://127.0.0.1:${lease.nt4_port}/`, {
       signal: AbortSignal.timeout(500),
     });
     if (!upstream.ok) {
@@ -610,7 +610,7 @@ async function nt4WebSocketResponse(
 
   const code = await containers.ensureCodeContainer(auth.workspace);
   const lease = storage.getContainerLease(auth.workspace.id);
-  if (code.state !== "running" || !lease?.sim_port) {
+  if (code.state !== "running" || !lease?.nt4_port) {
     return new Response(code.error ?? "Simulator is not running.", { status: 503 });
   }
 
@@ -618,7 +618,7 @@ async function nt4WebSocketResponse(
   const upgradeOptions: { data: SocketData; headers?: HeadersInit } = {
     data: {
       kind: "nt4",
-      upstreamUrl: `ws://127.0.0.1:${lease.sim_port}/nt/AdvantageScopeLite`,
+      upstreamUrl: `ws://127.0.0.1:${lease.nt4_port}/nt/AdvantageScopeLite`,
       protocols,
       upstreamOpen: false,
       pendingMessages: [],
@@ -701,7 +701,7 @@ function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatus
       code: {
         state: entry.lease?.code_state ?? "missing",
         containerName: entry.lease?.vscode_container ?? null,
-        simPort: entry.lease?.sim_port ?? null,
+        simPort: entry.lease?.nt4_port ?? null,
         vscodePort: entry.lease?.vscode_port ?? null,
       },
       idle: isIdle,
@@ -723,7 +723,6 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
   const { dockerRunner, runCommandFactory, ...storageConfig } = configInput;
   const storage = await createStorage(storageConfig);
   const containers = new ContainerOrchestrator(storage, { dockerRunner });
-  await containers.cleanupV1Containers();
   const runs = new RunManager(storage, containers, { commandFactory: runCommandFactory });
   const idle = new IdleManager({
     storage,

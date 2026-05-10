@@ -43,12 +43,7 @@ export type SessionRow = {
 
 export type ContainerLeaseRow = {
   workspace_id: WorkspaceId;
-  sim_container: string | null;
-  lsp_container: string | null;
-  sim_port: number | null;
-  lsp_port: number | null;
-  state: ContainerState;
-  lsp_state: ContainerState;
+  nt4_port: number | null;
   vscode_container: string | null;
   vscode_port: number | null;
   code_state: ContainerState;
@@ -354,7 +349,7 @@ export class AppStorage {
   }
 
   listLeasedPorts(role: ContainerRole, exceptWorkspaceId?: WorkspaceId): number[] {
-    const column = role === "sim" ? "sim_port" : "vscode_port";
+    const column = role === "sim" ? "nt4_port" : "vscode_port";
     const rows = (
       exceptWorkspaceId
         ? this.db
@@ -372,11 +367,11 @@ export class AppStorage {
         .query(
           `
             UPDATE container_leases
-            SET sim_port = NULL,
-                state = ?,
+            SET nt4_port = NULL,
+                code_state = ?,
                 last_used_at = ?
             WHERE workspace_id = ?
-              AND sim_port = ?
+              AND nt4_port = ?
           `,
         )
         .run("error", timestamp, workspaceId, port);
@@ -409,23 +404,18 @@ export class AppStorage {
         `
           INSERT INTO container_leases (
             workspace_id,
-            sim_container,
             vscode_container,
-            sim_port,
+            nt4_port,
             vscode_port,
-            state,
-            lsp_state,
             code_state,
             last_used_at,
             created_at
           )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(workspace_id) DO UPDATE SET
-            sim_container = excluded.sim_container,
             vscode_container = excluded.vscode_container,
-            sim_port = excluded.sim_port,
+            nt4_port = excluded.nt4_port,
             vscode_port = excluded.vscode_port,
-            state = excluded.state,
             code_state = excluded.code_state,
             last_used_at = excluded.last_used_at
         `,
@@ -433,11 +423,8 @@ export class AppStorage {
       .run(
         input.workspaceId,
         input.containerName,
-        input.containerName,
         input.simPort,
         input.vscodePort,
-        input.state,
-        "missing",
         input.state,
         timestamp,
         timestamp,
@@ -471,8 +458,7 @@ export class AppStorage {
             w.last_accessed_at AS w_last_accessed_at,
             u.id AS u_id, u.display_name AS u_display_name, u.slug AS u_slug,
             u.created_at AS u_created_at, u.last_seen_at AS u_last_seen_at,
-            cl.workspace_id AS cl_workspace_id, cl.sim_container, cl.lsp_container,
-            cl.sim_port, cl.lsp_port, cl.state AS cl_state, cl.lsp_state AS cl_lsp_state,
+            cl.workspace_id AS cl_workspace_id, cl.nt4_port,
             cl.vscode_container, cl.vscode_port, cl.code_state AS cl_code_state,
             cl.last_used_at AS cl_last_used_at, cl.created_at AS cl_created_at
           FROM workspaces w
@@ -494,12 +480,7 @@ export class AppStorage {
         u_created_at: string;
         u_last_seen_at: string;
         cl_workspace_id: WorkspaceId | null;
-        sim_container: string | null;
-        lsp_container: string | null;
-        sim_port: number | null;
-        lsp_port: number | null;
-        cl_state: ContainerState | null;
-        cl_lsp_state: ContainerState | null;
+        nt4_port: number | null;
         vscode_container: string | null;
         vscode_port: number | null;
         cl_code_state: ContainerState | null;
@@ -526,12 +507,7 @@ export class AppStorage {
       lease: row.cl_workspace_id
         ? {
             workspace_id: row.cl_workspace_id,
-            sim_container: row.sim_container,
-            lsp_container: row.lsp_container,
-            sim_port: row.sim_port,
-            lsp_port: row.lsp_port,
-            state: row.cl_state as ContainerState,
-            lsp_state: row.cl_lsp_state as ContainerState,
+            nt4_port: row.nt4_port,
             vscode_container: row.vscode_container,
             vscode_port: row.vscode_port,
             code_state: (row.cl_code_state ?? "missing") as ContainerState,
@@ -551,7 +527,7 @@ export class AppStorage {
           FROM workspaces w
           JOIN container_leases cl ON cl.workspace_id = w.id
           WHERE w.last_accessed_at < ?
-            AND (cl.state IN ('running', 'starting') OR cl.code_state IN ('running', 'starting'))
+            AND cl.code_state IN ('running', 'starting')
         `,
       )
       .all(cutoff) as Array<{ id: WorkspaceId }>;

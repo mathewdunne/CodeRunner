@@ -523,19 +523,15 @@ describe("V2 code container orchestration", () => {
         expect(runCall?.[runCall.indexOf("--user") + 1]).toBe("123:456");
 
         const lease = app.storage.db.query("SELECT * FROM container_leases WHERE workspace_id = ?").get(workspace.id) as {
-          sim_container: string;
           vscode_container: string;
-          sim_port: number;
+          nt4_port: number;
           vscode_port: number;
-          state: string;
           code_state: string;
         };
         expect(lease).toMatchObject({
-          sim_container: expectedName,
           vscode_container: expectedName,
-          sim_port: 45910,
+          nt4_port: 45910,
           vscode_port: 46000,
-          state: "running",
           code_state: "running",
         });
       },
@@ -631,40 +627,6 @@ describe("V2 code container orchestration", () => {
     }
   });
 
-  test("app startup removes managed V1 containers", async () => {
-    const fakeDocker = createFakeDocker();
-    fakeDocker.containers.set("frc-v1-sim-leftover", {
-      name: "frc-v1-sim-leftover",
-      running: true,
-      labels: {
-        "frc-sim.managed": "true",
-        "frc-sim.version": "v1",
-        "frc-sim.role": "sim",
-        "frc-sim.workspace": "ws_00000000000000000000000000000000",
-      },
-      ports: [],
-    });
-
-    await withApp(
-      async () => {
-        expect(fakeDocker.containers.has("frc-v1-sim-leftover")).toBe(false);
-        expect(fakeDocker.calls).toContainEqual([
-          "container",
-          "ls",
-          "-a",
-          "--filter",
-          "label=frc-sim.managed=true",
-          "--filter",
-          "label=frc-sim.version=v1",
-          "--format",
-          "{{.Names}}",
-        ]);
-        expect(fakeDocker.calls).toContainEqual(["rm", "-f", "frc-v1-sim-leftover"]);
-      },
-      { dockerRunner: fakeDocker.runner },
-    );
-  });
-
   test("recreating a removed container preserves project files", async () => {
     const fakeDocker = createFakeDocker();
 
@@ -753,7 +715,7 @@ describe("V2 code container orchestration", () => {
         expect(status.state).toBe("running");
         const runCalls = fakeDocker.calls.filter((call) => call[0] === "run");
         expect(runCalls.length).toBe(2);
-        expect(app.storage.getContainerLease(workspace.id)).toMatchObject({ sim_port: 25817 });
+        expect(app.storage.getContainerLease(workspace.id)).toMatchObject({ nt4_port: 25817 });
       },
       {
         dockerRunner: fakeDocker.runner,
@@ -1569,30 +1531,6 @@ describe("V2 idle teardown, recovery, and operator controls", () => {
 // --- V2 Stage 6: Lifecycle, labels, and reconciliation tests ---
 
 describe("V2 Stage 6 reconciliation", () => {
-  test("V1 LSP containers are cleaned up at startup", async () => {
-    const fakeDocker = createFakeDocker();
-    fakeDocker.containers.set("frc-v1-lsp-leftover", {
-      name: "frc-v1-lsp-leftover",
-      running: true,
-      labels: {
-        "frc-sim.managed": "true",
-        "frc-sim.version": "v1",
-        "frc-sim.role": "lsp",
-        "frc-sim.workspace": "ws_00000000000000000000000000000001",
-      },
-      ports: [],
-    });
-
-    await withApp(
-      async () => {
-        expect(fakeDocker.containers.has("frc-v1-lsp-leftover")).toBe(false);
-        expect(fakeDocker.calls).toContainEqual(["stop", "frc-v1-lsp-leftover"]);
-        expect(fakeDocker.calls).toContainEqual(["rm", "-f", "frc-v1-lsp-leftover"]);
-      },
-      { dockerRunner: fakeDocker.runner },
-    );
-  });
-
   test("adoption rejects a container with non-loopback port bindings", async () => {
     const fakeDocker = createFakeDocker();
 

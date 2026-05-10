@@ -4,15 +4,13 @@
 
 A browser-based IDE for learning FRC robot programming. Students write Java, click Run, and watch their robot simulate in real time with telemetry rendered by AdvantageScope Lite. V2 uses per-student openvscode-server containers with bundled redhat.java and wpilibsuite.vscode-wpilib extensions for full VS Code editor features.
 
-Source of truth for V2 scope and architecture: [`V2-Design.md`](./V2-Design.md). V1 remains documented in [`V1-Design.md`](./V1-Design.md). Read the relevant design fully before implementing a staged task.
+Source of truth for V2 scope and architecture: [`V2-Design.md`](./V2-Design.md). V1 and MVP materials are historical references archived in-repo.
 
 ## Stack Rule
 
 All non-container code is **TypeScript on Bun**. Use Bun for package management, TypeScript script execution, and the control-plane runtime. Keep `tsc --noEmit`/project references for typechecking.
 
 Inside the V2 code container, Java/Gradle/WPILib, openvscode-server, `redhat.java`, and `wpilibsuite.vscode-wpilib` are the relevant stacks.
-
-The archived MVP under `mvp/` remains TypeScript on Node/npm/tsx. Do not migrate or evolve MVP code unless explicitly asked.
 
 ## Repo Layout
 
@@ -25,8 +23,8 @@ templates/wpilib-java-command/ Source of truth for new student WPILib projects
 scripts/                       TypeScript utility scripts run by Bun
 patches/advantagescope/        Source-level AS Lite patches
 docs/decisions/                Decision logs
+docs/archive/mvp-docs/         Archived MVP documents and decision logs
 vendor/AdvantageScope/         Pinned upstream submodule
-mvp/                           Archived MVP implementation and docs
 data/                          Runtime data, gitignored
 ```
 
@@ -59,9 +57,9 @@ V2 is complete. The system uses per-student merged containers (`frc-code:v2`) ru
 
 - `V2-Design.md` — V2 design, phases, and definitions of done.
 - `docs/decisions/011-v2-editor-spike.md` — accepted openvscode/redhat.java/WPILib spike evidence.
-- `V1-Design.md` — V1 design, phases, and definitions of done.
-- `mvp/Project-MVP.md` — original MVP spec.
-- `mvp/docs/decisions/` — proven MVP decisions worth reading before copying behavior.
+- `V1-Design.md` — archived V1 design, phases, and definitions of done.
+- `docs/archive/mvp-docs/Project-MVP.md` — original MVP spec, archived for historical context.
+- `docs/archive/mvp-docs/decisions/` — archived MVP decisions.
 - Pinned AdvantageScope submodule: `vendor/AdvantageScope` at tag `v26.0.2`.
 
 ## Commands
@@ -80,7 +78,7 @@ V2 is complete. The system uses per-student merged containers (`frc-code:v2`) ru
 - Restore projects: `bun run restore -- <backup-dir>`
 - Cleanup containers: `bun run docker:cleanup`
 
-MVP commands live in `mvp/README.md`. See `docs/runbook.md` for full operator documentation.
+See `docs/runbook.md` for full operator documentation.
 
 ## graphify
 

@@ -65,7 +65,7 @@ test {
 }
 
 // Headless sim: deliberately omit wpi.sim.addGui() and wpi.sim.addDriverstation().
-// See mvp/docs/decisions/001-sim-container.md for the original proof.
+// See docs/archive/mvp-docs/decisions/001-sim-container.md for the original proof.
 
 jar {
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }

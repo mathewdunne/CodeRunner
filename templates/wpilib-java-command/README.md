@@ -9,7 +9,7 @@ This directory is the V1 source of truth for new student workspaces. The control
 - GradleRIO version: `2026.1.1`
 - Gradle wrapper distribution: `gradle-8.11-bin.zip`
 
-The base project comes from the WPILib 2026 Java command-based template plus the MVP simulator project evidence in `mvp/containers/sim/project`.
+The base project comes from the WPILib 2026 Java command-based template plus the archived MVP simulator project evidence.
 
 ## Intentional Template Contents
 
@@ -21,6 +21,6 @@ The base project comes from the WPILib 2026 Java command-based template plus the
 - `src/main/deploy/.gitkeep`
 - `WPILib-License.md`
 
-The starter keeps the MVP telemetry example in `Robot.java`: a counter at `/SmartDashboard/counter` and a moving `Pose2d` at `/SmartDashboard/robotPose`. That gives students and operators an immediate visual confirmation that edit, run, NT4, and AdvantageScope are wired correctly.
+The starter keeps the original telemetry example in `Robot.java`: a counter at `/SmartDashboard/counter` and a moving `Pose2d` at `/SmartDashboard/robotPose`. That gives students and operators an immediate visual confirmation that edit, run, NT4, and AdvantageScope are wired correctly.
 
 Machine-specific IDE metadata from the WPILib template is intentionally excluded.

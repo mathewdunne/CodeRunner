@@ -119,7 +119,7 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     sessionSecret:
       input.sessionSecret ??
       Bun.env.FRC_SESSION_SECRET ??
-      "frc-v1-local-dev-session-secret-change-me",
+      "frc-local-dev-session-secret-change-me",
     dockerPath: input.dockerPath ?? Bun.env.FRC_DOCKER_PATH ?? "docker",
     codeImage: input.codeImage ?? Bun.env.CODE_IMAGE ?? "frc-code:v2",
     codeMemoryLimit: input.codeMemoryLimit ?? Bun.env.CODE_MEMORY_LIMIT ?? "2560m",

@@ -97,7 +97,7 @@ async function verifyStagedBundle(): Promise<void> {
 }
 
 async function verifyScopeServing(): Promise<void> {
-  const root = await mkdtemp(join(tmpdir(), "frc-v1-ascope-"));
+  const root = await mkdtemp(join(tmpdir(), "frc-ascope-"));
   const templateDir = await createTemplate(root);
   const webDistDir = join(root, "web-dist");
   await mkdir(webDistDir, { recursive: true });

@@ -23,7 +23,7 @@ V2 keeps the V1 control plane, run queue, NT4 proxy, AdvantageScope Lite serving
 - **Iframe URL:** `/u/<slug>/vscode/?folder=/workspace/project`, served same-origin under the existing `:4000` control plane.
 - **Run/Stop:** stays in the shell header. The run queue now executes `docker exec <container> ./gradlew simulateJava` against the merged container and streams logs over the existing `/ws/run` WebSocket.
 - **AdvantageScope:** still a sibling iframe at `/scope/`. The AdvantageScope-for-VS-Code webview extension is explicitly out of scope.
-- **Data migration:** existing `data/users/<workspaceId>/project/` directories continue to work unchanged. `jdtls-data/` and the V1 LSP image become obsolete.
+- **Data migration:** existing `data/users/<workspaceId>/project/` directories continue to work unchanged. `jdtls-data/` and the former LSP image are obsolete.
 
 ---
 
@@ -153,7 +153,7 @@ The control plane is still the only browser-facing server, the only process that
 
 ### 4.3 What no longer exists
 
-- The V1 LSP container, its image, and the JDT LS WebSocket-to-stdio bridge under `containers/lsp/bridge/bridge.ts`.
+- The former LSP container, its image, and the JDT LS WebSocket-to-stdio bridge under `containers/lsp/bridge/bridge.ts`.
 - The `containers/lsp/` directory.
 - The control-plane LSP proxy code path (`/u/:slug/ws/lsp` route, `lspWebSocketResponse`, `probeLspBridgeReady`, `LspSocketData`, `lspStartupSemaphore`).
 - The custom Monaco frontend code in `apps/web/src/main.tsx` and `apps/web/src/java-lsp.ts`.
@@ -176,10 +176,10 @@ The control plane is still the only browser-facing server, the only process that
 | Run queue | `WS /u/:slug/ws/run` running `docker exec` against `frc-sim` | Same protocol, same queue, runs against the merged container |
 | NT4 proxy | `/u/:slug/sim/{alive,nt4}` to `frc-sim` loopback port | Same endpoints, upstream is the merged container's NT4 port |
 | AS Lite | `/scope/*` static + postMessage endpoint injection | Unchanged |
-| Sessions | Signed cookie at `frc_v1_session` | Unchanged. Cookie name stays for compat |
+| Sessions | Signed cookie | Cookie name is `frc_session`; existing pre-cleanup browser sessions re-login |
 | Admin API | `/admin/status`, restart sim/lsp, reset-lsp-data | Restart and stop adapt to single container; `reset-lsp-data` removed (redhat.java owns its index inside the container) |
-| Containers in DB | `container_leases` with `sim_*` and `lsp_*` columns | Schema add for `vscode_*` columns, drop or stop using `lsp_*` columns; one row per workspace |
-| Container labels | `frc-sim.role=sim` and `frc-sim.role=lsp` | New `frc-sim.role=code`, version `v2`. V1 labels still recognized only for cleanup |
+| Containers in DB | `container_leases` with `sim_*` and `lsp_*` columns | Schema uses `nt4_port`, `vscode_*`, and `code_state`; one row per workspace |
+| Container labels | `frc-sim.role=sim` and `frc-sim.role=lsp` | New `frc-sim.role=code`, version `v2` |
 | Idle teardown | Stops both sim and lsp | Stops the single code container |
 
 Preserved exactly:
@@ -214,11 +214,9 @@ frc-sim.role=code
 frc-sim.workspace=<workspaceId>
 ```
 
-Reconciliation also stops and removes orphaned `frc-sim.version=v1` containers when a workspace's V2 code container is created. V1 containers found without a workspace match are still treated as orphaned managed infrastructure and removed.
-
 ### 6.2 SQLite changes
 
-A new migration adds the V2 columns and stops requiring the V1 LSP columns:
+A V2 migration added the merged code-container columns:
 
 ```
 -- 004_v2_code_container.sql
@@ -230,9 +228,10 @@ CREATE UNIQUE INDEX idx_container_leases_vscode_port_unique
   WHERE vscode_port IS NOT NULL;
 ```
 
-The `lsp_container`, `lsp_port`, and `lsp_state` columns remain in place but are no longer written; a later cleanup migration may drop them.
-
-`sim_container` and `sim_port` are reused: the merged container now publishes both port `5810` (NT4) and port `3000` (openvscode-server). Track them as `sim_port` and `vscode_port` respectively, on the same row.
+A later cleanup migration moved the active NT4 host port into `nt4_port`
+and dropped the obsolete V1 `sim_*`, `lsp_*`, and `state` columns. The merged
+container publishes both port `5810` (NT4) and port `3000`
+(openvscode-server), tracked as `nt4_port` and `vscode_port` on the same row.
 
 ### 6.3 Filesystem layout
 
@@ -456,7 +455,7 @@ openvscode-server is launched with `--without-connection-token` because the cont
 
 ### 9.4 Health probe
 
-Same shape as the V1 LSP probe: when ensuring a code container, the proxy waits up to 30 seconds for `GET http://127.0.0.1:<vscodePort><base-path>` to return any response in the 200-499 range before upgrading the browser WS or returning the editor HTML. Cold container start is dominated by the Gradle cache seed and the JDT LS heap warm-up; 30 seconds is the right ceiling.
+When ensuring a code container, the proxy waits up to 30 seconds for `GET http://127.0.0.1:<vscodePort><base-path>` to return any response in the 200-499 range before upgrading the browser WS or returning the editor HTML. Cold container start is dominated by the Gradle cache seed and the JDT LS heap warm-up; 30 seconds is the right ceiling.
 
 ---
 
@@ -807,7 +806,7 @@ bun test
   - new `RoleConfig` for `role: "code"`, container port `3000`, name prefix `frc-v2-code-`.
   - merge sim and lsp ensure paths into a single code ensure path. The merged container publishes both `5810` and `3000` from the same `docker run`.
   - delete the LSP startup semaphore (no separate JDT LS warmup).
-  - reconciliation: adopt `frc-sim.version=v2 role=code` containers; stop and remove `frc-sim.version=v1 role=sim|lsp` orphans.
+  - reconciliation: adopt `frc-sim.version=v2 role=code` containers.
   - `restartCodeContainer`, `stopWorkspaceContainers` adapted to the single container.
 - `apps/control/src/runs.ts`: change `runs.start()` and `defaultRunCommandFactory` to target the code container. The `start-sim.sh` and `stop-sim.sh` calls are unchanged.
 - `apps/control/src/app.ts`:
@@ -834,7 +833,6 @@ bun test
   - both bind mounts (project and home).
 - Allocate `simPort` and `vscodePort` together inside the same lease transaction so reconciliation can not see a split state.
 - The publish-port reconciliation logic must inspect both ports; a container that publishes one port on `127.0.0.1` and the other on `0.0.0.0` (or any non-loopback) is unsafe and must be removed.
-- Reconcile V1 leftovers: on startup, find containers with `frc-sim.version=v1` and `frc-sim.role in (sim, lsp)`. Stop and remove them. Their workspaces' leases should be cleared and re-ensured next time the workspace opens.
 - Run queue command resolution: `runs.start()` calls `containers.ensureCodeContainer(workspace)` instead of `ensureSimContainer`. The `RunCommandContext.containerName` now points at the code container. The shell script inside `dockerRunScript()` is unchanged.
 - When deleting the LSP path, remove related schemas in `packages/contracts/src/index.ts` only if they are not still used by `AdminWorkspaceStatus`. Keep the admin status response useful: replace `lsp` with `code`, drop `lsp` field.
 - Update `apps/control/src/app.ts` admin handlers: `restart-sim` becomes `restart-code` (rename), `restart-lsp` and `reset-lsp-data` are deleted, `stop-containers` keeps its name.
@@ -865,8 +863,7 @@ curl -fsS -b cookies.txt http://localhost:4000/u/alice/api/containers/status
 #   confirm `docker ps` shows the same `frc-v2-code-<wsId>` container,
 #   and that `/u/alice/api/containers/status` reports the same vscode_port.
 
-# Negative: confirm `frc-v1-sim-*` and `frc-v1-lsp-*` containers, if any
-# remain on disk, are stopped/removed within 60 seconds of restart.
+# Negative: confirm unrelated or mislabeled containers are not adopted.
 ```
 
 **Definition of Done.**
@@ -1053,12 +1050,9 @@ bun run dev:control
 curl -fsS -X POST http://localhost:4000/admin/workspaces/<wsId>/restart-code
 curl -fsS -X POST http://localhost:4000/admin/workspaces/<wsId>/stop-containers
 
-# V1 leftover cleanup:
-docker run -d --name frc-v1-sim-fake \
-  --label frc-sim.managed=true --label frc-sim.version=v1 --label frc-sim.role=sim --label frc-sim.workspace=<wsId> \
-  alpine sleep 3600
-# Restart the control plane.
-# Confirm `docker ps -a` no longer shows frc-v1-sim-fake within 60 seconds.
+# Mismatched label smoke:
+# Pre-create a container with the expected V2 name but wrong labels.
+# Confirm the control plane removes it before creating a valid code container.
 ```
 
 **Definition of Done.**
@@ -1066,7 +1060,7 @@ docker run -d --name frc-v1-sim-fake \
 - [x] Idle teardown stops one container per idle workspace.
 - [x] Reload after teardown brings the editor back without losing project files or vscode user data.
 - [x] Control-plane restart adopts the existing code container (no recreate).
-- [x] V1 leftover containers are stopped and removed within one reconciliation cycle.
+- [x] Mislabeled expected-name containers are rejected during adoption.
 - [x] `restart-code` and `stop-containers` admin actions return 200 for a running workspace.
 - [x] `bun test` covers reconciliation cases.
 
@@ -1118,7 +1112,7 @@ bun run measure         # capture current RAM and CPU
 - [x] Decision log 013 records per-container memory and time-to-editor-ready.
 - [x] `docs/runbook.md` and `README.md` only reference V2 commands and images.
 - [x] `AGENTS.md` declares V2 done and points to this document.
-- [x] No V1-only files remain except `mvp/` (untouched).
+- [x] V1-only source files removed; historical documents remain archived.
 
 ---
 
