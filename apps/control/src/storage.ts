@@ -6,39 +6,22 @@ import { Database } from "bun:sqlite";
 import type {
   ContainerRole,
   ContainerState,
-  SessionId,
-  UserId,
   WorkspaceId,
   WorkspaceSlug,
 } from "@frc-sim/contracts";
-import { displayNameSchema } from "@frc-sim/contracts";
 import type { ControlConfigInput, ControlConfig } from "./config";
 import { loadControlConfig } from "./config";
 import { applyMigrations } from "./migrations";
-
-export type UserRow = {
-  id: UserId;
-  display_name: string;
-  slug: WorkspaceSlug;
-  created_at: string;
-  last_seen_at: string;
-};
+import { createAuth, type Auth } from "./auth/auth";
+import { setAllowlistPath, loadAllowlist } from "./auth/allowlist";
 
 export type WorkspaceRow = {
   id: WorkspaceId;
-  user_id: UserId;
+  user_id: string;
   slug: WorkspaceSlug;
   project_path: string;
   created_at: string;
   last_accessed_at: string;
-};
-
-export type SessionRow = {
-  id: SessionId;
-  user_id: UserId;
-  created_at: string;
-  last_seen_at: string;
-  expires_at: string;
 };
 
 export type ContainerLeaseRow = {
@@ -65,14 +48,10 @@ export type RunJobRow = {
   log_path: string | null;
 };
 
+/** Context returned by Better Auth session resolution + workspace lookup. */
 export type AuthContext = {
-  session: SessionRow;
-  user: UserRow;
+  user: { id: string; email: string; name: string; role: string; slug: string };
   workspace: WorkspaceRow;
-};
-
-export type LoginResult = AuthContext & {
-  expiresAt: Date;
 };
 
 export class SlugTakenError extends Error {
@@ -88,20 +67,6 @@ function randomId(prefix: "usr" | "ws" | "ses" | "run"): string {
 
 function nowIso(): string {
   return new Date().toISOString();
-}
-
-export function slugFromDisplayName(displayName: string): WorkspaceSlug {
-  const normalized = displayName
-    .trim()
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/gu, "")
-    .replace(/[^a-z0-9_-]+/gu, "-")
-    .replace(/-+/gu, "-")
-    .replace(/^[-_]+|[-_]+$/gu, "")
-    .slice(0, 40);
-
-  return (normalized || "student") as WorkspaceSlug;
 }
 
 async function ensureWorkspaceFiles(config: ControlConfig, workspaceId: WorkspaceId): Promise<string> {
@@ -129,6 +94,7 @@ async function ensureWorkspaceFiles(config: ControlConfig, workspaceId: Workspac
 export class AppStorage {
   readonly config: ControlConfig;
   readonly db: Database;
+  auth!: Auth;
 
   constructor(configInput: ControlConfigInput = {}) {
     this.config = loadControlConfig(configInput);
@@ -139,20 +105,30 @@ export class AppStorage {
 
   async initialize(): Promise<void> {
     await mkdir(dirname(this.config.dbPath), { recursive: true });
+
+    // 1. Run our migrations (renames legacy tables, etc.)
     await applyMigrations(this.db, this.config.migrationsDir);
+
+    // 2. Initialize allowlist
+    setAllowlistPath(this.config.dataDir);
+    await loadAllowlist();
+
+    // 3. Create Better Auth instance and run its migrations
+    this.auth = createAuth(this.db, this.config, {
+      ensureWorkspace: async (userId, slug) => {
+        await this.ensureWorkspaceForUser(userId, slug);
+      },
+    });
+    const { getMigrations } = await import("better-auth/db/migration");
+    const { runMigrations } = await getMigrations(this.auth.options);
+    await runMigrations();
   }
 
   close(): void {
     this.db.close();
   }
 
-  findUserBySlug(slug: WorkspaceSlug): UserRow | null {
-    return (
-      (this.db.query("SELECT * FROM users WHERE slug = ?").get(slug) as UserRow | null) ?? null
-    );
-  }
-
-  findWorkspaceByUserId(userId: UserId): WorkspaceRow | null {
+  findWorkspaceByUserId(userId: string): WorkspaceRow | null {
     return (
       (this.db.query("SELECT * FROM workspaces WHERE user_id = ?").get(userId) as WorkspaceRow | null) ??
       null
@@ -173,172 +149,45 @@ export class AppStorage {
     );
   }
 
-  async createOrLoadUserWorkspace(displayNameInput: string, currentUserId: UserId | null): Promise<{
-    user: UserRow;
-    workspace: WorkspaceRow;
-  }> {
-    const displayName = displayNameSchema.parse(displayNameInput);
-    const slug = slugFromDisplayName(displayName);
-    const existing = this.findUserBySlug(slug);
-
+  /** Create a workspace for a Better Auth user (called on first login). */
+  async ensureWorkspaceForUser(userId: string, slug: string): Promise<WorkspaceRow> {
+    const existing = this.findWorkspaceByUserId(userId);
     if (existing) {
-      if (currentUserId && existing.id === currentUserId) {
-        const workspace = this.findWorkspaceByUserId(existing.id);
-        if (!workspace) {
-          throw new Error(`User ${existing.id} has no workspace.`);
-        }
-        this.touchUserAndWorkspace(existing.id, workspace.id);
-        return { user: existing, workspace };
-      }
-
-      throw new SlugTakenError(slug);
+      this.touchWorkspace(existing.id);
+      return existing;
     }
 
-    const userId = randomId("usr") as UserId;
+    // Check for slug collision and add numeric suffix if needed
+    let finalSlug = slug as WorkspaceSlug;
+    let attempt = 0;
+    while (this.findWorkspaceBySlug(finalSlug)) {
+      attempt++;
+      finalSlug = `${slug}-${attempt}`.slice(0, 40) as WorkspaceSlug;
+    }
+
     const workspaceId = randomId("ws") as WorkspaceId;
     const timestamp = nowIso();
     const projectPath = await ensureWorkspaceFiles(this.config, workspaceId);
 
     this.db
       .query(
-        "INSERT INTO users (id, display_name, slug, created_at, last_seen_at) VALUES (?, ?, ?, ?, ?)",
-      )
-      .run(userId, displayName, slug, timestamp, timestamp);
-
-    this.db
-      .query(
         "INSERT INTO workspaces (id, user_id, slug, project_path, created_at, last_accessed_at) VALUES (?, ?, ?, ?, ?, ?)",
       )
-      .run(workspaceId, userId, slug, projectPath, timestamp, timestamp);
+      .run(workspaceId, userId, finalSlug, projectPath, timestamp, timestamp);
 
-    const user = this.findUserBySlug(slug);
-    const workspace = this.findWorkspaceByUserId(userId);
-    if (!user || !workspace) {
+    const workspace = this.findWorkspaceById(workspaceId);
+    if (!workspace) {
       throw new Error("Failed to reload newly created workspace.");
     }
 
-    return { user, workspace };
+    return workspace;
   }
 
-  createSession(userId: UserId): { session: SessionRow; expiresAt: Date } {
-    const sessionId = randomId("ses") as SessionId;
+  touchWorkspace(workspaceId: WorkspaceId): void {
     const timestamp = nowIso();
-    const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-
-    this.db
-      .query(
-        "INSERT INTO sessions (id, user_id, created_at, last_seen_at, expires_at) VALUES (?, ?, ?, ?, ?)",
-      )
-      .run(sessionId, userId, timestamp, timestamp, expiresAt.toISOString());
-
-    const session = this.db.query("SELECT * FROM sessions WHERE id = ?").get(sessionId) as SessionRow | null;
-    if (!session) {
-      throw new Error("Failed to reload newly created session.");
-    }
-
-    return { session, expiresAt };
-  }
-
-  async login(displayName: string, currentUserId: UserId | null): Promise<LoginResult> {
-    const { user, workspace } = await this.createOrLoadUserWorkspace(displayName, currentUserId);
-    const { session, expiresAt } = this.createSession(user.id);
-    return { user, workspace, session, expiresAt };
-  }
-
-  getAuthContext(sessionId: SessionId): AuthContext | null {
-    const row = this.db
-      .query(
-        `
-          SELECT
-            sessions.id AS session_id,
-            sessions.user_id AS session_user_id,
-            sessions.created_at AS session_created_at,
-            sessions.last_seen_at AS session_last_seen_at,
-            sessions.expires_at AS session_expires_at,
-            users.id AS user_id,
-            users.display_name AS user_display_name,
-            users.slug AS user_slug,
-            users.created_at AS user_created_at,
-            users.last_seen_at AS user_last_seen_at,
-            workspaces.id AS workspace_id,
-            workspaces.user_id AS workspace_user_id,
-            workspaces.slug AS workspace_slug,
-            workspaces.project_path AS workspace_project_path,
-            workspaces.created_at AS workspace_created_at,
-            workspaces.last_accessed_at AS workspace_last_accessed_at
-          FROM sessions
-          JOIN users ON users.id = sessions.user_id
-          JOIN workspaces ON workspaces.user_id = users.id
-          WHERE sessions.id = ?
-        `,
-      )
-      .get(sessionId) as
-      | {
-          session_id: SessionId;
-          session_user_id: UserId;
-          session_created_at: string;
-          session_last_seen_at: string;
-          session_expires_at: string;
-          user_id: UserId;
-          user_display_name: string;
-          user_slug: WorkspaceSlug;
-          user_created_at: string;
-          user_last_seen_at: string;
-          workspace_id: WorkspaceId;
-          workspace_user_id: UserId;
-          workspace_slug: WorkspaceSlug;
-          workspace_project_path: string;
-          workspace_created_at: string;
-          workspace_last_accessed_at: string;
-        }
-      | null;
-
-    if (!row || Date.parse(row.session_expires_at) <= Date.now()) {
-      return null;
-    }
-
-    return {
-      session: {
-        id: row.session_id,
-        user_id: row.session_user_id,
-        created_at: row.session_created_at,
-        last_seen_at: row.session_last_seen_at,
-        expires_at: row.session_expires_at,
-      },
-      user: {
-        id: row.user_id,
-        display_name: row.user_display_name,
-        slug: row.user_slug,
-        created_at: row.user_created_at,
-        last_seen_at: row.user_last_seen_at,
-      },
-      workspace: {
-        id: row.workspace_id,
-        user_id: row.workspace_user_id,
-        slug: row.workspace_slug,
-        project_path: row.workspace_project_path,
-        created_at: row.workspace_created_at,
-        last_accessed_at: row.workspace_last_accessed_at,
-      },
-    };
-  }
-
-  touchUserAndWorkspace(userId: UserId, workspaceId: WorkspaceId): void {
-    const timestamp = nowIso();
-    this.db.query("UPDATE users SET last_seen_at = ? WHERE id = ?").run(timestamp, userId);
     this.db
       .query("UPDATE workspaces SET last_accessed_at = ? WHERE id = ?")
       .run(timestamp, workspaceId);
-  }
-
-  touchSession(auth: AuthContext): void {
-    const timestamp = nowIso();
-    this.db.query("UPDATE sessions SET last_seen_at = ? WHERE id = ?").run(timestamp, auth.session.id);
-    this.touchUserAndWorkspace(auth.user.id, auth.workspace.id);
-  }
-
-  deleteSession(sessionId: SessionId): void {
-    this.db.query("DELETE FROM sessions WHERE id = ?").run(sessionId);
   }
 
   getContainerLease(workspaceId: WorkspaceId): ContainerLeaseRow | null {
@@ -464,7 +313,7 @@ export class AppStorage {
 
   listAllWorkspacesWithLeases(): Array<{
     workspace: WorkspaceRow;
-    user: UserRow;
+    user: { id: string; name: string; email: string; role: string; slug: string | null };
     lease: ContainerLeaseRow | null;
   }> {
     const rows = this.db
@@ -474,29 +323,29 @@ export class AppStorage {
             w.id AS w_id, w.user_id AS w_user_id, w.slug AS w_slug,
             w.project_path AS w_project_path, w.created_at AS w_created_at,
             w.last_accessed_at AS w_last_accessed_at,
-            u.id AS u_id, u.display_name AS u_display_name, u.slug AS u_slug,
-            u.created_at AS u_created_at, u.last_seen_at AS u_last_seen_at,
+            u.id AS u_id, u.name AS u_name, u.email AS u_email,
+            u.role AS u_role, u.slug AS u_slug,
             cl.workspace_id AS cl_workspace_id, cl.nt4_port,
             cl.vscode_container, cl.vscode_port, cl.halsim_port, cl.code_state AS cl_code_state,
             cl.last_used_at AS cl_last_used_at, cl.created_at AS cl_created_at
           FROM workspaces w
-          JOIN users u ON u.id = w.user_id
+          LEFT JOIN user u ON u.id = w.user_id
           LEFT JOIN container_leases cl ON cl.workspace_id = w.id
           ORDER BY w.last_accessed_at DESC
         `,
       )
       .all() as Array<{
         w_id: WorkspaceId;
-        w_user_id: UserId;
+        w_user_id: string;
         w_slug: WorkspaceSlug;
         w_project_path: string;
         w_created_at: string;
         w_last_accessed_at: string;
-        u_id: UserId;
-        u_display_name: string;
-        u_slug: WorkspaceSlug;
-        u_created_at: string;
-        u_last_seen_at: string;
+        u_id: string | null;
+        u_name: string | null;
+        u_email: string | null;
+        u_role: string | null;
+        u_slug: string | null;
         cl_workspace_id: WorkspaceId | null;
         nt4_port: number | null;
         halsim_port: number | null;
@@ -517,11 +366,11 @@ export class AppStorage {
         last_accessed_at: row.w_last_accessed_at,
       },
       user: {
-        id: row.u_id,
-        display_name: row.u_display_name,
+        id: row.u_id ?? row.w_user_id,
+        name: row.u_name ?? "Unknown",
+        email: row.u_email ?? "",
+        role: row.u_role ?? "student",
         slug: row.u_slug,
-        created_at: row.u_created_at,
-        last_seen_at: row.u_last_seen_at,
       },
       lease: row.cl_workspace_id
         ? {

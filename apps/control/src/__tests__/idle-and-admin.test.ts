@@ -492,4 +492,109 @@ describe("idle lifecycle and admin controls", () => {
       },
     );
   });
+
+  test("admin users endpoint lists users", async () => {
+    await withApp(async (app) => {
+      await login(app, "alice");
+      await login(app, "bob");
+
+      const response = await app.fetch(new Request("http://localhost/admin/users"));
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { ok: boolean; users: Array<{ email: string; role: string }> };
+      expect(body.ok).toBe(true);
+      expect(body.users.length).toBe(2);
+      const emails = body.users.map((u) => u.email).sort();
+      expect(emails).toEqual(["alice@test.local", "bob@test.local"]);
+    });
+  });
+
+  test("admin can promote and demote users", async () => {
+    await withApp(async (app) => {
+      await login(app, "alice");
+      const user = app.storage.db.query("SELECT id, role FROM user WHERE email = ?").get("alice@test.local") as {
+        id: string;
+        role: string;
+      };
+      expect(user.role).toBe("student");
+
+      const promote = await app.fetch(
+        new Request(`http://localhost/admin/users/${user.id}/promote`, { method: "POST" }),
+      );
+      expect(promote.status).toBe(200);
+      const body = (await promote.json()) as { ok: boolean; role: string };
+      expect(body.role).toBe("admin");
+
+      const after = app.storage.db.query("SELECT role FROM user WHERE id = ?").get(user.id) as { role: string };
+      expect(after.role).toBe("admin");
+
+      const demote = await app.fetch(
+        new Request(`http://localhost/admin/users/${user.id}/demote`, { method: "POST" }),
+      );
+      expect(demote.status).toBe(200);
+      const dBody = (await demote.json()) as { ok: boolean; role: string };
+      expect(dBody.role).toBe("student");
+    });
+  });
+
+  test("admin allowlist CRUD works", async () => {
+    await withApp(async (app) => {
+      // List — should be empty
+      const list = await app.fetch(new Request("http://localhost/admin/allowlist"));
+      expect(list.status).toBe(200);
+      const body = (await list.json()) as { ok: boolean; emails: string[]; domains: string[] };
+      expect(body.emails).toEqual([]);
+      expect(body.domains).toEqual([]);
+
+      // Add email
+      const add = await app.fetch(
+        new Request("http://localhost/admin/allowlist", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ kind: "email", value: "test@example.com" }),
+        }),
+      );
+      expect(add.status).toBe(200);
+      const addBody = (await add.json()) as { ok: boolean; emails: string[] };
+      expect(addBody.emails).toContain("test@example.com");
+
+      // Remove email
+      const del = await app.fetch(
+        new Request("http://localhost/admin/allowlist/test%40example.com", {
+          method: "DELETE",
+        }),
+      );
+      expect(del.status).toBe(200);
+      const delBody = (await del.json()) as { ok: boolean; emails: string[] };
+      expect(delBody.emails).toEqual([]);
+    });
+  });
+
+  test("admin endpoints are gated when adminToken is set", async () => {
+    await withApp(
+      async (app) => {
+        await login(app, "alice");
+
+        // No token → 401
+        const noAuth = await app.fetch(new Request("http://localhost/admin/users"));
+        expect(noAuth.status).toBe(401);
+
+        // Wrong token → 401
+        const wrongAuth = await app.fetch(
+          new Request("http://localhost/admin/users", {
+            headers: { authorization: "Bearer wrong" },
+          }),
+        );
+        expect(wrongAuth.status).toBe(401);
+
+        // Correct token → 200
+        const goodAuth = await app.fetch(
+          new Request("http://localhost/admin/users", {
+            headers: { authorization: "Bearer test-admin-token" },
+          }),
+        );
+        expect(goodAuth.status).toBe(200);
+      },
+      { adminToken: "test-admin-token" },
+    );
+  });
 });

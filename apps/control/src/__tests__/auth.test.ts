@@ -1,23 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtemp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { createApp, type ControlAppOptions } from "../app";
-import type { DockerRunner } from "../containers";
-import type { RunCommandFactory } from "../runs";
 import {
   cookieFrom,
-  createFakeDocker,
-  createTemplate,
-  createWebDist,
   exists,
   login,
-  missing,
-  waitFor,
   withApp,
   workspaceBySlug,
-  workspaceProjectPath,
 } from "./helpers";
+import { join } from "node:path";
 
 describe("session login and ownership", () => {
   test("new login creates a user, workspace, session, and project files", async () => {
@@ -26,11 +15,11 @@ describe("session login and ownership", () => {
       expect(response.status).toBe(303);
       expect(response.headers.get("location")).toBe("/u/alice/");
 
-      const userCount = app.storage.db.query("SELECT COUNT(*) AS count FROM users").get() as { count: number };
+      const userCount = app.storage.db.query("SELECT COUNT(*) AS count FROM user").get() as { count: number };
       const workspaceCount = app.storage.db.query("SELECT COUNT(*) AS count FROM workspaces").get() as {
         count: number;
       };
-      const sessionCount = app.storage.db.query("SELECT COUNT(*) AS count FROM sessions").get() as {
+      const sessionCount = app.storage.db.query("SELECT COUNT(*) AS count FROM session").get() as {
         count: number;
       };
       const workspace = app.storage.db.query("SELECT * FROM workspaces WHERE slug = ?").get("alice") as {
@@ -47,7 +36,7 @@ describe("session login and ownership", () => {
     });
   });
 
-  test("signed cookie redirects to the existing workspace", async () => {
+  test("session cookie redirects to the existing workspace", async () => {
     await withApp(async (app) => {
       const response = await login(app, "alice");
       const cookie = cookieFrom(response);
@@ -85,24 +74,45 @@ describe("session login and ownership", () => {
     });
   });
 
-  test("prevents another session from claiming or opening a user's workspace", async () => {
+  test("prevents another session from accessing a different user's workspace", async () => {
     await withApp(async (app) => {
       const alice = await login(app, "alice");
       const aliceCookie = cookieFrom(alice);
 
-      const bob = await login(app, "bob");
-      expect(bob.status).toBe(303);
+      await login(app, "bob");
 
+      // Alice's cookie should not let her access Bob's workspace
       const bobAsAlice = await app.fetch(
         new Request("http://localhost/u/bob/", {
           headers: { cookie: aliceCookie },
         }),
       );
       expect(bobAsAlice.status).toBe(403);
+    });
+  });
 
-      const secondAlice = await login(app, "alice");
-      expect(secondAlice.status).toBe(409);
-      expect(await secondAlice.text()).toContain("already taken");
+  test("returning user gets a fresh session with same workspace", async () => {
+    await withApp(async (app) => {
+      const first = await login(app, "alice");
+      expect(first.status).toBe(303);
+      expect(first.headers.get("location")).toBe("/u/alice/");
+
+      // Second login with same display name → same user + new session
+      const second = await login(app, "alice");
+      expect(second.status).toBe(303);
+      expect(second.headers.get("location")).toBe("/u/alice/");
+
+      // Should have 1 user, 2 sessions, 1 workspace
+      const userCount = app.storage.db.query("SELECT COUNT(*) AS count FROM user").get() as { count: number };
+      const sessionCount = app.storage.db.query("SELECT COUNT(*) AS count FROM session").get() as {
+        count: number;
+      };
+      const workspaceCount = app.storage.db.query("SELECT COUNT(*) AS count FROM workspaces").get() as {
+        count: number;
+      };
+      expect(userCount.count).toBe(1);
+      expect(sessionCount.count).toBe(2);
+      expect(workspaceCount.count).toBe(1);
     });
   });
 });

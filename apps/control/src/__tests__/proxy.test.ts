@@ -30,9 +30,9 @@ describe("editor proxy", () => {
         new Request("http://localhost/u/alice/vscode/", { method: "GET" }),
       );
 
-      // page kind → 303 redirect to /
+      // page kind → 303 redirect to /login
       expect(response.status).toBe(303);
-      expect(response.headers.get("location")).toBe("/");
+      expect(response.headers.get("location")).toBe("/login");
     });
   });
 
@@ -438,9 +438,9 @@ describe("HALSim WS proxy", () => {
         }),
       );
 
-      // page kind → 303 redirect to /
+      // page kind → 303 redirect to /login
       expect(response.status).toBe(303);
-      expect(response.headers.get("location")).toBe("/");
+      expect(response.headers.get("location")).toBe("/login");
     });
   });
 

@@ -264,21 +264,82 @@ export async function waitFor(predicate: () => boolean): Promise<void> {
   throw new Error("Timed out waiting for condition.");
 }
 
-export async function login(app: ControlApp, displayName: string, cookie?: string): Promise<Response> {
-  const headers = new Headers({
-    "content-type": "application/x-www-form-urlencoded",
-  });
-  if (cookie) {
-    headers.set("cookie", cookie);
+/** HMAC-SHA256 sign a session token for Better Auth cookies. */
+async function signToken(token: string, secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(token));
+  const signature = btoa(String.fromCharCode(...new Uint8Array(sig)));
+  return `${token}.${encodeURIComponent(signature)}`;
+}
+
+/** Better Auth generates random 32-char alphanumeric tokens, not UUIDs. */
+function randomToken(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  for (const b of bytes) result += chars[b % chars.length];
+  return result;
+}
+
+/**
+ * Simulate an OAuth login by directly inserting Better Auth records.
+ * Returns a fake Response whose set-cookie header carries the signed session token,
+ * keeping the existing `cookieFrom()` helper working unchanged.
+ */
+export async function login(app: ControlApp, displayName: string): Promise<Response> {
+  const db = app.storage.db;
+  const secret = app.storage.config.sessionSecret;
+  const email = `${displayName.toLowerCase()}@test.local`;
+  const slug = displayName.toLowerCase().replace(/[^a-z0-9_-]/g, "-").slice(0, 40);
+  const now = new Date().toISOString();
+  const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+
+  // If user already exists (same email → same display name), create a new session
+  const existing = db.query("SELECT id, slug FROM user WHERE email = ?").get(email) as {
+    id: string;
+    slug: string;
+  } | null;
+  if (existing) {
+    const sessionToken = randomToken();
+    const signedToken = await signToken(sessionToken, secret);
+    db.query(
+      "INSERT INTO session (id, expiresAt, token, createdAt, updatedAt, userId) VALUES (?, ?, ?, ?, ?, ?)",
+    ).run(randomToken(), expiresAt, sessionToken, now, now, existing.id);
+    return new Response(null, {
+      status: 303,
+      headers: new Headers([
+        ["set-cookie", `frc.session_token=${signedToken}; Path=/; HttpOnly`],
+        ["location", `/u/${existing.slug}/`],
+      ]),
+    });
   }
 
-  return app.fetch(
-    new Request("http://localhost/login", {
-      method: "POST",
-      headers,
-      body: new URLSearchParams({ displayName }),
-    }),
-  );
+  // New user — create user, session, and workspace
+  const userId = randomToken();
+  const sessionToken = randomToken();
+  const signedToken = await signToken(sessionToken, secret);
+  db.query(
+    "INSERT INTO user (id, name, email, emailVerified, createdAt, updatedAt, role, slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+  ).run(userId, displayName, email, 0, now, now, "student", slug);
+  db.query(
+    "INSERT INTO session (id, expiresAt, token, createdAt, updatedAt, userId) VALUES (?, ?, ?, ?, ?, ?)",
+  ).run(randomToken(), expiresAt, sessionToken, now, now, userId);
+  await app.storage.ensureWorkspaceForUser(userId, slug);
+
+  return new Response(null, {
+    status: 303,
+    headers: new Headers([
+      ["set-cookie", `frc.session_token=${signedToken}; Path=/; HttpOnly`],
+      ["location", `/u/${slug}/`],
+    ]),
+  });
 }
 
 export function cookieFrom(response: Response): string {

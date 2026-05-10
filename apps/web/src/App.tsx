@@ -4,8 +4,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { WorkspaceLayout } from "@/routes/WorkspaceLayout";
 import { WorkspacePage } from "@/routes/WorkspacePage";
+import { AdminApp } from "@/admin/AdminApp";
 
 const router = createBrowserRouter([
+  {
+    path: "/admin",
+    element: <AdminApp />,
+  },
   {
     path: "/u/:slug",
     element: <WorkspaceLayout />,

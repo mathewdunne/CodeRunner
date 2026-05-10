@@ -1,7 +1,6 @@
 import { cp, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/promises";
 import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
-  displayNameSchema,
   heartbeatRequestSchema,
   runClientMessageSchema,
   workspaceSlugSchema,
@@ -11,20 +10,15 @@ import {
   type ContainersStatusResponse,
   type HeartbeatResponse,
   type SessionResponse,
-  type UserId,
   type WorkspaceId,
   type WorkspaceSlug,
 } from "@frc-sim/contracts";
 import type { ControlConfigInput } from "./config";
 import { ContainerOrchestrator, type DockerRunner } from "./containers";
-import {
-  parseSignedSessionCookie,
-  serializeExpiredSessionCookie,
-  serializeSessionCookie,
-} from "./cookies";
 import { IdleManager } from "./idle";
 import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
 import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from "./storage";
+import { getSessionFromRequest, requireAdmin, requireWorkspaceOwnership } from "./auth/middleware";
 
 export type ControlApp = {
   fetch(request: Request, server?: BunUpgradeServer): Promise<Response>;
@@ -135,22 +129,20 @@ function loginPage(error: string | null = null, init: ResponseInit = {}): Respon
     <title>FRC Web Simulator V2</title>
     <style>
       body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: system-ui, sans-serif; background: #101820; color: #f5f7fb; }
-      main { width: min(28rem, calc(100vw - 2rem)); }
-      form { display: grid; gap: 0.75rem; }
-      input, button { font: inherit; padding: 0.7rem 0.8rem; border-radius: 0.4rem; border: 1px solid #52606d; }
-      button { background: #2f80ed; color: white; border-color: #2f80ed; cursor: pointer; }
+      main { width: min(28rem, calc(100vw - 2rem)); text-align: center; }
+      .btn { display: block; width: 100%; font: inherit; padding: 0.7rem 0.8rem; border-radius: 0.4rem; border: 1px solid #52606d; background: #2f80ed; color: white; cursor: pointer; margin-bottom: 0.5rem; text-decoration: none; box-sizing: border-box; }
       p[role="alert"] { color: #ffb4ab; }
+      .note { color: #97a6b6; font-size: 0.85rem; margin-top: 1rem; }
     </style>
   </head>
   <body>
     <main>
       <h1>FRC Web Simulator</h1>
       ${errorMarkup}
-      <form method="post" action="/login">
-        <label for="displayName">Classroom name</label>
-        <input id="displayName" name="displayName" autocomplete="name" required maxlength="80">
-        <button type="submit">Enter workspace</button>
-      </form>
+      <p>Sign in to access your workspace.</p>
+      <a class="btn" href="/api/auth/sign-in/social?provider=github&callbackURL=/">Sign in with GitHub</a>
+      <a class="btn" href="/api/auth/sign-in/social?provider=google&callbackURL=/">Sign in with Google</a>
+      <p class="note">Not on the roster? Ask your coach to add you.</p>
     </main>
   </body>
 </html>`, init);
@@ -160,72 +152,14 @@ function notFound(): Response {
   return new Response("Not found", { status: 404 });
 }
 
-async function readDisplayName(request: Request): Promise<string> {
-  const contentType = request.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/x-www-form-urlencoded") && !contentType.includes("multipart/form-data")) {
-    throw new Error("Login form must be submitted as form data.");
-  }
-
-  const form = await request.formData();
-  const displayName = form.get("displayName");
-  if (typeof displayName !== "string") {
-    throw new Error("Display name is required.");
-  }
-
-  return displayNameSchema.parse(displayName);
-}
-
-function currentUserId(auth: AuthContext | null): UserId | null {
-  return auth?.user.id ?? null;
-}
-
-function authFromRequest(storage: AppStorage, request: Request): AuthContext | null {
-  const sessionId = parseSignedSessionCookie(request.headers.get("cookie"), storage.config.sessionSecret);
-  if (!sessionId) {
-    return null;
-  }
-
-  const auth = storage.getAuthContext(sessionId);
-  if (!auth) {
-    return null;
-  }
-
-  storage.touchSession(auth);
-  return auth;
-}
-
-type WorkspaceRequestKind = "page" | "api";
-
-function resolveWorkspaceRequest(
-  storage: AppStorage,
-  request: Request,
-  slug: string,
-  kind: WorkspaceRequestKind,
-): Response | AuthContext {
-  const parsedSlug = workspaceSlugSchema.safeParse(slug);
-  if (!parsedSlug.success) {
-    return new Response("Invalid workspace slug", { status: 400 });
-  }
-
-  const auth = authFromRequest(storage, request);
-  if (!auth) {
-    return kind === "api" ? new Response("Unauthorized", { status: 401 }) : redirect("/");
-  }
-
-  const workspace = storage.findWorkspaceBySlug(parsedSlug.data as WorkspaceSlug);
-  if (!workspace || workspace.user_id !== auth.user.id) {
-    return new Response("Workspace is not available for this session.", { status: 403 });
-  }
-
-  return auth;
-}
-
 function sessionResponse(auth: AuthContext): SessionResponse {
   return {
     user: {
       id: auth.user.id,
-      displayName: auth.user.display_name,
+      displayName: auth.user.name,
+      email: auth.user.email,
       slug: auth.user.slug,
+      role: auth.user.role as "student" | "admin",
     },
     workspace: {
       id: auth.workspace.id,
@@ -680,16 +614,7 @@ async function halsimWebSocketResponse(
   return undefined as unknown as Response;
 }
 
-function isAdminAuthorized(storage: AppStorage, request: Request): boolean {
-  const token = storage.config.adminToken;
-  if (token) {
-    const header = request.headers.get("authorization") ?? "";
-    return header === `Bearer ${token}`;
-  }
-  // No token configured: allow localhost-only access.
-  const host = request.headers.get("host") ?? new URL(request.url).host;
-  return /^(localhost|127\.0\.0\.1|::1)(:\d+)?$/i.test(host);
-}
+// Admin auth is now handled by requireAdmin() from the middleware module.
 
 async function runTar(args: string[]): Promise<void> {
   const subprocess = Bun.spawn(["tar", ...args], {
@@ -740,9 +665,9 @@ function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatus
         lastAccessedAt: entry.workspace.last_accessed_at,
       },
       user: {
-        displayName: entry.user.display_name,
-        slug: entry.user.slug,
-        lastSeenAt: entry.user.last_seen_at,
+        displayName: entry.user.name,
+        slug: entry.user.slug ?? entry.workspace.slug,
+        lastSeenAt: entry.workspace.last_accessed_at,
       },
       code: {
         state: entry.lease?.code_state ?? "missing",
@@ -789,53 +714,51 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       return scopeResponse(storage, url.pathname);
     }
 
+    // --- Better Auth API routes ---
+    if (url.pathname.startsWith("/api/auth/")) {
+      return storage.auth.handler(request);
+    }
+
     if (url.pathname === "/" && request.method === "GET") {
-      const auth = authFromRequest(storage, request);
-      if (auth) {
-        return redirect(`/u/${auth.workspace.slug}/`);
+      const session = await getSessionFromRequest(storage.auth, request);
+      if (session) {
+        const workspace = storage.findWorkspaceByUserId(session.user.id);
+        if (workspace) {
+          return redirect(`/u/${workspace.slug}/`);
+        }
       }
       return loginPage();
     }
 
-    if (url.pathname === "/login" && request.method === "POST") {
-      const auth = authFromRequest(storage, request);
-
-      try {
-        const displayName = await readDisplayName(request);
-        const login = await storage.login(displayName, currentUserId(auth));
-        const headers = new Headers({
-          "set-cookie": serializeSessionCookie(login.session.id, storage.config.sessionSecret, login.expiresAt),
-        });
-        return redirect(`/u/${login.workspace.slug}/`, { headers });
-      } catch (error) {
-        const message =
-          error instanceof SlugTakenError
-            ? error.message
-            : error instanceof Error
-              ? error.message
-              : "Unable to create workspace.";
-        const status = error instanceof SlugTakenError ? 409 : 400;
-        return loginPage(message, { status });
-      }
+    if (url.pathname === "/login" && request.method === "GET") {
+      const error = url.searchParams.get("error");
+      return loginPage(error);
     }
 
-    if (url.pathname === "/logout" && request.method === "POST") {
-      const sessionId = parseSignedSessionCookie(request.headers.get("cookie"), storage.config.sessionSecret);
-      if (sessionId) {
-        storage.deleteSession(sessionId);
-      }
-
-      return redirect("/", {
-        headers: {
-          "set-cookie": serializeExpiredSessionCookie(),
-        },
-      });
-    }
+    // --- Default-deny: everything below requires a session (or admin token). ---
+    // Public routes (healthz, scope, api/auth, /, /login) are handled above.
+    // If we reach here without matching a gated route, we return 404.
 
     // --- Admin / operator routes ---
+    if (url.pathname === "/admin" || url.pathname === "/admin/") {
+      const adminResult = await requireAdmin(storage.auth, storage, request);
+      if (adminResult instanceof Response) {
+        return adminResult;
+      }
+      if (request.method === "GET") {
+        return webShellResponse(storage);
+      }
+    }
+
     if (url.pathname.startsWith("/admin/")) {
-      if (!isAdminAuthorized(storage, request)) {
-        return jsonResponse({ error: "Unauthorized" }, { status: 401 });
+      const adminResult = await requireAdmin(storage.auth, storage, request);
+      if (adminResult instanceof Response) {
+        return adminResult;
+      }
+
+      // Serve static assets for the admin SPA
+      if (url.pathname.startsWith("/admin/assets/") && request.method === "GET") {
+        return webAssetResponse(storage, `assets/${url.pathname.slice("/admin/assets/".length)}`);
       }
 
       if (url.pathname === "/admin/status" && request.method === "GET") {
@@ -960,6 +883,69 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         }
       }
 
+      // --- User management endpoints ---
+      if (url.pathname === "/admin/users" && request.method === "GET") {
+        const users = storage.db.query(
+          "SELECT id, name, email, role, slug, createdAt, updatedAt FROM user ORDER BY name",
+        ).all() as Array<{ id: string; name: string; email: string; role: string | null; slug: string | null; createdAt: string; updatedAt: string }>;
+        return jsonResponse({ ok: true, users });
+      }
+
+      const userActionMatch = /^\/admin\/users\/([^/]+)\/(promote|demote)$/.exec(url.pathname);
+      if (userActionMatch && request.method === "POST") {
+        const userId = userActionMatch[1] ?? "";
+        const action = userActionMatch[2] as "promote" | "demote";
+        const user = storage.db.query("SELECT id, name, email FROM user WHERE id = ?").get(userId) as { id: string; name: string; email: string } | null;
+        if (!user) {
+          return jsonResponse({ error: "User not found." }, { status: 404 });
+        }
+        const newRole = action === "promote" ? "admin" : "student";
+        storage.db.query("UPDATE user SET role = ?, updatedAt = ? WHERE id = ?").run(newRole, new Date().toISOString(), userId);
+        return jsonResponse({ ok: true, userId, role: newRole });
+      }
+
+      // --- Allowlist endpoints ---
+      if (url.pathname === "/admin/allowlist" && request.method === "GET") {
+        const { getAllowlist } = await import("./auth/allowlist");
+        return jsonResponse({ ok: true, ...getAllowlist() });
+      }
+
+      if (url.pathname === "/admin/allowlist" && request.method === "POST") {
+        const { addAllowlistEntry } = await import("./auth/allowlist");
+        let body: { kind?: string; value?: string };
+        try {
+          body = await request.json() as { kind?: string; value?: string };
+        } catch {
+          return jsonResponse({ error: "Invalid JSON body." }, { status: 400 });
+        }
+        if (body.kind !== "email" && body.kind !== "domain") {
+          return jsonResponse({ error: "kind must be 'email' or 'domain'." }, { status: 400 });
+        }
+        if (typeof body.value !== "string" || !body.value.trim()) {
+          return jsonResponse({ error: "value is required." }, { status: 400 });
+        }
+        const result = await addAllowlistEntry(body.kind, body.value);
+        return jsonResponse({ ok: true, ...result });
+      }
+
+      const allowlistDeleteMatch = /^\/admin\/allowlist\/(.+)$/.exec(url.pathname);
+      if (allowlistDeleteMatch && request.method === "DELETE") {
+        const { removeAllowlistEntry, getAllowlist } = await import("./auth/allowlist");
+        const value = decodeURIComponent(allowlistDeleteMatch[1] ?? "");
+        const current = getAllowlist();
+        const kind = current.emails.includes(value.toLowerCase()) ? "email" : "domain";
+        await removeAllowlistEntry(kind, value);
+        const updated = getAllowlist();
+        return jsonResponse({ ok: true, ...updated });
+      }
+
+      // --- Allowlist reload ---
+      if (url.pathname === "/admin/allowlist/reload" && request.method === "POST") {
+        const { reloadAllowlist } = await import("./auth/allowlist");
+        const result = await reloadAllowlist();
+        return jsonResponse({ ok: true, ...result });
+      }
+
       return notFound();
     }
 
@@ -971,9 +957,14 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         return redirect(`/u/${slug}/`);
       }
 
+      if (!workspaceSlugSchema.safeParse(slug).success) {
+        return new Response("Invalid workspace slug.", { status: 400 });
+      }
+
       const isApiRequest = suffix.startsWith("/api/");
-      const auth = resolveWorkspaceRequest(storage, request, slug, isApiRequest ? "api" : "page");
+      const auth = await requireWorkspaceOwnership(storage.auth, storage, request, slug);
       if (auth instanceof Response) {
+        if (!isApiRequest && auth.status === 401) return redirect("/login");
         return auth;
       }
 

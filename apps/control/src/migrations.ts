@@ -94,6 +94,9 @@ export async function applyMigrations(db: Database, migrationsDir: string): Prom
   const pending = migrations.filter((migration) => !appliedNames.has(migration.name));
 
   for (const migration of pending) {
+    // Disable FK checks during migration to allow table rebuilds and renames.
+    // Schema-level FK constraints are still defined; they're enforced at runtime.
+    db.exec("PRAGMA foreign_keys = OFF");
     db.exec("BEGIN");
     try {
       db.exec(migration.sql);
@@ -106,6 +109,8 @@ export async function applyMigrations(db: Database, migrationsDir: string): Prom
     } catch (error) {
       db.exec("ROLLBACK");
       throw error;
+    } finally {
+      db.exec("PRAGMA foreign_keys = ON");
     }
   }
 

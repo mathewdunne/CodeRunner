@@ -70,12 +70,30 @@ Copy the example environment file and edit as needed:
 cp .env.example .env
 ```
 
-**At minimum**, change the session secret:
+**At minimum**, change the session secret and configure OAuth providers:
 
 ```bash
 # .env
 FRC_SESSION_SECRET=your-random-secret-string-here
+
+# OAuth — register apps at the provider and fill in these values.
+# At least one provider (GitHub or Google) must be configured for login.
+BETTER_AUTH_URL=http://localhost:4000
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
+
+**Registering OAuth apps for local development:**
+
+- **GitHub:** Go to *Settings → Developer settings → OAuth Apps → New*. Set
+  the callback URL to `http://localhost:4000/api/auth/callback/github`.
+- **Google:** Go to *Google Cloud Console → APIs & Services → Credentials →
+  Create OAuth client ID* (type: Web application). Add
+  `http://localhost:4000/api/auth/callback/google` as an authorised redirect URI.
+
+If only one provider is configured, users will see one "Sign in" button.
 
 See [Configuration](#5-configuration) for all options.
 
@@ -207,6 +225,11 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `IDLE_STOP_MINUTES` | `30` | Stop containers after N min idle |
 | `IDLE_CHECK_INTERVAL_MS` | `60000` | Idle sweep interval |
 | `ADMIN_TOKEN` | *(none)* | Bearer token for admin API; unset = localhost-only |
+| `BETTER_AUTH_URL` | `http://localhost:4000` | Base URL for Better Auth callbacks/redirects |
+| `GITHUB_CLIENT_ID` | *(none)* | GitHub OAuth app client ID |
+| `GITHUB_CLIENT_SECRET` | *(none)* | GitHub OAuth app client secret |
+| `GOOGLE_CLIENT_ID` | *(none)* | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | *(none)* | Google OAuth client secret |
 
 ### Tuning for constrained hosts
 

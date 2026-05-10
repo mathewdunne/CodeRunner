@@ -10,6 +10,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@frc-sim/contracts": "workspace:*"
+    "@frc-sim/contracts": "workspace:*",
+    "better-auth": "^1.6.10"
   }
 }

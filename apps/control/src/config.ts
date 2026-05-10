@@ -14,6 +14,11 @@ export type ControlConfig = {
   webDistDir: string;
   advantageScopeDistDir: string;
   sessionSecret: string;
+  baseUrl: string;
+  githubClientId: string | null;
+  githubClientSecret: string | null;
+  googleClientId: string | null;
+  googleClientSecret: string | null;
   dockerPath: string;
   codeImage: string;
   codeMemoryLimit: string;
@@ -35,6 +40,7 @@ export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "v
   halsimPortRange?: PortRange | string;
   idleStopMinutes?: number | string;
   idleCheckIntervalMs?: number | string;
+  port?: number | string;
 };
 
 const repoRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
@@ -120,8 +126,17 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     ),
     sessionSecret:
       input.sessionSecret ??
+      Bun.env.BETTER_AUTH_SECRET ??
       Bun.env.FRC_SESSION_SECRET ??
       "frc-local-dev-session-secret-change-me",
+    baseUrl:
+      input.baseUrl ??
+      Bun.env.BETTER_AUTH_URL ??
+      `http://localhost:${input.port ?? Bun.env.PORT ?? 4000}`,
+    githubClientId: input.githubClientId ?? Bun.env.GITHUB_CLIENT_ID ?? null,
+    githubClientSecret: input.githubClientSecret ?? Bun.env.GITHUB_CLIENT_SECRET ?? null,
+    googleClientId: input.googleClientId ?? Bun.env.GOOGLE_CLIENT_ID ?? null,
+    googleClientSecret: input.googleClientSecret ?? Bun.env.GOOGLE_CLIENT_SECRET ?? null,
     dockerPath: input.dockerPath ?? Bun.env.FRC_DOCKER_PATH ?? "docker",
     codeImage: input.codeImage ?? Bun.env.CODE_IMAGE ?? "frc-code:v2",
     codeMemoryLimit: input.codeMemoryLimit ?? Bun.env.CODE_MEMORY_LIMIT ?? "2560m",
