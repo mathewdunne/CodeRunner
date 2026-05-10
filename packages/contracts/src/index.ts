@@ -52,7 +52,6 @@ export const heartbeatResponseSchema = z.object({
 });
 
 export const containerStateSchema = z.enum(["missing", "starting", "running", "stopped", "error"]);
-export const simContainerStateSchema = containerStateSchema;
 
 export const containersStatusResponseSchema = z.object({
   workspace: z.object({
@@ -112,9 +111,8 @@ export const runServerMessageSchema = z.discriminatedUnion("type", [
 export type HeartbeatRequest = z.infer<typeof heartbeatRequestSchema>;
 export type SessionResponse = z.infer<typeof sessionResponseSchema>;
 export type HeartbeatResponse = z.infer<typeof heartbeatResponseSchema>;
-export type ContainerRole = "sim" | "lsp" | "code";
+export type ContainerRole = "sim" | "code";
 export type ContainerState = z.infer<typeof containerStateSchema>;
-export type SimContainerState = ContainerState;
 export type ContainersStatusResponse = z.infer<typeof containersStatusResponseSchema>;
 export type RunClientMessage = z.infer<typeof runClientMessageSchema>;
 export type RunServerMessage = z.infer<typeof runServerMessageSchema>;
