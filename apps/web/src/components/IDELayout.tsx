@@ -19,16 +19,17 @@ export function IDELayout({ editor, scope, console: consolePart }: IDELayoutProp
     >
       <ResizablePanel defaultSize={75} minSize={20}>
         <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel defaultSize={66} minSize={25}>
+          <ResizablePanel defaultSize={66} minSize={25} data-pane="editor">
             <div className="h-full min-h-0 min-w-0 bg-card">
               {editor}
             </div>
           </ResizablePanel>
-          <ResizableHandle withHandle />
+          <ResizableHandle withHandle data-pane="scope-handle" />
           <ResizablePanel
             defaultSize={34}
             minSize={15}
-            className="hidden md:block"
+            className="hidden min-[901px]:block"
+            data-pane="scope"
           >
             {scope}
           </ResizablePanel>

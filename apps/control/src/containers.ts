@@ -155,7 +155,12 @@ async function portIsFree(port: number): Promise<boolean> {
       }
     };
 
-    server.once("error", () => settle(false));
+    // Bun's node:net runtime exposes EventEmitter methods, but its Server type
+    // currently omits them.
+    const eventedServer = server as unknown as {
+      once(event: "error", listener: () => void): void;
+    };
+    eventedServer.once("error", () => settle(false));
     server.listen({ host: "127.0.0.1", port }, () => settle(true));
   });
 }

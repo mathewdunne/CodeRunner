@@ -140,3 +140,14 @@
 body.resizing iframe {
   pointer-events: none;
 }
+
+@media (max-width: 900px) {
+  [data-pane="editor"] {
+    flex: 1 1 100% !important;
+  }
+
+  [data-pane="scope"],
+  [data-pane="scope-handle"] {
+    display: none !important;
+  }
+}

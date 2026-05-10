@@ -3,8 +3,8 @@ import type { SessionResponse } from "@/lib/contracts";
 
 type LoadState =
   | { status: "loading" }
-  | { status: "ready"; session: SessionResponse }
-  | { status: "error"; message: string };
+  | { status: "ready"; workspaceSlug: string; session: SessionResponse }
+  | { status: "error"; workspaceSlug: string; message: string };
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
@@ -32,25 +32,25 @@ export function useSession(workspaceSlug: string | null) {
   // Load session on mount
   useEffect(() => {
     if (!workspaceSlug) {
-      setState({ status: "error", message: "Workspace route is invalid." });
       return;
     }
 
+    const slug = workspaceSlug;
     let cancelled = false;
 
     async function loadSession() {
       try {
         const session = await fetchJson<SessionResponse>(
-          `/u/${workspaceSlug}/api/session`,
+          `/u/${slug}/api/session`,
         );
         if (!cancelled) {
-          setState({ status: "ready", session });
+          setState({ status: "ready", workspaceSlug: slug, session });
         }
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Unable to load workspace.";
         if (!cancelled) {
-          setState({ status: "error", message });
+          setState({ status: "error", workspaceSlug: slug, message });
         }
       }
     }
@@ -86,6 +86,12 @@ export function useSession(workspaceSlug: string | null) {
     };
   }, [workspaceSlug]);
 
+  if (!workspaceSlug) {
+    return { status: "error", message: "Workspace route is invalid." } as const;
+  }
+  if (state.status !== "loading" && state.workspaceSlug !== workspaceSlug) {
+    return { status: "loading" } as const;
+  }
   return state;
 }
 
