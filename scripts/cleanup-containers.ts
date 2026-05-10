@@ -1,13 +1,12 @@
 #!/usr/bin/env bun
 /**
- * Cleanup stopped V1 managed containers.
+ * Cleanup stopped managed containers (V1 and V2).
  *
  * Usage:
  *   bun scripts/cleanup-containers.ts [--dry-run]
  *
  * Removes all Docker containers that have:
  *   - label frc-sim.managed=true
- *   - label frc-sim.version=v1
  *   - status=exited
  */
 
@@ -29,7 +28,7 @@ async function run(args: string[]): Promise<{ stdout: string; exitCode: number }
 }
 
 async function main(): Promise<void> {
-  console.log("Scanning for stopped V1 managed containers...");
+  console.log("Scanning for stopped managed containers...");
 
   const list = await run([
     "container",
@@ -37,8 +36,6 @@ async function main(): Promise<void> {
     "-a",
     "--filter",
     "label=frc-sim.managed=true",
-    "--filter",
-    "label=frc-sim.version=v1",
     "--filter",
     "status=exited",
     "--format",

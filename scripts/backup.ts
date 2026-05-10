@@ -5,13 +5,14 @@
  * Usage:
  *   bun scripts/backup.ts [--data-dir <path>] [--output <path>]
  *
- * Creates a date-stamped backup of all workspace project/ directories.
+ * Creates a date-stamped backup of all workspace project/ directories as
+ * per-workspace project.tar.gz archives.
  * Excludes regenerable data (home/, jdtls-data/, logs/).
  *
  * Default output: data/backups/YYYY-MM-DD-HHmmss/
  */
 
-import { cp, mkdir, readdir, stat } from "node:fs/promises";
+import { mkdir, readdir, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 
 function parseArgs(): { dataDir: string; output: string | null } {
@@ -54,6 +55,22 @@ async function dirExists(path: string): Promise<boolean> {
   }
 }
 
+async function runTar(args: string[]): Promise<void> {
+  const subprocess = Bun.spawn(["tar", ...args], {
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(subprocess.stdout).text(),
+    new Response(subprocess.stderr).text(),
+    subprocess.exited,
+  ]);
+  if (exitCode !== 0) {
+    const detail = stderr.trim() || stdout.trim() || `exit ${exitCode}`;
+    throw new Error(`tar ${args.join(" ")} failed: ${detail}`);
+  }
+}
+
 async function main(): Promise<void> {
   const { dataDir, output } = parseArgs();
   const usersDir = resolve(dataDir, "users");
@@ -85,9 +102,11 @@ async function main(): Promise<void> {
 
   let backed = 0;
   for (const { workspaceId, projectPath } of toBackup) {
-    const dest = resolve(backupRoot, workspaceId, "project");
+    const workspaceBackupDir = resolve(backupRoot, workspaceId);
+    const dest = resolve(workspaceBackupDir, "project.tar.gz");
     try {
-      await cp(projectPath, dest, { recursive: true });
+      await mkdir(workspaceBackupDir, { recursive: true });
+      await runTar(["-czf", dest, "-C", projectPath, "."]);
       console.log(`  ✓ ${workspaceId}`);
       backed++;
     } catch (error) {

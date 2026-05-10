@@ -18,14 +18,14 @@ function defaultId(kind: "uid" | "gid"): string {
 }
 
 const dockerPath = Bun.env.FRC_DOCKER_PATH ?? "docker";
-const image = Bun.env.LSP_IMAGE ?? "frc-lsp:v1";
+const image = Bun.env.CODE_IMAGE ?? "frc-code:v2";
 const uid = defaultId("uid");
 const gid = defaultId("gid");
 
 const args = [
   "build",
   "-f",
-  "containers/lsp/Dockerfile",
+  "containers/code/Dockerfile",
   "-t",
   image,
   "--build-arg",

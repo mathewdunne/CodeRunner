@@ -1,16 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import {
-  createFileRequestSchema,
-  getProjectPathAccess,
-  isProjectPath,
   isWorkspaceSlug,
-  parseProjectPath,
   runClientMessageSchema,
   runServerMessageSchema,
 } from "./index";
 
 describe("isWorkspaceSlug", () => {
-  test("accepts V1 route-safe slugs", () => {
+  test("accepts route-safe workspace slugs", () => {
     expect(isWorkspaceSlug("alice")).toBe(true);
     expect(isWorkspaceSlug("team_6328-2026")).toBe(true);
   });
@@ -24,70 +20,8 @@ describe("isWorkspaceSlug", () => {
   });
 });
 
-describe("project path validation", () => {
-  test("accepts relative POSIX project paths", () => {
-    expect(String(parseProjectPath("src/main/java/frc/robot/Robot.java"))).toBe(
-      "src/main/java/frc/robot/Robot.java",
-    );
-    expect(isProjectPath(".wpilib/wpilib_preferences.json")).toBe(true);
-  });
-
-  test("rejects unsafe filesystem paths", () => {
-    const invalidPaths = [
-      "",
-      "/src/main/java/Robot.java",
-      "C:/Users/alice/Robot.java",
-      "src\\main\\java\\Robot.java",
-      "src/main/../Robot.java",
-      "src//main/java/Robot.java",
-      "src/main/java/\u0000Robot.java",
-    ];
-
-    for (const path of invalidPaths) {
-      expect(isProjectPath(path)).toBe(false);
-    }
-  });
-
-  test("classifies V1 file access allowlists", () => {
-    expect(getProjectPathAccess("src/main/java/frc/robot/Robot.java")).toBe("editable");
-    expect(getProjectPathAccess("src/test/java/frc/robot/RobotTest.java")).toBe("editable");
-    expect(getProjectPathAccess("src/main/deploy/pathplanner/settings.json")).toBe("editable");
-    expect(getProjectPathAccess("build.gradle")).toBe("readonly");
-    expect(getProjectPathAccess(".wpilib/wpilib_preferences.json")).toBe("readonly");
-    expect(getProjectPathAccess("build/classes/Robot.class")).toBe("blocked");
-    expect(getProjectPathAccess("gradle/wrapper/gradle-wrapper.jar")).toBe("blocked");
-    expect(getProjectPathAccess("vendordeps/WPILibNewCommands.json")).toBe("outside-allowlist");
-  });
-});
-
-describe("file API schemas", () => {
-  test("parses create file requests with safe paths", () => {
-    const parsed = createFileRequestSchema.parse({
-      kind: "file",
-      path: "src/main/java/frc/robot/Example.java",
-      contents: "",
-    });
-
-    expect(parsed).toEqual({
-      kind: "file",
-      path: parsed.path,
-      contents: "",
-    });
-    expect(String(parsed.path)).toBe("src/main/java/frc/robot/Example.java");
-  });
-
-  test("rejects create requests with invalid paths", () => {
-    expect(() =>
-      createFileRequestSchema.parse({
-        kind: "directory",
-        path: "../outside",
-      }),
-    ).toThrow();
-  });
-});
-
 describe("run message schemas", () => {
-  test("parses the V1 run WebSocket contract", () => {
+  test("parses the run WebSocket contract", () => {
     expect(runClientMessageSchema.parse({ type: "start" })).toEqual({ type: "start" });
     expect(
       runServerMessageSchema.parse({

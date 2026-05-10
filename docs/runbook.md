@@ -1,6 +1,6 @@
-# FRC Web Simulator V1 — Operator Runbook
+# FRC Web Simulator V2 — Operator Runbook
 
-This runbook covers deploying and operating the FRC Web Simulator V1 on a classroom machine. For architecture details, see [`V1-Design.md`](../V1-Design.md).
+This runbook covers deploying and operating the FRC Web Simulator V2 on a classroom machine. For architecture details, see [`V2-Design.md`](../V2-Design.md).
 
 ---
 
@@ -47,11 +47,10 @@ git submodule update --init --recursive
 bun install
 ```
 
-### 2.2 Build container images
+### 2.2 Build the code container image
 
 ```bash
-bun run docker:build:sim
-bun run docker:build:lsp
+bun run docker:build:code
 ```
 
 The first build downloads WPILib/Gradle dependencies and takes 5–15 minutes. Subsequent builds use Docker layer cache and are fast.
@@ -90,7 +89,7 @@ bun run migrate
 
 ```bash
 bun run typecheck
-bun run verify:v1:two-user
+bun run verify:v2:two-user
 ```
 
 The two-user verify builds images, creates test workspaces, runs builds, and confirms isolation. It takes 3–10 minutes depending on whether images are cached.
@@ -98,7 +97,7 @@ The two-user verify builds images, creates test workspaces, runs builds, and con
 For a deeper test with 3 users:
 
 ```bash
-bun run verify:v1:three-user
+bun run verify:v2:three-user
 ```
 
 ### 2.7 Measure host resources
@@ -134,7 +133,7 @@ Students connect to `http://<host-ip>:4000/` in their browsers.
 3. The WPILib Java command-based template is copied into their workspace.
 4. A signed session cookie is set.
 5. The browser redirects to `/u/<workspaceSlug>/`.
-6. Sim and LSP containers are started in the background.
+6. A code container (merged sim + editor) is started in the background.
 
 ### Verify the app is running
 
@@ -166,7 +165,7 @@ To stop all student containers after shutting down the control plane:
 bun run docker:cleanup
 ```
 
-This removes stopped (exited) V1 managed containers. To also stop running ones, use the admin API before shutdown:
+This removes stopped (exited) managed containers. To also stop running ones, use the admin API before shutdown:
 
 ```bash
 # Stop all workspaces
@@ -176,7 +175,7 @@ curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/stop-container
 Or stop containers manually:
 
 ```bash
-docker stop $(docker ps -q --filter label=frc-sim.managed=true --filter label=frc-sim.version=v1)
+docker stop $(docker ps -q --filter label=frc-sim.managed=true)
 ```
 
 ### Between class sessions
@@ -195,8 +194,10 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | --- | --- | --- |
 | `PORT` | `4000` | HTTP/WS listen port |
 | `FRC_SESSION_SECRET` | *(dev default)* | **Change this!** HMAC secret for session cookies |
-| `SIM_MEMORY_LIMIT` | `1536m` | Memory cap per sim container |
-| `LSP_MEMORY_LIMIT` | `1536m` | Memory cap per LSP container |
+| `CODE_IMAGE` | `frc-code:v2` | Docker image for merged code containers |
+| `CODE_MEMORY_LIMIT` | `2560m` | Memory cap per code container |
+| `SIM_PORT_RANGE` | `25810-25899` | Loopback port range for sim NT4 |
+| `VSCODE_PORT_RANGE` | `33000-33099` | Loopback port range for openvscode-server |
 | `RUN_CONCURRENCY` | `2` | Max concurrent Gradle builds |
 | `IDLE_STOP_MINUTES` | `30` | Stop containers after N min idle |
 | `ADMIN_TOKEN` | *(none)* | Bearer token for admin API; unset = localhost-only |
@@ -206,8 +207,7 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 For a 16 GB machine with 3–5 students:
 
 ```bash
-SIM_MEMORY_LIMIT=1024m
-LSP_MEMORY_LIMIT=1024m
+CODE_MEMORY_LIMIT=2048m
 RUN_CONCURRENCY=1
 IDLE_STOP_MINUTES=15
 ```
@@ -217,10 +217,8 @@ IDLE_STOP_MINUTES=15
 For a 32+ GB machine with 10 students:
 
 ```bash
-SIM_MEMORY_LIMIT=1536m
-LSP_MEMORY_LIMIT=1536m
+CODE_MEMORY_LIMIT=2560m
 RUN_CONCURRENCY=3
-LSP_STARTUP_CONCURRENCY=3
 ```
 
 See `.env.example` for the complete list of options.
@@ -236,8 +234,7 @@ Only `data/users/<workspaceId>/project/` contains student work. Everything else 
 | Path | Contains | Back up? |
 | --- | --- | --- |
 | `data/users/*/project/` | Student Java source code | **Yes** |
-| `data/users/*/home/` | Gradle cache, tool state | No (regenerated on run) |
-| `data/users/*/jdtls-data/` | JDT LS indexes | No (regenerated on LSP start) |
+| `data/users/*/home/` | Gradle cache, tool state, vscode user data | No (regenerated on container start) |
 | `data/users/*/logs/` | Build/run log history | No (transient, safe to prune) |
 | `data/app.db` | User/workspace/session metadata | Optional (can be recreated) |
 
@@ -305,8 +302,7 @@ For a specific workspace (stop its containers first):
 
 ```bash
 rm -rf data/users/<workspaceId>/home/
-rm -rf data/users/<workspaceId>/jdtls-data/
-mkdir -p data/users/<workspaceId>/home data/users/<workspaceId>/jdtls-data
+mkdir -p data/users/<workspaceId>/home
 ```
 
 These directories are recreated automatically on next container start.
@@ -323,8 +319,8 @@ For all workspaces (containers must be stopped):
 
 ```bash
 for dir in data/users/*/; do
-  rm -rf "$dir/home" "$dir/jdtls-data" "$dir/logs"
-  mkdir -p "$dir/home" "$dir/jdtls-data" "$dir/logs/runs"
+  rm -rf "$dir/home" "$dir/logs"
+  mkdir -p "$dir/home" "$dir/logs/runs"
 done
 ```
 
@@ -346,7 +342,7 @@ curl http://localhost:4000/admin/status | jq .
 ```
 
 Returns:
-- All workspaces with sim/LSP container state
+- All workspaces with code container state
 - Idle flags per workspace
 - Run queue depth and active build count
 - Configured limits
@@ -368,8 +364,8 @@ bun run measure -- --json
 ### Docker container status
 
 ```bash
-# All V1 managed containers
-docker ps --filter label=frc-sim.managed=true --filter label=frc-sim.version=v1
+# All managed containers
+docker ps --filter label=frc-sim.managed=true
 
 # Container resource usage
 docker stats --filter label=frc-sim.managed=true --no-stream
@@ -379,38 +375,34 @@ docker stats --filter label=frc-sim.managed=true --no-stream
 
 - **High memory:** `docker stats` shows containers near their limit → OOM risk
 - **Queue depth growing:** `/admin/status` queueDepth > 0 persistently → raise `RUN_CONCURRENCY` or wait for builds
-- **LSP stuck:** Diagnostics never appear → use admin API to restart or reset LSP data
 
 ---
 
 ## 9. Common Failures and Recovery
 
-### Sim container OOM
+### Code container OOM
 
 **Symptoms:** Run reaches "building" then "failed". Docker logs show `Killed` or `oom`.
 
 **Recovery:**
 ```bash
 # Container is auto-recreated on next run. If persistent:
-curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-sim
+curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-code
 # Or increase memory:
-# SIM_MEMORY_LIMIT=2048m (restart control plane)
+# CODE_MEMORY_LIMIT=3072m (restart control plane)
 ```
 
-### LSP container stuck or OOM
+### Editor not loading
 
-**Symptoms:** No diagnostics, hover, or completions. LSP status shows unavailable.
+**Symptoms:** Editor iframe stays blank or shows connection refused.
 
 **Recovery:**
 ```bash
-# Restart LSP container
-curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-lsp
-
-# If persistent, reset LSP data (clears indexes, forces reindex)
-curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/reset-lsp-data
+# Restart the code container
+curl -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-code
+# Check container logs
+docker logs frc-v2-code-<workspaceId> --tail 50
 ```
-
-`reset-lsp-data` stops the container, deletes `jdtls-data/`, recreates it, and starts the container. Student code is never touched.
 
 ### Gradle build timeout
 
@@ -481,9 +473,9 @@ bun run migrate:status  # verify DB is accessible
 **Symptoms:** AdvantageScope Lite iframe shows "disconnected" after run reaches "running".
 
 **Recovery:**
-1. Check sim container is actually running: `/admin/status`
+1. Check code container is actually running: `/admin/status`
 2. Check alive probe: `curl http://localhost:4000/u/<slug>/sim/alive`
-3. If the probe fails, restart the sim: admin API → `restart-sim`
+3. If the probe fails, restart the container: admin API → `restart-code`
 4. Refresh the browser
 
 ### Containers not starting
@@ -495,13 +487,11 @@ bun run migrate:status  # verify DB is accessible
 # Check Docker is running
 docker info
 
-# Check images exist
-docker images frc-sim:v1
-docker images frc-lsp:v1
+# Check image exists
+docker images frc-code:v2
 
 # Rebuild if missing
-bun run docker:build:sim
-bun run docker:build:lsp
+bun run docker:build:code
 
 # Check for port conflicts
 docker ps --format '{{.Ports}}'
@@ -515,14 +505,14 @@ docker ps --format '{{.Ports}}'
 
 Each active student uses approximately:
 
-| Resource | Sim Container | LSP Container | Total |
-| --- | --- | --- | --- |
-| RAM (steady-state) | ~600–900 MB | ~500–800 MB | ~1.1–1.7 GB |
-| RAM (peak/build) | ~1.0–1.5 GB | ~0.7–1.2 GB | ~1.7–2.7 GB |
-| CPU (idle) | minimal | minimal | minimal |
-| CPU (building) | 1–2 cores | — | 1–2 cores |
-| Disk (project) | ~50 MB | — | ~50 MB |
-| Disk (caches) | ~200 MB | ~300 MB | ~500 MB |
+| Resource | Code Container | Total |
+| --- | --- | --- |
+| RAM (steady-state) | ~1.0–1.5 GB | ~1.0–1.5 GB |
+| RAM (peak/build) | ~1.5–2.5 GB | ~1.5–2.5 GB |
+| CPU (idle) | minimal | minimal |
+| CPU (building) | 1–2 cores | 1–2 cores |
+| Disk (project) | ~50 MB | ~50 MB |
+| Disk (caches) | ~500 MB | ~500 MB |
 
 ### Sizing recommendations
 
@@ -553,35 +543,31 @@ Host:
   CPU:         Intel Core i7-12700 (20 cores)
   RAM:         12.3 GB used / 32.0 GB total (19.7 GB free)
 
-V1 Containers:
+V2 Containers:
   Name                                Role  Mem Used   Mem Limit  Mem%    CPU%
-  frc-v1-sim-ws_abc123...             sim   742.1 MB   1536.0 MB  48.3%   0.1%
-  frc-v1-lsp-ws_abc123...             lsp   621.4 MB   1536.0 MB  40.5%   0.0%
+  frc-v2-code-ws_abc123...            code  1280.5 MB  2560.0 MB  50.0%   0.1%
   ...
 
-  Total: 3 sim + 3 lsp = 6 containers, 4086 MB memory
+  Total: 3 code containers, 3841 MB memory
 
 Extrapolation for 10 Students:
-  Avg sim memory:   742 MB × 10 = 7.2 GB
-  Avg LSP memory:   621 MB × 10 = 6.1 GB
-  Estimated total:  13.3 GB (+ ~4 GB OS/Docker/browser overhead)
-  Host headroom:    14.7 GB
+  Avg code memory:  1280 MB × 10 = 12.5 GB
+  Estimated total:  12.5 GB (+ ~4 GB OS/Docker/browser overhead)
+  Host headroom:    15.5 GB
 
-  → Host has ample capacity for 10 students (14.7 GB headroom).
+  → Host has ample capacity for 10 students (15.5 GB headroom).
 ```
 
 ### Tuning memory limits
 
-If containers are consistently using less than half their limit, you can lower the caps:
+If containers are consistently using less than half their limit, you can lower the cap:
 ```bash
-SIM_MEMORY_LIMIT=1024m
-LSP_MEMORY_LIMIT=1024m
+CODE_MEMORY_LIMIT=2048m
 ```
 
-If containers are hitting their limit (OOM kills), raise them:
+If containers are hitting their limit (OOM kills), raise it:
 ```bash
-SIM_MEMORY_LIMIT=2048m
-LSP_MEMORY_LIMIT=2048m
+CODE_MEMORY_LIMIT=3072m
 ```
 
 ---
@@ -592,20 +578,17 @@ LSP_MEMORY_LIMIT=2048m
 | --- | --- |
 | **Start the app** | `bun run dev:control` |
 | **Stop the app** | Ctrl+C |
-| **Build sim image** | `bun run docker:build:sim` |
-| **Build LSP image** | `bun run docker:build:lsp` |
+| **Build code image** | `bun run docker:build:code` |
 | **Build web shell** | `bun run build:web` |
 | **Build AS Lite** | `bun run build:ascope` |
 | **Run migrations** | `bun run migrate` |
 | **Check migration status** | `bun run migrate:status` |
-| **Two-user verify** | `bun run verify:v1:two-user` |
-| **Three-user smoke** | `bun run verify:v1:three-user` |
+| **Two-user verify** | `bun run verify:v2:two-user` |
+| **Three-user smoke** | `bun run verify:v2:three-user` |
 | **Measure resources** | `bun run measure` |
 | **Backup projects** | `bun run backup` |
 | **Restore projects** | `bun run restore -- <dir>` |
 | **Cleanup containers** | `bun run docker:cleanup` |
 | **Admin status** | `curl http://localhost:4000/admin/status` |
-| **Restart sim** | `curl -X POST http://localhost:4000/admin/workspaces/<id>/restart-sim` |
-| **Restart LSP** | `curl -X POST http://localhost:4000/admin/workspaces/<id>/restart-lsp` |
-| **Reset LSP data** | `curl -X POST http://localhost:4000/admin/workspaces/<id>/reset-lsp-data` |
+| **Restart code container** | `curl -X POST http://localhost:4000/admin/workspaces/<id>/restart-code` |
 | **Stop workspace containers** | `curl -X POST http://localhost:4000/admin/workspaces/<id>/stop-containers` |

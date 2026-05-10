@@ -291,9 +291,9 @@ export class RunManager {
         return;
       }
 
-      const sim = await this.containers.ensureSimContainer(job.workspace);
-      if (sim.state !== "running" || !sim.containerName) {
-        throw new Error(sim.error ?? "Sim container is not running.");
+      const code = await this.containers.ensureCodeContainer(job.workspace);
+      if (code.state !== "running" || !code.containerName) {
+        throw new Error(code.error ?? "Code container is not running.");
       }
       if (job.canceled) {
         this.finishJob(job, "stopped", null);
@@ -302,7 +302,7 @@ export class RunManager {
 
       const command = this.commandFactory({
         workspace: job.workspace,
-        containerName: sim.containerName,
+        containerName: code.containerName,
         dockerPath: this.storage.config.dockerPath,
       });
       job.command = command;

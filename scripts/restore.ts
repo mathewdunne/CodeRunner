@@ -5,14 +5,15 @@
  * Usage:
  *   bun scripts/restore.ts <backup-dir> [--data-dir <path>] [--workspace <id>] [--dry-run]
  *
- * Restores workspace project/ directories from a backup created by backup.ts.
+ * Restores workspace project/ directories from project.tar.gz archives created
+ * by backup.ts. Legacy directory backups are also accepted.
  * Stops containers for affected workspaces before restoring.
  *
  * WARNING: This overwrites existing project files. Back up first if unsure.
  */
 
-import { cp, readdir, stat } from "node:fs/promises";
-import { resolve } from "node:path";
+import { cp, mkdir, readdir, rename, rm, stat } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 
 function parseArgs(): {
   backupDir: string;
@@ -66,6 +67,50 @@ async function dirExists(path: string): Promise<boolean> {
   }
 }
 
+async function fileExists(path: string): Promise<boolean> {
+  try {
+    return (await stat(path)).isFile();
+  } catch {
+    return false;
+  }
+}
+
+async function runTar(args: string[]): Promise<void> {
+  const subprocess = Bun.spawn(["tar", ...args], {
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(subprocess.stdout).text(),
+    new Response(subprocess.stderr).text(),
+    subprocess.exited,
+  ]);
+  if (exitCode !== 0) {
+    const detail = stderr.trim() || stdout.trim() || `exit ${exitCode}`;
+    throw new Error(`tar ${args.join(" ")} failed: ${detail}`);
+  }
+}
+
+async function restoreArchive(dest: string, archivePath: string): Promise<void> {
+  const parentDir = dirname(dest);
+  const tempDir = resolve(parentDir, `.restore-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  await mkdir(tempDir, { recursive: true });
+  try {
+    await runTar(["-xzf", archivePath, "-C", tempDir]);
+    await rm(dest, { recursive: true, force: true });
+    await rename(tempDir, dest);
+  } catch (error) {
+    await rm(tempDir, { recursive: true, force: true });
+    throw error;
+  }
+}
+
+async function restoreDirectory(dest: string, sourceDir: string): Promise<void> {
+  await rm(dest, { recursive: true, force: true });
+  await mkdir(dirname(dest), { recursive: true });
+  await cp(sourceDir, dest, { recursive: true });
+}
+
 async function main(): Promise<void> {
   const { backupDir, dataDir, workspace, dryRun } = parseArgs();
 
@@ -86,13 +131,17 @@ async function main(): Promise<void> {
     workspaceIds = [workspace];
   }
 
-  const toRestore: Array<{ workspaceId: string; src: string; dest: string }> = [];
+  const toRestore: Array<{ workspaceId: string; src: string; dest: string; kind: "archive" | "directory" }> = [];
 
   for (const workspaceId of workspaceIds) {
-    const src = resolve(backupDir, workspaceId, "project");
-    if (await dirExists(src)) {
+    const archive = resolve(backupDir, workspaceId, "project.tar.gz");
+    const legacyDir = resolve(backupDir, workspaceId, "project");
+    if (await fileExists(archive)) {
       const dest = resolve(usersDir, workspaceId, "project");
-      toRestore.push({ workspaceId, src, dest });
+      toRestore.push({ workspaceId, src: archive, dest, kind: "archive" });
+    } else if (await dirExists(legacyDir)) {
+      const dest = resolve(usersDir, workspaceId, "project");
+      toRestore.push({ workspaceId, src: legacyDir, dest, kind: "directory" });
     }
   }
 
@@ -107,7 +156,7 @@ async function main(): Promise<void> {
   }
 
   let restored = 0;
-  for (const { workspaceId, src, dest } of toRestore) {
+  for (const { workspaceId, src, dest, kind } of toRestore) {
     if (dryRun) {
       const destExists = await dirExists(dest);
       console.log(`  ${workspaceId}: ${src} → ${dest} (${destExists ? "overwrite" : "new"})`);
@@ -116,7 +165,11 @@ async function main(): Promise<void> {
     }
 
     try {
-      await cp(src, dest, { recursive: true, force: true });
+      if (kind === "archive") {
+        await restoreArchive(dest, src);
+      } else {
+        await restoreDirectory(dest, src);
+      }
       console.log(`  ✓ ${workspaceId}`);
       restored++;
     } catch (error) {
