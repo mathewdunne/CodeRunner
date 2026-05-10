@@ -55,6 +55,8 @@ V2 status:
 - [x] V2-2: authenticated editor proxy
 - [x] V2-3: orchestrator merge and run-path migration
 - [x] V2-4: web shell swap to hosted openvscode editor
+- [x] V2-5: file API and contracts cleanup
+- [x] V2-6: lifecycle, labels, and reconciliation
 
 V2 Stage 0 already verified extension-owned Java IDE behavior. Future stages should not repeat redhat.java/WPILib checks such as auto-import, hover, diagnostics, or F12/Ctrl-click into `Pose2d` unless the pinned openvscode-server, `redhat.java`, or WPILib extension versions change. Spend verification effort on this repo's integration points: proxying, auth, persistence, run orchestration, logs, telemetry, cleanup, and classroom operations.
 

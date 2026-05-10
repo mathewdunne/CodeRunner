@@ -1063,12 +1063,12 @@ docker run -d --name frc-v1-sim-fake \
 
 **Definition of Done.**
 
-- [ ] Idle teardown stops one container per idle workspace.
-- [ ] Reload after teardown brings the editor back without losing project files or vscode user data.
-- [ ] Control-plane restart adopts the existing code container (no recreate).
-- [ ] V1 leftover containers are stopped and removed within one reconciliation cycle.
-- [ ] `restart-code` and `stop-containers` admin actions return 200 for a running workspace.
-- [ ] `bun test` covers reconciliation cases.
+- [x] Idle teardown stops one container per idle workspace.
+- [x] Reload after teardown brings the editor back without losing project files or vscode user data.
+- [x] Control-plane restart adopts the existing code container (no recreate).
+- [x] V1 leftover containers are stopped and removed within one reconciliation cycle.
+- [x] `restart-code` and `stop-containers` admin actions return 200 for a running workspace.
+- [x] `bun test` covers reconciliation cases.
 
 ---
 
