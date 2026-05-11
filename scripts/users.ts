@@ -17,7 +17,7 @@ const dbPath = Bun.env.FRC_DB_PATH ?? resolve(Bun.env.FRC_DATA_DIR ?? "data", "a
 
 function getDb(): Database {
   try {
-    return new Database(dbPath, { readonly: false });
+    return new Database(dbPath);
   } catch (err) {
     console.error(`Cannot open database at ${dbPath}. Is the path correct?`);
     process.exit(1);

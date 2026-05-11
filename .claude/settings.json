@@ -1,4 +1,9 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(bun run typecheck *)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
