@@ -32,6 +32,7 @@ export type ControlConfig = {
   idleStopMinutes: number;
   idleCheckIntervalMs: number;
   adminToken: string | null;
+  maxActiveContainers: number;
 };
 
 export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "vscodePortRange" | "halsimPortRange">> & {
@@ -40,6 +41,7 @@ export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "v
   halsimPortRange?: PortRange | string;
   idleStopMinutes?: number | string;
   idleCheckIntervalMs?: number | string;
+  maxActiveContainers?: number | string;
   port?: number | string;
 };
 
@@ -165,5 +167,10 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
       "IDLE_CHECK_INTERVAL_MS",
     ),
     adminToken: input.adminToken ?? Bun.env.ADMIN_TOKEN ?? null,
+    maxActiveContainers: parsePositiveInteger(
+      input.maxActiveContainers ?? Bun.env.MAX_ACTIVE_CONTAINERS,
+      10,
+      "MAX_ACTIVE_CONTAINERS",
+    ),
   };
 }

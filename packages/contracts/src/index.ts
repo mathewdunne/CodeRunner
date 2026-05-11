@@ -142,6 +142,7 @@ export const adminStatusResponseSchema = z.object({
   workspaces: z.array(adminWorkspaceStatusSchema),
   idleStopMinutes: z.number().int().min(1),
   activeBuilds: z.number().int().min(0),
+  maxActiveContainers: z.number().int().min(1).optional(),
 });
 
 export const adminActionResponseSchema = z.object({

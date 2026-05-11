@@ -514,6 +514,34 @@ export class AppStorage {
     }
     return row;
   }
+
+  // --- Runtime config ---
+
+  getRuntimeConfig(key: string): string | null {
+    const row = this.db.query("SELECT value FROM runtime_config WHERE key = ?").get(key) as { value: string } | null;
+    return row?.value ?? null;
+  }
+
+  setRuntimeConfig(key: string, value: string): void {
+    this.db
+      .query(
+        `INSERT INTO runtime_config (key, value, updated_at)
+         VALUES (?, ?, ?)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+      )
+      .run(key, value, nowIso());
+  }
+
+  getEffectiveMaxActiveContainers(): number {
+    const override = this.getRuntimeConfig("max_active_containers");
+    if (override !== null) {
+      const parsed = Number(override);
+      if (Number.isInteger(parsed) && parsed >= 1) {
+        return parsed;
+      }
+    }
+    return this.config.maxActiveContainers;
+  }
 }
 
 export async function createStorage(configInput: ControlConfigInput = {}): Promise<AppStorage> {

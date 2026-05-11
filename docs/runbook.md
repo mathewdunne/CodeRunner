@@ -17,6 +17,8 @@ This runbook covers deploying and operating the FRC Web Simulator V2 on a classr
 9. [Common Failures and Recovery](#9-common-failures-and-recovery)
 10. [Host Sizing](#10-host-sizing)
 11. [Project Import](#11-project-import)
+12. [Container Concurrency Cap](#12-container-concurrency-cap)
+13. [Audit Log](#13-audit-log)
 
 ---
 
@@ -240,6 +242,8 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `SIM_STARTUP_TIMEOUT_MS` | `30000` | Sim readiness timeout after build startup |
 | `IDLE_STOP_MINUTES` | `30` | Stop containers after N min idle |
 | `IDLE_CHECK_INTERVAL_MS` | `60000` | Idle sweep interval |
+| `HALSIM_PORT_RANGE` | `34000-34099` | Loopback port range for HALSim WebSocket |
+| `MAX_ACTIVE_CONTAINERS` | `10` | Maximum concurrent running code containers (admission control cap) |
 | `ADMIN_TOKEN` | *(none)* | Optional break-glass bearer token for admin API bootstrap; unset = admin session only |
 | `BETTER_AUTH_URL` | `http://localhost:4000` | Base URL for Better Auth callbacks/redirects |
 | `GITHUB_CLIENT_ID` | *(none)* | GitHub OAuth app client ID |
@@ -533,6 +537,22 @@ bun run docker:build:code
 docker ps --format '{{.Ports}}'
 ```
 
+### Server at capacity (503)
+
+**Symptoms:** Students see a toast "Server at capacity — try again in a moment." when opening their workspace.
+
+**Recovery:**
+1. Check the admin Dashboard for current vs. max container count.
+2. If legitimate load, bump the cap:
+   ```bash
+   curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+     -X POST -H "Content-Type: application/json" \
+     -d '{"value": 15}' \
+     http://localhost:4000/admin/config/max-active-containers
+   ```
+3. If containers are stale, stop idle ones from the admin panel or wait for idle teardown.
+4. Verify host resources with `bun run measure` before raising the cap further.
+
 ---
 
 ## 10. Host Sizing
@@ -655,6 +675,111 @@ Or the student can use the import dialog's **Restore** button to restore from a 
 
 ---
 
+## 12. Container Concurrency Cap
+
+The system limits how many code containers can run simultaneously, preventing host overload when many students sign in at once.
+
+### How it works
+
+- When a student's container would be the N+1th, the request returns HTTP 503 and the browser shows a toast: "Server at capacity — try again in a moment."
+- Already-running containers are unaffected.
+- The cap applies to containers with `status=running` plus any in-flight creates.
+
+### Configuration
+
+Set the default cap via environment variable:
+
+```bash
+MAX_ACTIVE_CONTAINERS=10   # default
+```
+
+### Runtime override (admin)
+
+Admins can raise or lower the cap without restarting the control plane:
+
+```bash
+# Read current cap
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  http://localhost:4000/admin/config/max-active-containers
+
+# Set cap to 15
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -X POST -H "Content-Type: application/json" \
+  -d '{"value": 15}' \
+  http://localhost:4000/admin/config/max-active-containers
+```
+
+The runtime override is stored in the `runtime_config` database table and takes precedence over the environment variable until changed again.
+
+The admin Dashboard also shows the current cap and active container count, with an inline editor to change it.
+
+---
+
+## 13. Audit Log
+
+All admin actions are recorded in the `audit_log` database table for accountability and debugging.
+
+### What is logged
+
+| Action | Trigger |
+| --- | --- |
+| `user.promote` | Promoting a user to admin |
+| `user.demote` | Demoting an admin to user |
+| `user.delete` | Deleting a user and their workspace |
+| `container.stop` | Stopping a workspace's containers |
+| `container.restart` | Restarting a workspace's code container |
+| `template.seed` | Re-seeding a workspace from the template |
+| `backup.create` | Creating a project backup |
+| `backup.restore` | Restoring a project from backup |
+| `allowlist.add` | Adding an email/domain to the allowlist |
+| `allowlist.remove` | Removing an email/domain from the allowlist |
+| `config.max-active-containers` | Changing the container concurrency cap |
+
+Each entry records: timestamp, actor (user ID + email), action, target (kind + ID), and optional metadata JSON.
+
+### Viewing the audit log
+
+**Admin UI:** Navigate to the "Audit Log" tab in the admin panel. Supports filters by actor, action prefix, and time range, with expandable metadata rows and cursor-based pagination.
+
+**API:**
+
+```bash
+# Latest entries
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  http://localhost:4000/admin/audit-log
+
+# Filter by action prefix and limit
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  "http://localhost:4000/admin/audit-log?action=user&limit=50"
+
+# Filter by actor email (substring match)
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  "http://localhost:4000/admin/audit-log?actor=coach"
+
+# Paginate (use the smallest id from previous page as cursor)
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  "http://localhost:4000/admin/audit-log?before=42&limit=25"
+```
+
+### Retention and pruning
+
+Audit entries accumulate indefinitely by default. Prune old entries with the CLI:
+
+```bash
+# Remove entries older than 90 days (default)
+bun run audit:prune
+
+# Remove entries older than 30 days
+bun run audit:prune -- --days 30
+
+# Preview without deleting
+bun run audit:prune -- --dry-run
+```
+
+**Recommended:** Run `bun run audit:prune` monthly or add it to your maintenance routine.
+
+---
+
 ## Quick Reference Card
 
 | Task | Command |
@@ -672,6 +797,7 @@ Or the student can use the import dialog's **Restore** button to restore from a 
 | **Backup projects** | `bun run backup` |
 | **Restore projects** | `bun run restore -- <dir>` |
 | **Cleanup containers** | `bun run docker:cleanup` |
+| **Prune audit log** | `bun run audit:prune` |
 | **Admin status** | `curl -H "Authorization: Bearer $ADMIN_TOKEN" http://localhost:4000/admin/status` |
 | **Restart code container** | `curl -H "Authorization: Bearer $ADMIN_TOKEN" -X POST http://localhost:4000/admin/workspaces/<id>/restart-code` |
 | **Stop workspace containers** | `curl -H "Authorization: Bearer $ADMIN_TOKEN" -X POST http://localhost:4000/admin/workspaces/<id>/stop-containers` |

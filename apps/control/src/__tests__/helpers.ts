@@ -171,6 +171,9 @@ export function createFakeDocker(options: {
           if (statusValue === "exited" && container.running) {
             return false;
           }
+          if (statusValue === "running" && !container.running) {
+            return false;
+          }
           return true;
         })
         .map((container) => container.name);

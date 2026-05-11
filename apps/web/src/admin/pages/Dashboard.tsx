@@ -1,6 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useAdminPoll } from "../hooks/useAdminPoll";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 type AdminStatus = {
   ok: boolean;
@@ -13,6 +14,7 @@ type AdminStatus = {
   }>;
   idleStopMinutes: number;
   activeBuilds: number;
+  maxActiveContainers?: number;
 };
 
 async function fetchStatus(): Promise<AdminStatus> {
@@ -21,8 +23,64 @@ async function fetchStatus(): Promise<AdminStatus> {
   return res.json();
 }
 
+function CapacityEditor({ current, onSave }: { current: number; onSave: (value: number) => void }) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(String(current));
+  const [saving, setSaving] = useState(false);
+
+  if (!editing) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-2xl font-bold">{current}</span>
+        <Button variant="ghost" size="sm" onClick={() => { setValue(String(current)); setEditing(true); }}>
+          Edit
+        </Button>
+      </div>
+    );
+  }
+
+  const handleSave = async () => {
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 1) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/admin/config/max-active-containers", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "same-origin",
+        body: JSON.stringify({ value: parsed }),
+      });
+      if (res.ok) {
+        onSave(parsed);
+        setEditing(false);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <input
+        type="number"
+        min={1}
+        className="w-20 rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-sm"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        disabled={saving}
+      />
+      <Button variant="secondary" size="sm" onClick={handleSave} disabled={saving}>
+        Save
+      </Button>
+      <Button variant="ghost" size="sm" onClick={() => setEditing(false)} disabled={saving}>
+        Cancel
+      </Button>
+    </div>
+  );
+}
+
 export function Dashboard() {
-  const { data, loading, error } = useAdminPoll(useCallback(fetchStatus, []), 5000);
+  const { data, loading, error, refetch } = useAdminPoll(useCallback(fetchStatus, []), 5000);
 
   if (loading && !data) return <p className="text-muted-foreground p-4">Loading…</p>;
   if (error) return <p className="text-destructive p-4">Error: {error}</p>;
@@ -30,17 +88,29 @@ export function Dashboard() {
 
   const running = data.workspaces.filter((w) => w.code.state === "running").length;
   const total = data.workspaces.length;
+  const cap = data.maxActiveContainers ?? 10;
 
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold">Dashboard</h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground">Active Workspaces</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">{running} / {total}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground">Container Cap</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-baseline gap-2">
+              <span className="text-lg text-muted-foreground">{running} /</span>
+              <CapacityEditor current={cap} onSave={() => refetch()} />
+            </div>
           </CardContent>
         </Card>
         <Card>

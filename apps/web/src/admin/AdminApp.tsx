@@ -5,6 +5,7 @@ import { Containers } from "./pages/Containers";
 import { Workspaces } from "./pages/Workspaces";
 import { Users } from "./pages/Users";
 import { Allowlist } from "./pages/Allowlist";
+import { AuditLog } from "./pages/AuditLog";
 
 export function AdminApp() {
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -16,6 +17,7 @@ export function AdminApp() {
       {tab === "workspaces" && <Workspaces />}
       {tab === "users" && <Users />}
       {tab === "allowlist" && <Allowlist />}
+      {tab === "audit-log" && <AuditLog />}
     </AdminLayout>
   );
 }

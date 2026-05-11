@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 
-type Tab = "dashboard" | "containers" | "workspaces" | "users" | "allowlist";
+type Tab = "dashboard" | "containers" | "workspaces" | "users" | "allowlist" | "audit-log";
 
 const tabs: Array<{ id: Tab; label: string }> = [
   { id: "dashboard", label: "Dashboard" },
@@ -9,6 +9,7 @@ const tabs: Array<{ id: Tab; label: string }> = [
   { id: "workspaces", label: "Workspaces" },
   { id: "users", label: "Users" },
   { id: "allowlist", label: "Allowlist" },
+  { id: "audit-log", label: "Audit Log" },
 ];
 
 export function AdminLayout({

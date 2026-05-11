@@ -213,10 +213,24 @@ async function portIsFree(port: number): Promise<boolean> {
   });
 }
 
+export class CapacityExceededError extends Error {
+  readonly limit: number;
+  readonly current: number;
+
+  constructor(limit: number, current: number) {
+    super(`Server at capacity (${current}/${limit} containers running).`);
+    this.name = "CapacityExceededError";
+    this.limit = limit;
+    this.current = current;
+  }
+}
+
 export class ContainerOrchestrator {
   private readonly dockerRunner: DockerRunner;
   private readonly activeEnsures = new Map<string, Promise<CodeContainerStatus>>();
   private portReservationLock: Promise<void> = Promise.resolve();
+  private admissionLock: Promise<void> = Promise.resolve();
+  private pendingCreates = 0;
 
   constructor(
     private readonly storage: AppStorage,
@@ -301,6 +315,31 @@ export class ContainerOrchestrator {
     await this.removeCodeContainer(workspace.id);
     this.activeEnsures.delete(`code:${workspace.id}`);
     return this.ensureCodeContainer(workspace);
+  }
+
+  async countRunningContainers(): Promise<number> {
+    const result = await this.runDocker(
+      [
+        "container",
+        "ls",
+        "--filter",
+        "label=frc-sim.managed=true",
+        "--filter",
+        "label=frc-sim.version=v2",
+        "--filter",
+        "status=running",
+        "--format",
+        "{{.Names}}",
+      ],
+      true,
+    );
+    if (result.exitCode !== 0 || !result.stdout.trim()) {
+      return 0;
+    }
+    return result.stdout
+      .split(/\r?\n/u)
+      .map((line) => line.trim())
+      .filter(Boolean).length;
   }
 
   async cleanupStoppedContainers(): Promise<string[]> {
@@ -401,9 +440,12 @@ export class ContainerOrchestrator {
       return existing;
     }
 
-    const pending = this.ensureCodeContainerInner(workspace).catch((error) =>
-      this.recordError(workspace, error),
-    );
+    const pending = this.ensureCodeContainerInner(workspace).catch((error) => {
+      if (error instanceof CapacityExceededError) {
+        throw error;
+      }
+      return this.recordError(workspace, error);
+    });
     this.activeEnsures.set(key, pending);
     try {
       return await pending;
@@ -664,6 +706,31 @@ export class ContainerOrchestrator {
     return statusFromLease(this.storage.config.codeImage, lease, lease.code_state);
   }
 
+  private async withAdmissionLock<T>(action: () => Promise<T>): Promise<T> {
+    const previous = this.admissionLock;
+    let release!: () => void;
+    this.admissionLock = new Promise<void>((resolveLock) => {
+      release = resolveLock;
+    });
+
+    await previous;
+    try {
+      return await action();
+    } finally {
+      release();
+    }
+  }
+
+  private async checkCapacity(): Promise<void> {
+    const cap = this.storage.getEffectiveMaxActiveContainers();
+    const running = await this.countRunningContainers();
+    const active = running + this.pendingCreates;
+    if (active >= cap) {
+      throw new CapacityExceededError(cap, active);
+    }
+    this.pendingCreates += 1;
+  }
+
   private async ensureCodeContainerInner(workspace: WorkspaceRow): Promise<CodeContainerStatus> {
     const expectedName = codeContainerName(workspace.id);
     const existing = await this.inspectContainer(expectedName);
@@ -674,6 +741,19 @@ export class ContainerOrchestrator {
       }
     }
 
+    // Admission control: serialize capacity check + pending increment
+    await this.withAdmissionLock(async () => {
+      await this.checkCapacity();
+    });
+
+    try {
+      return await this.createWithRetries(workspace);
+    } finally {
+      this.pendingCreates = Math.max(0, this.pendingCreates - 1);
+    }
+  }
+
+  private async createWithRetries(workspace: WorkspaceRow): Promise<CodeContainerStatus> {
     const simRange = this.storage.config.simPortRange;
     const vscodeRange = this.storage.config.vscodePortRange;
     const halsimRange = this.storage.config.halsimPortRange;

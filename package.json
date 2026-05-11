@@ -29,6 +29,7 @@
     "users:demote": "bun scripts/users.ts demote",
     "migrate": "bun apps/control/src/migrate.ts apply",
     "migrate:status": "bun apps/control/src/migrate.ts status",
+    "audit:prune": "bun scripts/audit-prune.ts",
     "typecheck": "bun scripts/typecheck.ts",
     "test": "bun test"
   },

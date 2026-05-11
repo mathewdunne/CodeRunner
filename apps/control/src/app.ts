@@ -16,11 +16,12 @@ import {
   type WorkspaceSlug,
 } from "@frc-sim/contracts";
 import type { ControlConfigInput } from "./config";
-import { ContainerOrchestrator, type DockerRunner } from "./containers";
+import { ContainerOrchestrator, CapacityExceededError, type DockerRunner } from "./containers";
 import { IdleManager } from "./idle";
 import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
 import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from "./storage";
 import { getSessionFromRequest, requireAdmin, requireWebSocketOrigin, requireWorkspaceOwnership } from "./auth/middleware";
+import { recordAuditEvent, queryAuditLog, type AuditActor } from "./audit";
 import {
   ImportManager,
   ImportError,
@@ -348,8 +349,19 @@ async function webShellResponse(storage: AppStorage): Promise<Response> {
 async function containersStatusResponse(
   containers: ContainerOrchestrator,
   auth: AuthContext,
-): Promise<ContainersStatusResponse> {
-  return await containers.containersStatus(auth.workspace);
+): Promise<Response> {
+  try {
+    const status = await containers.containersStatus(auth.workspace);
+    return jsonResponse(status);
+  } catch (error) {
+    if (error instanceof CapacityExceededError) {
+      return jsonResponse(
+        { error: "capacity", limit: error.limit, current: error.current },
+        { status: 503 },
+      );
+    }
+    throw error;
+  }
 }
 
 async function webAssetResponse(storage: AppStorage, rawPath: string): Promise<Response> {
@@ -495,6 +507,16 @@ async function probeVscodeReady(port: number, basePath: string, timeoutMs: numbe
     await new Promise((resolveSleep) => setTimeout(resolveSleep, 250));
   }
   return false;
+}
+
+function capacityErrorResponse(error: unknown): Response | null {
+  if (error instanceof CapacityExceededError) {
+    return jsonResponse(
+      { error: "capacity", limit: error.limit, current: error.current },
+      { status: 503 },
+    );
+  }
+  return null;
 }
 
 async function vscodeHttpProxyResponse(
@@ -794,7 +816,12 @@ function adminStatusResponse(storage: AppStorage, runs: RunManager): AdminStatus
     workspaces,
     idleStopMinutes: idleMinutes,
     activeBuilds: runs.activeBuildCount(),
+    maxActiveContainers: storage.getEffectiveMaxActiveContainers(),
   };
+}
+
+function auditActor(adminResult: { user: { id: string; email: string } }): AuditActor {
+  return { userId: adminResult.user.id, email: adminResult.user.email };
 }
 
 export async function createApp(configInput: ControlAppOptions = {}): Promise<ControlApp> {
@@ -927,9 +954,16 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
           return jsonResponse({ error: "Workspace not found." }, { status: 404 });
         }
 
+        const actor = auditActor(adminResult);
+
         try {
           if (action === "restart-code") {
             await containers.restartCodeContainer(workspace);
+            recordAuditEvent(storage, {
+              actor,
+              action: "container.restart-code",
+              target: { kind: "workspace", id: workspace.id },
+            });
             return jsonResponse({
               ok: true,
               action: "restart-code",
@@ -940,6 +974,11 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
           if (action === "stop-containers") {
             await containers.stopWorkspaceContainers(workspace.id);
+            recordAuditEvent(storage, {
+              actor,
+              action: "container.stop",
+              target: { kind: "workspace", id: workspace.id },
+            });
             return jsonResponse({
               ok: true,
               action: "stop-containers",
@@ -964,6 +1003,11 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
             }
             await mkdir(projectDir, { recursive: true });
             await cp(storage.config.templateDir, projectDir, { recursive: true });
+            recordAuditEvent(storage, {
+              actor,
+              action: "workspace.seed-template",
+              target: { kind: "workspace", id: workspace.id },
+            });
             return jsonResponse({
               ok: true,
               action: "seed-template",
@@ -990,6 +1034,12 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
             const dest = resolve(workspaceBackupDir, "project.tar.gz");
             await mkdir(workspaceBackupDir, { recursive: true });
             await createProjectArchive(projectDir, dest);
+            recordAuditEvent(storage, {
+              actor,
+              action: "workspace.backup",
+              target: { kind: "workspace", id: workspace.id },
+              metadata: { dest },
+            });
             return jsonResponse({
               ok: true,
               action: "backup",
@@ -1024,6 +1074,12 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
             const projectDir = workspace.project_path;
             await mkdir(dirname(projectDir), { recursive: true });
             await restoreProjectArchive(projectDir, sourcePath);
+            recordAuditEvent(storage, {
+              actor,
+              action: "workspace.restore",
+              target: { kind: "workspace", id: workspace.id },
+              metadata: { source: sourcePath },
+            });
             return jsonResponse({
               ok: true,
               action: "restore",
@@ -1077,6 +1133,12 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
           }
         }
         storage.db.query("UPDATE user SET role = ?, updatedAt = ? WHERE id = ?").run(newRole, new Date().toISOString(), userId);
+        recordAuditEvent(storage, {
+          actor: auditActor(adminResult),
+          action: action === "promote" ? "user.promote" : "user.demote",
+          target: { kind: "user", id: userId },
+          metadata: { email: user.email, newRole },
+        });
         return jsonResponse({ ok: true, userId, role: newRole });
       }
 
@@ -1121,6 +1183,13 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
           await rm(dirname(workspace.project_path), { recursive: true, force: true });
         }
 
+        recordAuditEvent(storage, {
+          actor: auditActor(adminResult),
+          action: "user.delete",
+          target: { kind: "user", id: userId },
+          metadata: { email: user.email },
+        });
+
         return jsonResponse({ ok: true, userId });
       }
 
@@ -1145,6 +1214,12 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
           return jsonResponse({ error: "value is required." }, { status: 400 });
         }
         const result = await addAllowlistEntry(body.kind, body.value);
+        recordAuditEvent(storage, {
+          actor: auditActor(adminResult),
+          action: "allowlist.add",
+          target: { kind: "allowlist", id: body.value },
+          metadata: { kind: body.kind },
+        });
         return jsonResponse({ ok: true, ...result });
       }
 
@@ -1155,6 +1230,12 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         const current = getAllowlist();
         const kind = current.emails.includes(value.toLowerCase()) ? "email" : "domain";
         await removeAllowlistEntry(kind, value);
+        recordAuditEvent(storage, {
+          actor: auditActor(adminResult),
+          action: "allowlist.remove",
+          target: { kind: "allowlist", id: value },
+          metadata: { kind },
+        });
         const updated = getAllowlist();
         return jsonResponse({ ok: true, ...updated });
       }
@@ -1169,6 +1250,48 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
           const message = error instanceof Error ? error.message : String(error);
           return jsonResponse({ ok: false, error: message }, { status: 400 });
         }
+      }
+
+      // --- Capacity cap runtime override ---
+      if (url.pathname === "/admin/config/max-active-containers" && request.method === "POST") {
+        let body: { value?: unknown };
+        try {
+          body = await request.json() as { value?: unknown };
+        } catch {
+          return jsonResponse({ error: "Invalid JSON body." }, { status: 400 });
+        }
+        const value = Number(body.value);
+        if (!Number.isInteger(value) || value < 1) {
+          return jsonResponse({ error: "value must be a positive integer." }, { status: 400 });
+        }
+        storage.setRuntimeConfig("max_active_containers", String(value));
+        const actor = auditActor(adminResult);
+        recordAuditEvent(storage, {
+          actor,
+          action: "config.max-active-containers",
+          metadata: { value },
+        });
+        return jsonResponse({ ok: true, maxActiveContainers: value });
+      }
+
+      if (url.pathname === "/admin/config/max-active-containers" && request.method === "GET") {
+        return jsonResponse({
+          ok: true,
+          maxActiveContainers: storage.getEffectiveMaxActiveContainers(),
+          configDefault: storage.config.maxActiveContainers,
+        });
+      }
+
+      // --- Audit log ---
+      if (url.pathname === "/admin/audit-log" && request.method === "GET") {
+        const limit = Number(url.searchParams.get("limit") ?? "100");
+        const before = url.searchParams.get("before") ? Number(url.searchParams.get("before")) : undefined;
+        const actorEmail = url.searchParams.get("actor") ?? undefined;
+        const actionPrefix = url.searchParams.get("action") ?? undefined;
+        const days = url.searchParams.get("days") ? Number(url.searchParams.get("days")) : undefined;
+        const sinceMs = days ? Date.now() - days * 86_400_000 : undefined;
+        const entries = queryAuditLog(storage, { limit, before, actorEmail, actionPrefix, sinceMs });
+        return jsonResponse({ ok: true, entries });
       }
 
       return notFound();
@@ -1219,15 +1342,27 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       }
 
       if (suffix === "/sim/alive" && request.method === "GET") {
-        return nt4AliveResponse(storage, containers, auth);
+        try {
+          return await nt4AliveResponse(storage, containers, auth);
+        } catch (error) {
+          return capacityErrorResponse(error) ?? apiErrorResponse(error, "Simulator not available.");
+        }
       }
 
       if (suffix === "/sim/nt4" && request.method === "GET") {
-        return nt4WebSocketResponse(storage, containers, auth, request, server);
+        try {
+          return await nt4WebSocketResponse(storage, containers, auth, request, server);
+        } catch (error) {
+          return capacityErrorResponse(error) ?? apiErrorResponse(error, "Simulator not available.");
+        }
       }
 
       if (suffix === "/sim/halsim" && request.method === "GET") {
-        return halsimWebSocketResponse(storage, containers, auth, request, server);
+        try {
+          return await halsimWebSocketResponse(storage, containers, auth, request, server);
+        } catch (error) {
+          return capacityErrorResponse(error) ?? apiErrorResponse(error, "Simulator not available.");
+        }
       }
 
       // --- Editor proxy: openvscode-server ---
@@ -1237,10 +1372,14 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       // --server-base-path /u/<slug>/vscode/.
       if (suffix === "/vscode" || suffix.startsWith("/vscode/")) {
         const fullPath = url.pathname + (url.search || "");
-        if (request.headers.get("upgrade")?.toLowerCase() === "websocket") {
-          return vscodeWebSocketResponse(storage, containers, auth, request, fullPath, server);
+        try {
+          if (request.headers.get("upgrade")?.toLowerCase() === "websocket") {
+            return await vscodeWebSocketResponse(storage, containers, auth, request, fullPath, server);
+          }
+          return await vscodeHttpProxyResponse(storage, containers, auth, request, fullPath);
+        } catch (error) {
+          return capacityErrorResponse(error) ?? apiErrorResponse(error, "Editor not available.");
         }
-        return vscodeHttpProxyResponse(storage, containers, auth, request, fullPath);
       }
 
       if (suffix.startsWith("/assets/") && request.method === "GET") {
@@ -1253,7 +1392,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
       if (suffix === "/api/containers/status" && request.method === "GET") {
         try {
-          return jsonResponse(await containersStatusResponse(containers, auth));
+          return await containersStatusResponse(containers, auth);
         } catch (error) {
           return apiErrorResponse(error, "Unable to read container status.");
         }
