@@ -3,9 +3,9 @@
   "configurations": [
     {
       "name": "web",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "bun",
       "runtimeArgs": ["run", "dev:web"],
-      "port": 3000
+      "port": 5173
     },
     {
       "name": "ascope",

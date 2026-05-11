@@ -25,19 +25,6 @@
         "better-auth": "^1.6.10",
       },
     },
-    "apps/tmp_old_web": {
-      "name": "@frc-sim/web",
-      "version": "0.0.0",
-      "dependencies": {
-        "@frc-sim/contracts": "workspace:*",
-        "react": "^19.2.1",
-        "react-dom": "^19.2.1",
-      },
-      "devDependencies": {
-        "@vitejs/plugin-react": "^5.1.1",
-        "vite": "^7.2.6",
-      },
-    },
     "apps/web": {
       "name": "frc-programming-training-sim",
       "version": "0.0.1",
@@ -259,8 +246,6 @@
     "@frc-sim/contracts": ["@frc-sim/contracts@workspace:packages/contracts"],
 
     "@frc-sim/control": ["@frc-sim/control@workspace:apps/control"],
-
-    "@frc-sim/web": ["@frc-sim/web@workspace:apps/tmp_old_web"],
 
     "@hono/node-server": ["@hono/node-server@1.19.14", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw=="],
 

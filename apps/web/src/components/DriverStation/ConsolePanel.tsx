@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDownToLine, ClipboardList, Terminal } from "lucide-react";
+import { ArrowDownToLine, Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-
-type ConsoleTab = "robot" | "ds";
+import { CodeStatusPill, type CodeStatus } from "./CodeStatusPill";
 
 interface ConsolePanelProps {
   robotLines: string[];
-  dsLines: string[];
 }
 
 const PINNED_THRESHOLD_PX = 32;
@@ -58,11 +55,9 @@ function ConsoleLine({ line }: { line: string }) {
 }
 
 function ConsoleViewport({
-  active,
   emptyText,
   lines,
 }: {
-  active: boolean;
   emptyText: string;
   lines: string[];
 }) {
@@ -100,10 +95,10 @@ function ConsoleViewport({
   }, [handleScroll]);
 
   useEffect(() => {
-    if (!active || !autoScrollRef.current) return;
+    if (!autoScrollRef.current) return;
     const frame = window.requestAnimationFrame(() => scrollToBottom());
     return () => window.cancelAnimationFrame(frame);
-  }, [active, scrollToBottom, visibleLines]);
+  }, [scrollToBottom, visibleLines]);
 
   return (
     <div className="relative flex min-h-0 flex-1 overflow-hidden">
@@ -138,52 +133,26 @@ function ConsoleViewport({
   );
 }
 
-export function ConsolePanel({ robotLines, dsLines }: ConsolePanelProps) {
-  const [activeTab, setActiveTab] = useState<ConsoleTab>("robot");
+export function ConsolePanel({ robotLines }: ConsolePanelProps) {
+  // TODO: drive Code Status from runStatus + container build state. For now
+  // this is hardcoded to "running" so the pill is visible during the redesign.
+  const codeStatus: CodeStatus = "running";
 
   return (
-    <Tabs
-      value={activeTab}
-      onValueChange={(value) => setActiveTab(value as ConsoleTab)}
-      className="min-h-0 flex-1 gap-0"
-    >
-      <div className="flex h-9 shrink-0 items-center justify-between border-b border-border bg-background/20 px-3">
-        <TabsList className="h-7 rounded-md bg-muted/60">
-          <TabsTrigger value="robot" className="min-w-[128px] gap-1.5 text-xs">
-            <Terminal className="size-3.5" />
-            Robot Console
-          </TabsTrigger>
-          <TabsTrigger value="ds" className="min-w-[92px] gap-1.5 text-xs">
-            <ClipboardList className="size-3.5" />
-            DS Log
-          </TabsTrigger>
-        </TabsList>
-
-        <span className="hidden text-[11px] text-muted-foreground sm:inline">
-          {activeTab === "robot" ? robotLines.length : dsLines.length} lines
-        </span>
+    <section className="flex min-h-0 flex-1 flex-col">
+      <div className="flex h-10 shrink-0 items-center justify-between border-b border-border bg-card/40 px-3">
+        <div className="flex items-center gap-2 text-[12px]">
+          <Terminal className="size-3.5 text-muted-foreground" />
+          <span className="font-medium text-foreground">Console Output</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <CodeStatusPill status={codeStatus} />
+          <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground">
+            {robotLines.length} lines
+          </span>
+        </div>
       </div>
-
-      <TabsContent
-        value="robot"
-        className="relative flex min-h-0 flex-1 overflow-hidden"
-      >
-        <ConsoleViewport
-          active={activeTab === "robot"}
-          emptyText="No robot output yet."
-          lines={robotLines}
-        />
-      </TabsContent>
-      <TabsContent
-        value="ds"
-        className="relative flex min-h-0 flex-1 overflow-hidden"
-      >
-        <ConsoleViewport
-          active={activeTab === "ds"}
-          emptyText="No driver station events yet."
-          lines={dsLines}
-        />
-      </TabsContent>
-    </Tabs>
+      <ConsoleViewport emptyText="No robot output yet." lines={robotLines} />
+    </section>
   );
 }

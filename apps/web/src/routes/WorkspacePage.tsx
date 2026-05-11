@@ -3,10 +3,8 @@ import { useParams } from "react-router";
 import { isWorkspaceSlug } from "@/lib/contracts";
 import { useSession } from "@/hooks/useSession";
 import { useRunChannel } from "@/hooks/useRunChannel";
-import { useContainerStatus } from "@/hooks/useContainerStatus";
 import { useEditorReachability } from "@/hooks/useEditorReachability";
 import { useScopeHandshake } from "@/hooks/useScopeHandshake";
-import { useHalSim } from "@/hooks/useHalSim";
 import { Topbar } from "@/components/Topbar";
 import { IDELayout } from "@/components/IDELayout";
 import { EditorPane } from "@/components/EditorPane";
@@ -21,10 +19,8 @@ export function WorkspacePage() {
   );
 
   const sessionState = useSession(workspaceSlug);
-  const { runStatus, connection, consoleLines, startRun, stopRun } =
+  const { runStatus, consoleLines, startRun, stopRun } =
     useRunChannel(workspaceSlug);
-  const containerStatus = useContainerStatus(workspaceSlug);
-  const halSim = useHalSim(workspaceSlug);
   const editorUrl = workspaceSlug
     ? `/u/${workspaceSlug}/vscode/?folder=/workspace/project`
     : null;
@@ -36,9 +32,10 @@ export function WorkspacePage() {
     sessionState.status === "ready"
       ? sessionState.session.user.displayName
       : "Loading";
+  const email =
+    sessionState.status === "ready" ? sessionState.session.user.email : "";
 
   const sessionReady = sessionState.status === "ready";
-  const containerRunning = containerStatus?.code.state === "running";
   const errorMessage =
     sessionState.status === "error" ? sessionState.message : undefined;
 
@@ -46,16 +43,8 @@ export function WorkspacePage() {
     <div className="flex h-screen flex-col bg-background">
       <Topbar
         displayName={displayName}
+        email={email}
         workspaceSlug={workspaceSlug}
-        editorStatus={editorStatus}
-        containerStatus={containerStatus}
-        runStatus={runStatus}
-        runConnection={connection}
-        scopeStatus={scopeStatus}
-        halSimConnection={halSim.connection}
-        sessionReady={sessionReady}
-        onStartRun={startRun}
-        onStopRun={stopRun}
       />
       <IDELayout
         editor={
@@ -70,10 +59,7 @@ export function WorkspacePage() {
         }
         driverStation={
           <DriverStation
-            halSim={halSim}
             runStatus={runStatus}
-            runConnection={connection}
-            containerRunning={containerRunning}
             sessionReady={sessionReady}
             consoleLines={consoleLines}
             onStartRun={startRun}

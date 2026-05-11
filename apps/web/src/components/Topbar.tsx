@@ -1,99 +1,26 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ImportDialog } from "@/components/ImportDialog";
-import { useImport } from "@/hooks/useImport";
-import { StatusStrip } from "@/components/StatusStrip";
-import type { ContainersStatusResponse } from "@/lib/contracts";
-import type { RunConnection, RunStatus } from "@/hooks/useRunChannel";
-import type { EditorStatus } from "@/hooks/useEditorReachability";
-import type { ScopeStatus } from "@/hooks/useScopeHandshake";
-import type { HalSimConnection } from "@/hooks/useHalSim";
-import { authClient } from "@/lib/auth-client";
+import { UserMenu } from "@/components/UserMenu";
 
 interface TopbarProps {
   displayName: string;
+  email: string;
   workspaceSlug: string | null;
-  editorStatus: EditorStatus;
-  containerStatus: ContainersStatusResponse | null;
-  runStatus: RunStatus;
-  runConnection: RunConnection;
-  scopeStatus: ScopeStatus;
-  halSimConnection: HalSimConnection;
-  sessionReady: boolean;
-  onStartRun: () => void;
-  onStopRun: () => void;
 }
 
-export function Topbar({
-  displayName,
-  workspaceSlug,
-  editorStatus,
-  containerStatus,
-  runStatus,
-  runConnection,
-  scopeStatus,
-  halSimConnection,
-}: TopbarProps) {
-  const [importOpen, setImportOpen] = useState(false);
-  const importHook = useImport(workspaceSlug);
-
-  async function signOut() {
-    await authClient.signOut();
-    window.location.assign("/login");
-  }
-
+export function Topbar({ displayName, email, workspaceSlug }: TopbarProps) {
   return (
-    <header className="flex h-[52px] items-center gap-3 border-b border-border px-3.5">
-      <div className="flex min-w-0 items-baseline gap-2.5">
-        <strong className="whitespace-nowrap text-sm font-semibold">
+    <header className="flex h-[48px] shrink-0 items-center border-b border-border px-4">
+      <div className="flex items-baseline gap-2">
+        <strong className="whitespace-nowrap text-[13.5px] font-semibold tracking-tight">
           FRC Web Simulator
         </strong>
-        <span className="truncate text-xs text-muted-foreground">
-          {displayName}
-        </span>
       </div>
-
-      <StatusStrip
-        workspaceSlug={workspaceSlug}
-        editorStatus={editorStatus}
-        containerStatus={containerStatus}
-        runStatus={runStatus}
-        runConnection={runConnection}
-        scopeStatus={scopeStatus}
-        halSimConnection={halSimConnection}
-      />
-
-      <div className="ml-auto flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={<Button type="button" variant="outline" size="sm" />}
-          >
-            ☰
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setImportOpen(true)}>
-              Import from GitHub
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => void signOut()}>
-              Logout
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="ml-auto flex items-center gap-2.5">
+        <UserMenu
+          displayName={displayName}
+          email={email}
+          workspaceSlug={workspaceSlug}
+        />
       </div>
-
-      <ImportDialog
-        open={importOpen}
-        onOpenChange={setImportOpen}
-        importHook={importHook}
-      />
     </header>
   );
 }
