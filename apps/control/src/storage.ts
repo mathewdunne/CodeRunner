@@ -157,28 +157,62 @@ export class AppStorage {
       return existing;
     }
 
-    // Check for slug collision and add numeric suffix if needed
+    // Reserve the row first (slug uniqueness enforced by the DB), then
+    // materialize project files. If two concurrent first-logins pick the
+    // same base slug, the second INSERT loses the race on the UNIQUE
+    // constraint and we retry with a suffix.
     const baseSlug = slug.slice(0, 40) || "student";
-    let finalSlug = baseSlug as WorkspaceSlug;
-    let attempt = 0;
-    while (this.findWorkspaceBySlug(finalSlug)) {
-      attempt++;
-      const suffix = `-${attempt}`;
-      finalSlug = `${baseSlug.slice(0, 40 - suffix.length)}${suffix}` as WorkspaceSlug;
-    }
-
     const workspaceId = randomId("ws") as WorkspaceId;
     const timestamp = nowIso();
-    const projectPath = await ensureWorkspaceFiles(this.config, workspaceId);
+    const placeholderProjectPath = resolve(this.config.dataDir, "users", workspaceId, "project");
 
-    this.db
-      .query(
-        "INSERT INTO workspaces (id, user_id, slug, project_path, created_at, last_accessed_at) VALUES (?, ?, ?, ?, ?, ?)",
-      )
-      .run(workspaceId, userId, finalSlug, projectPath, timestamp, timestamp);
-    this.db
-      .query("UPDATE user SET slug = ?, updatedAt = ? WHERE id = ?")
-      .run(finalSlug, timestamp, userId);
+    let finalSlug: WorkspaceSlug | null = null;
+    const MAX_ATTEMPTS = 16;
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const candidate = attempt === 0
+        ? (baseSlug as WorkspaceSlug)
+        : (`${baseSlug.slice(0, 40 - `-${attempt}`.length)}-${attempt}` as WorkspaceSlug);
+
+      if (this.findWorkspaceBySlug(candidate)) continue;
+
+      try {
+        const transaction = this.db.transaction(() => {
+          this.db
+            .query(
+              "INSERT INTO workspaces (id, user_id, slug, project_path, created_at, last_accessed_at) VALUES (?, ?, ?, ?, ?, ?)",
+            )
+            .run(workspaceId, userId, candidate, placeholderProjectPath, timestamp, timestamp);
+          this.db
+            .query("UPDATE user SET slug = ?, updatedAt = ? WHERE id = ?")
+            .run(candidate, timestamp, userId);
+        });
+        transaction();
+        finalSlug = candidate;
+        break;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        // Only retry on the slug uniqueness collision. Anything else (e.g.
+        // a UNIQUE on user_id) means the caller is wrong, so rethrow.
+        if (message.includes("workspaces.slug")) continue;
+        throw error;
+      }
+    }
+
+    if (!finalSlug) {
+      throw new Error(`Could not allocate a unique workspace slug for base "${baseSlug}".`);
+    }
+
+    try {
+      const projectPath = await ensureWorkspaceFiles(this.config, workspaceId);
+      if (projectPath !== placeholderProjectPath) {
+        this.db
+          .query("UPDATE workspaces SET project_path = ? WHERE id = ?")
+          .run(projectPath, workspaceId);
+      }
+    } catch (error) {
+      this.db.query("DELETE FROM workspaces WHERE id = ?").run(workspaceId);
+      throw error;
+    }
 
     const workspace = this.findWorkspaceById(workspaceId);
     if (!workspace) {

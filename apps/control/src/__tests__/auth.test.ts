@@ -125,6 +125,35 @@ describe("session login and ownership", () => {
   });
 });
 
+describe("workspace creation concurrency", () => {
+  test("concurrent first-logins with the same base slug get distinct slugs", async () => {
+    await withApp(async (app) => {
+      const now = new Date().toISOString();
+      const insertUser = app.storage.db.query(
+        "INSERT INTO user (id, name, email, emailVerified, createdAt, updatedAt, role, slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      );
+
+      const ids = ["userAAAAAAAAAAAAAAAA", "userBBBBBBBBBBBBBBBB"];
+      ids.forEach((id, i) => {
+        insertUser.run(id, `Alice${i}`, `alice${i}@example.com`, 0, now, now, "student", "alice");
+      });
+
+      const results = await Promise.all(
+        ids.map((id) => app.storage.ensureWorkspaceForUser(id, "alice")),
+      );
+      const slugs = results.map((w) => w.slug);
+
+      expect(slugs[0]).not.toBe(slugs[1]);
+      expect(new Set(slugs)).toEqual(new Set(["alice", "alice-1"]));
+
+      const workspaceCount = app.storage.db.query("SELECT COUNT(*) AS count FROM workspaces").get() as {
+        count: number;
+      };
+      expect(workspaceCount.count).toBe(2);
+    });
+  });
+});
+
 describe("allowlist enforcement", () => {
   test("empty allowlist blocks OAuth emails until a matching entry is added", async () => {
     const root = await mkdtemp(join(tmpdir(), "frc-allowlist-"));

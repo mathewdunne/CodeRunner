@@ -47,17 +47,23 @@ export function setAllowlistPath(dataDir: string): void {
 
 export async function loadAllowlist(): Promise<AllowlistData> {
   if (!allowlistPath) return EMPTY;
+  let raw: string;
   try {
-    const raw = await readFile(allowlistPath, "utf8");
-    const parsed = JSON.parse(raw) as Partial<AllowlistData>;
-    cached = {
-      emails: (parsed.emails ?? []).map((entry) => normalizeEntry("email", entry)),
-      domains: (parsed.domains ?? []).map((entry) => normalizeEntry("domain", entry)),
-    };
-  } catch {
-    // File missing or invalid — treat as empty allowlist (blocks everyone).
-    cached = EMPTY;
+    raw = await readFile(allowlistPath, "utf8");
+  } catch (error) {
+    // First-boot bootstrap: missing file is normal, fall back to empty.
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      cached = EMPTY;
+      return cached;
+    }
+    throw error;
   }
+
+  const parsed = JSON.parse(raw) as Partial<AllowlistData>;
+  cached = {
+    emails: (parsed.emails ?? []).map((entry) => normalizeEntry("email", entry)),
+    domains: (parsed.domains ?? []).map((entry) => normalizeEntry("domain", entry)),
+  };
   return cached;
 }
 

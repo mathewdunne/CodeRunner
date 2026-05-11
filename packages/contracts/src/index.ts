@@ -2,9 +2,12 @@ import { z } from "zod";
 
 export const ROUTE_SLUG_PATTERN = /^[a-zA-Z0-9_-]{1,40}$/;
 export const WORKSPACE_ID_PATTERN = /^ws_[a-f0-9]{32}$/;
+// Better Auth's default user/session IDs are URL-safe alphanumeric strings;
+// keep the bound loose enough to absorb a future generator change.
+export const BETTERAUTH_ID_PATTERN = /^[A-Za-z0-9_-]{16,64}$/;
 
 export const workspaceSlugSchema = z.string().regex(ROUTE_SLUG_PATTERN);
-export const userIdSchema = z.string().trim().min(1).max(128);
+export const userIdSchema = z.string().regex(BETTERAUTH_ID_PATTERN);
 export const workspaceIdSchema = z.string().regex(WORKSPACE_ID_PATTERN);
 
 export const displayNameSchema = z

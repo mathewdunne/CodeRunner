@@ -19,6 +19,7 @@ export function Allowlist() {
   const [newValue, setNewValue] = useState("");
   const [newKind, setNewKind] = useState<"email" | "domain">("email");
   const [busy, setBusy] = useState(false);
+  const [reloadError, setReloadError] = useState<string | null>(null);
 
   async function addEntry() {
     if (!newValue.trim()) return;
@@ -52,12 +53,20 @@ export function Allowlist() {
 
   async function reload() {
     setBusy(true);
+    setReloadError(null);
     try {
-      await fetch("/admin/allowlist/reload", {
+      const res = await fetch("/admin/allowlist/reload", {
         method: "POST",
         credentials: "same-origin",
       });
+      const body = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
+      if (!res.ok || !body?.ok) {
+        setReloadError(body?.error ?? `Reload failed (${res.status}).`);
+        return;
+      }
       refetch();
+    } catch (err) {
+      setReloadError(err instanceof Error ? err.message : "Reload failed.");
     } finally {
       setBusy(false);
     }
@@ -76,6 +85,12 @@ export function Allowlist() {
           Reload from disk
         </Button>
       </div>
+
+      {reloadError && (
+        <p className="text-destructive text-sm" role="alert">
+          Reload failed: {reloadError}
+        </p>
+      )}
 
       {isEmpty && (
         <p className="text-muted-foreground text-sm">

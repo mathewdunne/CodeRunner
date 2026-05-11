@@ -1142,8 +1142,13 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       // --- Allowlist reload ---
       if (url.pathname === "/admin/allowlist/reload" && request.method === "POST") {
         const { reloadAllowlist } = await import("./auth/allowlist");
-        const result = await reloadAllowlist();
-        return jsonResponse({ ok: true, ...result });
+        try {
+          const result = await reloadAllowlist();
+          return jsonResponse({ ok: true, ...result });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          return jsonResponse({ ok: false, error: message }, { status: 400 });
+        }
       }
 
       return notFound();
