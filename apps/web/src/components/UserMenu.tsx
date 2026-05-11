@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, Github, LogOut } from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
+import { SiGithub } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -98,7 +99,7 @@ export function UserMenu({ displayName, email, workspaceSlug }: UserMenuProps) {
               onClick={() => setImportOpen(true)}
               className="gap-2.5 px-2.5 py-2 text-[12.5px]"
             >
-              <Github className="size-[15px] text-muted-foreground" />
+              <SiGithub className="size-[15px] text-muted-foreground" />
               Import from GitHub
             </DropdownMenuItem>
             <DropdownMenuSeparator />
