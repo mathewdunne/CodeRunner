@@ -21,10 +21,10 @@ export function WorkbenchPanel({
 }: WorkbenchPanelProps) {
   return (
     <div
-      className="grid min-h-0 w-[560px] shrink-0 gap-2.5 border-r border-border p-3"
+      className="grid h-full min-h-0 w-[560px] shrink-0 overflow-hidden gap-2.5 border-r border-border p-3"
       style={{
         gridTemplateColumns: "1fr 130px",
-        gridTemplateRows: "minmax(0, 1fr) minmax(0, 1.2fr) minmax(72px, 1fr)",
+        gridTemplateRows: "minmax(76px, 1fr) minmax(92px, 1.35fr) minmax(68px, 1fr)",
       }}
     >
       {/* Row 1, col 1: Sim controls */}

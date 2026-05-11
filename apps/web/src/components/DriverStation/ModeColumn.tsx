@@ -32,7 +32,7 @@ export function ModeColumn() {
   };
 
   return (
-    <div className="flex min-h-0 flex-col gap-1.5 rounded-lg border border-border bg-card p-2">
+    <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden rounded-lg border border-border bg-card p-2">
       <span className="px-1 pt-0.5 text-[9.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
         Mode
       </span>
@@ -44,7 +44,7 @@ export function ModeColumn() {
             type="button"
             onClick={() => handleSelect(m)}
             className={cn(
-              "flex-1 rounded-md border text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors",
+              "min-h-[18px] flex-1 rounded-md border px-2 text-[11px] font-semibold uppercase leading-none tracking-[0.12em] transition-colors",
               active
                 ? MODE_CLASSES[m].active
                 : "border-border bg-white/[0.02] text-muted-foreground hover:bg-white/[0.05] hover:text-foreground",

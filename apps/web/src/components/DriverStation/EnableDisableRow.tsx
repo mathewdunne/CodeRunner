@@ -47,7 +47,7 @@ export function EnableDisableRow() {
   };
 
   return (
-    <div className="grid min-h-0 gap-2.5" style={{ gridTemplateColumns: "1fr 1fr", minHeight: 72 }}>
+    <div className="grid h-full min-h-0 gap-2.5" style={{ gridTemplateColumns: "1fr 1fr" }}>
       <div className="min-h-0 rounded-lg border border-border bg-card p-2">
         <BigButton
           label="Enable"
