@@ -2,6 +2,7 @@ import { cp, lstat, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/p
 import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
   heartbeatRequestSchema,
+  importRequestSchema,
   runClientMessageSchema,
   workspaceSlugSchema,
   type AdminActionResponse,
@@ -9,6 +10,7 @@ import {
   type AdminWorkspaceStatus,
   type ContainersStatusResponse,
   type HeartbeatResponse,
+  type ImportServerMessage,
   type SessionResponse,
   type WorkspaceId,
   type WorkspaceSlug,
@@ -19,6 +21,16 @@ import { IdleManager } from "./idle";
 import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
 import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from "./storage";
 import { getSessionFromRequest, requireAdmin, requireWebSocketOrigin, requireWorkspaceOwnership } from "./auth/middleware";
+import {
+  ImportManager,
+  ImportError,
+  RateLimitError,
+  parseGitHubUrl,
+  validateBranch,
+  validateSubdir,
+  listRecentImports,
+  restoreImportBackup,
+} from "./imports";
 
 export type ControlApp = {
   fetch(request: Request, server?: BunUpgradeServer): Promise<Response>;
@@ -30,6 +42,7 @@ export type ControlApp = {
   storage: AppStorage;
   containers: ContainerOrchestrator;
   runs: RunManager;
+  imports: ImportManager;
   idle: IdleManager;
   close(): void;
 };
@@ -83,7 +96,13 @@ type HalSimSocketData = {
   pendingMessages: Array<string | ArrayBuffer | Uint8Array>;
 };
 
-type SocketData = RunSocketData | Nt4SocketData | VscodeSocketData | HalSimSocketData;
+type ImportSocketData = {
+  kind: "import";
+  workspace: AuthContext["workspace"];
+  userId: string;
+};
+
+type SocketData = RunSocketData | Nt4SocketData | VscodeSocketData | HalSimSocketData | ImportSocketData;
 
 type AppSocket = {
   data: SocketData;
@@ -783,6 +802,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
   const storage = await createStorage(storageConfig);
   const containers = new ContainerOrchestrator(storage, { dockerRunner });
   const runs = new RunManager(storage, containers, { commandFactory: runCommandFactory });
+  const imports = new ImportManager(storage, containers);
   const idle = new IdleManager({
     storage,
     containers,
@@ -1248,6 +1268,74 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         return jsonResponse({ ok: true, stopped: runs.stopWorkspace(auth.workspace.id) });
       }
 
+      // --- Import endpoints ---
+      if (suffix === "/api/project/import" && request.method === "POST") {
+        try {
+          const body = await request.json();
+          const parsed = importRequestSchema.parse(body);
+          const { cloneUrl, branch, subdir } = parseGitHubUrl(parsed.url, parsed.branch, parsed.subdir);
+          validateBranch(branch);
+          if (subdir) validateSubdir(subdir);
+          // Validate only — actual import runs via WS stream
+          return jsonResponse({ ok: true, cloneUrl, branch, subdir });
+        } catch (error) {
+          if (error instanceof ImportError) {
+            return jsonResponse({ error: error.message }, { status: 400 });
+          }
+          if (error instanceof RateLimitError) {
+            return jsonResponse({ error: error.message }, { status: 429 });
+          }
+          const message = error instanceof Error ? error.message : "Invalid import request.";
+          return jsonResponse({ error: message }, { status: 400 });
+        }
+      }
+
+      if (suffix === "/api/project/recent-imports" && request.method === "GET") {
+        try {
+          const recentImports = await listRecentImports(auth.workspace);
+          return jsonResponse({ ok: true, imports: recentImports });
+        } catch (error) {
+          return apiErrorResponse(error, "Unable to list recent imports.");
+        }
+      }
+
+      if (suffix === "/api/project/restore" && request.method === "POST") {
+        try {
+          const body = await request.json() as { archiveFile?: string };
+          if (typeof body.archiveFile !== "string" || !body.archiveFile.trim()) {
+            return jsonResponse({ error: "Missing or empty 'archiveFile'." }, { status: 400 });
+          }
+          await restoreImportBackup(auth.workspace, body.archiveFile);
+          return jsonResponse({ ok: true, message: "Project restored from backup." });
+        } catch (error) {
+          if (error instanceof ImportError) {
+            return jsonResponse({ error: error.message }, { status: 400 });
+          }
+          return apiErrorResponse(error, "Restore failed.");
+        }
+      }
+
+      if (suffix === "/ws/import" && request.method === "GET") {
+        if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
+          return new Response("Expected WebSocket upgrade.", { status: 426 });
+        }
+        const originError = requireWebSocketOrigin(request, storage.config.baseUrl);
+        if (originError) {
+          return originError;
+        }
+        const upgraded = server.upgrade(request, {
+          data: {
+            kind: "import",
+            workspace: auth.workspace,
+            userId: auth.user.id,
+          } satisfies ImportSocketData,
+        });
+        if (!upgraded) {
+          return new Response("WebSocket upgrade failed.", { status: 400 });
+        }
+        return undefined as unknown as Response;
+      }
+
       if (suffix === "/api/heartbeat" && request.method === "POST") {
         try {
           return jsonResponse(await readHeartbeatRequest(request, storage, auth));
@@ -1338,6 +1426,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         openProxyUpstream(ws, "HALSim", ws.data.protocols);
         return;
       }
+      if (ws.data.kind === "import") {
+        // Import WS is open; client sends an import request message to start
+        return;
+      }
       ws.data.connection = runs.connect(ws.data.workspace, (message) => {
         ws.send(JSON.stringify(message));
       });
@@ -1352,6 +1444,39 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
             return;
           }
           ws.data.pendingMessages.push(message);
+        }
+        return;
+      }
+
+      if (ws.data.kind === "import") {
+        try {
+          const parsed = importRequestSchema.parse(JSON.parse(socketMessageText(message)));
+          const { cloneUrl, branch, subdir } = parseGitHubUrl(parsed.url, parsed.branch, parsed.subdir);
+          validateBranch(branch);
+          if (subdir) validateSubdir(subdir);
+          const send = (msg: ImportServerMessage) => {
+            try { ws.send(JSON.stringify(msg)); } catch {}
+          };
+          void imports.run({
+            workspace: ws.data.workspace,
+            userId: ws.data.userId,
+            cloneUrl,
+            branch,
+            subdir,
+            backup: parsed.backup ?? true,
+            send,
+          }).finally(() => {
+            try { ws.close(1000, "Import finished."); } catch {}
+          });
+        } catch (error) {
+          if (error instanceof RateLimitError) {
+            ws.send(JSON.stringify({ type: "error", message: error.message }));
+            ws.close(1000, "Rate limited.");
+            return;
+          }
+          const detail = error instanceof Error ? error.message : "Invalid import request.";
+          ws.send(JSON.stringify({ type: "error", message: detail }));
+          ws.close(1000, "Invalid request.");
         }
         return;
       }
@@ -1376,6 +1501,11 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         return;
       }
 
+      if (ws.data.kind === "import") {
+        // Import WS closed — job will finish/fail on its own
+        return;
+      }
+
       if (ws.data.connection) {
         runs.disconnect(ws.data.connection);
       }
@@ -1388,6 +1518,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     storage,
     containers,
     runs,
+    imports,
     idle,
     close() {
       idle.stop();

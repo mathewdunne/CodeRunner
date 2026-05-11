@@ -16,6 +16,7 @@ This runbook covers deploying and operating the FRC Web Simulator V2 on a classr
 8. [Monitoring](#8-monitoring)
 9. [Common Failures and Recovery](#9-common-failures-and-recovery)
 10. [Host Sizing](#10-host-sizing)
+11. [Project Import](#11-project-import)
 
 ---
 
@@ -604,6 +605,53 @@ If containers are hitting their limit (OOM kills), raise it:
 ```bash
 CODE_MEMORY_LIMIT=3072m
 ```
+
+---
+
+## 11. Project Import
+
+Students can import public GitHub repositories from the topbar menu → **Import from GitHub**.
+
+### Endpoints
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `POST` | `/u/{slug}/api/project/import` | Validate an import URL (returns parsed clone URL, branch, subdir) |
+| `GET` | `/u/{slug}/api/project/recent-imports` | List recent import backups for the workspace |
+| `POST` | `/u/{slug}/api/project/restore` | Restore a project from an import backup (`{ archiveFile: "..." }`) |
+| `WS` | `/u/{slug}/ws/import` | WebSocket stream for import progress (send import request as first message) |
+
+### Limits
+
+- **Repository size:** ≤ 100 MB (checked after shallow clone inside the container).
+- **Rate limit:** 6 imports per user per hour (in-memory, resets on control-plane restart).
+- **Backup retention:** ≤ 5 import backups per workspace; oldest pruned automatically.
+- **Clone timeout:** 60 seconds.
+
+### Where import backups live
+
+```
+data/users/<workspaceId>/backups/import-<timestamp>.tar.gz   # project archive
+data/users/<workspaceId>/backups/import-<timestamp>.json      # import metadata
+```
+
+### Manual restore (admin)
+
+If the student UI fails, an operator can restore an import backup using the admin restore endpoint:
+
+```bash
+# Find the backup path
+ls data/users/<workspaceId>/backups/
+
+# Use the admin backup endpoint or the workspace restore endpoint
+curl -X POST \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"path": "data/backups/..."}' \
+  http://localhost:4000/admin/workspaces/<workspaceId>/restore
+```
+
+Or the student can use the import dialog's **Restore** button to restore from a recent import backup directly.
 
 ---
 

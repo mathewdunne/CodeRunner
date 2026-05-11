@@ -9,7 +9,7 @@ USER root
 # ── System dependencies ────────────────────────────────────────────────
 RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends \
-        tini procps ca-certificates curl wget \
+        tini procps ca-certificates curl wget git \
     && rm -rf /var/lib/apt/lists/*
 
 # ── JDK 17 (Adoptium Temurin, Linux x64) ──────────────────────────────

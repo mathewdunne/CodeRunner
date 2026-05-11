@@ -154,3 +154,55 @@ export const adminActionResponseSchema = z.object({
 export type AdminWorkspaceStatus = z.infer<typeof adminWorkspaceStatusSchema>;
 export type AdminStatusResponse = z.infer<typeof adminStatusResponseSchema>;
 export type AdminActionResponse = z.infer<typeof adminActionResponseSchema>;
+
+// --- Import schemas ---
+
+export const importRequestSchema = z.object({
+  url: z.string().min(1, "URL is required."),
+  branch: z.string().optional(),
+  subdir: z.string().optional(),
+  backup: z.boolean().optional(),
+});
+
+export const importResponseSchema = z.object({
+  ok: z.literal(true),
+  importId: z.string().min(1),
+});
+
+export const importServerMessageSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("hello"),
+    importId: z.string().min(1),
+  }),
+  z.object({
+    type: z.literal("progress"),
+    stage: z.string(),
+    detail: z.string().optional(),
+  }),
+  z.object({
+    type: z.literal("log"),
+    line: z.string(),
+  }),
+  z.object({
+    type: z.literal("done"),
+    success: z.boolean(),
+    message: z.string(),
+  }),
+  z.object({
+    type: z.literal("error"),
+    message: z.string(),
+  }),
+]);
+
+export const importBackupMetadataSchema = z.object({
+  url: z.string(),
+  branch: z.string(),
+  subdir: z.string(),
+  importedAt: z.string(),
+  archiveFile: z.string(),
+});
+
+export type ImportRequest = z.infer<typeof importRequestSchema>;
+export type ImportResponse = z.infer<typeof importResponseSchema>;
+export type ImportServerMessage = z.infer<typeof importServerMessageSchema>;
+export type ImportBackupMetadata = z.infer<typeof importBackupMetadataSchema>;

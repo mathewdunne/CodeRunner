@@ -1,4 +1,14 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ImportDialog } from "@/components/ImportDialog";
+import { useImport } from "@/hooks/useImport";
 import { StatusStrip } from "@/components/StatusStrip";
 import type { ContainersStatusResponse } from "@/lib/contracts";
 import type { RunConnection, RunStatus } from "@/hooks/useRunChannel";
@@ -31,6 +41,9 @@ export function Topbar({
   scopeStatus,
   halSimConnection,
 }: TopbarProps) {
+  const [importOpen, setImportOpen] = useState(false);
+  const importHook = useImport(workspaceSlug);
+
   async function signOut() {
     await authClient.signOut();
     window.location.assign("/login");
@@ -58,10 +71,29 @@ export function Topbar({
       />
 
       <div className="ml-auto flex items-center gap-2">
-        <Button type="button" variant="outline" size="sm" onClick={() => void signOut()}>
-          Logout
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<Button type="button" variant="outline" size="sm" />}
+          >
+            ☰
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setImportOpen(true)}>
+              Import from GitHub
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => void signOut()}>
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
+
+      <ImportDialog
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        importHook={importHook}
+      />
     </header>
   );
 }
