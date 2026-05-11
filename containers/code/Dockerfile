@@ -1,19 +1,15 @@
 # V2 merged code container
 # Combines openvscode-server + JDK 17 + Gradle/WPILib cache + redhat.java + vscode-wpilib
-# Base: gitpod/openvscode-server (spike-proven in Decision 011)
+# Base: linuxserver/openvscode-server (Ubuntu 24.04 Noble, s6-overlay)
+# See docs/decisions/017-linuxserver-base-migration.md
 
-FROM gitpod/openvscode-server:1.105.1
-
-USER root
+FROM ghcr.io/linuxserver/baseimage-ubuntu:noble
 
 # ── System dependencies ────────────────────────────────────────────────
+# Ubuntu 24.04 ships GLIBCXX_3.4.32+ natively — no PPA needed.
 RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends \
-        tini procps ca-certificates curl wget git software-properties-common \
-    && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
-    && apt-get update -qq \
-    && apt-get install -y --no-install-recommends libstdc++6 \
-    && apt-get purge -y --auto-remove software-properties-common \
+        procps ca-certificates curl wget git libatomic1 \
     && rm -rf /var/lib/apt/lists/*
 
 # ── JDK 17 (Adoptium Temurin, Linux x64) ──────────────────────────────
@@ -31,30 +27,26 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 RUN java -version
 
-# ── frc user (configurable UID/GID for bind-mount compat) ──────────────
-ARG FRC_UID=1000
-ARG FRC_GID=1000
+# ── OpenVSCode Server ──────────────────────────────────────────────────
+ARG CODE_RELEASE=1.100.2
+ENV OPENVSCODE_SERVER_ROOT=/app/openvscode-server
 
-# The base image ships an `openvscode-server` user. Remove any existing
-# user/group at the target UID/GID to avoid conflicts, then create `frc`.
-RUN set -e; \
-    existing_user=$(getent passwd "${FRC_UID}" | cut -d: -f1 || true); \
-    if [ -n "$existing_user" ]; then userdel "$existing_user"; fi; \
-    existing_group=$(getent group "${FRC_GID}" | cut -d: -f1 || true); \
-    if [ -n "$existing_group" ]; then groupdel "$existing_group" 2>/dev/null || true; fi; \
-    groupadd --gid "${FRC_GID}" frc; \
-    useradd --uid "${FRC_UID}" --gid "${FRC_GID}" \
-       --home-dir /home/frc --create-home --shell /bin/bash frc
+RUN mkdir -p ${OPENVSCODE_SERVER_ROOT} \
+    && curl -sL \
+       "https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-v${CODE_RELEASE}/openvscode-server-v${CODE_RELEASE}-linux-x64.tar.gz" \
+       | tar xz -C ${OPENVSCODE_SERVER_ROOT} --strip-components=1
 
-ENV HOME=/home/frc
-ENV GRADLE_USER_HOME=/home/frc/.gradle
+ENV OPENVSCODE=${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server
 
 # ── Scripts ────────────────────────────────────────────────────────────
-COPY containers/code/entrypoint.sh containers/code/start-sim.sh containers/code/stop-sim.sh /usr/local/bin/
+COPY containers/code/start-sim.sh containers/code/stop-sim.sh /usr/local/bin/
 COPY containers/code/sim-headless.init.gradle /usr/local/share/frc/sim-headless.init.gradle
 
-RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh \
-    && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh
+RUN sed -i 's/\r$//' /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh \
+    && chmod +x /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh
+
+# ── s6-overlay service definitions ────────────────────────────────────
+COPY containers/code/root/ /
 
 # ── Download and install VS Code extensions ────────────────────────────
 ARG REDHAT_JAVA_VERSION=1.38.0
@@ -66,9 +58,6 @@ ARG GRADLE_VERSION=3.17.3
 ARG JAVA_DEPS_VERSION=0.27.2
 ARG JAVA_PACK_VERSION=0.30.5
 ARG SPOTLESS_GRADLE_VERSION=1.2.1
-
-ENV OPENVSCODE_SERVER_ROOT=/home/.openvscode-server
-ENV OPENVSCODE=${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server
 
 # Download extensions from pinned Open VSX, GitHub Release, and Marketplace artifacts.
 RUN mkdir -p /tmp/exts \
@@ -91,35 +80,32 @@ RUN mkdir -p /tmp/exts \
     && wget -q "https://richardwillis.gallery.vsassets.io/_apis/public/gallery/publisher/richardwillis/extension/vscode-spotless-gradle/${SPOTLESS_GRADLE_VERSION}/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage" \
        -O /tmp/exts/vscode-spotless-gradle.vsix
 
-# Install to a baked cache directory; the entrypoint seeds per-workspace homes.
+# Install to a baked cache directory; the init script seeds per-workspace configs.
 RUN mkdir -p /opt/frc-extensions-cache \
-    && chown -R "${FRC_UID}:${FRC_GID}" /opt/frc-extensions-cache
+    && ${OPENVSCODE} --install-extension /tmp/exts/redhat.java.vsix \
+                     --install-extension /tmp/exts/vscode-wpilib.vsix \
+                     --install-extension /tmp/exts/vscode-java-debug.vsix \
+                     --install-extension /tmp/exts/vscode-java-test.vsix \
+                     --install-extension /tmp/exts/vscode-maven.vsix \
+                     --install-extension /tmp/exts/vscode-gradle.vsix \
+                     --install-extension /tmp/exts/vscode-java-dependency.vsix \
+                     --install-extension /tmp/exts/vscode-java-pack.vsix \
+                     --install-extension /tmp/exts/vscode-spotless-gradle.vsix \
+                     --extensions-dir /opt/frc-extensions-cache \
+    && rm -rf /tmp/exts
 
-USER ${FRC_UID}:${FRC_GID}
-RUN ${OPENVSCODE} --install-extension /tmp/exts/redhat.java.vsix \
-                  --install-extension /tmp/exts/vscode-wpilib.vsix \
-                  --install-extension /tmp/exts/vscode-java-debug.vsix \
-                  --install-extension /tmp/exts/vscode-java-test.vsix \
-                  --install-extension /tmp/exts/vscode-maven.vsix \
-                  --install-extension /tmp/exts/vscode-gradle.vsix \
-                  --install-extension /tmp/exts/vscode-java-dependency.vsix \
-                  --install-extension /tmp/exts/vscode-java-pack.vsix \
-                  --install-extension /tmp/exts/vscode-spotless-gradle.vsix \
-                  --extensions-dir /opt/frc-extensions-cache
-
-USER root
-RUN rm -rf /tmp/exts
-
-# Make openvscode-server readable by any UID (in case FRC_UID != 1000).
+# Make openvscode-server readable by any UID.
 RUN chmod -R a+rX ${OPENVSCODE_SERVER_ROOT}
 
 # ── Gradle / WPILib cache priming ─────────────────────────────────────
 WORKDIR /workspace
 COPY templates/wpilib-java-command/ /workspace/template/
 
-RUN chown -R "${FRC_UID}:${FRC_GID}" /workspace /home/frc
+RUN chown -R abc:abc /workspace
 
-USER ${FRC_UID}:${FRC_GID}
+USER abc
+ENV HOME=/config
+ENV GRADLE_USER_HOME=/config/.gradle
 WORKDIR /workspace/template
 
 RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
@@ -129,12 +115,13 @@ RUN ./gradlew --no-daemon --stop; \
 
 USER root
 RUN mkdir -p /opt/frc-gradle-cache \
-    && cp -a /home/frc/.gradle/. /opt/frc-gradle-cache/ \
-    && chown -R "${FRC_UID}:${FRC_GID}" /opt/frc-gradle-cache
+    && cp -a /config/.gradle/. /opt/frc-gradle-cache/ \
+    && rm -rf /config/.gradle
 
 # ── Runtime defaults ──────────────────────────────────────────────────
-USER ${FRC_UID}:${FRC_GID}
+RUN mkdir -p /workspace/project /config \
+    && chown -R abc:abc /workspace /config
+
 WORKDIR /workspace/project
 
 EXPOSE 3000 3300 5810
-ENTRYPOINT ["tini", "--", "/usr/local/bin/entrypoint.sh"]

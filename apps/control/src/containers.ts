@@ -673,7 +673,7 @@ export class ContainerOrchestrator {
       "--mount",
       `type=bind,src=${workspace.project_path},dst=/workspace/project`,
       "--mount",
-      `type=bind,src=${homePath},dst=/home/frc`,
+      `type=bind,src=${homePath},dst=/config`,
       "-p",
       `127.0.0.1:${vscodePort}:${VSCODE_CONTAINER_PORT}`,
       "-p",
@@ -687,7 +687,13 @@ export class ContainerOrchestrator {
     ];
 
     if (this.storage.config.containerUser) {
-      args.push("--user", this.storage.config.containerUser);
+      const [puid, pgid] = this.storage.config.containerUser.split(":");
+      if (puid) {
+        args.push("-e", `PUID=${puid}`);
+      }
+      if (pgid) {
+        args.push("-e", `PGID=${pgid}`);
+      }
     }
 
     args.push(this.storage.config.codeImage);

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-HOME="${HOME:-/home/frc}"
+HOME="${HOME:-/config}"
 pid_file="${SIM_PID_FILE:-$HOME/sim.pid}"
 project_root="${SIM_PROJECT_ROOT:-/workspace/project}"
 

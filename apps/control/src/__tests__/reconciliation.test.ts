@@ -195,9 +195,9 @@ describe("container reconciliation", () => {
 
         // Write a file into the home directory (simulating vscode user data)
         const homePath = join(app.storage.config.dataDir, "users", workspace.id, "home");
-        await mkdir(join(homePath, ".openvscode-server", "data", "User"), { recursive: true });
+        await mkdir(join(homePath, "data", "User"), { recursive: true });
         await writeFile(
-          join(homePath, ".openvscode-server", "data", "User", "settings.json"),
+          join(homePath, "data", "User", "settings.json"),
           '{"editor.fontSize": 16}',
           "utf8",
         );
@@ -213,7 +213,7 @@ describe("container reconciliation", () => {
 
         // User data should persist on the host (bind-mounted home)
         const settingsContent = await readFile(
-          join(homePath, ".openvscode-server", "data", "User", "settings.json"),
+          join(homePath, "data", "User", "settings.json"),
           "utf8",
         );
         expect(settingsContent).toContain("editor.fontSize");

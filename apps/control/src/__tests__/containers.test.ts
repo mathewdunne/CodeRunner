@@ -62,11 +62,11 @@ describe("code container orchestration", () => {
         expect(runCall).toContain(`frc-sim.version=v2`);
         expect(runCall).toContain(`frc-sim.role=code`);
         expect(runCall).toContain(`type=bind,src=${workspace.project_path},dst=/workspace/project`);
-        expect(runCall).toContain(`type=bind,src=${join(app.storage.config.dataDir, "users", workspace.id, "home")},dst=/home/frc`);
+        expect(runCall).toContain(`type=bind,src=${join(app.storage.config.dataDir, "users", workspace.id, "home")},dst=/config`);
         expect(runCall).toContain("127.0.0.1:45910:5810");
         expect(runCall).toContain("127.0.0.1:46000:3000");
-        expect(runCall).toContain("--user");
-        expect(runCall?.[runCall.indexOf("--user") + 1]).toBe("123:456");
+        expect(runCall).toContain("PUID=123");
+        expect(runCall).toContain("PGID=456");
 
         const lease = app.storage.db.query("SELECT * FROM container_leases WHERE workspace_id = ?").get(workspace.id) as {
           vscode_container: string;
@@ -118,9 +118,12 @@ describe("code container orchestration", () => {
     );
   });
 
-  test("code entrypoint runs openvscode-server as primary process", async () => {
-    const entrypoint = await readFile(join(process.cwd(), "containers", "code", "entrypoint.sh"), "utf8");
-    expect(entrypoint).toContain("openvscode-server");
+  test("s6 service script launches openvscode-server as primary process", async () => {
+    const serviceScript = await readFile(
+      join(process.cwd(), "containers", "code", "root", "etc", "s6-overlay", "s6-rc.d", "svc-openvscode-server", "run"),
+      "utf8",
+    );
+    expect(serviceScript).toContain("openvscode-server");
   });
 
   test("restarted control plane rediscovers a labeled code container", async () => {

@@ -35,7 +35,7 @@ The Dockerfile installs `software-properties-common`, adds `ppa:ubuntu-toolchain
 
 **Alternatives considered:**
 
-- **Switch base to `linuxserver/openvscode-server:1.109.5`** (Ubuntu 24.04): solves GLIBCXX natively and provides a newer VS Code. However, it uses a fundamentally different image structure (s6-overlay init, different user model, different paths) requiring significant Dockerfile and entrypoint rewriting. Deferred as a separate follow-up.
+- **Switch base to linuxserver/openvscode-server (Ubuntu 24.04):** solves GLIBCXX natively and provides a newer VS Code. Implemented in Decision 017.
 - **Download a specific `.deb` from Ubuntu noble**: fragile, pins to a specific package version.
 
 ## Verification

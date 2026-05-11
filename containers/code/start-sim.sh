@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-HOME="${HOME:-/home/frc}"
+HOME="${HOME:-/config}"
 GRADLE_USER_HOME="${GRADLE_USER_HOME:-$HOME/.gradle}"
 GRADLE_PROJECT_CACHE_DIR="${GRADLE_PROJECT_CACHE_DIR:-$HOME/.gradle-project-sim}"
 pid_file="${SIM_PID_FILE:-$HOME/sim.pid}"

@@ -1,0 +1,36 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+# FRC environment initialization: seeds caches and validates project mount.
+
+GRADLE_USER_HOME="${HOME}/.gradle"
+EXTENSIONS_DIR="${HOME}/extensions"
+SIM_LOG_FILE="${SIM_LOG_FILE:-${HOME}/sim.log}"
+
+mkdir -p "${GRADLE_USER_HOME}" "${EXTENSIONS_DIR}" "${HOME}/data"
+
+# Seed Gradle cache on first run.
+if [[ -d /opt/frc-gradle-cache && ! -d "${GRADLE_USER_HOME}/caches" ]]; then
+  echo "Seeding Gradle cache from image..."
+  cp -a /opt/frc-gradle-cache/. "${GRADLE_USER_HOME}"/
+fi
+
+# Seed extensions on first run.
+if [[ -d /opt/frc-extensions-cache ]] && [[ -z "$(ls -A "${EXTENSIONS_DIR}" 2>/dev/null)" ]]; then
+  echo "Seeding VS Code extensions from image..."
+  cp -a /opt/frc-extensions-cache/. "${EXTENSIONS_DIR}"/
+fi
+
+touch "${SIM_LOG_FILE}"
+
+# Validate mounted project (warn only — the editor should still start).
+if [[ ! -d /workspace/project ]]; then
+  echo "WARNING: Mounted project directory /workspace/project does not exist."
+elif [[ ! -f /workspace/project/build.gradle || ! -f /workspace/project/gradlew ]]; then
+  echo "WARNING: Mounted project is missing build.gradle or gradlew."
+fi
+
+# Fix ownership for /config and /workspace (linuxserver convention).
+echo "setting permissions::config"
+lsiown -R abc:abc "${HOME}"
+echo "setting permissions::workspace"
+lsiown abc:abc /workspace/project
