@@ -101,6 +101,36 @@ describe("HalSimBridge", () => {
     });
   });
 
+  test("enable sends current mode flags so HALSim respects mode after restart", () => {
+    const sockets: FakeWebSocket[] = [];
+    const workspaceId = "ws_0123456789abcdef0123456789abcdef";
+    const bridge = new HalSimBridge({
+      webSocketFactory: () => {
+        const socket = new FakeWebSocket();
+        sockets.push(socket);
+        return socket as unknown as WebSocket;
+      },
+    });
+
+    bridge.ensureConnected(workspaceId, 34000);
+    const socket = sockets[0]!;
+    socket.open();
+
+    // Switch to test mode (this disables + sets mode)
+    bridge.applyDriverStationPatch(workspaceId, 34000, { mode: "test" });
+    socket.sent.length = 0;
+
+    // Now enable — message must include mode flags
+    bridge.applyDriverStationPatch(workspaceId, 34000, { enabled: true });
+    const msg = JSON.parse(socket.sent.at(-1)!) as { data: Record<string, unknown> };
+    expect(msg.data).toMatchObject({
+      ">enabled": true,
+      ">autonomous": false,
+      ">test": true,
+      ">new_data": true,
+    });
+  });
+
   test("does not collapse TEST to TELEOP on partial mode readback while switching to AUTO", () => {
     const sockets: FakeWebSocket[] = [];
     const workspaceId = "ws_0123456789abcdef0123456789abcdef";

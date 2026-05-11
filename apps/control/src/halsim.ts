@@ -199,7 +199,12 @@ export class HalSimBridge {
 
     if (patch.enabled !== undefined) {
       next.enabled = patch.enabled && !next.eStopped;
-      this.sendDs(entry, { ">enabled": next.enabled, ">new_data": true });
+      this.sendDs(entry, {
+        ">enabled": next.enabled,
+        ">autonomous": next.mode === "auto",
+        ">test": next.mode === "test",
+        ">new_data": true,
+      });
     }
 
     entry.driverStation = next;
