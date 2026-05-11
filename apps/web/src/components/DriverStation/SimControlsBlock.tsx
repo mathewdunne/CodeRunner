@@ -33,7 +33,7 @@ function SimButton({ label, Icon, onClick, disabled, tone }: SimButtonProps) {
       disabled={disabled}
       variant="outline"
       className={cn(
-        "flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-1 rounded-md border-border bg-card/40 px-2 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-white/[0.05] disabled:opacity-40",
+        "flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-1 rounded-md border-border bg-card/40 px-2 pt-2.5 pb-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-white/[0.05] disabled:opacity-40",
         TONE_CLASSES[tone],
       )}
     >
