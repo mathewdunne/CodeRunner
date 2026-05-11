@@ -1,13 +1,18 @@
 # Graph Report - FRC-Programming-Training-Sim  (2026-05-11)
 
 ## Corpus Check
-- 116 files · ~99,190 words
+- 251 files · ~129,710 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2607 nodes · 3887 edges · 85 communities detected
+- 2846 nodes · 4245 edges · 222 communities (209 shown, 13 thin omitted)
 - Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 23 edges (avg confidence: 0.82)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `d09a5b1c`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - [[_COMMUNITY_Community 0|Community 0]]
@@ -94,362 +99,791 @@
 - [[_COMMUNITY_Community 81|Community 81]]
 - [[_COMMUNITY_Community 82|Community 82]]
 - [[_COMMUNITY_Community 83|Community 83]]
+- [[_COMMUNITY_Community 84|Community 84]]
+- [[_COMMUNITY_Community 85|Community 85]]
+- [[_COMMUNITY_Community 86|Community 86]]
+- [[_COMMUNITY_Community 87|Community 87]]
+- [[_COMMUNITY_Community 88|Community 88]]
+- [[_COMMUNITY_Community 89|Community 89]]
+- [[_COMMUNITY_Community 90|Community 90]]
+- [[_COMMUNITY_Community 91|Community 91]]
+- [[_COMMUNITY_Community 92|Community 92]]
+- [[_COMMUNITY_Community 93|Community 93]]
+- [[_COMMUNITY_Community 94|Community 94]]
+- [[_COMMUNITY_Community 95|Community 95]]
+- [[_COMMUNITY_Community 96|Community 96]]
+- [[_COMMUNITY_Community 97|Community 97]]
+- [[_COMMUNITY_Community 98|Community 98]]
+- [[_COMMUNITY_Community 99|Community 99]]
+- [[_COMMUNITY_Community 100|Community 100]]
+- [[_COMMUNITY_Community 101|Community 101]]
+- [[_COMMUNITY_Community 102|Community 102]]
+- [[_COMMUNITY_Community 103|Community 103]]
+- [[_COMMUNITY_Community 104|Community 104]]
+- [[_COMMUNITY_Community 105|Community 105]]
+- [[_COMMUNITY_Community 106|Community 106]]
+- [[_COMMUNITY_Community 107|Community 107]]
+- [[_COMMUNITY_Community 108|Community 108]]
+- [[_COMMUNITY_Community 109|Community 109]]
+- [[_COMMUNITY_Community 110|Community 110]]
+- [[_COMMUNITY_Community 111|Community 111]]
+- [[_COMMUNITY_Community 112|Community 112]]
+- [[_COMMUNITY_Community 113|Community 113]]
+- [[_COMMUNITY_Community 114|Community 114]]
+- [[_COMMUNITY_Community 115|Community 115]]
+- [[_COMMUNITY_Community 116|Community 116]]
+- [[_COMMUNITY_Community 117|Community 117]]
+- [[_COMMUNITY_Community 118|Community 118]]
+- [[_COMMUNITY_Community 119|Community 119]]
+- [[_COMMUNITY_Community 120|Community 120]]
+- [[_COMMUNITY_Community 121|Community 121]]
+- [[_COMMUNITY_Community 122|Community 122]]
+- [[_COMMUNITY_Community 123|Community 123]]
+- [[_COMMUNITY_Community 124|Community 124]]
+- [[_COMMUNITY_Community 125|Community 125]]
+- [[_COMMUNITY_Community 126|Community 126]]
+- [[_COMMUNITY_Community 127|Community 127]]
+- [[_COMMUNITY_Community 128|Community 128]]
+- [[_COMMUNITY_Community 129|Community 129]]
+- [[_COMMUNITY_Community 130|Community 130]]
 - [[_COMMUNITY_Community 131|Community 131]]
+- [[_COMMUNITY_Community 132|Community 132]]
+- [[_COMMUNITY_Community 133|Community 133]]
+- [[_COMMUNITY_Community 134|Community 134]]
+- [[_COMMUNITY_Community 135|Community 135]]
+- [[_COMMUNITY_Community 136|Community 136]]
+- [[_COMMUNITY_Community 137|Community 137]]
+- [[_COMMUNITY_Community 138|Community 138]]
+- [[_COMMUNITY_Community 139|Community 139]]
+- [[_COMMUNITY_Community 140|Community 140]]
+- [[_COMMUNITY_Community 141|Community 141]]
+- [[_COMMUNITY_Community 142|Community 142]]
+- [[_COMMUNITY_Community 143|Community 143]]
+- [[_COMMUNITY_Community 144|Community 144]]
+- [[_COMMUNITY_Community 145|Community 145]]
+- [[_COMMUNITY_Community 146|Community 146]]
+- [[_COMMUNITY_Community 147|Community 147]]
+- [[_COMMUNITY_Community 148|Community 148]]
+- [[_COMMUNITY_Community 149|Community 149]]
+- [[_COMMUNITY_Community 150|Community 150]]
+- [[_COMMUNITY_Community 151|Community 151]]
+- [[_COMMUNITY_Community 152|Community 152]]
+- [[_COMMUNITY_Community 153|Community 153]]
+- [[_COMMUNITY_Community 154|Community 154]]
+- [[_COMMUNITY_Community 155|Community 155]]
+- [[_COMMUNITY_Community 156|Community 156]]
+- [[_COMMUNITY_Community 157|Community 157]]
+- [[_COMMUNITY_Community 158|Community 158]]
+- [[_COMMUNITY_Community 159|Community 159]]
+- [[_COMMUNITY_Community 160|Community 160]]
+- [[_COMMUNITY_Community 161|Community 161]]
+- [[_COMMUNITY_Community 162|Community 162]]
+- [[_COMMUNITY_Community 163|Community 163]]
+- [[_COMMUNITY_Community 164|Community 164]]
+- [[_COMMUNITY_Community 165|Community 165]]
+- [[_COMMUNITY_Community 166|Community 166]]
+- [[_COMMUNITY_Community 167|Community 167]]
+- [[_COMMUNITY_Community 168|Community 168]]
+- [[_COMMUNITY_Community 169|Community 169]]
+- [[_COMMUNITY_Community 170|Community 170]]
+- [[_COMMUNITY_Community 171|Community 171]]
+- [[_COMMUNITY_Community 172|Community 172]]
+- [[_COMMUNITY_Community 221|Community 221]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `ContainerOrchestrator` - 59 edges
-2. `cn()` - 58 edges
-3. `AppStorage` - 44 edges
-4. `FRC Web Simulator V1: Design Document` - 24 edges
+1. `cn()` - 64 edges
+2. `ContainerOrchestrator` - 59 edges
+3. `AppStorage` - 45 edges
+4. `RunManager` - 24 edges
 5. `FRC Web Simulator V1: Design Document` - 24 edges
-6. `RunManager` - 22 edges
+6. `FRC Web Simulator V1: Design Document` - 24 edges
 7. `createApp()` - 21 edges
-8. `Button()` - 20 edges
-9. `FRC Web Simulator V2: Design Document` - 20 edges
+8. `Robot` - 21 edges
+9. `Button()` - 20 edges
 10. `FRC Web Simulator V2: Design Document` - 20 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `createApp()` --calls--> `createStorage()`  [INFERRED]
-  apps\control\src\app.ts → apps\control\src\storage.ts
-- `verifyScopeServing()` --calls--> `createApp()`  [INFERRED]
-  scripts\verify-ascope.ts → apps\control\src\app.ts
-- `withApp()` --calls--> `createApp()`  [INFERRED]
-  apps/control/src/app.test.ts → apps\control\src\app.ts
 - `readProjectTreeNode()` --calls--> `getProjectPathAccess()`  [INFERRED]
   apps/control/src/app.ts → packages/contracts/src/index.ts
 - `resolveProjectFilePath()` --calls--> `getProjectPathAccess()`  [INFERRED]
   apps/control/src/app.ts → packages/contracts/src/index.ts
+- `workspaceSlugFromLocation()` --calls--> `isWorkspaceSlug()`  [INFERRED]
+  apps/tmp_old_web/src/main.tsx → packages/contracts/src/index.ts
+- `App()` --calls--> `isWorkspaceSlug()`  [INFERRED]
+  apps/tmp_old_web/src/main.tsx → packages/contracts/src/index.ts
+- `verifyScopeServing()` --calls--> `createApp()`  [INFERRED]
+  scripts/verify-ascope.ts → apps/control/src/app.ts
 
 ## Hyperedges (group relationships)
 - **Edit-Save-Run-Sim Loop (core MVP end-to-end flow)** — web_main_entry, server_main_backendservice, robot_java, server_main_handlerun [EXTRACTED 1.00]
 - **Java LSP Intelligence Stack (browser to JDT LS)** — web_javalsp_startjavalsp, web_javalsp_browserlspclient, lsp_main_lspbridge, lsp_main_eclipsejdtls [EXTRACTED 1.00]
 - **AdvantageScope Lite NT4 Hosting and Display** — scripts_buildascope, scripts_serveascope, rationale_aslite_hostname, index_html [EXTRACTED 0.95]
 
-## Communities (132 total, 9 thin omitted)
+## Communities (222 total, 13 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.02
-Nodes (130): AdminLayout(), Tab, tabs, ConsolePane(), ConsolePaneProps, EditorPane(), EditorPaneProps, IDELayout() (+122 more)
+Cohesion: 0.06
+Nodes (34): codeContainerName(), CodeContainerStatus, containerName(), ContainerOrchestrator, ContainerOrchestratorOptions, containerRuntimeState(), defaultDockerRunner(), dockerError() (+26 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.03
-Nodes (95): getSessionFromRequest(), isAllowedWebSocketOrigin(), isLoopbackHost(), normalizeHost(), requireAdmin(), requireSession(), requireWebSocketOrigin(), requireWorkspaceOwnership() (+87 more)
+Nodes (70): AdminActionResponse, adminActionResponseSchema, AdminStatusResponse, adminStatusResponseSchema, AdminWorkspaceStatus, adminWorkspaceStatusSchema, AllianceStation, allianceStationSchema (+62 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.03
-Nodes (110): ControlAppOptions, createApp(), DockerRunner, consumeLines(), defaultRunCommandFactory(), dockerRunScript(), lineLooksReady(), randomRunId() (+102 more)
+Nodes (58): aliceConnection, aliceCookie, aliceMessages, aliceRun, aliceRunId, aliceWorkspace, authHeaders, backedUpProject (+50 more)
 
 ### Community 3 - "Community 3"
-Cohesion: 0.02
-Nodes (107): aliceRun, assert(), assertNt4AliveProbe(), assertSimProcessAlive(), bobRun, brokenAlice, fileUri(), initializeLspSession() (+99 more)
-
-### Community 4 - "Community 4"
-Cohesion: 0.02
-Nodes (105): 0. Decisions at a Glance, 10.1 Sim image, 10.2 LSP image, 10. Container Design, 11.1 Patch strategy, 11.2 Build pipeline, 11.3 Sub-path hosting contract, 11. AdvantageScope Lite (+97 more)
-
-### Community 5 - "Community 5"
-Cohesion: 0.02
-Nodes (105): 0. Decisions at a Glance, 10.1 Sim image, 10.2 LSP image, 10. Container Design, 11.1 Patch strategy, 11.2 Build pipeline, 11.3 Sub-path hosting contract, 11. AdvantageScope Lite (+97 more)
-
-### Community 6 - "Community 6"
-Cohesion: 0.04
-Nodes (56): addAllowlistEntry(), AllowlistData, EMPTY, isEmailAllowed(), loadAllowlist(), normalize(), normalizeEntry(), reloadAllowlist() (+48 more)
-
-### Community 7 - "Community 7"
-Cohesion: 0.03
-Nodes (102): 10. Host Sizing, 1. Prerequisites, 2.1 Clone and initialize, 2.2 Build container images, 2.2 Build the code container image, 2.3 Build web assets, 2.4 Configure environment, 2.5 Run migrations (+94 more)
-
-### Community 8 - "Community 8"
-Cohesion: 0.06
-Nodes (35): codeContainerName(), CodeContainerStatus, containerName(), ContainerOrchestrator, ContainerOrchestratorOptions, containerRuntimeState(), defaultDockerRunner(), dockerError() (+27 more)
-
-### Community 9 - "Community 9"
-Cohesion: 0.02
-Nodes (86): 0. Decisions at a Glance, 10.1 Layout, 10.2 Run/Stop, 10.3 AS Lite iframe, 10.4 Heartbeat, 10.5 Removal, 10. Web Shell (V2), 11. Resource Budget (+78 more)
-
-### Community 10 - "Community 10"
-Cohesion: 0.02
-Nodes (85): 0. Decisions at a Glance, 10.1 Layout, 10.2 Run/Stop, 10.3 AS Lite iframe, 10.4 Heartbeat, 10.5 Removal, 10. Web Shell (V2), 11. Resource Budget (+77 more)
-
-### Community 11 - "Community 11"
-Cohesion: 0.03
-Nodes (65): aliceConnection, aliceCookie, aliceMessages, aliceRun, aliceRunId, aliceWorkspace, authHeaders, backedUpProject (+57 more)
-
-### Community 12 - "Community 12"
-Cohesion: 0.06
-Nodes (45): acceptWebSocket(), ActiveRun, activeRuns, asWebSocket(), collectProcess(), delay(), docker(), dockerExec() (+37 more)
-
-### Community 13 - "Community 13"
-Cohesion: 0.04
-Nodes (34): AdminApp(), ResolvedTheme, Theme, THEME_VALUES, ThemeProvider(), ThemeProviderContext, ThemeProviderProps, ThemeProviderState (+26 more)
-
-### Community 14 - "Community 14"
 Cohesion: 0.07
 Nodes (46): BrowserLspClient, completionItems(), completionItemsToSuggestions(), documentationToMarkdown(), handleDiagnostics(), hoverContentsToMarkdown(), hoverToMonaco(), initializeParams() (+38 more)
 
-### Community 15 - "Community 15"
+### Community 4 - "Community 4"
 Cohesion: 0.05
 Nodes (47): NT4 Routing under Multi-Tenancy (spike question), Shared vs. Per-user JDT LS topology (spike question), Decision 001: Sim Container Architecture, Decision 002: AdvantageScope Lite Hosting, Decision 003: Minimal Web Shell, Decision 004: Backend Wiring for Save and Run, Decision 005: Java LSP MVP Integration, Eclipse JDT LS Process (+39 more)
 
-### Community 16 - "Community 16"
+### Community 5 - "Community 5"
+Cohesion: 0.09
+Nodes (27): Robot, applyAdvantageScopePatches(), ascopeRoot, CommandResult, patchDir, patchFiles(), repoRoot, run() (+19 more)
+
+### Community 6 - "Community 6"
+Cohesion: 0.07
+Nodes (29): EditorPane(), EditorPaneProps, ScopePane, ScopePaneProps, pillVariant(), StatusStrip(), StatusStripProps, Topbar() (+21 more)
+
+### Community 7 - "Community 7"
 Cohesion: 0.05
 Nodes (48): 1. Find your host IP, 1. Login And Isolation, 2. Editor And Project Persistence, 2. Start the control plane, 3. Connect from other machines, 3. File Operations, 4. Firewall (if needed), 4. Java IDE Features (+40 more)
 
-### Community 17 - "Community 17"
+### Community 8 - "Community 8"
+Cohesion: 0.05
+Nodes (34): apiErrorResponse(), AppSocket, AssetManifest, BunUpgradeServer, capacityErrorResponse(), containersStatusResponse(), createProjectArchive(), HalSimSocketData (+26 more)
+
+### Community 9 - "Community 9"
+Cohesion: 0.1
+Nodes (27): AdminLayout(), Tab, tabs, useAdminPoll(), Allowlist(), AllowlistData, AuditEntry, AuditLog() (+19 more)
+
+### Community 10 - "Community 10"
 Cohesion: 0.09
 Nodes (40): advantageScopeUrl(), appendConsole(), consoleEl, currentSessionUser(), editor, editorEl, envValue(), flushSave() (+32 more)
 
-### Community 18 - "Community 18"
-Cohesion: 0.11
-Nodes (3): Robot, RunManager, TimedRobot
+### Community 11 - "Community 11"
+Cohesion: 0.09
+Nodes (28): RunControls(), RunControlsProps, ALLIANCE_LABELS, DriverStation(), DriverStationProps, MODE_LABELS, MODE_PILL_CLASSES, IconRail() (+20 more)
 
-### Community 19 - "Community 19"
+### Community 12 - "Community 12"
+Cohesion: 0.1
+Nodes (5): AppStorage, ensureWorkspaceFiles(), nowIso(), randomId(), slugFromDisplayName()
+
+### Community 13 - "Community 13"
+Cohesion: 0.08
+Nodes (19): BridgeEntry, DEFAULT_DRIVER_STATION, defaultSnapshot(), DriverStationState, HalSimBridge, HalSimBridgeOptions, HalSimBridgeSnapshot, HalSimBridgeUnavailableError (+11 more)
+
+### Community 14 - "Community 14"
+Cohesion: 0.1
+Nodes (23): InitialsAvatar(), UserMenuProps, MatchTimer(), MatchTimerProps, STATION_LABELS, STATIONS, AllianceStation, cn() (+15 more)
+
+### Community 15 - "Community 15"
+Cohesion: 0.08
+Nodes (20): isWorkspaceSlug(), JavaLspController, App(), canOpen(), EditorStatus, fetchJson(), fileName(), languageFor() (+12 more)
+
+### Community 16 - "Community 16"
+Cohesion: 0.12
+Nodes (26): ControlAppOptions, DockerCommandResult, DockerRunner, createAdvantageScopeDist(), createFakeDocker(), createTemplate(), createWebDist(), exists() (+18 more)
+
+### Community 17 - "Community 17"
 Cohesion: 0.08
 Nodes (24): assert(), assertNt4AliveProbe(), assertSimProcessAlive(), buildingTimes, initializeLspSession(), latest, Login, logins (+16 more)
 
-### Community 20 - "Community 20"
+### Community 18 - "Community 18"
+Cohesion: 0.08
+Nodes (24): BigButton(), BigButtonProps, EnableDisableRow(), EnableDisableRowProps, TONE_ACTIVE, MODE_CLASSES, MODE_LABELS, ModeColumn() (+16 more)
+
+### Community 19 - "Community 19"
 Cohesion: 0.07
 Nodes (28): A.1 Install and configure betterauth, A.2 OAuth providers, A.3 Email allowlist, A.4 Cookie + session, A.5 Workspace creation on first login, A.6 Roles, A.7 Authorization architecture (default-deny), A.8.1 Contract/API migration (+20 more)
 
+### Community 20 - "Community 20"
+Cohesion: 0.09
+Nodes (19): ConsolePane(), ConsolePaneProps, UserMenu(), ImportState, ImportStatus, INITIAL_STATE, useImport(), UseImportReturn (+11 more)
+
 ### Community 21 - "Community 21"
-Cohesion: 0.17
-Nodes (25): applyAdvantageScopePatches(), ascopeRoot, CommandResult, patchDir, patchFiles(), repoRoot, run(), ascopeLiteStatic (+17 more)
+Cohesion: 0.09
+Nodes (24): ImportContext, ImportError, ImportManagerOptions, ImportSend, listRecentImports(), normalizeSubdir(), ParsedImportUrl, parseGitHubUrl() (+16 more)
 
 ### Community 22 - "Community 22"
-Cohesion: 0.08
-Nodes (26): 1. Bootstrap shadcn — DONE, 1. Bootstrap shadcn first, 2. Path aliases and config cleanup, 3. Install initial primitives, 4. Add React Router 7, 4. Decompose `main.tsx`, 5. Decompose `main.tsx`, 5. State extraction (+18 more)
+Cohesion: 0.16
+Nodes (5): consumeLines(), lineLooksReady(), randomRunId(), runLogPath(), RunManager
 
 ### Community 23 - "Community 23"
 Cohesion: 0.08
-Nodes (24): A.1 Config, A.2 Admission control, A.3 Admin override, A.4 Tests, A. Container concurrency cap, B.1 Schema, B.2 Recording helper, B.3 Admin UI (+16 more)
+Nodes (26): 1. Bootstrap shadcn — DONE, 1. Bootstrap shadcn first, 2. Path aliases and config cleanup, 3. Install initial primitives, 4. Add React Router 7, 4. Decompose `main.tsx`, 5. Decompose `main.tsx`, 5. State extraction (+18 more)
 
 ### Community 24 - "Community 24"
-Cohesion: 0.09
-Nodes (21): 0. Prove the HALSim WS contract, 1. Container-side: ensure HALSim WS extension is bundled, 2. Control-plane: HALSim WS proxy route, 3. Web: `useHalSim` hook, 4. Web: `DriverStation` component tree, 5. Replace `RunControls` and `ConsolePane` from Plan 03, 6. Safety logic, 7. Visual: SystemCore-ish look (+13 more)
+Cohesion: 0.13
+Nodes (22): aliceRun, assert(), assertNt4AliveProbe(), assertSimProcessAlive(), bobRun, brokenAlice, fileUri(), initializeLspSession() (+14 more)
 
 ### Community 25 - "Community 25"
+Cohesion: 0.08
+Nodes (25): addBody, adminCookie, after, aliceWorkspace, backedUpProject, backupsDir, bob, bobWorkspace (+17 more)
+
+### Community 26 - "Community 26"
+Cohesion: 0.08
+Nodes (24): A.1 Config, A.2 Admission control, A.3 Admin override, A.4 Tests, A. Container concurrency cap, B.1 Schema, B.2 Recording helper, B.3 Admin UI (+16 more)
+
+### Community 27 - "Community 27"
+Cohesion: 0.11
+Nodes (20): CodeStatus, CodeStatusPill(), TONES, codeStatusFromRun(), ConsoleLine(), ConsolePanel(), ConsolePanelProps, ConsoleTab (+12 more)
+
+### Community 28 - "Community 28"
+Cohesion: 0.11
+Nodes (19): asWebSocket(), handleUpgrade(), httpServer, LanguageServerRunConfig, launchLanguageServer(), nt4HttpUrl(), nt4WsUrl(), parseSessions() (+11 more)
+
+### Community 29 - "Community 29"
+Cohesion: 0.18
+Nodes (22): acceptWebSocket(), ActiveRun, activeRuns, collectProcess(), delay(), docker(), dockerExec(), killChild() (+14 more)
+
+### Community 30 - "Community 30"
+Cohesion: 0.09
+Nodes (22): 0. Prove the HALSim WS contract, 1. Container-side: ensure HALSim WS extension is bundled, 2. Control-plane: HALSim WS proxy route, 3. Web: simulation state hook, 3. Web: `useHalSim` hook, 4. Web: `DriverStation` component tree, 5. Replace `RunControls` and `ConsolePane` from Plan 03, 6. Safety logic (+14 more)
+
+### Community 31 - "Community 31"
+Cohesion: 0.1
+Nodes (13): AdminApp(), ResolvedTheme, Theme, THEME_VALUES, ThemeProvider(), ThemeProviderContext, ThemeProviderProps, ThemeProviderState (+5 more)
+
+### Community 32 - "Community 32"
+Cohesion: 0.15
+Nodes (22): 9. Common Failures and Recovery, AS Lite not showing telemetry, Build queue saturated, Code container OOM, code:bash (bun run measure), code:bash (bun run measure -- --json), code:bash (# All managed containers), code:bash (# Container is auto-recreated on next run. If persistent:) (+14 more)
+
+### Community 33 - "Community 33"
 Cohesion: 0.09
 Nodes (20): 002 — AdvantageScope Lite hosted standalone, 1. `spawnSync(npmCmd, [...], { shell: false })` returns exit `null` on Windows, 2. AS Lite ships a `lite/static/` directory inside the submodule with `index.html` and `popups.css`, 3. Git symlinks under `lite/static/` checked out as 9-byte text files on Windows, 4. AS Lite expects `GET /assets` and `GET /assets/<name>/<file>` server routes, 5. AS submodule's `postinstall` is heavy, 6. AS upstream prints `npm audit` warnings about transitive vulns, AdvantageScope as a git submodule pinned to a release tag (+12 more)
 
-### Community 26 - "Community 26"
+### Community 34 - "Community 34"
 Cohesion: 0.1
 Nodes (20): code:text (vendor/AdvantageScope d2e915f580ca4ad9444a5211bf89fe71b128de), code:block10 (apps/web/              Vite browser shell with Monaco, AS Li), code:bash (git clone https://github.com/emscripten-core/emsdk.git), code:bash (export EMSDK=/path/to/emsdk    # bash), code:bash (git clone <this-repo>), code:bash (docker build -t frc-sim:mvp containers/sim), code:bash (docker build -t frc-sim:mvp containers/sim), code:bash (docker exec frc-sim-mvp cat /workspace/project/src/main/java) (+12 more)
 
-### Community 27 - "Community 27"
+### Community 35 - "Community 35"
 Cohesion: 0.1
 Nodes (19): 001 — Sim container architecture, 1. Missing `WPILibNewCommands.json` vendor dep, 2. Dockerfile `|| true` swallowed gradle build failure, 3. Image size came in at 2.25 GB, not the 1.0–1.4 GB plan estimate, 4. Wrapper-zip warning is cosmetic, Context, Decisions, `eclipse-temurin:17-jdk-jammy` base image (+11 more)
 
-### Community 28 - "Community 28"
+### Community 36 - "Community 36"
+Cohesion: 0.12
+Nodes (15): assert(), assertEditorProxy(), assertNt4AliveProbe(), assertSimProcessAlive(), buildingTimes, Login, logins, originals (+7 more)
+
+### Community 37 - "Community 37"
 Cohesion: 0.1
 Nodes (20): code:text (vendor/AdvantageScope d2e915f580ca4ad9444a5211bf89fe71b128de), code:block10 (apps/web/              Vite browser shell with Monaco, AS Li), code:bash (git clone https://github.com/emscripten-core/emsdk.git), code:bash (export EMSDK=/path/to/emsdk    # bash), code:bash (git clone <this-repo>), code:bash (docker build -t frc-sim:mvp containers/sim), code:bash (docker build -t frc-sim:mvp containers/sim), code:bash (docker exec frc-sim-mvp cat /workspace/project/src/main/java) (+12 more)
 
-### Community 29 - "Community 29"
+### Community 38 - "Community 38"
+Cohesion: 0.11
+Nodes (18): adminCookie, body, fakeDocker, rows, student, studentCookie, workspace, adminCookie (+10 more)
+
+### Community 39 - "Community 39"
+Cohesion: 0.13
+Nodes (13): aliceRun, assert(), assertEditorProxy(), assertNt4AliveProbe(), assertSimProcessAlive(), bobRun, brokenAlice, Login (+5 more)
+
+### Community 40 - "Community 40"
+Cohesion: 0.14
+Nodes (14): Auth, AuthCallbacks, createAuth(), buildSocialProviders(), SocialProviders, ControlConfig, ContainerLeaseRow, createStorage() (+6 more)
+
+### Community 41 - "Community 41"
 Cohesion: 0.11
 Nodes (18): 10. Docs, 1. UX — import dialog, 2. Backend endpoint, 3. Validation, 4. Clone strategy, 5. Streaming feedback, 6. Backup / restore wiring, 7. Limits and quotas (+10 more)
 
-### Community 30 - "Community 30"
+### Community 42 - "Community 42"
 Cohesion: 0.11
 Nodes (17): 003 — Minimal web shell, 1. Headless preview screenshot hangs when AS Lite iframe is loading, 2. Orphaned Vite child after `TaskStop` on the npm wrapper, 3. `WARNING:StorageManager: settings timeout, using defaults` in the console, 4. AS Lite tab-controls panel was clipped (initial layout), AS Lite via iframe to `http://localhost:8080`, not bundled, code:block1 ("editor       scope"), Context (+9 more)
 
-### Community 31 - "Community 31"
+### Community 43 - "Community 43"
 Cohesion: 0.11
 Nodes (17): 006 - Multi-tenancy spike findings, code:text (alice alive 200 ok), code:bash (npm run spike:multi -- up), code:text (alice: websocket open=true, initialized=true, diagnostics=0), code:text (open=true, initialized=true), code:text (GET /file?user=alice -> 200), code:text (status building at 1 ms), code:text (sim container created in 0.29s) (+9 more)
 
-### Community 32 - "Community 32"
+### Community 44 - "Community 44"
 Cohesion: 0.12
 Nodes (13): CreateServerOptions, decoder, encoder, findLauncherJar(), firstConnectionWarmupMs, jdtLsArgs(), jdtLsLauncher(), LspSocketData (+5 more)
 
-### Community 33 - "Community 33"
+### Community 45 - "Community 45"
+Cohesion: 0.22
+Nodes (14): addAllowlistEntry(), AllowlistData, EMPTY, isEmailAllowed(), loadAllowlist(), normalize(), normalizeEntry(), reloadAllowlist() (+6 more)
+
+### Community 46 - "Community 46"
+Cohesion: 0.11
+Nodes (16): aliceConnection, aliceMessages, aliceRun, aliceRunId, aliceWorkspace, bobConnection, bobMessages, bobRunId (+8 more)
+
+### Community 49 - "Community 49"
+Cohesion: 0.15
+Nodes (18): 2.1 Clone and initialize, 2.2 Build container images, 2.2 Build the code container image, 2.3 Build web assets, 2.4 Configure environment, 2.5 Run migrations, 2.6 Verify the setup, 2.7 Measure host resources (+10 more)
+
+### Community 50 - "Community 50"
 Cohesion: 0.11
 Nodes (17): Auto-import on Tab (additionalTextEdits), code:dockerfile (FROM gitpod/openvscode-server:1.105.1), code:bash (cd /tmp/frc-spike-openvscode), Container boots and serves (:3000), Ctrl-click into library source (jdt:// URI), Decision 011: V2 Editor Spike — openvscode-server with redhat.java and WPILib, Decisions, Docker Hub vs GitHub Releases (+9 more)
 
-### Community 36 - "Community 36"
-Cohesion: 0.12
-Nodes (16): Bind mounts, Build, code:bash (bun run docker:build:code), code:bash (FRC_UID=$(id -u) FRC_GID=$(id -g) bun run docker:build:code), code:block3 (frc-sim.managed=true), code:bash (docker run -d \), Environment variables, Example run (+8 more)
-
-### Community 37 - "Community 37"
-Cohesion: 0.12
-Nodes (15): Architecture (MVP), code:block1 (+----------------------------------+), Explicitly deferred to post-MVP, FRC Web Simulator: Project Summary and MVP Spec, MVP scope, Note to the implementing agent, Overall MVP definition of done, Project summary (+7 more)
-
-### Community 38 - "Community 38"
-Cohesion: 0.33
-Nodes (14): containerState(), dockerStats(), down(), ensureContainer(), lifecycle(), main(), parseMiB(), printEnv() (+6 more)
-
-### Community 39 - "Community 39"
-Cohesion: 0.12
-Nodes (15): Architecture (MVP), code:block1 (+----------------------------------+), Explicitly deferred to post-MVP, FRC Web Simulator: Project Summary and MVP Spec, MVP scope, Note to the implementing agent, Overall MVP definition of done, Project summary (+7 more)
-
-### Community 40 - "Community 40"
-Cohesion: 0.12
-Nodes (14): Build, code:bash (docker build -t frc-sim:mvp containers/sim), code:bash (docker run --rm -p 5810:5810 --memory=2g --name frc-sim frc-), code:block3 (NT: server: listening on NT4 port 5810), code:bash (docker stop frc-sim), Hacking, Run, Runtime Contract (+6 more)
-
-### Community 41 - "Community 41"
-Cohesion: 0.13
-Nodes (14): 1. Remove `cleanupV1Containers()`, 2. Drop V1 columns from `container_leases`, 3. Rename cookie and default secret, 4. Archive MVP docs and delete `mvp/` source, 5. Archive obsolete V1 decisions, 6. Scrub references to `mvp/` and V1, 7. Remove status-tracker entry for V1 cruft, Context (+6 more)
-
-### Community 42 - "Community 42"
-Cohesion: 0.13
-Nodes (14): 1. Remove the build queue, 2. Remove `RUN_CONCURRENCY`, 3. Split `app.test.ts`, 4. Drop redundant / V1 tests, 5. Delete one-shot verification scripts, 6. Audit env vars, 7. Update `docs/runbook.md`, Context (+6 more)
-
-### Community 43 - "Community 43"
-Cohesion: 0.14
-Nodes (13): Context, Definition of done, Experiments, Goals, Key questions, Multi-Tenancy Spike, Non-goals, Q1: NT4 routing under multi-tenancy (+5 more)
-
-### Community 44 - "Community 44"
-Cohesion: 0.14
-Nodes (3): Intentional Template Contents, Provenance, WPILib Java Command Starter Template
-
-### Community 45 - "Community 45"
-Cohesion: 0.14
-Nodes (13): Context, Definition of done, Experiments, Goals, Key questions, Multi-Tenancy Spike, Non-goals, Q1: NT4 routing under multi-tenancy (+5 more)
-
-### Community 46 - "Community 46"
-Cohesion: 0.15
-Nodes (12): code:json ({ "type": "<MessageType>", "device": "<DeviceId>", "data": {), Context, Decision, Decision 015 — HALSim WebSocket Control Protocol, DriverStation message (`type: "DriverStation"`, `device: ""`), Future hooks, Joystick message (`type: "Joystick"`, `device: "<N>"`), Message envelope (+4 more)
-
-### Community 47 - "Community 47"
-Cohesion: 0.15
-Nodes (12): 009 - LSP reconnect, bridge serialization, and startup throttling, Context, Decision 1: Browser LSP client auto-reconnects with bounded backoff, Decision 2: Bridge serializes JDT LS spawns, Decision 3: Orchestrator-level LSP startup throttle, Decision 4: Cap proxy pending-message buffers, Decision 5: NT4 subprotocol mismatch is fail-fast, not silent, Decision 6: AS Lite in-iframe timeout banner (+4 more)
-
-### Community 48 - "Community 48"
-Cohesion: 0.15
-Nodes (12): 009 - LSP reconnect, bridge serialization, and startup throttling, Context, Decision 1: Browser LSP client auto-reconnects with bounded backoff, Decision 2: Bridge serializes JDT LS spawns, Decision 3: Orchestrator-level LSP startup throttle, Decision 4: Cap proxy pending-message buffers, Decision 5: NT4 subprotocol mismatch is fail-fast, not silent, Decision 6: AS Lite in-iframe timeout banner (+4 more)
-
-### Community 49 - "Community 49"
-Cohesion: 0.26
-Nodes (11): ascopeRoot, assert(), createTemplate(), distDir, exists(), patchDir, repoRoot, runGit() (+3 more)
-
-### Community 50 - "Community 50"
-Cohesion: 0.17
-Nodes (11): Automated Verification, code:block1 (bun run measure), code:bash (bun run typecheck), Comparison with V1, Decision, Decision 013: V2 Acceptance Pass, Host Capacity (10 students), Manual Verification (+3 more)
-
 ### Community 51 - "Community 51"
-Cohesion: 0.29
-Nodes (10): children, ensureContainer(), ensureLspContainer(), ensureSimContainer(), repoRoot, runCommand(), shutdown(), startProcess() (+2 more)
+Cohesion: 0.12
+Nodes (16): 0. Decisions at a Glance, 13. Java LSP, 15. Failure Modes, 16. Security Posture for V1, 17. Verification Strategy, 19. V1 Definition of Done, 1. Context, 20. Open Questions (+8 more)
 
 ### Community 52 - "Community 52"
-Cohesion: 0.27
-Nodes (10): ContainerStats, dockerRun(), getContainerStats(), getDiskInfo(), getHostInfo(), HostInfo, jsonOutput, main() (+2 more)
+Cohesion: 0.12
+Nodes (17): 15. Staged Implementation Plan, code:block20 (docker build -t frc-spike-openvscode .), code:block21 (bun run docker:build:code), code:block22 (# Build and start a Stage 1 container manually.), code:block23 (bun run typecheck), code:block24 (bun run build:web), code:block25 (bun run typecheck), code:block26 (# Idle teardown:) (+9 more)
 
 ### Community 53 - "Community 53"
-Cohesion: 0.18
-Nodes (9): 004 - Backend wiring for save and run, Context, Custom WebSocket sender, no new dependency, Decisions, Host backend plus Docker CLI, Minimal endpoints and run protocol, One-command dev stack without Docker Compose, Replaceable sim process inside long-lived container (+1 more)
+Cohesion: 0.16
+Nodes (17): 5. Configuration, code:bash (bun run measure), code:bash (bun run dev:control), code:bash (curl -H "Authorization: Bearer $ADMIN_TOKEN" http://localhos), code:bash (bun run docker:cleanup), code:bash (# Stop all workspaces), code:bash (docker stop $(docker ps -q --filter label=frc-sim.managed=tr), code:bash (CODE_MEMORY_LIMIT=2048m) (+9 more)
 
 ### Community 54 - "Community 54"
 Cohesion: 0.18
-Nodes (10): Base image: `gitpod/openvscode-server:1.105.1`, Consequences, Context, Decision, Decision 012: V2 Code Image — Base Image and Extension Strategy, Direct launch base path handling, Extension cache seeding pattern, Extensions: download at build time (+2 more)
+Nodes (16): 1. Prerequisites, 3. Starting the App, 4. Stopping the App, 6. Backup and Restore, 7. Cache Cleanup, 8. Monitoring, Between class sessions, FRC Web Simulator V1 — Operator Runbook (+8 more)
 
 ### Community 55 - "Community 55"
+Cohesion: 0.12
+Nodes (16): Browser API behavior, code:text (Browser -> stateless HTTP API -> control-plane HALSim bridge), code:json ({ "type": "<MessageType>", "device": "<DeviceId>", "data": {), Context, Decision, Decision 015 — HALSim WebSocket Control Protocol, DriverStation message (`type: "DriverStation"`, `device: ""`), Future hooks (+8 more)
+
+### Community 56 - "Community 56"
+Cohesion: 0.12
+Nodes (16): Bind mounts, Build, code:bash (bun run docker:build:code), code:bash (FRC_UID=$(id -u) FRC_GID=$(id -g) bun run docker:build:code), code:block3 (frc-sim.managed=true), code:bash (docker run -d \), Environment variables, Example run (+8 more)
+
+### Community 57 - "Community 57"
+Cohesion: 0.12
+Nodes (16): 0. Decisions at a Glance, 13. Java LSP, 15. Failure Modes, 16. Security Posture for V1, 17. Verification Strategy, 19. V1 Definition of Done, 1. Context, 20. Open Questions (+8 more)
+
+### Community 58 - "Community 58"
+Cohesion: 0.12
+Nodes (17): 15. Staged Implementation Plan, code:block20 (docker build -t frc-spike-openvscode .), code:block21 (bun run docker:build:code), code:block22 (# Build and start a Stage 1 container manually.), code:block23 (bun run typecheck), code:block24 (bun run build:web), code:block25 (bun run typecheck), code:block26 (# Idle teardown:) (+9 more)
+
+### Community 59 - "Community 59"
+Cohesion: 0.12
+Nodes (16): 9.1 Router, 9.2 Session manager, 9.3 Project store, 9.4 Container orchestrator, 9.5 Run service, 9.6 NT4 proxy, 9.7 LSP proxy, 9.8 Operator endpoints (+8 more)
+
+### Community 60 - "Community 60"
+Cohesion: 0.12
+Nodes (15): Architecture (MVP), code:block1 (+----------------------------------+), Explicitly deferred to post-MVP, FRC Web Simulator: Project Summary and MVP Spec, MVP scope, Note to the implementing agent, Overall MVP definition of done, Project summary (+7 more)
+
+### Community 61 - "Community 61"
+Cohesion: 0.33
+Nodes (14): containerState(), dockerStats(), down(), ensureContainer(), lifecycle(), main(), parseMiB(), printEnv() (+6 more)
+
+### Community 62 - "Community 62"
+Cohesion: 0.12
+Nodes (16): 9.1 Router, 9.2 Session manager, 9.3 Project store, 9.4 Container orchestrator, 9.5 Run service, 9.6 NT4 proxy, 9.7 LSP proxy, 9.8 Operator endpoints (+8 more)
+
+### Community 63 - "Community 63"
+Cohesion: 0.12
+Nodes (15): Architecture (MVP), code:block1 (+----------------------------------+), Explicitly deferred to post-MVP, FRC Web Simulator: Project Summary and MVP Spec, MVP scope, Note to the implementing agent, Overall MVP definition of done, Project summary (+7 more)
+
+### Community 64 - "Community 64"
+Cohesion: 0.12
+Nodes (14): Build, code:bash (docker build -t frc-sim:mvp containers/sim), code:bash (docker run --rm -p 5810:5810 --memory=2g --name frc-sim frc-), code:block3 (NT: server: listening on NT4 port 5810), code:bash (docker stop frc-sim), Hacking, Run, Runtime Contract (+6 more)
+
+### Community 65 - "Community 65"
+Cohesion: 0.28
+Nodes (15): apiError(), assertRealPathInside(), createProjectEntry(), deleteProjectEntry(), fsErrorCode(), isInsideDirectory(), isMissingPathError(), isNonEmptyDirectoryError() (+7 more)
+
+### Community 66 - "Community 66"
+Cohesion: 0.17
+Nodes (13): ControlConfigInput, defaultContainerUser(), defaultDataDir, defaultHalsimPortRange, defaultLspPortRange, defaultSimPortRange, defaultVscodePortRange, loadControlConfig() (+5 more)
+
+### Community 67 - "Community 67"
+Cohesion: 0.13
+Nodes (14): 1. Remove `cleanupV1Containers()`, 2. Drop V1 columns from `container_leases`, 3. Rename cookie and default secret, 4. Archive MVP docs and delete `mvp/` source, 5. Archive obsolete V1 decisions, 6. Scrub references to `mvp/` and V1, 7. Remove status-tracker entry for V1 cruft, Context (+6 more)
+
+### Community 68 - "Community 68"
+Cohesion: 0.13
+Nodes (14): 1. Remove the build queue, 2. Remove `RUN_CONCURRENCY`, 3. Split `app.test.ts`, 4. Drop redundant / V1 tests, 5. Delete one-shot verification scripts, 6. Audit env vars, 7. Update `docs/runbook.md`, Context (+6 more)
+
+### Community 69 - "Community 69"
+Cohesion: 0.13
+Nodes (3): Intentional Template Contents, Provenance, WPILib Java Command Starter Template
+
+### Community 70 - "Community 70"
+Cohesion: 0.14
+Nodes (13): aliceWorkspace, bobWorkspace, config, cookie, fakeDocker, lease, projectPath, robotPath (+5 more)
+
+### Community 71 - "Community 71"
+Cohesion: 0.14
+Nodes (13): 0. Decisions at a Glance, 11. Resource Budget, 12. Failure Modes, 13. Security Posture, 14. Verification, 17. Open Questions, 18. Rules for Agents, 1. Context (+5 more)
+
+### Community 72 - "Community 72"
+Cohesion: 0.14
+Nodes (13): Context, Definition of done, Experiments, Goals, Key questions, Multi-Tenancy Spike, Non-goals, Q1: NT4 routing under multi-tenancy (+5 more)
+
+### Community 73 - "Community 73"
+Cohesion: 0.19
+Nodes (4): handleRun(), LineSplitter, makeTextFrameHeader(), WebSocketTextPeer
+
+### Community 74 - "Community 74"
+Cohesion: 0.14
+Nodes (13): 0. Decisions at a Glance, 11. Resource Budget, 12. Failure Modes, 13. Security Posture, 14. Verification, 17. Open Questions, 18. Rules for Agents, 1. Context (+5 more)
+
+### Community 75 - "Community 75"
+Cohesion: 0.14
+Nodes (13): Context, Definition of done, Experiments, Goals, Key questions, Multi-Tenancy Spike, Non-goals, Q1: NT4 routing under multi-tenancy (+5 more)
+
+### Community 76 - "Community 76"
+Cohesion: 0.15
+Nodes (12): createFileRequestSchema, driverStationPatchSchema, getProjectPathAccess(), isProjectPath(), matchesPathOrChild(), parseProjectPath(), runClientMessageSchema, runServerMessageSchema (+4 more)
+
+### Community 77 - "Community 77"
+Cohesion: 0.24
+Nodes (12): ascopeRoot, assert(), createTemplate(), distDir, exists(), patchDir, repoRoot, runGit() (+4 more)
+
+### Community 78 - "Community 78"
+Cohesion: 0.15
+Nodes (12): 100 MB size cap, 6 imports per hour rate limit, Backup before import, Clone inside the container, not the host, Consequences, Context, Decision, Decision 016 — Project Import Strategy (+4 more)
+
+### Community 79 - "Community 79"
+Cohesion: 0.15
+Nodes (12): 009 - LSP reconnect, bridge serialization, and startup throttling, Context, Decision 1: Browser LSP client auto-reconnects with bounded backoff, Decision 2: Bridge serializes JDT LS spawns, Decision 3: Orchestrator-level LSP startup throttle, Decision 4: Cap proxy pending-message buffers, Decision 5: NT4 subprotocol mismatch is fail-fast, not silent, Decision 6: AS Lite in-iframe timeout banner (+4 more)
+
+### Community 80 - "Community 80"
+Cohesion: 0.15
+Nodes (12): 009 - LSP reconnect, bridge serialization, and startup throttling, Context, Decision 1: Browser LSP client auto-reconnects with bounded backoff, Decision 2: Bridge serializes JDT LS spawns, Decision 3: Orchestrator-level LSP startup throttle, Decision 4: Cap proxy pending-message buffers, Decision 5: NT4 subprotocol mismatch is fail-fast, not silent, Decision 6: AS Lite in-iframe timeout banner (+4 more)
+
+### Community 81 - "Community 81"
+Cohesion: 0.26
+Nodes (3): ImportManager, ImportRateLimiter, send()
+
+### Community 82 - "Community 82"
+Cohesion: 0.32
+Nodes (10): config, db, AppliedMigrationRow, applyMigrations(), ensureMigrationTable(), listAppliedMigrations(), loadMigrations(), Migration (+2 more)
+
+### Community 83 - "Community 83"
+Cohesion: 0.18
+Nodes (9): missing(), aliceCookie, dockerRunner(), fakeDocker, receivedHeaders, result, source, startedAt (+1 more)
+
+### Community 84 - "Community 84"
+Cohesion: 0.17
+Nodes (12): 8.1 Browser routes, 8.2 API routes, 8.3 WebSocket routes, 8.4 Run WebSocket messages, 8. Public Routing Contract, code:block13 (GET  /                         login or redirect to current ), code:block14 (/u/:workspaceSlug/api/...), code:block15 (GET    /session) (+4 more)
+
+### Community 85 - "Community 85"
+Cohesion: 0.17
+Nodes (12): 18. Implementation Phases, V1-0: Archive MVP and scaffold V1 root, V1-10: V1 acceptance pass, V1-1: Contracts, storage, and session skeleton, V1-2: Control-plane routing and static shell, V1-3: Project store and multi-file editor, V1-4: V1 sim image and container orchestrator, V1-5: Run queue and log streaming (+4 more)
+
+### Community 86 - "Community 86"
+Cohesion: 0.17
+Nodes (12): 7.1 Browser routes, 7.2 Editor proxy routes, 7.3 API routes, 7.4 Admin routes, 7.5 WebSocket routes, 7. Public Routing Contract, code:block10 (GET   /admin/status), code:block11 (WS /u/:workspaceSlug/ws/run           run control/logs, unch) (+4 more)
+
+### Community 87 - "Community 87"
+Cohesion: 0.21
+Nodes (12): code:bash (bun run backup), code:bash (bun run backup -- --output /path/to/backup), code:bash (bun run restore -- <backup-dir>), code:bash (bun run restore -- <backup-dir> --dry-run), code:bash (bun run restore -- <backup-dir> --workspace ws_abc123...), code:bash (bun run docker:cleanup), code:bash (bun run docker:cleanup -- --dry-run), code:bash (rm -rf data/users/<workspaceId>/home/) (+4 more)
+
+### Community 88 - "Community 88"
+Cohesion: 0.17
+Nodes (11): Automated Verification, code:block1 (bun run measure), code:bash (bun run typecheck), Comparison with V1, Decision, Decision 013: V2 Acceptance Pass, Host Capacity (10 students), Manual Verification (+3 more)
+
+### Community 89 - "Community 89"
+Cohesion: 0.29
+Nodes (10): children, ensureContainer(), ensureLspContainer(), ensureSimContainer(), repoRoot, runCommand(), shutdown(), startProcess() (+2 more)
+
+### Community 90 - "Community 90"
+Cohesion: 0.17
+Nodes (12): 8.1 Browser routes, 8.2 API routes, 8.3 WebSocket routes, 8.4 Run WebSocket messages, 8. Public Routing Contract, code:block13 (GET  /                         login or redirect to current ), code:block14 (/u/:workspaceSlug/api/...), code:block15 (GET    /session) (+4 more)
+
+### Community 91 - "Community 91"
+Cohesion: 0.17
+Nodes (12): 18. Implementation Phases, V1-0: Archive MVP and scaffold V1 root, V1-10: V1 acceptance pass, V1-1: Contracts, storage, and session skeleton, V1-2: Control-plane routing and static shell, V1-3: Project store and multi-file editor, V1-4: V1 sim image and container orchestrator, V1-5: Run queue and log streaming (+4 more)
+
+### Community 92 - "Community 92"
+Cohesion: 0.17
+Nodes (12): 7.1 Browser routes, 7.2 Editor proxy routes, 7.3 API routes, 7.4 Admin routes, 7.5 WebSocket routes, 7. Public Routing Contract, code:block10 (GET   /admin/status), code:block11 (WS /u/:workspaceSlug/ws/run           run queue, unchanged) (+4 more)
+
+### Community 93 - "Community 93"
+Cohesion: 0.18
+Nodes (9): waitFor(), controlled, cookie, fakeDocker, messages, sent, socket, sockets (+1 more)
+
+### Community 94 - "Community 94"
+Cohesion: 0.18
+Nodes (10): aliceCookie, cookie, ids, insertUser, now, sessionCount, slugs, userCount (+2 more)
+
+### Community 95 - "Community 95"
+Cohesion: 0.2
+Nodes (10): defaultRunCommandFactory(), dockerRunScript(), RunCommand, RunCommandContext, RunCommandFactory, RunConnection, RunExit, RunJob (+2 more)
+
+### Community 96 - "Community 96"
+Cohesion: 0.27
+Nodes (10): ContainerStats, dockerRun(), getContainerStats(), getDiskInfo(), getHostInfo(), HostInfo, jsonOutput, main() (+2 more)
+
+### Community 97 - "Community 97"
+Cohesion: 0.18
+Nodes (11): 7.1 IDs, 7.2 SQLite tables, 7.3 Filesystem layout, 7.4 Template provenance, 7. Domain Model, code:block10 (data/users/<workspaceId>/project  ->  /workspace/project), code:block11 (data/users/<workspaceId>/jdtls-data  ->  /workspace/jdtls-da), code:block12 (data/users/<workspaceId>/home  ->  /home/frc) (+3 more)
+
+### Community 98 - "Community 98"
+Cohesion: 0.2
+Nodes (11): 8.1 Merged code image, 8.2 Memory and concurrency, 8.2 Memory and lifecycle, 8.3 UID/GID and bind mounts, 8.4 Port allocation, 8. Container Design, code:block12 (FROM eclipse-temurin:17-jdk-jammy), code:block13 (openvscode-server --install-extension /opt/extensions/redhat) (+3 more)
+
+### Community 99 - "Community 99"
+Cohesion: 0.24
+Nodes (11): 10. Host Sizing, code:bash (curl -H "Authorization: Bearer $ADMIN_TOKEN" \), code:bash (bun run measure), code:block41 (═══ FRC Web Simulator — Resource Report ═══), code:bash (CODE_MEMORY_LIMIT=2048m), code:bash (CODE_MEMORY_LIMIT=3072m), Measuring actual usage, Per-student resource usage (+3 more)
+
+### Community 100 - "Community 100"
+Cohesion: 0.18
+Nodes (9): 004 - Backend wiring for save and run, Context, Custom WebSocket sender, no new dependency, Decisions, Host backend plus Docker CLI, Minimal endpoints and run protocol, One-command dev stack without Docker Compose, Replaceable sim process inside long-lived container (+1 more)
+
+### Community 101 - "Community 101"
+Cohesion: 0.18
+Nodes (10): Base image: `gitpod/openvscode-server:1.105.1`, Consequences, Context, Decision, Decision 012: V2 Code Image — Base Image and Extension Strategy, Direct launch base path handling, Extension cache seeding pattern, Extensions: download at build time (+2 more)
+
+### Community 102 - "Community 102"
 Cohesion: 0.18
 Nodes (9): app, AssetManifest, buildAssetManifest(), bundledAssetsDir, distDir, port, rel, repoRoot (+1 more)
 
-### Community 56 - "Community 56"
+### Community 103 - "Community 103"
+Cohesion: 0.18
+Nodes (11): 7.1 IDs, 7.2 SQLite tables, 7.3 Filesystem layout, 7.4 Template provenance, 7. Domain Model, code:block10 (data/users/<workspaceId>/project  ->  /workspace/project), code:block11 (data/users/<workspaceId>/jdtls-data  ->  /workspace/jdtls-da), code:block12 (data/users/<workspaceId>/home  ->  /home/frc) (+3 more)
+
+### Community 104 - "Community 104"
+Cohesion: 0.2
+Nodes (10): authFromRequest(), contentTypeFor(), notFound(), readScopeAssetManifest(), redirect(), resolveWorkspaceRequest(), safeRelativeAssetPath(), scopeResponse() (+2 more)
+
+### Community 105 - "Community 105"
+Cohesion: 0.33
+Nodes (9): getSessionFromRequest(), isAllowedWebSocketOrigin(), isLoopbackHost(), normalizeHost(), requireAdmin(), requireSession(), requireWorkspaceOwnership(), AuthContext (+1 more)
+
+### Community 106 - "Community 106"
+Cohesion: 0.2
+Nodes (9): 007 - V1 sim container orchestration, code:text (frc-sim.managed=true), Context, Decisions, Docker labels are adopted back into SQLite, Lazy ensure, visible status, Loopback-only published ports, Runtime cache seed (+1 more)
+
+### Community 107 - "Community 107"
+Cohesion: 0.2
+Nodes (9): 008 - V1 LSP container and Bun-native bridge, Browser LSP client extended for multi-file projects, Bun-native bridge instead of `vscode-ws-jsonrpc`, code:block1 (data/users/<workspaceId>/project    -> /workspace/project), `container_leases` lease state split, Context, Decisions, Generic `ContainerOrchestrator` (+1 more)
+
+### Community 108 - "Community 108"
+Cohesion: 0.2
+Nodes (10): 8.1 Merged code image, 8.2 Memory and concurrency, 8.3 UID/GID and bind mounts, 8.4 Port allocation, 8. Container Design, code:block12 (FROM eclipse-temurin:17-jdk-jammy), code:block13 (openvscode-server --install-extension /opt/extensions/redhat), code:block14 (#!/usr/bin/env bash) (+2 more)
+
+### Community 109 - "Community 109"
+Cohesion: 0.2
+Nodes (9): 007 - V1 sim container orchestration, code:text (frc-sim.managed=true), Context, Decisions, Docker labels are adopted back into SQLite, Lazy ensure, visible status, Loopback-only published ports, Runtime cache seed (+1 more)
+
+### Community 110 - "Community 110"
+Cohesion: 0.2
+Nodes (9): 008 - V1 LSP container and Bun-native bridge, Browser LSP client extended for multi-file projects, Bun-native bridge instead of `vscode-ws-jsonrpc`, code:block1 (data/users/<workspaceId>/project    -> /workspace/project), `container_leases` lease state split, Context, Decisions, Generic `ContainerOrchestrator` (+1 more)
+
+### Community 111 - "Community 111"
 Cohesion: 0.31
 Nodes (9): code:powershell (git submodule update --init --recursive), code:text (apps/control/                  Bun control plane with login,), Commands, FRC Web Simulator, FRC Web Simulator V1, Layout, Operator Runbook, Prerequisites (+1 more)
 
-### Community 57 - "Community 57"
-Cohesion: 0.2
-Nodes (9): 007 - V1 sim container orchestration, code:text (frc-sim.managed=true), Context, Decisions, Docker labels are adopted back into SQLite, Lazy ensure, visible status, Loopback-only published ports, Runtime cache seed (+1 more)
-
-### Community 58 - "Community 58"
-Cohesion: 0.2
-Nodes (9): 008 - V1 LSP container and Bun-native bridge, Browser LSP client extended for multi-file projects, Bun-native bridge instead of `vscode-ws-jsonrpc`, code:block1 (data/users/<workspaceId>/project    -> /workspace/project), `container_leases` lease state split, Context, Decisions, Generic `ContainerOrchestrator` (+1 more)
-
-### Community 59 - "Community 59"
-Cohesion: 0.2
-Nodes (9): 007 - V1 sim container orchestration, code:text (frc-sim.managed=true), Context, Decisions, Docker labels are adopted back into SQLite, Lazy ensure, visible status, Loopback-only published ports, Runtime cache seed (+1 more)
-
-### Community 60 - "Community 60"
-Cohesion: 0.2
-Nodes (9): 008 - V1 LSP container and Bun-native bridge, Browser LSP client extended for multi-file projects, Bun-native bridge instead of `vscode-ws-jsonrpc`, code:block1 (data/users/<workspaceId>/project    -> /workspace/project), `container_leases` lease state split, Context, Decisions, Generic `ContainerOrchestrator` (+1 more)
-
-### Community 61 - "Community 61"
+### Community 112 - "Community 112"
 Cohesion: 0.22
 Nodes (7): 005 - Java LSP MVP integration, Context, Decisions, Local WPILib-aware JDT LS image, Package and Vite choices, Plain Monaco client with direct LSP requests, Verification
 
-### Community 62 - "Community 62"
+### Community 113 - "Community 113"
+Cohesion: 0.32
+Nodes (8): requireWebSocketOrigin(), halsimWebSocketResponse(), nt4WebSocketResponse(), probeVscodeReady(), requestedProtocols(), stripHopByHopHeaders(), vscodeHttpProxyResponse(), vscodeWebSocketResponse()
+
+### Community 114 - "Community 114"
 Cohesion: 0.25
 Nodes (5): home, projectRoot, robotJar, sleeper, stop
 
-### Community 63 - "Community 63"
+### Community 115 - "Community 115"
 Cohesion: 0.46
 Nodes (7): dirExists(), fileExists(), main(), parseArgs(), restoreArchive(), restoreDirectory(), runTar()
 
-### Community 64 - "Community 64"
+### Community 116 - "Community 116"
+Cohesion: 0.25
+Nodes (8): 12.1 Product shape, 12.2 Editor model, 12.3 AS Lite iframe, 12.4 Status model, 12. Web Shell, code:block33 (file:///workspace/project/<project-relative-path>), code:block34 (/scope/?frcEndpoint=postMessage), code:block35 (aliveUrl:     /u/<workspaceSlug>/sim/alive)
+
+### Community 117 - "Community 117"
+Cohesion: 0.25
+Nodes (8): 11.1 Patch strategy, 11.2 Build pipeline, 11.3 Sub-path hosting contract, 11. AdvantageScope Lite, code:block29 (patches/advantagescope/001-lite-nt4-endpoint-injection.patch), code:ts (type ScopeConfigMessage = {), code:ts (type ScopeReadyMessage = {), code:block32 (bun run build:ascope)
+
+### Community 118 - "Community 118"
+Cohesion: 0.25
+Nodes (8): 10.1 Layout, 10.2 Run/Stop, 10.3 AS Lite iframe, 10.4 Heartbeat, 10.5 Removal, 10. Web Shell (V2), code:block17 (docker exec <containerName> bash -lc "/usr/local/bin/stop-si), code:ts ({)
+
+### Community 119 - "Community 119"
+Cohesion: 0.25
+Nodes (8): 6.1 IDs, 6.2 SQLite changes, 6.3 Filesystem layout, 6. Domain Model Changes, code:block2 (frc-v2-code-<workspaceId>), code:block3 (frc-sim.managed=true), code:block4 (-- 004_v2_code_container.sql), code:block5 (data/)
+
+### Community 120 - "Community 120"
+Cohesion: 0.36
+Nodes (8): Admin status API, code:bash (rm -rf data/users/<workspaceId>/logs/runs/*), code:bash (for dir in data/users/*/; do), code:bash (docker system prune -f          # Remove unused containers, ), code:bash (curl -H "Authorization: Bearer $ADMIN_TOKEN" http://localhos), Docker system cleanup, Prune all regenerable data, Resource measurement
+
+### Community 121 - "Community 121"
 Cohesion: 0.25
 Nodes (7): code:block1 (01 ──┐), Conventions for each plan doc, Decisions baked in from the planning conversation, Dependency graph, Out of scope for this whole batch, Post-V2 Plan, The plans
 
-### Community 65 - "Community 65"
+### Community 122 - "Community 122"
+Cohesion: 0.25
+Nodes (8): 11.1 Patch strategy, 11.2 Build pipeline, 11.3 Sub-path hosting contract, 11. AdvantageScope Lite, code:block29 (patches/advantagescope/001-lite-nt4-endpoint-injection.patch), code:ts (type ScopeConfigMessage = {), code:ts (type ScopeReadyMessage = {), code:block32 (bun run build:ascope)
+
+### Community 123 - "Community 123"
+Cohesion: 0.25
+Nodes (8): 12.1 Product shape, 12.2 Editor model, 12.3 AS Lite iframe, 12.4 Status model, 12. Web Shell, code:block33 (file:///workspace/project/<project-relative-path>), code:block34 (/scope/?frcEndpoint=postMessage), code:block35 (aliveUrl:     /u/<workspaceSlug>/sim/alive)
+
+### Community 124 - "Community 124"
+Cohesion: 0.25
+Nodes (8): 6.1 IDs, 6.2 SQLite changes, 6.3 Filesystem layout, 6. Domain Model Changes, code:block2 (frc-v2-code-<workspaceId>), code:block3 (frc-sim.managed=true), code:block4 (-- 004_v2_code_container.sql), code:block5 (data/)
+
+### Community 125 - "Community 125"
+Cohesion: 0.25
+Nodes (8): 10.1 Layout, 10.2 Run/Stop, 10.3 AS Lite iframe, 10.4 Heartbeat, 10.5 Removal, 10. Web Shell (V2), code:block17 (docker exec <containerName> bash -lc "/usr/local/bin/stop-si), code:ts ({)
+
+### Community 126 - "Community 126"
 Cohesion: 0.29
 Nodes (6): children, repoRoot, shutdown(), startProcess(), tsxCli, viteCli
 
-### Community 66 - "Community 66"
+### Community 127 - "Community 127"
+Cohesion: 0.29
+Nodes (6): AuditActor, AuditEventInput, AuditLogEntry, AuditLogQuery, queryAuditLog(), recordAuditEvent()
+
+### Community 129 - "Community 129"
+Cohesion: 0.48
+Nodes (6): base64Url(), parseCookies(), parseSignedSessionCookie(), serializeExpiredSessionCookie(), serializeSessionCookie(), signSessionId()
+
+### Community 131 - "Community 131"
+Cohesion: 0.29
+Nodes (6): args, beforeIndex, beforeMs, countResult, db, dryRun
+
+### Community 132 - "Community 132"
 Cohesion: 0.29
 Nodes (4): [command, email], db, UserRow, users
 
-### Community 67 - "Community 67"
+### Community 133 - "Community 133"
+Cohesion: 0.29
+Nodes (7): 6.1 Bun, 6.2 Backend framework, 6.3 Frontend framework, 6.4 Validation and shared contracts, 6. Tooling Decisions, code:block5 (.bun-version), code:json ({)
+
+### Community 134 - "Community 134"
+Cohesion: 0.29
+Nodes (7): 16. Manual End-to-End Test Plan, code:block28 (git clone <repo-url> FRC-Programming-Training-Sim), code:block29 (bun run docker:build:code), code:block30 (bun run migrate), code:block31 (# In another shell:), code:block32 (curl -fsS -X POST http://localhost:4000/admin/workspaces/<al), code:block33 (curl -fsS -X POST http://localhost:4000/admin/workspaces/<al)
+
+### Community 135 - "Community 135"
+Cohesion: 0.29
+Nodes (7): 11. Project Import, code:block44 (data/users/<workspaceId>/backups/import-<timestamp>.tar.gz  ), code:bash (# Find the backup path), Endpoints, Limits, Manual restore (admin), Where import backups live
+
+### Community 136 - "Community 136"
+Cohesion: 0.43
+Nodes (5): IDELayout(), IDELayoutProps, ResizableHandle(), ResizablePanel(), ResizablePanelGroup()
+
+### Community 137 - "Community 137"
+Cohesion: 0.29
+Nodes (7): 6.1 Bun, 6.2 Backend framework, 6.3 Frontend framework, 6.4 Validation and shared contracts, 6. Tooling Decisions, code:block5 (.bun-version), code:json ({)
+
+### Community 138 - "Community 138"
+Cohesion: 0.29
+Nodes (7): 16. Manual End-to-End Test Plan, code:block28 (git clone <repo-url> FRC-Programming-Training-Sim), code:block29 (bun run docker:build:code), code:block30 (bun run migrate), code:block31 (# In another shell:), code:block32 (curl -fsS -X POST http://localhost:4000/admin/workspaces/<al), code:block33 (curl -fsS -X POST http://localhost:4000/admin/workspaces/<al)
+
+### Community 139 - "Community 139"
 Cohesion: 0.6
 Nodes (5): dirExists(), main(), parseArgs(), runTar(), timestamp()
 
-### Community 68 - "Community 68"
+### Community 140 - "Community 140"
 Cohesion: 0.33
 Nodes (4): args, gid, subprocess, uid
 
-### Community 69 - "Community 69"
+### Community 141 - "Community 141"
+Cohesion: 0.33
+Nodes (6): 5.1 Archive the MVP first, 5.2 V1 target layout, 5. Repository Migration and Layout, code:block2 (mvp/), code:block3 (V1-Design.md), code:block4 (apps/)
+
+### Community 142 - "Community 142"
+Cohesion: 0.33
+Nodes (6): 12. Container Concurrency Cap, code:bash (MAX_ACTIVE_CONTAINERS=10   # default), code:bash (# Read current cap), Configuration, How it works, Runtime override (admin)
+
+### Community 143 - "Community 143"
+Cohesion: 0.33
+Nodes (6): 13. Audit Log, code:bash (# Latest entries), code:bash (# Remove entries older than 90 days (default)), Retention and pruning, Viewing the audit log, What is logged
+
+### Community 144 - "Community 144"
 Cohesion: 0.33
 Nodes (5): Adding components, code:bash (npx shadcn@latest add button), code:tsx (import { Button } from "@/components/ui/button"), React + TypeScript + Vite + shadcn/ui, Using components
 
-### Community 70 - "Community 70"
+### Community 145 - "Community 145"
+Cohesion: 0.33
+Nodes (6): 5.1 Archive the MVP first, 5.2 V1 target layout, 5. Repository Migration and Layout, code:block2 (mvp/), code:block3 (V1-Design.md), code:block4 (apps/)
+
+### Community 146 - "Community 146"
 Cohesion: 0.33
 Nodes (4): args, gid, subprocess, uid
 
-### Community 71 - "Community 71"
+### Community 147 - "Community 147"
 Cohesion: 0.33
 Nodes (4): args, gid, subprocess, uid
 
-### Community 72 - "Community 72"
+### Community 148 - "Community 148"
+Cohesion: 0.5
+Nodes (5): escapeHtml(), htmlResponse(), loginPage(), webShellResponse(), workspacePage()
+
+### Community 149 - "Community 149"
+Cohesion: 0.4
+Nodes (3): denied, GATED_PATHS, PUBLIC_PATHS
+
+### Community 150 - "Community 150"
 Cohesion: 0.5
 Nodes (4): dryRun, main(), repoRoot, run()
 
-### Community 73 - "Community 73"
+### Community 151 - "Community 151"
+Cohesion: 0.4
+Nodes (5): 10.1 Sim image, 10.2 LSP image, 10. Container Design, code:block27 (docker run -d), code:block28 (docker run -d)
+
+### Community 152 - "Community 152"
+Cohesion: 0.4
+Nodes (5): 4.1 Channels, 4.2 What lives inside the merged container, 4.3 What no longer exists, 4. Target Architecture, code:block1 (Browser)
+
+### Community 153 - "Community 153"
+Cohesion: 0.4
+Nodes (5): 9.1 HTTP proxy, 9.2 WebSocket proxy, 9.3 Tokenless mode, 9.4 Health probe, 9. Editor Proxy
+
+### Community 154 - "Community 154"
 Cohesion: 0.4
 Nodes (4): Consequences, Context, Decision, Decision 014 — Better Auth Integration
 
-### Community 74 - "Community 74"
+### Community 155 - "Community 155"
 Cohesion: 0.4
 Nodes (4): 010 - Gradle project cache isolation for sim and LSP, Context, Decisions, Implications
 
-### Community 75 - "Community 75"
+### Community 156 - "Community 156"
 Cohesion: 0.4
 Nodes (4): hubBundle, replacements, repoRoot, source
 
-### Community 76 - "Community 76"
+### Community 158 - "Community 158"
+Cohesion: 0.4
+Nodes (5): 10.1 Sim image, 10.2 LSP image, 10. Container Design, code:block27 (docker run -d), code:block28 (docker run -d)
+
+### Community 159 - "Community 159"
+Cohesion: 0.4
+Nodes (5): 4.1 Channels, 4.2 What lives inside the merged container, 4.3 What no longer exists, 4. Target Architecture, code:block1 (Browser)
+
+### Community 160 - "Community 160"
+Cohesion: 0.4
+Nodes (5): 9.1 HTTP proxy, 9.2 WebSocket proxy, 9.3 Tokenless mode, 9.4 Health probe, 9. Editor Proxy
+
+### Community 161 - "Community 161"
 Cohesion: 0.4
 Nodes (4): 010 - Gradle project cache isolation for sim and LSP, Context, Decisions, Implications
 
-### Community 78 - "Community 78"
+### Community 163 - "Community 163"
+Cohesion: 0.5
+Nodes (4): 14.1 Initial sizing, 14.2 Lifecycle timeline, 14. Resource Budget and Lifecycle, code:block36 (SIM_MEMORY_LIMIT=1536m)
+
+### Community 164 - "Community 164"
 Cohesion: 0.5
 Nodes (3): Intentional Template Contents, Provenance, WPILib Java Command Starter Template
 
+### Community 165 - "Community 165"
+Cohesion: 0.5
+Nodes (4): createAdvantageScopeDist(), createTemplate(), createWebDist(), withApp()
+
+### Community 166 - "Community 166"
+Cohesion: 0.5
+Nodes (4): 14.1 Initial sizing, 14.2 Lifecycle timeline, 14. Resource Budget and Lifecycle, code:block36 (SIM_MEMORY_LIMIT=1536m)
+
 ## Knowledge Gaps
-- **1090 isolated node(s):** `workspaceSlugSchema`, `userIdSchema`, `workspaceIdSchema`, `displayNameSchema`, `workspaceRouteSchema` (+1085 more)
+- **1233 isolated node(s):** `workspaceSlugSchema`, `userIdSchema`, `workspaceIdSchema`, `displayNameSchema`, `workspaceRouteSchema` (+1228 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `isWorkspaceSlug()` connect `Community 13` to `Community 3`?**
-  _High betweenness centrality (0.067) - this node is a cross-community bridge._
-- **Why does `App()` connect `Community 13` to `Community 12`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
+- **Why does `isWorkspaceSlug()` connect `Community 15` to `Community 1`, `Community 76`?**
+  _High betweenness centrality (0.079) - this node is a cross-community bridge._
+- **Why does `App()` connect `Community 15` to `Community 29`?**
+  _High betweenness centrality (0.045) - this node is a cross-community bridge._
 - **What connects `workspaceSlugSchema`, `userIdSchema`, `workspaceIdSchema` to the rest of the system?**
-  _1090 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1233 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.02 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.03 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.03 - nodes in this community are weakly interconnected._
 - **Should `Community 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.02 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07 - nodes in this community are weakly interconnected._

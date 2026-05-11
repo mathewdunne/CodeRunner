@@ -1,6 +1,8 @@
 import type { ComponentType } from "react";
 import { Bot, Gamepad2, Wifi } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { RunConnection } from "@/hooks/useRunChannel";
+import type { BridgeConnection, SimRunStatus } from "@/lib/contracts";
 
 export type StatusTone = "ok" | "warn" | "bad";
 
@@ -55,13 +57,35 @@ export function StatusTile({ tone, label, Icon }: StatusTileProps) {
   );
 }
 
-export function StatusTileRow() {
-  // TODO: drive Comms tile from halSim.connection + runConnection.
-  // TODO: drive Robot Code tile from runStatus (running → ok, building → warn,
-  //       error/idle → bad).
+interface StatusTileRowProps {
+  halConnection: BridgeConnection;
+  runConnection: RunConnection;
+  runStatus: SimRunStatus;
+}
+
+function commsToneFromConnections(
+  halConnection: BridgeConnection,
+  runConnection: RunConnection,
+): StatusTone {
+  if (halConnection === "connected" && runConnection === "connected") return "ok";
+  if (halConnection === "reconnecting" || runConnection === "reconnecting") return "warn";
+  return "bad";
+}
+
+function robotToneFromRunStatus(runStatus: SimRunStatus): StatusTone {
+  if (runStatus === "running") return "ok";
+  if (runStatus === "building" || runStatus === "stopping") return "warn";
+  return "bad";
+}
+
+export function StatusTileRow({
+  halConnection,
+  runConnection,
+  runStatus,
+}: StatusTileRowProps) {
+  const commsTone = commsToneFromConnections(halConnection, runConnection);
+  const robotTone = robotToneFromRunStatus(runStatus);
   // TODO: drive Joysticks tile when a joystick presence API exists.
-  const commsTone: StatusTone = "ok";
-  const robotTone: StatusTone = "ok";
   const joystickTone: StatusTone = "warn";
 
   return (

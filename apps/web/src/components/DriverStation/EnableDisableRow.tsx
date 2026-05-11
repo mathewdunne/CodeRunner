@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface BigButtonProps {
   label: string;
   tone: "enable" | "disable";
   active: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }
 
@@ -15,13 +15,14 @@ const TONE_ACTIVE: Record<BigButtonProps["tone"], string> = {
     "border-red-400/60 bg-red-500/25 text-red-50 shadow-[inset_0_-2px_0_rgba(0,0,0,0.25),0_0_24px_rgba(239,68,68,0.18)]",
 };
 
-function BigButton({ label, tone, active, onClick }: BigButtonProps) {
+function BigButton({ label, tone, active, disabled = false, onClick }: BigButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={cn(
-        "h-full w-full rounded-lg border text-[14px] font-semibold uppercase tracking-wide transition-all",
+        "h-full w-full rounded-lg border text-[14px] font-semibold uppercase tracking-wide transition-all disabled:cursor-not-allowed disabled:opacity-45",
         active
           ? TONE_ACTIVE[tone]
           : "border-border bg-white/[0.03] text-muted-foreground hover:bg-white/[0.06] hover:text-foreground",
@@ -32,28 +33,26 @@ function BigButton({ label, tone, active, onClick }: BigButtonProps) {
   );
 }
 
-export function EnableDisableRow() {
-  // TODO: wire to halSim.setEnabled(...) and read halSim.enabled. Local state is
-  // a placeholder so the buttons feel interactive in the meantime.
-  const [enabled, setEnabled] = useState(false);
+interface EnableDisableRowProps {
+  enabled: boolean;
+  canEnable: boolean;
+  onSetEnabled: (enabled: boolean) => void;
+}
 
-  const handleEnable = () => {
-    setEnabled(true);
-    console.log("[enable] true");
-  };
-  const handleDisable = () => {
-    setEnabled(false);
-    console.log("[enable] false");
-  };
-
+export function EnableDisableRow({
+  enabled,
+  canEnable,
+  onSetEnabled,
+}: EnableDisableRowProps) {
   return (
     <div className="grid h-full min-h-0 gap-2.5" style={{ gridTemplateColumns: "1fr 1fr" }}>
       <div className="min-h-0 rounded-lg border border-border bg-card p-2">
         <BigButton
-          label="Enable"
+          label={enabled ? "Enabled" : "Enable"}
           tone="enable"
           active={enabled}
-          onClick={handleEnable}
+          disabled={enabled || !canEnable}
+          onClick={() => onSetEnabled(true)}
         />
       </div>
       <div className="min-h-0 rounded-lg border border-border bg-card p-2">
@@ -61,7 +60,8 @@ export function EnableDisableRow() {
           label={enabled ? "Disable" : "Disabled"}
           tone="disable"
           active={!enabled}
-          onClick={handleDisable}
+          disabled={!enabled}
+          onClick={() => onSetEnabled(false)}
         />
       </div>
     </div>

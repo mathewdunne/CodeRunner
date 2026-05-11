@@ -1,0 +1,297 @@
+import { describe, expect, test } from "bun:test";
+import { cookieFrom, createFakeDocker, login, waitFor, withApp, workspaceBySlug } from "./helpers";
+import type { RunCommandFactory } from "../runs";
+
+class FakeWebSocket {
+  readyState: number = WebSocket.CONNECTING;
+  sent: string[] = [];
+  private readonly listeners = new Map<string, Array<(event: any) => void>>();
+
+  addEventListener(type: string, listener: (event: any) => void): void {
+    const listeners = this.listeners.get(type) ?? [];
+    listeners.push(listener);
+    this.listeners.set(type, listeners);
+  }
+
+  send(data: string): void {
+    this.sent.push(data);
+  }
+
+  close(): void {
+    this.readyState = WebSocket.CLOSED;
+    this.emit("close", { reason: "closed" });
+  }
+
+  open(): void {
+    this.readyState = WebSocket.OPEN;
+    this.emit("open", {});
+  }
+
+  message(data: unknown): void {
+    this.emit("message", { data: JSON.stringify(data) });
+  }
+
+  private emit(type: string, event: any): void {
+    for (const listener of this.listeners.get(type) ?? []) {
+      listener(event);
+    }
+  }
+}
+
+function createControlledRunCommands() {
+  const encoder = new TextEncoder();
+  const commands: Array<{
+    writeStdout(line: string): void;
+    exit(code: number | null): void;
+  }> = [];
+
+  const commandFactory: RunCommandFactory = () => {
+    let stdoutController: ReadableStreamDefaultController<Uint8Array>;
+    let stderrController: ReadableStreamDefaultController<Uint8Array>;
+    let resolveExit: (exit: { code: number | null; signal: string | null }) => void = () => {};
+    const exited = new Promise<{ code: number | null; signal: string | null }>((resolve) => {
+      resolveExit = resolve;
+    });
+    const command = {
+      writeStdout(line: string) {
+        stdoutController.enqueue(encoder.encode(`${line}\n`));
+      },
+      exit(code: number | null) {
+        stdoutController.close();
+        stderrController.close();
+        resolveExit({ code, signal: null });
+      },
+    };
+    commands.push(command);
+    return {
+      stdout: new ReadableStream<Uint8Array>({
+        start(controller) {
+          stdoutController = controller;
+        },
+      }),
+      stderr: new ReadableStream<Uint8Array>({
+        start(controller) {
+          stderrController = controller;
+        },
+      }),
+      exited,
+      kill() {
+        command.exit(null);
+      },
+    };
+  };
+
+  return { commands, commandFactory };
+}
+
+describe("simulation HTTP API", () => {
+  test("returns an authenticated idle simulation snapshot", async () => {
+    const fakeDocker = createFakeDocker();
+    await withApp(
+      async (app) => {
+        const loginResponse = await login(app, "alice");
+        const cookie = cookieFrom(loginResponse);
+
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/status", {
+            headers: { cookie },
+          }),
+        );
+
+        expect(response.status).toBe(200);
+        const body = await response.json() as {
+          run: { status: string };
+          halsim: { connection: string };
+          comms: { canEnable: boolean };
+        };
+        expect(body.run.status).toBe("idle");
+        expect(body.halsim.connection).toBe("disconnected");
+        expect(body.comms.canEnable).toBe(false);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 26010, end: 26019 },
+        vscodePortRange: { start: 33310, end: 33319 },
+        halsimPortRange: { start: 34310, end: 34319 },
+      },
+    );
+  });
+
+  test("HTTP run start streams logs to an existing run WebSocket client", async () => {
+    const fakeDocker = createFakeDocker();
+    const controlled = createControlledRunCommands();
+    await withApp(
+      async (app) => {
+        const loginResponse = await login(app, "alice");
+        const cookie = cookieFrom(loginResponse);
+        const workspace = workspaceBySlug(app, "alice");
+        const messages: unknown[] = [];
+        app.runs.connect(workspace, (message) => messages.push(message));
+
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/run", {
+            method: "POST",
+            headers: { cookie, "content-type": "application/json" },
+            body: JSON.stringify({ action: "start" }),
+          }),
+        );
+
+        expect(response.status).toBe(202);
+        await waitFor(() => controlled.commands.length === 1);
+        controlled.commands[0]?.writeStdout("NT4 listening on 5810");
+        await waitFor(() => JSON.stringify(messages).includes("running"));
+        expect(messages).toContainEqual({ type: "status", status: "running" });
+        app.runs.stopWorkspace(workspace.id);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        runCommandFactory: controlled.commandFactory,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 26020, end: 26029 },
+        vscodePortRange: { start: 33320, end: 33329 },
+        halsimPortRange: { start: 34320, end: 34329 },
+      },
+    );
+  });
+
+  test("Driver Station patch returns 409 when robot code is not running", async () => {
+    const fakeDocker = createFakeDocker();
+
+    await withApp(
+      async (app) => {
+        const loginResponse = await login(app, "alice");
+        const cookie = cookieFrom(loginResponse);
+
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/driver-station", {
+            method: "PATCH",
+            headers: { cookie, "content-type": "application/json" },
+            body: JSON.stringify({ enabled: true }),
+          }),
+        );
+
+        expect(response.status).toBe(409);
+        expect(await response.json()).toMatchObject({ error: "Robot code is not running." });
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 26030, end: 26039 },
+        vscodePortRange: { start: 33330, end: 33339 },
+        halsimPortRange: { start: 34330, end: 34339 },
+      },
+    );
+  });
+
+  test("Driver Station patch returns 503 when HALSim is unavailable", async () => {
+    const fakeDocker = createFakeDocker();
+    const controlled = createControlledRunCommands();
+    const sockets: FakeWebSocket[] = [];
+
+    await withApp(
+      async (app) => {
+        const loginResponse = await login(app, "alice");
+        const cookie = cookieFrom(loginResponse);
+        const workspace = workspaceBySlug(app, "alice");
+        app.runs.start(workspace);
+        await waitFor(() => controlled.commands.length === 1);
+        controlled.commands[0]?.writeStdout("NT4 listening on 5810");
+        await waitFor(() => app.runs.getWorkspaceSnapshot(workspace.id).status === "running");
+
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/driver-station", {
+            method: "PATCH",
+            headers: { cookie, "content-type": "application/json" },
+            body: JSON.stringify({ enabled: true }),
+          }),
+        );
+
+        expect(response.status).toBe(503);
+        expect(await response.json()).toMatchObject({ error: "HALSim bridge is not connected." });
+        expect(sockets).toHaveLength(1);
+        app.runs.stopWorkspace(workspace.id);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        runCommandFactory: controlled.commandFactory,
+        halsimWebSocketFactory: () => {
+          const socket = new FakeWebSocket();
+          sockets.push(socket);
+          return socket as unknown as WebSocket;
+        },
+        codeImage: "frc-code:test",
+        simPortRange: { start: 26040, end: 26049 },
+        vscodePortRange: { start: 33340, end: 33349 },
+        halsimPortRange: { start: 34340, end: 34349 },
+      },
+    );
+  });
+
+  test("Driver Station patch sends desired state through the HALSim bridge", async () => {
+    const fakeDocker = createFakeDocker();
+    const controlled = createControlledRunCommands();
+    const sockets: FakeWebSocket[] = [];
+
+    await withApp(
+      async (app) => {
+        const loginResponse = await login(app, "alice");
+        const cookie = cookieFrom(loginResponse);
+        const workspace = workspaceBySlug(app, "alice");
+        app.runs.start(workspace);
+        await waitFor(() => controlled.commands.length === 1);
+        controlled.commands[0]?.writeStdout("NT4 listening on 5810");
+        await waitFor(() => app.runs.getWorkspaceSnapshot(workspace.id).status === "running");
+
+        const statusResponse = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/status", {
+            headers: { cookie },
+          }),
+        );
+        expect(statusResponse.status).toBe(200);
+        await waitFor(() => sockets.length === 1 && sockets[0]!.readyState === WebSocket.OPEN);
+
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/driver-station", {
+            method: "PATCH",
+            headers: { cookie, "content-type": "application/json" },
+            body: JSON.stringify({ mode: "test", enabled: true }),
+          }),
+        );
+
+        expect(response.status).toBe(200);
+        const sent = sockets[0]!.sent.map((raw) => JSON.parse(raw) as { data: Record<string, unknown> });
+        expect(sent.some((message) => message.data[">test"] === true)).toBe(true);
+        expect(sent.some((message) => message.data[">enabled"] === true)).toBe(true);
+        app.runs.stopWorkspace(workspace.id);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        runCommandFactory: controlled.commandFactory,
+        halsimWebSocketFactory: () => {
+          const socket = new FakeWebSocket();
+          sockets.push(socket);
+          queueMicrotask(() => {
+            socket.open();
+            socket.message({
+              type: "DriverStation",
+              device: "",
+              data: {
+                ">enabled": false,
+                ">autonomous": false,
+                ">test": false,
+                ">estop": false,
+                ">station": "red1",
+              },
+            });
+          });
+          return socket as unknown as WebSocket;
+        },
+        codeImage: "frc-code:test",
+        simPortRange: { start: 26050, end: 26059 },
+        vscodePortRange: { start: 33350, end: 33359 },
+        halsimPortRange: { start: 34350, end: 34359 },
+      },
+    );
+  });
+});

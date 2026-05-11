@@ -102,6 +102,68 @@ export const runServerMessageSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
+export const simRunStatusSchema = z.enum(["idle", "building", "running", "stopping", "failed", "stopped", "error"]);
+export const simRunCommandSchema = z.enum(["start", "stop", "restart"]);
+export const dsModeSchema = z.enum(["auto", "teleop", "test"]);
+export const allianceStationSchema = z.enum(["red1", "red2", "red3", "blue1", "blue2", "blue3"]);
+export const bridgeConnectionSchema = z.enum(["connected", "reconnecting", "disconnected"]);
+
+export const simRunCommandRequestSchema = z.object({
+  action: simRunCommandSchema,
+});
+
+export const driverStationPatchSchema = z
+  .object({
+    enabled: z.boolean().optional(),
+    mode: dsModeSchema.optional(),
+    eStopped: z.boolean().optional(),
+    alliance: allianceStationSchema.optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "At least one Driver Station field is required.",
+  });
+
+export const simStatusResponseSchema = z.object({
+  ok: z.literal(true),
+  workspace: z.object({
+    id: workspaceIdSchema,
+    slug: workspaceSlugSchema,
+  }),
+  container: z.object({
+    state: containerStateSchema,
+  }),
+  run: z.object({
+    status: simRunStatusSchema,
+    runId: z.string().min(1).nullable(),
+  }),
+  halsim: z.object({
+    connection: bridgeConnectionSchema,
+    connected: z.boolean(),
+    stale: z.boolean(),
+    lastMessageAt: z.string().nullable(),
+    error: z.string().nullable(),
+  }),
+  driverStation: z.object({
+    enabled: z.boolean(),
+    mode: dsModeSchema,
+    eStopped: z.boolean(),
+    alliance: allianceStationSchema,
+  }),
+  comms: z.object({
+    canEnable: z.boolean(),
+  }),
+  joysticks: z.object({
+    status: z.enum(["unknown", "connected", "disconnected"]),
+  }),
+});
+
+export const simRunCommandResponseSchema = z.object({
+  ok: z.literal(true),
+  action: simRunCommandSchema,
+  runId: z.string().min(1).nullable(),
+  status: simRunStatusSchema,
+});
+
 export type HeartbeatRequest = z.infer<typeof heartbeatRequestSchema>;
 export type SessionResponse = z.infer<typeof sessionResponseSchema>;
 export type HeartbeatResponse = z.infer<typeof heartbeatResponseSchema>;
@@ -110,6 +172,15 @@ export type ContainerState = z.infer<typeof containerStateSchema>;
 export type ContainersStatusResponse = z.infer<typeof containersStatusResponseSchema>;
 export type RunClientMessage = z.infer<typeof runClientMessageSchema>;
 export type RunServerMessage = z.infer<typeof runServerMessageSchema>;
+export type SimRunStatus = z.infer<typeof simRunStatusSchema>;
+export type SimRunCommand = z.infer<typeof simRunCommandSchema>;
+export type DsMode = z.infer<typeof dsModeSchema>;
+export type AllianceStation = z.infer<typeof allianceStationSchema>;
+export type BridgeConnection = z.infer<typeof bridgeConnectionSchema>;
+export type SimRunCommandRequest = z.infer<typeof simRunCommandRequestSchema>;
+export type DriverStationPatch = z.infer<typeof driverStationPatchSchema>;
+export type SimStatusResponse = z.infer<typeof simStatusResponseSchema>;
+export type SimRunCommandResponse = z.infer<typeof simRunCommandResponseSchema>;
 
 // --- Admin / operator schemas ---
 

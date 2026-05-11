@@ -3,6 +3,7 @@ import { useParams } from "react-router";
 import { isWorkspaceSlug } from "@/lib/contracts";
 import { useSession } from "@/hooks/useSession";
 import { useRunChannel } from "@/hooks/useRunChannel";
+import { useSimulationState } from "@/hooks/useSimulationState";
 import { useEditorReachability } from "@/hooks/useEditorReachability";
 import { useScopeHandshake } from "@/hooks/useScopeHandshake";
 import { Topbar } from "@/components/Topbar";
@@ -19,8 +20,9 @@ export function WorkspacePage() {
   );
 
   const sessionState = useSession(workspaceSlug);
-  const { runStatus, consoleLines, startRun, stopRun } =
+  const { connection: runConnection, consoleLines } =
     useRunChannel(workspaceSlug);
+  const simulation = useSimulationState(workspaceSlug);
   const editorUrl = workspaceSlug
     ? `/u/${workspaceSlug}/vscode/?folder=/workspace/project`
     : null;
@@ -59,11 +61,15 @@ export function WorkspacePage() {
         }
         driverStation={
           <DriverStation
-            runStatus={runStatus}
+            simulationStatus={simulation.status}
+            runStatus={simulation.runStatus}
+            runConnection={runConnection}
             sessionReady={sessionReady}
             consoleLines={consoleLines}
-            onStartRun={startRun}
-            onStopRun={stopRun}
+            onStartRun={simulation.startRun}
+            onStopRun={simulation.stopRun}
+            onRestartRun={simulation.restartRun}
+            onSetDriverStation={simulation.setDriverStation}
           />
         }
       />

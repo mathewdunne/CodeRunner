@@ -1,10 +1,10 @@
 import { Play, RotateCcw, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { RunStatus } from "@/hooks/useRunChannel";
+import type { SimRunStatus } from "@/lib/contracts";
 
 interface SimControlsBlockProps {
-  runStatus: RunStatus;
+  runStatus: SimRunStatus;
   sessionReady: boolean;
   onStart: () => void;
   onStop: () => void;

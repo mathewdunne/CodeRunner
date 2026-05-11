@@ -2,8 +2,10 @@ import { cp, lstat, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/p
 import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
   heartbeatRequestSchema,
+  driverStationPatchSchema,
   importRequestSchema,
   runClientMessageSchema,
+  simRunCommandRequestSchema,
   workspaceSlugSchema,
   type AdminActionResponse,
   type AdminStatusResponse,
@@ -12,11 +14,15 @@ import {
   type HeartbeatResponse,
   type ImportServerMessage,
   type SessionResponse,
+  type SimRunCommandResponse,
+  type SimRunStatus,
+  type SimStatusResponse,
   type WorkspaceId,
   type WorkspaceSlug,
 } from "@frc-sim/contracts";
 import type { ControlConfigInput } from "./config";
 import { ContainerOrchestrator, CapacityExceededError, type DockerRunner } from "./containers";
+import { HalSimBridge, type HalSimWebSocketFactory } from "./halsim";
 import { IdleManager } from "./idle";
 import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
 import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from "./storage";
@@ -42,6 +48,7 @@ export type ControlApp = {
   };
   storage: AppStorage;
   containers: ContainerOrchestrator;
+  halsim: HalSimBridge;
   runs: RunManager;
   imports: ImportManager;
   idle: IdleManager;
@@ -50,12 +57,20 @@ export type ControlApp = {
 
 export type ControlAppOptions = ControlConfigInput & {
   dockerRunner?: DockerRunner | undefined;
+  portAvailable?: ((port: number) => Promise<boolean>) | undefined;
+  upstreamFetch?: HttpFetch | undefined;
   runCommandFactory?: RunCommandFactory | undefined;
+  halsimWebSocketFactory?: HalSimWebSocketFactory | undefined;
 };
 
 type BunUpgradeServer = {
   upgrade(request: Request, options: { data: SocketData; headers?: HeadersInit }): boolean;
 };
+
+type HttpFetch = (
+  input: string | URL | Request,
+  init?: RequestInit & { decompress?: boolean },
+) => Promise<Response>;
 
 type RunSocketData = {
   kind: "run";
@@ -364,6 +379,156 @@ async function containersStatusResponse(
   }
 }
 
+function runIsActive(status: SimRunStatus): boolean {
+  return status === "building" || status === "running" || status === "stopping";
+}
+
+async function simStatusSnapshot(
+  storage: AppStorage,
+  containers: ContainerOrchestrator,
+  runs: RunManager,
+  halsim: HalSimBridge,
+  auth: AuthContext,
+): Promise<SimStatusResponse> {
+  const containerStatus = await containers.containersStatus(auth.workspace);
+  const run = runs.getWorkspaceSnapshot(auth.workspace.id);
+  const lease = storage.getContainerLease(auth.workspace.id);
+  const shouldBridgeRun =
+    runIsActive(run.status) &&
+    containerStatus.code.state === "running" &&
+    typeof lease?.halsim_port === "number";
+  const bridge =
+    shouldBridgeRun && typeof lease?.halsim_port === "number"
+      ? halsim.ensureConnected(auth.workspace.id, lease.halsim_port)
+      : halsim.getSnapshot(auth.workspace.id);
+  if (!shouldBridgeRun && !runIsActive(run.status)) {
+    halsim.disconnect(auth.workspace.id);
+  }
+
+  const canEnable =
+    containerStatus.code.state === "running" &&
+    run.status === "running" &&
+    bridge.connected &&
+    !bridge.driverStation.eStopped;
+
+  return {
+    ok: true,
+    workspace: {
+      id: auth.workspace.id,
+      slug: auth.workspace.slug,
+    },
+    container: {
+      state: containerStatus.code.state,
+    },
+    run,
+    halsim: {
+      connection: bridge.connection,
+      connected: bridge.connected,
+      stale: bridge.stale,
+      lastMessageAt: bridge.lastMessageAt,
+      error: bridge.error,
+    },
+    driverStation: bridge.driverStation,
+    comms: { canEnable },
+    joysticks: { status: "unknown" },
+  };
+}
+
+async function simStatusResponse(
+  storage: AppStorage,
+  containers: ContainerOrchestrator,
+  runs: RunManager,
+  halsim: HalSimBridge,
+  auth: AuthContext,
+): Promise<Response> {
+  try {
+    return jsonResponse(await simStatusSnapshot(storage, containers, runs, halsim, auth));
+  } catch (error) {
+    if (error instanceof CapacityExceededError) {
+      return jsonResponse(
+        { error: "capacity", limit: error.limit, current: error.current },
+        { status: 503 },
+      );
+    }
+    throw error;
+  }
+}
+
+function openApiResponse(): Response {
+  return jsonResponse({
+    openapi: "3.1.0",
+    info: {
+      title: "FRC Web Simulator Control API",
+      version: "2.0.0",
+    },
+    paths: {
+      "/u/{slug}/api/sim/status": {
+        get: {
+          summary: "Read the current simulator and Driver Station state.",
+          parameters: [{ name: "slug", in: "path", required: true, schema: { type: "string" } }],
+          responses: {
+            "200": { description: "Simulation state snapshot." },
+            "401": { description: "Authentication required." },
+            "403": { description: "Workspace access denied." },
+          },
+        },
+      },
+      "/u/{slug}/api/sim/run": {
+        post: {
+          summary: "Start, stop, or restart robot code.",
+          parameters: [{ name: "slug", in: "path", required: true, schema: { type: "string" } }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["action"],
+                  properties: {
+                    action: { enum: ["start", "stop", "restart"] },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "Run command accepted." },
+            "202": { description: "Run start accepted." },
+          },
+        },
+      },
+      "/u/{slug}/api/sim/driver-station": {
+        patch: {
+          summary: "Set desired Driver Station state.",
+          parameters: [{ name: "slug", in: "path", required: true, schema: { type: "string" } }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    enabled: { type: "boolean" },
+                    mode: { enum: ["auto", "teleop", "test"] },
+                    eStopped: { type: "boolean" },
+                    alliance: { enum: ["red1", "red2", "red3", "blue1", "blue2", "blue3"] },
+                  },
+                  minProperties: 1,
+                },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "Updated simulation state snapshot." },
+            "409": { description: "Robot code is not running." },
+            "503": { description: "HALSim bridge is unavailable." },
+          },
+        },
+      },
+    },
+  });
+}
+
 async function webAssetResponse(storage: AppStorage, rawPath: string): Promise<Response> {
   let assetPath: string;
   try {
@@ -490,12 +655,17 @@ export function stripHopByHopHeaders(source: Headers): Headers {
   return stripped;
 }
 
-async function probeVscodeReady(port: number, basePath: string, timeoutMs: number): Promise<boolean> {
+async function probeVscodeReady(
+  port: number,
+  basePath: string,
+  timeoutMs: number,
+  upstreamFetch: HttpFetch,
+): Promise<boolean> {
   const deadline = Date.now() + timeoutMs;
   const probeUrl = `http://127.0.0.1:${port}${basePath}`;
   while (Date.now() < deadline) {
     try {
-      const response = await fetch(probeUrl, {
+      const response = await upstreamFetch(probeUrl, {
         signal: AbortSignal.timeout(500),
       });
       if (response.status >= 200 && response.status < 500) {
@@ -525,6 +695,7 @@ async function vscodeHttpProxyResponse(
   auth: AuthContext,
   request: Request,
   fullPath: string,
+  upstreamFetch: HttpFetch,
 ): Promise<Response> {
   const code = await containers.ensureCodeContainer(auth.workspace);
   const lease = storage.getContainerLease(auth.workspace.id);
@@ -533,7 +704,7 @@ async function vscodeHttpProxyResponse(
   }
 
   const basePath = `/u/${auth.workspace.slug}/vscode/`;
-  if (!(await probeVscodeReady(lease.vscode_port, basePath, 30_000))) {
+  if (!(await probeVscodeReady(lease.vscode_port, basePath, 30_000, upstreamFetch))) {
     return new Response("Editor upstream did not become ready.", { status: 503 });
   }
 
@@ -541,7 +712,7 @@ async function vscodeHttpProxyResponse(
   const forwardHeaders = stripHopByHopHeaders(request.headers);
 
   try {
-    const upstream = await fetch(upstreamUrl, {
+    const upstream = await upstreamFetch(upstreamUrl, {
       method: request.method,
       headers: forwardHeaders,
       body: request.body,
@@ -566,6 +737,7 @@ async function vscodeWebSocketResponse(
   auth: AuthContext,
   request: Request,
   fullPath: string,
+  upstreamFetch: HttpFetch,
   server?: BunUpgradeServer,
 ): Promise<Response> {
   if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
@@ -584,7 +756,7 @@ async function vscodeWebSocketResponse(
 
   const slug = auth.workspace.slug;
   const basePath = `/u/${slug}/vscode/`;
-  if (!(await probeVscodeReady(lease.vscode_port, basePath, 30_000))) {
+  if (!(await probeVscodeReady(lease.vscode_port, basePath, 30_000, upstreamFetch))) {
     return new Response("Editor upstream did not become ready.", { status: 503 });
   }
 
@@ -609,7 +781,12 @@ async function vscodeWebSocketResponse(
   return undefined as unknown as Response;
 }
 
-async function nt4AliveResponse(storage: AppStorage, containers: ContainerOrchestrator, auth: AuthContext): Promise<Response> {
+async function nt4AliveResponse(
+  storage: AppStorage,
+  containers: ContainerOrchestrator,
+  auth: AuthContext,
+  upstreamFetch: HttpFetch,
+): Promise<Response> {
   const code = await containers.ensureCodeContainer(auth.workspace);
   const lease = storage.getContainerLease(auth.workspace.id);
   if (code.state !== "running" || !lease?.nt4_port) {
@@ -617,7 +794,7 @@ async function nt4AliveResponse(storage: AppStorage, containers: ContainerOrches
   }
 
   try {
-    const upstream = await fetch(`http://127.0.0.1:${lease.nt4_port}/`, {
+    const upstream = await upstreamFetch(`http://127.0.0.1:${lease.nt4_port}/`, {
       signal: AbortSignal.timeout(500),
     });
     if (!upstream.ok) {
@@ -825,15 +1002,27 @@ function auditActor(adminResult: { user: { id: string; email: string } }): Audit
 }
 
 export async function createApp(configInput: ControlAppOptions = {}): Promise<ControlApp> {
-  const { dockerRunner, runCommandFactory, ...storageConfig } = configInput;
+  const {
+    dockerRunner,
+    portAvailable,
+    upstreamFetch: configuredUpstreamFetch,
+    runCommandFactory,
+    halsimWebSocketFactory,
+    ...storageConfig
+  } = configInput;
+  const upstreamFetch = configuredUpstreamFetch ?? globalThis.fetch;
   const storage = await createStorage(storageConfig);
-  const containers = new ContainerOrchestrator(storage, { dockerRunner });
+  const containers = new ContainerOrchestrator(storage, { dockerRunner, portAvailable });
+  const halsim = new HalSimBridge(
+    halsimWebSocketFactory ? { webSocketFactory: halsimWebSocketFactory } : {},
+  );
   const runs = new RunManager(storage, containers, { commandFactory: runCommandFactory });
   const imports = new ImportManager(storage, containers);
   const idle = new IdleManager({
     storage,
     containers,
     onStop: (workspaceId) => {
+      halsim.disconnect(workspaceId);
       console.log(`Idle sweep stopped containers for workspace ${workspaceId}`);
     },
   });
@@ -844,6 +1033,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
     if (url.pathname === "/healthz") {
       return Response.json({ ok: true, service: "control", version: "v2-3" });
+    }
+
+    if (url.pathname === "/api/openapi.json" && request.method === "GET") {
+      return openApiResponse();
     }
 
     if ((url.pathname === "/scope" || url.pathname.startsWith("/scope/")) && request.method === "GET") {
@@ -1343,7 +1536,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
       if (suffix === "/sim/alive" && request.method === "GET") {
         try {
-          return await nt4AliveResponse(storage, containers, auth);
+          return await nt4AliveResponse(storage, containers, auth, upstreamFetch);
         } catch (error) {
           return capacityErrorResponse(error) ?? apiErrorResponse(error, "Simulator not available.");
         }
@@ -1374,9 +1567,9 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         const fullPath = url.pathname + (url.search || "");
         try {
           if (request.headers.get("upgrade")?.toLowerCase() === "websocket") {
-            return await vscodeWebSocketResponse(storage, containers, auth, request, fullPath, server);
+            return await vscodeWebSocketResponse(storage, containers, auth, request, fullPath, upstreamFetch, server);
           }
-          return await vscodeHttpProxyResponse(storage, containers, auth, request, fullPath);
+          return await vscodeHttpProxyResponse(storage, containers, auth, request, fullPath, upstreamFetch);
         } catch (error) {
           return capacityErrorResponse(error) ?? apiErrorResponse(error, "Editor not available.");
         }
@@ -1398,12 +1591,70 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         }
       }
 
+      if (suffix === "/api/sim/status" && request.method === "GET") {
+        try {
+          return await simStatusResponse(storage, containers, runs, halsim, auth);
+        } catch (error) {
+          return capacityErrorResponse(error) ?? apiErrorResponse(error, "Unable to read simulation status.");
+        }
+      }
+
+      if (suffix === "/api/sim/run" && request.method === "POST") {
+        try {
+          const parsed = simRunCommandRequestSchema.parse(await request.json());
+          let runId: string | null = null;
+          if (parsed.action === "stop") {
+            runs.stopWorkspace(auth.workspace.id);
+            halsim.disconnect(auth.workspace.id);
+          } else {
+            halsim.disconnect(auth.workspace.id);
+            runId = runs.start(auth.workspace);
+          }
+          const snapshot = runs.getWorkspaceSnapshot(auth.workspace.id);
+          const body: SimRunCommandResponse = {
+            ok: true,
+            action: parsed.action,
+            runId: runId ?? snapshot.runId,
+            status: snapshot.status,
+          };
+          return jsonResponse(body, { status: parsed.action === "stop" ? 200 : 202 });
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Invalid simulation run command.";
+          return jsonResponse({ error: message }, { status: 400 });
+        }
+      }
+
+      if (suffix === "/api/sim/driver-station" && request.method === "PATCH") {
+        try {
+          const patch = driverStationPatchSchema.parse(await request.json());
+          const run = runs.getWorkspaceSnapshot(auth.workspace.id);
+          if (run.status !== "running") {
+            return jsonResponse({ error: "Robot code is not running." }, { status: 409 });
+          }
+          const code = await containers.ensureCodeContainer(auth.workspace);
+          const lease = storage.getContainerLease(auth.workspace.id);
+          if (code.state !== "running" || !lease?.halsim_port) {
+            return jsonResponse({ error: code.error ?? "HALSim is not available." }, { status: 503 });
+          }
+          halsim.applyDriverStationPatch(auth.workspace.id, lease.halsim_port, patch);
+          return jsonResponse(await simStatusSnapshot(storage, containers, runs, halsim, auth));
+        } catch (error) {
+          const status = error instanceof Error && typeof (error as Error & { status?: unknown }).status === "number"
+            ? ((error as Error & { status: number }).status)
+            : 400;
+          const message = error instanceof Error ? error.message : "Invalid Driver Station command.";
+          return jsonResponse({ error: message }, { status });
+        }
+      }
+
       if (suffix === "/api/run" && request.method === "POST") {
+        halsim.disconnect(auth.workspace.id);
         const runId = runs.start(auth.workspace);
         return jsonResponse({ ok: true, runId }, { status: 202 });
       }
 
       if (suffix === "/api/run/stop" && request.method === "POST") {
+        halsim.disconnect(auth.workspace.id);
         return jsonResponse({ ok: true, stopped: runs.stopWorkspace(auth.workspace.id) });
       }
 
@@ -1623,9 +1874,11 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       try {
         const parsed = runClientMessageSchema.parse(JSON.parse(socketMessageText(message)));
         if (parsed.type === "start") {
+          halsim.disconnect(ws.data.workspace.id);
           const runId = runs.start(ws.data.workspace, ws.data.connection);
           ws.send(JSON.stringify({ type: "hello", runId }));
         } else {
+          halsim.disconnect(ws.data.workspace.id);
           runs.stopWorkspace(ws.data.workspace.id);
         }
       } catch (error) {
@@ -1656,11 +1909,13 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     websocket,
     storage,
     containers,
+    halsim,
     runs,
     imports,
     idle,
     close() {
       idle.stop();
+      halsim.close();
       storage.close();
     },
   };

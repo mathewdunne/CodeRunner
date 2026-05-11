@@ -14,13 +14,14 @@ const PUBLIC_PATHS: Array<{ path: string; method?: "GET" | "POST" }> = [
   { path: "/" },
   { path: "/login" },
   { path: "/healthz" },
+  { path: "/api/openapi.json" },
   { path: "/scope/" },
   { path: "/scope/index.html" },
 ];
 
 const GATED_PATHS: Array<{
   path: string;
-  method?: "GET" | "POST" | "DELETE";
+  method?: "GET" | "POST" | "PATCH" | "DELETE";
   /** "deny" = expect a 401/403/redirect. */
   expect: "deny";
 }> = [
@@ -37,6 +38,9 @@ const GATED_PATHS: Array<{
   { path: "/admin/allowlist/reload", method: "POST", expect: "deny" },
   { path: "/u/alice/", expect: "deny" },
   { path: "/u/alice/api/session", expect: "deny" },
+  { path: "/u/alice/api/sim/status", expect: "deny" },
+  { path: "/u/alice/api/sim/run", method: "POST", expect: "deny" },
+  { path: "/u/alice/api/sim/driver-station", method: "PATCH", expect: "deny" },
 ];
 
 function isDenied(status: number, location: string | null): boolean {

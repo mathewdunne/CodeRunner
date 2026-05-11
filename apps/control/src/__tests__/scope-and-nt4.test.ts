@@ -49,58 +49,38 @@ describe("AdvantageScope Lite and NT4 routing", () => {
   });
 
   test("proxies authenticated sim alive checks to the workspace sim port", async () => {
-    const nt4Servers: Array<ReturnType<typeof Bun.serve>> = [];
-    const fakeDocker = createFakeDocker({
-      onRun(_name, ports) {
-        const simPort = ports.find((p) => p.containerPort === 5810);
-        if (simPort) {
-          nt4Servers.push(
-            Bun.serve({
-              hostname: "127.0.0.1",
-              port: simPort.hostPort,
-              fetch() {
-                return new Response("nt4 alive\n");
-              },
-            }),
-          );
-        }
+    const fakeDocker = createFakeDocker();
+    const upstreamFetch: ControlAppOptions["upstreamFetch"] = async () => new Response("nt4 alive\n");
+
+    await withApp(
+      async (app) => {
+        const aliceLogin = await login(app, "alice");
+        const aliceCookie = cookieFrom(aliceLogin);
+        const bobLogin = await login(app, "bob");
+        const bobCookie = cookieFrom(bobLogin);
+
+        const alive = await app.fetch(
+          new Request("http://localhost/u/alice/sim/alive", {
+            headers: { cookie: aliceCookie },
+          }),
+        );
+        expect(alive.status).toBe(200);
+        expect(await alive.text()).toContain("ok");
+
+        const bobReadsAlice = await app.fetch(
+          new Request("http://localhost/u/alice/sim/alive", {
+            headers: { cookie: bobCookie },
+          }),
+        );
+        expect(bobReadsAlice.status).toBe(403);
       },
-    });
-
-    try {
-      await withApp(
-        async (app) => {
-          const aliceLogin = await login(app, "alice");
-          const aliceCookie = cookieFrom(aliceLogin);
-          const bobLogin = await login(app, "bob");
-          const bobCookie = cookieFrom(bobLogin);
-
-          const alive = await app.fetch(
-            new Request("http://localhost/u/alice/sim/alive", {
-              headers: { cookie: aliceCookie },
-            }),
-          );
-          expect(alive.status).toBe(200);
-          expect(await alive.text()).toContain("ok");
-
-          const bobReadsAlice = await app.fetch(
-            new Request("http://localhost/u/alice/sim/alive", {
-              headers: { cookie: bobCookie },
-            }),
-          );
-          expect(bobReadsAlice.status).toBe(403);
-        },
-        {
-          dockerRunner: fakeDocker.runner,
-          codeImage: "frc-code:test",
-          simPortRange: { start: 25910, end: 25910 },
-          vscodePortRange: { start: 33100, end: 33100 },
-        },
-      );
-    } finally {
-      for (const server of nt4Servers) {
-        server.stop(true);
-      }
-    }
+      {
+        dockerRunner: fakeDocker.runner,
+        upstreamFetch,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 25910, end: 25910 },
+        vscodePortRange: { start: 33100, end: 33100 },
+      },
+    );
   });
 });

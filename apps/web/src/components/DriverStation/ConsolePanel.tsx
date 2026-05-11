@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { CodeStatusPill, type CodeStatus } from "./CodeStatusPill";
+import type { SimRunStatus } from "@/lib/contracts";
 
 interface ConsolePanelProps {
   robotLines: string[];
+  runStatus: SimRunStatus;
 }
 
 const PINNED_THRESHOLD_PX = 32;
@@ -90,7 +92,6 @@ function ConsoleViewport({
     const viewport = viewportRef.current;
     if (!viewport) return;
     viewport.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
     return () => viewport.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
@@ -133,10 +134,14 @@ function ConsoleViewport({
   );
 }
 
-export function ConsolePanel({ robotLines }: ConsolePanelProps) {
-  // TODO: drive Code Status from runStatus + container build state. For now
-  // this is hardcoded to "running" so the pill is visible during the redesign.
-  const codeStatus: CodeStatus = "running";
+function codeStatusFromRun(runStatus: SimRunStatus): CodeStatus {
+  if (runStatus === "building") return "building";
+  if (runStatus === "running") return "running";
+  return "idle";
+}
+
+export function ConsolePanel({ robotLines, runStatus }: ConsolePanelProps) {
+  const codeStatus = codeStatusFromRun(runStatus);
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">

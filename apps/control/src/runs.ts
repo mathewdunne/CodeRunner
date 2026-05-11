@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { appendFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import type { RunServerMessage, WorkspaceId } from "@frc-sim/contracts";
+import type { RunServerMessage, SimRunStatus, WorkspaceId } from "@frc-sim/contracts";
 import type { ContainerOrchestrator } from "./containers";
 import type { AppStorage, WorkspaceRow } from "./storage";
 
@@ -44,6 +44,11 @@ type RunJob = {
   buildSlotHeld: boolean;
   finished: boolean;
   readinessTimer: ReturnType<typeof setTimeout> | null;
+};
+
+export type RunSnapshot = {
+  status: SimRunStatus;
+  runId: string | null;
 };
 
 type RunManagerOptions = {
@@ -163,6 +168,8 @@ export class RunManager {
   private readonly commandFactory: RunCommandFactory;
   private readonly activeBuilds = new Set<string>();
   private readonly jobsByWorkspace = new Map<WorkspaceId, RunJob>();
+  private readonly lastStatusByWorkspace = new Map<WorkspaceId, RunSnapshot>();
+  private readonly connectionsByWorkspace = new Map<WorkspaceId, Set<RunConnection>>();
 
   constructor(
     private readonly storage: AppStorage,
@@ -179,6 +186,12 @@ export class RunManager {
       send,
     };
     const current = this.jobsByWorkspace.get(workspace.id) ?? null;
+    let workspaceConnections = this.connectionsByWorkspace.get(workspace.id);
+    if (!workspaceConnections) {
+      workspaceConnections = new Set<RunConnection>();
+      this.connectionsByWorkspace.set(workspace.id, workspaceConnections);
+    }
+    workspaceConnections.add(connection);
     if (current) {
       current.clients.add(connection);
     }
@@ -194,6 +207,11 @@ export class RunManager {
   }
 
   disconnect(connection: RunConnection): void {
+    const workspaceConnections = this.connectionsByWorkspace.get(connection.workspaceId);
+    workspaceConnections?.delete(connection);
+    if (workspaceConnections?.size === 0) {
+      this.connectionsByWorkspace.delete(connection.workspaceId);
+    }
     const current = this.jobsByWorkspace.get(connection.workspaceId);
     current?.clients.delete(connection);
   }
@@ -202,17 +220,43 @@ export class RunManager {
     return this.activeBuilds.size;
   }
 
+  getWorkspaceSnapshot(workspaceId: WorkspaceId): RunSnapshot {
+    const current = this.jobsByWorkspace.get(workspaceId);
+    if (current) {
+      return {
+        status: current.canceled && !current.finished ? "stopping" : current.state,
+        runId: current.id,
+      };
+    }
+
+    const recent = this.lastStatusByWorkspace.get(workspaceId);
+    if (recent) {
+      return recent;
+    }
+
+    const row = this.storage.getLatestRunJobForWorkspace(workspaceId);
+    if (row) {
+      return {
+        status: row.state,
+        runId: row.id,
+      };
+    }
+
+    return { status: "idle", runId: null };
+  }
+
   start(workspace: WorkspaceRow, connection?: RunConnection | null): string {
     this.cancelWorkspace(workspace.id);
 
     const runId = randomRunId();
     const logPath = runLogPath(workspace, runId);
+    const existingConnections = this.connectionsByWorkspace.get(workspace.id) ?? new Set<RunConnection>();
     const job: RunJob = {
       id: runId,
       workspace,
       state: "building",
       logPath,
-      clients: new Set(connection ? [connection] : []),
+      clients: new Set(connection ? [...existingConnections, connection] : existingConnections),
       command: null,
       canceled: false,
       reportedRunning: false,
@@ -225,6 +269,7 @@ export class RunManager {
     writeFileSync(logPath, `Run ${runId} requested for workspace ${workspace.slug}\n`, "utf8");
     this.storage.createRunJob({ id: runId, workspaceId: workspace.id, logPath });
     this.jobsByWorkspace.set(workspace.id, job);
+    this.rememberStatus(job, "building");
     this.activeBuilds.add(job.id);
     job.buildSlotHeld = true;
     void this.runJob(job);
@@ -246,10 +291,12 @@ export class RunManager {
     const job = this.jobsByWorkspace.get(workspaceId);
     if (!job) {
       this.stopContainerSim(workspaceId);
+      this.lastStatusByWorkspace.set(workspaceId, { status: "stopped", runId: null });
       return false;
     }
 
     job.canceled = true;
+    this.rememberStatus(job, "stopping");
     this.broadcast(job, { type: "status", status: "stopping" });
     this.stopContainerSim(workspaceId);
     job.command?.kill("SIGTERM");
@@ -381,6 +428,7 @@ export class RunManager {
       update.exitCode = flags.exitCode;
     }
     this.storage.updateRunJob(update);
+    this.rememberStatus(job, state);
   }
 
   private finishJob(job: RunJob, state: "failed" | "stopped", code: number | null, signal: string | null = null): void {
@@ -390,6 +438,7 @@ export class RunManager {
     job.finished = true;
     this.releaseBuildSlot(job);
     this.setJobState(job, state, { finished: true, exitCode: code });
+    this.rememberStatus(job, state);
     this.broadcast(job, { type: "status", status: state });
     this.broadcast(job, { type: "exit", code, signal });
     if (this.jobsByWorkspace.get(job.workspace.id)?.id === job.id) {
@@ -405,5 +454,12 @@ export class RunManager {
     for (const client of job.clients) {
       client.send(message);
     }
+  }
+
+  private rememberStatus(job: RunJob, status: SimRunStatus): void {
+    this.lastStatusByWorkspace.set(job.workspace.id, {
+      status,
+      runId: status === "idle" ? null : job.id,
+    });
   }
 }

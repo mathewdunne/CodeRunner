@@ -475,6 +475,22 @@ export class AppStorage {
     return (this.db.query("SELECT * FROM run_jobs WHERE id = ?").get(id) as RunJobRow | null) ?? null;
   }
 
+  getLatestRunJobForWorkspace(workspaceId: WorkspaceId): RunJobRow | null {
+    return (
+      (this.db
+        .query(
+          `
+            SELECT *
+            FROM run_jobs
+            WHERE workspace_id = ?
+            ORDER BY requested_at DESC
+            LIMIT 1
+          `,
+        )
+        .get(workspaceId) as RunJobRow | null) ?? null
+    );
+  }
+
   updateRunJob(input: {
     id: string;
     state: RunJobState;

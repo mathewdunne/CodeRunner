@@ -72,6 +72,7 @@ export async function withApp<T>(
     advantageScopeDistDir,
     sessionSecret: "test-session-secret",
     containerAutoStart: false,
+    portAvailable: options.dockerRunner ? async () => true : undefined,
     ...options,
   });
 

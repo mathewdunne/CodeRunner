@@ -90,8 +90,8 @@ Before editing the production app:
   - `eStop`
   - `dsAttached`
   - `allianceStationId`
-- Verify readback/ack behavior so `useHalSim` can initialize from authoritative
-  state after reconnect.
+- Verify readback/ack behavior so the control-plane HALSim bridge can
+  initialize from authoritative state after reconnect.
 - Record the findings in `docs/decisions/015-halsim-control-protocol.md` before
   implementing the UI.
 
@@ -137,11 +137,14 @@ WS).
 that an unauthenticated client gets 401 and an authenticated client can
 upgrade and receive at least one message from a running sim.
 
-### 3. Web: `useHalSim` hook
+### 3. Web: simulation state hook
 
-`apps/web/src/hooks/useHalSim.ts`. Connects to `/u/{slug}/sim/halsim`. State:
+`apps/web/src/hooks/useSimulationState.ts`. Polls
+`/u/{slug}/api/sim/status` and sends desired-state commands to
+`/u/{slug}/api/sim/driver-station`. State:
 
 - `connected: boolean`
+- `connection: "connected" | "reconnecting" | "disconnected"`
 - `enabled: boolean`
 - `mode: "auto" | "teleop" | "test"`
 - `eStopped: boolean`
@@ -149,24 +152,20 @@ upgrade and receive at least one message from a running sim.
 
 Actions:
 
-- `setEnabled(value: boolean)` — sends `{ ">enabled": value }`
-- `setMode(mode)` — sends `{ ">autonomous": mode === "auto", ">test":
-  mode === "test" }`
-- `setEStop(value)` — sends `{ ">eStop": value }`
-- `setAlliance(station)` — sends `{ ">allianceStationId": <enum> }`
+- `setEnabled(value: boolean)` — sends `{ "enabled": value }`
+- `setMode(mode)` — sends `{ "mode": mode }`
+- `setEStop(value)` — sends `{ "eStopped": value }`
+- `setAlliance(station)` — sends `{ "alliance": station }`
 
-The hook reconnects on disconnect with exponential backoff (start 500ms, cap
-10s, reset on success), matching `useRunChannel`'s pattern from
-[Plan 03](03-ui-scaffolding.md). It wires `dsAttached` to true while connected
-and exposes a `connection` value so the StatusReadout can show
-"Comms ●" red/amber/green.
+The browser does not connect directly to HALSim. The control plane owns the
+persistent HALSim socket and exposes connection state so the StatusReadout can
+show "Comms ●" red/amber/green.
 
 **Multi-tab note:** if a student opens two tabs of the same workspace, both
-tabs connect to the same HALSim WS and both can issue Enable/Mode commands.
-Last-write-wins on the WS, and the two tabs' UI state will diverge — that's
-acceptable. Closing the second tab and refreshing the first must restore a
-coherent UI from authoritative state (HALSim WS reads + run-status HTTP).
-**No leader-election or cross-tab coordination is in scope here.**
+tabs issue idempotent HTTP desired-state commands to the same control-plane
+bridge. Latest accepted command wins, and every tab re-syncs from the same
+status snapshot. **No leader-election or cross-tab coordination is in scope
+here.**
 
 ### 4. Web: `DriverStation` component tree
 
@@ -246,7 +245,7 @@ Write `docs/decisions/015-halsim-control-protocol.md` capturing:
   protocol stability, alignment with AdvantageScope's "Control Sim" panel).
 - The third loopback port range (`HALSIM_PORT_RANGE`) and why we don't
   expose it directly.
-- Acceptance that multi-tab control is not coordinated.
+- Acceptance that multi-tab browser clients share the control-plane bridge.
 - Future hooks the decision leaves open: gamepad binding, FMS sim,
   match-timer countdown.
 
@@ -254,7 +253,7 @@ Write `docs/decisions/015-halsim-control-protocol.md` capturing:
 
 - Control-plane: HALSim WS proxy auth + happy-path message passthrough
   (proxy.test.ts).
-- Web: a unit test for `useHalSim` hook against a mocked WebSocket — verifies
+- Web/control-plane: tests against the simulation HTTP API verify
   enable/disable serialization and state transitions.
 - Web: a component test for `OperationsPanel` — Enable button disables itself
   when `connected=false`, mode switch implicitly disables, E-stop fires
@@ -275,7 +274,8 @@ Write `docs/decisions/015-halsim-control-protocol.md` capturing:
 **Created:**
 - `apps/control/migrations/006_halsim_port.sql`
 - `docs/decisions/015-halsim-control-protocol.md`
-- `apps/web/src/hooks/useHalSim.ts`
+- `apps/control/src/halsim.ts`
+- `apps/web/src/hooks/useSimulationState.ts`
 - `apps/web/src/components/DriverStation/DriverStation.tsx`
 - `apps/web/src/components/DriverStation/OperationsPanel.tsx`
 - `apps/web/src/components/DriverStation/SimControls.tsx`

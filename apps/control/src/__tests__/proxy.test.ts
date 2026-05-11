@@ -79,294 +79,207 @@ describe("editor proxy", () => {
   });
 
   test("authenticated GET /u/<slug>/vscode/ proxies to upstream when code container runs", async () => {
-    const upstreamServers: Array<ReturnType<typeof Bun.serve>> = [];
-    const fakeDocker = createFakeDocker({
-      onRun(_name, ports) {
-        const vscodePort = ports.find((p) => p.containerPort === 3000);
-        if (vscodePort) {
-          upstreamServers.push(
-            Bun.serve({
-              port: vscodePort.hostPort,
-              hostname: "127.0.0.1",
-              fetch(request) {
-                const url = new URL(request.url);
-                return new Response(`upstream hit: ${url.pathname}`, {
-                  headers: {
-                    "content-type": "text/plain",
-                    "x-upstream-marker": "openvscode-test",
-                  },
-                });
-              },
-            }),
-          );
-        }
+    const fakeDocker = createFakeDocker();
+    const upstreamFetch: ControlAppOptions["upstreamFetch"] = async (input) => {
+      const url = new URL(String(input));
+      return new Response(`upstream hit: ${url.pathname}`, {
+        headers: {
+          "content-type": "text/plain",
+          "x-upstream-marker": "openvscode-test",
+        },
+      });
+    };
+
+    await withApp(
+      async (app) => {
+        const aliceResponse = await login(app, "alice");
+        const aliceCookie = cookieFrom(aliceResponse);
+
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/vscode/?folder=/workspace/project", {
+            method: "GET",
+            headers: { cookie: aliceCookie },
+          }),
+        );
+
+        expect(response.status).toBe(200);
+        const body = await response.text();
+        expect(body).toContain("upstream hit: /u/alice/vscode/");
+        expect(response.headers.get("x-upstream-marker")).toBe("openvscode-test");
       },
-    });
-
-    try {
-      await withApp(
-        async (app) => {
-          const aliceResponse = await login(app, "alice");
-          const aliceCookie = cookieFrom(aliceResponse);
-
-          const response = await app.fetch(
-            new Request("http://localhost/u/alice/vscode/?folder=/workspace/project", {
-              method: "GET",
-              headers: { cookie: aliceCookie },
-            }),
-          );
-
-          expect(response.status).toBe(200);
-          const body = await response.text();
-          expect(body).toContain("upstream hit: /u/alice/vscode/");
-          expect(response.headers.get("x-upstream-marker")).toBe("openvscode-test");
-        },
-        {
-          dockerRunner: fakeDocker.runner,
-          codeImage: "frc-code:test",
-          simPortRange: { start: 25920, end: 25920 },
-          vscodePortRange: { start: 33200, end: 33200 },
-        },
-      );
-    } finally {
-      for (const server of upstreamServers) {
-        server.stop(true);
-      }
-    }
+      {
+        dockerRunner: fakeDocker.runner,
+        upstreamFetch,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 25920, end: 25920 },
+        vscodePortRange: { start: 33200, end: 33200 },
+      },
+    );
   });
 
   test("authenticated GET /u/<slug>/vscode/ waits for upstream readiness", async () => {
-    const upstreamServers: Array<ReturnType<typeof Bun.serve>> = [];
-    const fakeDocker = createFakeDocker({
-      onRun(_name, ports) {
-        const vscodePort = ports.find((p) => p.containerPort === 3000);
-        if (vscodePort) {
-          setTimeout(() => {
-            upstreamServers.push(
-              Bun.serve({
-                port: vscodePort.hostPort,
-                hostname: "127.0.0.1",
-                fetch() {
-                  return new Response("delayed editor ready", {
-                    headers: { "content-type": "text/plain" },
-                  });
-                },
-              }),
-            );
-          }, 150);
-        }
-      },
-    });
-
-    try {
-      await withApp(
-        async (app) => {
-          const aliceResponse = await login(app, "alice");
-          const aliceCookie = cookieFrom(aliceResponse);
-          const startedAt = Date.now();
-
-          const response = await app.fetch(
-            new Request("http://localhost/u/alice/vscode/", {
-              method: "GET",
-              headers: { cookie: aliceCookie },
-            }),
-          );
-
-          expect(response.status).toBe(200);
-          expect(Date.now() - startedAt).toBeGreaterThanOrEqual(100);
-          expect(await response.text()).toBe("delayed editor ready");
-        },
-        {
-          dockerRunner: fakeDocker.runner,
-          codeImage: "frc-code:test",
-          simPortRange: { start: 25924, end: 25924 },
-          vscodePortRange: { start: 33204, end: 33204 },
-        },
-      );
-    } finally {
-      for (const server of upstreamServers) {
-        server.stop(true);
+    const fakeDocker = createFakeDocker();
+    let readyAt: number | null = null;
+    const upstreamFetch: ControlAppOptions["upstreamFetch"] = async () => {
+      readyAt ??= Date.now() + 150;
+      if (Date.now() < readyAt) {
+        return new Response("editor starting", { status: 503 });
       }
-    }
+      return new Response("delayed editor ready", {
+        headers: { "content-type": "text/plain" },
+      });
+    };
+
+    await withApp(
+      async (app) => {
+        const aliceResponse = await login(app, "alice");
+        const aliceCookie = cookieFrom(aliceResponse);
+        const startedAt = Date.now();
+
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/vscode/", {
+            method: "GET",
+            headers: { cookie: aliceCookie },
+          }),
+        );
+
+        expect(response.status).toBe(200);
+        expect(Date.now() - startedAt).toBeGreaterThanOrEqual(100);
+        expect(await response.text()).toBe("delayed editor ready");
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        upstreamFetch,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 25924, end: 25924 },
+        vscodePortRange: { start: 33204, end: 33204 },
+      },
+    );
   });
 
   test("hop-by-hop headers are stripped from proxy requests", async () => {
     let receivedHeaders: Record<string, string> = {};
-    const upstreamServers: Array<ReturnType<typeof Bun.serve>> = [];
-    const fakeDocker = createFakeDocker({
-      onRun(_name, ports) {
-        const vscodePort = ports.find((p) => p.containerPort === 3000);
-        if (vscodePort) {
-          upstreamServers.push(
-            Bun.serve({
-              port: vscodePort.hostPort,
-              hostname: "127.0.0.1",
-              fetch(request) {
-                receivedHeaders = {};
-                request.headers.forEach((value, key) => {
-                  receivedHeaders[key] = value;
-                });
-                return new Response("ok", {
-                  headers: {
-                    "content-type": "text/plain",
-                    "connection": "keep-alive",
-                    "keep-alive": "timeout=5",
-                    "transfer-encoding": "chunked",
-                    "x-real-header": "should-pass",
-                  },
-                });
-              },
-            }),
-          );
-        }
+    const fakeDocker = createFakeDocker();
+    const upstreamFetch: ControlAppOptions["upstreamFetch"] = async (_input, init) => {
+      receivedHeaders = {};
+      new Headers(init?.headers).forEach((value, key) => {
+        receivedHeaders[key] = value;
+      });
+      return new Response("ok", {
+        headers: {
+          "content-type": "text/plain",
+          "connection": "keep-alive",
+          "keep-alive": "timeout=5",
+          "transfer-encoding": "chunked",
+          "x-real-header": "should-pass",
+        },
+      });
+    };
+
+    await withApp(
+      async (app) => {
+        const aliceResponse = await login(app, "alice");
+        const aliceCookie = cookieFrom(aliceResponse);
+
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/vscode/", {
+            method: "GET",
+            headers: {
+              cookie: aliceCookie,
+              connection: "keep-alive, x-custom-hop",
+              "keep-alive": "timeout=5",
+              "proxy-authorization": "Basic abc",
+              "x-custom-hop": "should-be-stripped",
+              "x-normal-header": "should-pass-through",
+            },
+          }),
+        );
+
+        expect(response.status).toBe(200);
+
+        expect(receivedHeaders["proxy-authorization"]).toBeUndefined();
+        expect(receivedHeaders["x-custom-hop"]).toBeUndefined();
+        expect(receivedHeaders["x-normal-header"]).toBe("should-pass-through");
+
+        expect(response.headers.get("connection")).toBeNull();
+        expect(response.headers.get("keep-alive")).toBeNull();
+        expect(response.headers.get("transfer-encoding")).toBeNull();
+        expect(response.headers.get("x-real-header")).toBe("should-pass");
       },
-    });
-
-    try {
-      await withApp(
-        async (app) => {
-          const aliceResponse = await login(app, "alice");
-          const aliceCookie = cookieFrom(aliceResponse);
-
-          const response = await app.fetch(
-            new Request("http://localhost/u/alice/vscode/", {
-              method: "GET",
-              headers: {
-                cookie: aliceCookie,
-                connection: "keep-alive, x-custom-hop",
-                "keep-alive": "timeout=5",
-                "proxy-authorization": "Basic abc",
-                "x-custom-hop": "should-be-stripped",
-                "x-normal-header": "should-pass-through",
-              },
-            }),
-          );
-
-          expect(response.status).toBe(200);
-
-          expect(receivedHeaders["proxy-authorization"]).toBeUndefined();
-          expect(receivedHeaders["x-custom-hop"]).toBeUndefined();
-          expect(receivedHeaders["x-normal-header"]).toBe("should-pass-through");
-
-          expect(response.headers.get("connection")).toBeNull();
-          expect(response.headers.get("keep-alive")).toBeNull();
-          expect(response.headers.get("transfer-encoding")).toBeNull();
-          expect(response.headers.get("x-real-header")).toBe("should-pass");
-        },
-        {
-          dockerRunner: fakeDocker.runner,
-          codeImage: "frc-code:test",
-          simPortRange: { start: 25921, end: 25921 },
-          vscodePortRange: { start: 33201, end: 33201 },
-        },
-      );
-    } finally {
-      for (const server of upstreamServers) {
-        server.stop(true);
-      }
-    }
+      {
+        dockerRunner: fakeDocker.runner,
+        upstreamFetch,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 25921, end: 25921 },
+        vscodePortRange: { start: 33201, end: 33201 },
+      },
+    );
   });
 
   test("vscode proxy passes query strings through", async () => {
     let receivedPath = "";
-    const upstreamServers: Array<ReturnType<typeof Bun.serve>> = [];
-    const fakeDocker = createFakeDocker({
-      onRun(_name, ports) {
-        const vscodePort = ports.find((p) => p.containerPort === 3000);
-        if (vscodePort) {
-          upstreamServers.push(
-            Bun.serve({
-              port: vscodePort.hostPort,
-              hostname: "127.0.0.1",
-              fetch(request) {
-                const url = new URL(request.url);
-                receivedPath = url.pathname + url.search;
-                return new Response("ok");
-              },
-            }),
-          );
-        }
+    const fakeDocker = createFakeDocker();
+    const upstreamFetch: ControlAppOptions["upstreamFetch"] = async (input) => {
+      const url = new URL(String(input));
+      receivedPath = url.pathname + url.search;
+      return new Response("ok");
+    };
+
+    await withApp(
+      async (app) => {
+        const aliceResponse = await login(app, "alice");
+        const aliceCookie = cookieFrom(aliceResponse);
+
+        await app.fetch(
+          new Request("http://localhost/u/alice/vscode/?folder=/workspace/project&some=extra", {
+            method: "GET",
+            headers: { cookie: aliceCookie },
+          }),
+        );
+
+        expect(receivedPath).toBe("/u/alice/vscode/?folder=/workspace/project&some=extra");
       },
-    });
-
-    try {
-      await withApp(
-        async (app) => {
-          const aliceResponse = await login(app, "alice");
-          const aliceCookie = cookieFrom(aliceResponse);
-
-          await app.fetch(
-            new Request("http://localhost/u/alice/vscode/?folder=/workspace/project&some=extra", {
-              method: "GET",
-              headers: { cookie: aliceCookie },
-            }),
-          );
-
-          expect(receivedPath).toBe("/u/alice/vscode/?folder=/workspace/project&some=extra");
-        },
-        {
-          dockerRunner: fakeDocker.runner,
-          codeImage: "frc-code:test",
-          simPortRange: { start: 25922, end: 25922 },
-          vscodePortRange: { start: 33202, end: 33202 },
-        },
-      );
-    } finally {
-      for (const server of upstreamServers) {
-        server.stop(true);
-      }
-    }
+      {
+        dockerRunner: fakeDocker.runner,
+        upstreamFetch,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 25922, end: 25922 },
+        vscodePortRange: { start: 33202, end: 33202 },
+      },
+    );
   });
 
   test("vscode proxy handles sub-paths correctly", async () => {
     let receivedPath = "";
-    const upstreamServers: Array<ReturnType<typeof Bun.serve>> = [];
-    const fakeDocker = createFakeDocker({
-      onRun(_name, ports) {
-        const vscodePort = ports.find((p) => p.containerPort === 3000);
-        if (vscodePort) {
-          upstreamServers.push(
-            Bun.serve({
-              port: vscodePort.hostPort,
-              hostname: "127.0.0.1",
-              fetch(request) {
-                const url = new URL(request.url);
-                receivedPath = url.pathname;
-                return new Response("ok");
-              },
-            }),
-          );
-        }
+    const fakeDocker = createFakeDocker();
+    const upstreamFetch: ControlAppOptions["upstreamFetch"] = async (input) => {
+      const url = new URL(String(input));
+      receivedPath = url.pathname;
+      return new Response("ok");
+    };
+
+    await withApp(
+      async (app) => {
+        const aliceResponse = await login(app, "alice");
+        const aliceCookie = cookieFrom(aliceResponse);
+
+        await app.fetch(
+          new Request("http://localhost/u/alice/vscode/static/workbench.js", {
+            method: "GET",
+            headers: { cookie: aliceCookie },
+          }),
+        );
+
+        expect(receivedPath).toBe("/u/alice/vscode/static/workbench.js");
       },
-    });
-
-    try {
-      await withApp(
-        async (app) => {
-          const aliceResponse = await login(app, "alice");
-          const aliceCookie = cookieFrom(aliceResponse);
-
-          await app.fetch(
-            new Request("http://localhost/u/alice/vscode/static/workbench.js", {
-              method: "GET",
-              headers: { cookie: aliceCookie },
-            }),
-          );
-
-          expect(receivedPath).toBe("/u/alice/vscode/static/workbench.js");
-        },
-        {
-          dockerRunner: fakeDocker.runner,
-          codeImage: "frc-code:test",
-          simPortRange: { start: 25923, end: 25923 },
-          vscodePortRange: { start: 33203, end: 33203 },
-        },
-      );
-    } finally {
-      for (const server of upstreamServers) {
-        server.stop(true);
-      }
-    }
+      {
+        dockerRunner: fakeDocker.runner,
+        upstreamFetch,
+        codeImage: "frc-code:test",
+        simPortRange: { start: 25923, end: 25923 },
+        vscodePortRange: { start: 33203, end: 33203 },
+      },
+    );
   });
 });
 

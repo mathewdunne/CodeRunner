@@ -135,6 +135,7 @@ describe("code container orchestration", () => {
       sessionSecret: "test-session-secret",
       containerAutoStart: false,
       dockerRunner: fakeDocker.runner,
+      portAvailable: async () => true,
       codeImage: "frc-code:test",
       simPortRange: { start: 25812, end: 25812 },
       vscodePortRange: { start: 33002, end: 33002 },

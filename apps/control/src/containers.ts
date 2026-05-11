@@ -18,6 +18,7 @@ export type DockerRunner = (args: string[]) => Promise<DockerCommandResult>;
 
 type ContainerOrchestratorOptions = {
   dockerRunner?: DockerRunner | undefined;
+  portAvailable?: ((port: number) => Promise<boolean>) | undefined;
 };
 
 export type CodeContainerStatus = ContainersStatusResponse["code"];
@@ -227,6 +228,7 @@ export class CapacityExceededError extends Error {
 
 export class ContainerOrchestrator {
   private readonly dockerRunner: DockerRunner;
+  private readonly portAvailable: (port: number) => Promise<boolean>;
   private readonly activeEnsures = new Map<string, Promise<CodeContainerStatus>>();
   private portReservationLock: Promise<void> = Promise.resolve();
   private admissionLock: Promise<void> = Promise.resolve();
@@ -237,6 +239,7 @@ export class ContainerOrchestrator {
     options: ContainerOrchestratorOptions = {},
   ) {
     this.dockerRunner = options.dockerRunner ?? ((args) => runDockerCli(this.storage.config.dockerPath, args));
+    this.portAvailable = options.portAvailable ?? portIsFree;
   }
 
   startWorkspaceContainers(workspace: WorkspaceRow): void {
@@ -526,7 +529,7 @@ export class ContainerOrchestrator {
       if (leasedPorts.has(port)) {
         continue;
       }
-      if (await portIsFree(port)) {
+      if (await this.portAvailable(port)) {
         return port;
       }
     }

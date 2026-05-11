@@ -1,15 +1,13 @@
-import { useState } from "react";
 import { cn } from "@/lib/utils";
+import type { DsMode } from "@/lib/contracts";
 
-type Mode = "teleop" | "auto" | "test";
-
-const MODE_LABELS: Record<Mode, string> = {
+const MODE_LABELS: Record<DsMode, string> = {
   teleop: "Teleop",
   auto: "Auto",
   test: "Test",
 };
 
-const MODE_CLASSES: Record<Mode, { active: string }> = {
+const MODE_CLASSES: Record<DsMode, { active: string }> = {
   teleop: {
     active: "border-blue-400/60 bg-blue-500/20 text-blue-100",
   },
@@ -21,28 +19,24 @@ const MODE_CLASSES: Record<Mode, { active: string }> = {
   },
 };
 
-export function ModeColumn() {
-  // TODO: wire to halSim.setMode(...) and read halSim.mode. Local state is a
-  // placeholder so the buttons feel interactive in the meantime.
-  const [mode, setMode] = useState<Mode>("teleop");
+interface ModeColumnProps {
+  mode: DsMode;
+  onSelect: (mode: DsMode) => void;
+}
 
-  const handleSelect = (next: Mode) => {
-    setMode(next);
-    console.log(`[mode] selected ${next}`);
-  };
-
+export function ModeColumn({ mode, onSelect }: ModeColumnProps) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden rounded-lg border border-border bg-card p-2">
       <span className="px-1 pt-0.5 text-[9.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
         Mode
       </span>
-      {(Object.keys(MODE_LABELS) as Mode[]).map((m) => {
+      {(Object.keys(MODE_LABELS) as DsMode[]).map((m) => {
         const active = mode === m;
         return (
           <button
             key={m}
             type="button"
-            onClick={() => handleSelect(m)}
+            onClick={() => onSelect(m)}
             className={cn(
               "min-h-[18px] flex-1 rounded-md border px-2 text-[11px] font-semibold uppercase leading-none tracking-[0.12em] transition-colors",
               active
