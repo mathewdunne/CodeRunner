@@ -1,0 +1,52 @@
+// sim-headless.init.gradle
+//
+// Gradle init script for headless simulation in the Docker environment.
+// Applied via --init-script in start-sim.sh.
+//
+// - Removes halsim_gui and halsim_ds_socket (no X11/display available)
+// - Ensures halsim_ws_server is enabled (for web Driver Station control)
+//
+// See docs/decisions/016-imported-project-sim-compat.md
+
+allprojects {
+    afterEvaluate { project ->
+        def wpi = project.extensions.findByName('wpi')
+        if (wpi == null) return
+
+        // Remove GUI and DriverStation simulation extensions.
+        // These require X11/GLFW which is unavailable in the container.
+        ['simulationDebug', 'simulationRelease'].each { configName ->
+            def config = project.configurations.findByName(configName)
+            if (config != null) {
+                def removed = config.dependencies.removeAll { dep ->
+                    def name = dep.name ?: ''
+                    name.contains('halsim_gui') || name.contains('halsim_ds_socket')
+                }
+                if (removed) {
+                    project.logger.lifecycle(
+                        "sim-headless: removed GUI/DS extensions from ${configName}"
+                    )
+                }
+            }
+        }
+
+        // Ensure the HALSim WebSocket server is present for remote
+        // Driver Station control from the web UI.
+        boolean hasWsServer = ['simulationDebug', 'simulationRelease'].any { configName ->
+            project.configurations.findByName(configName)?.dependencies?.any { dep ->
+                (dep.name ?: '').contains('halsim_ws_server')
+            }
+        }
+
+        if (!hasWsServer) {
+            try {
+                wpi.sim.addWebsocketsServer().defaultEnabled = true
+                project.logger.lifecycle(
+                    'sim-headless: added halsim_ws_server for web Driver Station'
+                )
+            } catch (Exception e) {
+                project.logger.warn("sim-headless: could not add ws server: ${e.message}")
+            }
+        }
+    }
+}

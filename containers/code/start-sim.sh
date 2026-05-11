@@ -29,6 +29,13 @@ rm -f "$log_file"
 export HALSIMWS_HOST="${HALSIMWS_HOST:-0.0.0.0}"
 export HALSIMWS_PORT="${HALSIMWS_PORT:-3300}"
 
-setsid ./gradlew --no-daemon --console=plain --project-cache-dir "$GRADLE_PROJECT_CACHE_DIR" simulateJava >"$log_file" 2>&1 &
+INIT_SCRIPT="/usr/local/share/frc/sim-headless.init.gradle"
+
+init_script_args=()
+if [[ -f "$INIT_SCRIPT" ]]; then
+  init_script_args=(--init-script "$INIT_SCRIPT")
+fi
+
+setsid ./gradlew --no-daemon --console=plain --project-cache-dir "$GRADLE_PROJECT_CACHE_DIR" "${init_script_args[@]}" simulateJava >"$log_file" 2>&1 &
 echo "$!" >"$pid_file"
 echo "started sim with pid $(cat "$pid_file")"

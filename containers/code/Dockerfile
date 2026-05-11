@@ -9,7 +9,11 @@ USER root
 # ── System dependencies ────────────────────────────────────────────────
 RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends \
-        tini procps ca-certificates curl wget git \
+        tini procps ca-certificates curl wget git software-properties-common \
+    && add-apt-repository -y ppa:ubuntu-toolchain-r/test \
+    && apt-get update -qq \
+    && apt-get install -y --no-install-recommends libstdc++6 \
+    && apt-get purge -y --auto-remove software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
 # ── JDK 17 (Adoptium Temurin, Linux x64) ──────────────────────────────
@@ -47,6 +51,7 @@ ENV GRADLE_USER_HOME=/home/frc/.gradle
 
 # ── Scripts ────────────────────────────────────────────────────────────
 COPY containers/code/entrypoint.sh containers/code/start-sim.sh containers/code/stop-sim.sh /usr/local/bin/
+COPY containers/code/sim-headless.init.gradle /usr/local/share/frc/sim-headless.init.gradle
 
 RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh \
     && chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh
