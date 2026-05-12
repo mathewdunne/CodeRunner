@@ -1,15 +1,16 @@
 # V2 merged code container
-# Combines openvscode-server + JDK 17 + Gradle/WPILib cache + redhat.java + vscode-wpilib
-# Base: linuxserver/openvscode-server (Ubuntu 24.04 Noble, s6-overlay)
+# Layers JDK 17 + Gradle/WPILib cache + FRC extensions on linuxserver/openvscode-server
+# Base already provides: openvscode-server, s6-overlay, abc user, PUID/PGID support
 # See docs/decisions/017-linuxserver-base-migration.md
 
-FROM ghcr.io/linuxserver/baseimage-ubuntu:noble
+FROM linuxserver/openvscode-server:1.109.5
 
 # ── System dependencies ────────────────────────────────────────────────
 # Ubuntu 24.04 ships GLIBCXX_3.4.32+ natively — no PPA needed.
+# procps is needed for sim scripts (pkill/pgrep).
 RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends \
-        procps ca-certificates curl wget git libatomic1 \
+        procps wget \
     && rm -rf /var/lib/apt/lists/*
 
 # ── JDK 17 (Adoptium Temurin, Linux x64) ──────────────────────────────
@@ -27,17 +28,6 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 RUN java -version
 
-# ── OpenVSCode Server ──────────────────────────────────────────────────
-ARG CODE_RELEASE=1.100.2
-ENV OPENVSCODE_SERVER_ROOT=/app/openvscode-server
-
-RUN mkdir -p ${OPENVSCODE_SERVER_ROOT} \
-    && curl -sL \
-       "https://github.com/gitpod-io/openvscode-server/releases/download/openvscode-server-v${CODE_RELEASE}/openvscode-server-v${CODE_RELEASE}-linux-x64.tar.gz" \
-       | tar xz -C ${OPENVSCODE_SERVER_ROOT} --strip-components=1
-
-ENV OPENVSCODE=${OPENVSCODE_SERVER_ROOT}/bin/openvscode-server
-
 # ── Scripts ────────────────────────────────────────────────────────────
 COPY containers/code/start-sim.sh containers/code/stop-sim.sh /usr/local/bin/
 COPY containers/code/sim-headless.init.gradle /usr/local/share/frc/sim-headless.init.gradle
@@ -45,7 +35,8 @@ COPY containers/code/sim-headless.init.gradle /usr/local/share/frc/sim-headless.
 RUN sed -i 's/\r$//' /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh \
     && chmod +x /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh
 
-# ── s6-overlay service definitions ────────────────────────────────────
+# ── s6-overlay service definitions (additive to upstream) ─────────────
+# Adds init-frc-setup oneshot and overrides svc-openvscode-server run script.
 COPY containers/code/root/ /
 
 # ── Download and install VS Code extensions ────────────────────────────
@@ -82,7 +73,8 @@ RUN mkdir -p /tmp/exts \
 
 # Install to a baked cache directory; the init script seeds per-workspace configs.
 RUN mkdir -p /opt/frc-extensions-cache \
-    && ${OPENVSCODE} --install-extension /tmp/exts/redhat.java.vsix \
+    && /app/openvscode-server/bin/openvscode-server \
+                     --install-extension /tmp/exts/redhat.java.vsix \
                      --install-extension /tmp/exts/vscode-wpilib.vsix \
                      --install-extension /tmp/exts/vscode-java-debug.vsix \
                      --install-extension /tmp/exts/vscode-java-test.vsix \
@@ -94,9 +86,6 @@ RUN mkdir -p /opt/frc-extensions-cache \
                      --extensions-dir /opt/frc-extensions-cache \
     && rm -rf /tmp/exts
 
-# Make openvscode-server readable by any UID.
-RUN chmod -R a+rX ${OPENVSCODE_SERVER_ROOT}
-
 # ── Gradle / WPILib cache priming ─────────────────────────────────────
 WORKDIR /workspace
 COPY templates/wpilib-java-command/ /workspace/template/
@@ -104,7 +93,6 @@ COPY templates/wpilib-java-command/ /workspace/template/
 RUN chown -R abc:abc /workspace
 
 USER abc
-ENV HOME=/config
 ENV GRADLE_USER_HOME=/config/.gradle
 WORKDIR /workspace/template
 
@@ -119,8 +107,8 @@ RUN mkdir -p /opt/frc-gradle-cache \
     && rm -rf /config/.gradle
 
 # ── Runtime defaults ──────────────────────────────────────────────────
-RUN mkdir -p /workspace/project /config \
-    && chown -R abc:abc /workspace /config
+RUN mkdir -p /workspace/project \
+    && chown -R abc:abc /workspace
 
 WORKDIR /workspace/project
 

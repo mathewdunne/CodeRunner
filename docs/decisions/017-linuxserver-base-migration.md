@@ -1,4 +1,4 @@
-# 017 — Migrate code container to linuxserver/openvscode-server base
+# 017 — Migrate code container to linuxserver/openvscode-server
 
 **Status:** Implemented  
 **Date:** 2026-05-11
@@ -10,22 +10,28 @@ Decision 016 noted that switching from `gitpod/openvscode-server:1.105.1` (Ubunt
 The gitpod base image was aging: Ubuntu 22.04 required a PPA workaround for GLIBCXX_3.4.32 (needed by WPILib vendor JNI libs like PhotonLib), and the image is no longer actively maintained. The linuxserver.io image provides:
 
 - Ubuntu 24.04 (Noble) with native GLIBCXX_3.4.32+ support
+- openvscode-server pre-installed at `/app/openvscode-server/`
 - s6-overlay for proper process supervision
 - Runtime UID/GID configuration via PUID/PGID (no build-time user creation)
 - Active maintenance with security patches
 
 ## Decisions
 
-### Use `ghcr.io/linuxserver/baseimage-ubuntu:noble` as base
+### Use `linuxserver/openvscode-server` as base
 
-We extend the linuxserver base image rather than using `linuxserver/openvscode-server` directly. This gives us s6-overlay and the LSIO user model while allowing us to pin our own openvscode-server version and install extensions/JDK as before.
+We extend `linuxserver/openvscode-server:1.109.5` directly rather than the bare `baseimage-ubuntu:noble`. This gives us a fully working openvscode-server with its s6 service, init scripts, and the LSIO user model out of the box. We layer JDK, extensions, and Gradle cache on top.
 
-### s6-overlay replaces tini + monolithic entrypoint
+The openvscode-server version is pinned via the image tag (currently 1.109.5).
+
+### Layered s6-overlay: additive, not replacement
+
+The upstream image already provides `init-openvscode-server` (oneshot) and `svc-openvscode-server` (longrun). We add:
 
 - `init-frc-setup` (oneshot): seeds Gradle cache, extensions, validates project mount
-- `svc-openvscode-server` (longrun): launches the editor with `s6-setuidgid abc`
+- Override of `svc-openvscode-server/run`: custom launch with `--extensions-dir`, `--user-data-dir`, `--server-base-path`, and workspace folder arg
+- Dependency link: `svc-openvscode-server → init-frc-setup` ensures our init completes before the editor starts
 
-This replaces the single `entrypoint.sh` that handled both initialization and exec-ing the server.
+The upstream's `type`, `notification-fd`, and `dependencies.d/init-services` are preserved — we only add/override files.
 
 ### Runtime PUID/PGID instead of build-time --user
 
@@ -51,6 +57,6 @@ The linuxserver convention uses `/config` as the persistent data directory (HOME
 ## Verification
 
 - Typecheck: passes
-- All 126 tests pass
+- All tests pass
 - Template project builds and simulates
 - Imported projects with vendor deps load JNI libs without GLIBCXX errors

@@ -6,8 +6,8 @@ Merged per-student container for V2. Combines openvscode-server + Java IDE + WPI
 
 | Component | Version | Purpose |
 |---|---|---|
-| Base image | linuxserver/baseimage-ubuntu:noble | Ubuntu 24.04, s6-overlay, PUID/PGID user model |
-| openvscode-server | 1.100.2 | Browser-based VS Code editor |
+| Base image | linuxserver/openvscode-server:1.109.5 | Ubuntu 24.04, s6-overlay, openvscode-server, PUID/PGID |
+| openvscode-server | 1.109.5 (from base) | Browser-based VS Code editor |
 | JDK | Temurin 17.0.15+6 | Java compilation and simulation |
 | redhat.java | 1.38.0 | Java language support (JDT LS) |
 | vscode-wpilib | 2026.1.1 | WPILib project tooling |
@@ -82,10 +82,11 @@ docker run -d \
 
 ## s6-overlay Services
 
-The container uses s6-overlay for process supervision:
+The container uses s6-overlay for process supervision. The upstream `linuxserver/openvscode-server` image provides the base services; we add FRC-specific layers:
 
-- **`init-frc-setup`** (oneshot): Seeds Gradle cache and extensions on first run, validates project mount, fixes permissions.
-- **`svc-openvscode-server`** (longrun): Launches openvscode-server as `abc` user with health check.
+- **`init-openvscode-server`** (upstream): Creates `/config` dirs, fixes permissions, configures sudo.
+- **`init-frc-setup`** (ours, oneshot): Seeds Gradle cache and extensions on first run, validates project mount, fixes permissions.
+- **`svc-openvscode-server`** (upstream, run script overridden): Launches openvscode-server as `abc` user with health check, custom extensions/data dirs, and server-base-path.
 
 ## First-Run Behavior
 
