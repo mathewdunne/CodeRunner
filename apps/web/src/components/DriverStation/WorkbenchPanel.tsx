@@ -40,7 +40,7 @@ export function WorkbenchPanel({
       className="grid h-full min-h-0 w-[560px] shrink-0 overflow-hidden gap-2.5 border-r border-border p-3"
       style={{
         gridTemplateColumns: "1fr 130px",
-        gridTemplateRows: "minmax(86px, 1fr) minmax(92px, 1.35fr) minmax(68px, 1fr)",
+        gridTemplateRows: "minmax(60px, 0.7fr) minmax(64px, 0.95fr) minmax(48px, 1fr)",
       }}
     >
       {/* Row 1, col 1: Sim controls */}

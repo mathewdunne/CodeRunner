@@ -26,7 +26,7 @@ interface ModeColumnProps {
 
 export function ModeColumn({ mode, onSelect }: ModeColumnProps) {
   return (
-    <div className="flex h-full min-h-0 flex-col gap-1.5 overflow-hidden rounded-lg border border-border bg-card p-2">
+    <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden rounded-lg border border-border bg-card p-1.5">
       <span className="px-1 pt-0.5 text-[9.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
         Mode
       </span>
@@ -38,7 +38,7 @@ export function ModeColumn({ mode, onSelect }: ModeColumnProps) {
             type="button"
             onClick={() => onSelect(m)}
             className={cn(
-              "min-h-[18px] flex-1 rounded-md border px-2 text-[11px] font-semibold uppercase leading-none tracking-[0.12em] transition-colors",
+              "min-h-[18px] flex-1 rounded-md border px-2 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.12em] transition-colors",
               active
                 ? MODE_CLASSES[m].active
                 : "border-border bg-white/[0.02] text-muted-foreground hover:bg-white/[0.05] hover:text-foreground",
