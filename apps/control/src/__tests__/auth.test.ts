@@ -173,3 +173,37 @@ describe("allowlist enforcement", () => {
     }
   });
 });
+
+describe("auth provider discovery", () => {
+  test("lists only configured OAuth providers", async () => {
+    await withApp(
+      async (app) => {
+        const response = await app.fetch(new Request("http://localhost/api/auth/providers"));
+        expect(response.status).toBe(200);
+        expect(await response.json()).toEqual({ providers: ["github"] });
+      },
+      {
+        githubClientId: "github-client-id",
+        githubClientSecret: "github-client-secret",
+        googleClientId: "",
+        googleClientSecret: "",
+      },
+    );
+  });
+
+  test("returns an empty list when no OAuth providers are configured", async () => {
+    await withApp(
+      async (app) => {
+        const response = await app.fetch(new Request("http://localhost/api/auth/providers"));
+        expect(response.status).toBe(200);
+        expect(await response.json()).toEqual({ providers: [] });
+      },
+      {
+        githubClientId: "",
+        githubClientSecret: "",
+        googleClientId: "",
+        googleClientSecret: "",
+      },
+    );
+  });
+});

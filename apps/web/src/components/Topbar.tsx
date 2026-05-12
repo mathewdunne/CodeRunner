@@ -1,4 +1,5 @@
 import { UserMenu } from "@/components/UserMenu";
+import coderunnerHeaderImg from "@/assets/coderunner-header.png";
 
 interface TopbarProps {
   displayName: string;
@@ -9,9 +10,10 @@ interface TopbarProps {
 export function Topbar({ displayName, email, workspaceSlug }: TopbarProps) {
   return (
     <header className="flex h-[48px] shrink-0 items-center border-b border-border px-4">
-      <div className="flex items-baseline gap-2">
+      <div className="flex items-center gap-2.5">
+        <img src={coderunnerHeaderImg} alt="" className="h-6 w-auto" />
         <strong className="whitespace-nowrap text-[13.5px] font-semibold tracking-tight">
-          FRC Web Simulator
+          CodeRunner
         </strong>
       </div>
       <div className="ml-auto flex items-center gap-2.5">

@@ -4,9 +4,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { WorkspaceLayout } from "@/routes/WorkspaceLayout";
 import { WorkspacePage } from "@/routes/WorkspacePage";
+import { LoginPage } from "@/routes/LoginPage";
 import { AdminApp } from "@/admin/AdminApp";
 
 const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
   {
     path: "/admin/*",
     element: <AdminApp />,
@@ -27,22 +32,13 @@ const router = createBrowserRouter([
   },
 ]);
 
-/**
- * Fallback route: extract workspace slug from the current URL (the proxy
- * always places us under /u/<slug>/) and redirect into the router. If no
- * slug is found, render a simple error.
- */
 function FallbackRedirect() {
   const parts = window.location.pathname.split("/").filter(Boolean);
   const slug = parts[0] === "u" ? parts[1] : undefined;
   if (slug) {
     return <Navigate to={`/u/${slug}`} replace />;
   }
-  return (
-    <div className="flex h-screen items-center justify-center text-muted-foreground">
-      No workspace found in URL.
-    </div>
-  );
+  return <Navigate to="/login" replace />;
 }
 
 export default function App() {

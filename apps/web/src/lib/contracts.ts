@@ -1,4 +1,6 @@
 export type {
+  AuthProvider,
+  AuthProvidersResponse,
   ContainersStatusResponse,
   SessionResponse,
   RunServerMessage,
@@ -16,6 +18,7 @@ export type {
 } from "@frc-sim/contracts";
 
 export {
+  authProvidersResponseSchema,
   isWorkspaceSlug,
   runServerMessageSchema,
   importServerMessageSchema,

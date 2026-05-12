@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  authProvidersResponseSchema,
   autoChooserPatchSchema,
   autoChoosersResponseSchema,
   driverStationPatchSchema,
@@ -41,6 +42,13 @@ describe("run message schemas", () => {
 });
 
 describe("simulation API schemas", () => {
+  test("parses auth provider discovery payloads", () => {
+    expect(authProvidersResponseSchema.parse({ providers: ["github"] })).toEqual({
+      providers: ["github"],
+    });
+    expect(authProvidersResponseSchema.safeParse({ providers: ["discord"] }).success).toBe(false);
+  });
+
   test("parses sim command and Driver Station patch payloads", () => {
     expect(simRunCommandRequestSchema.parse({ action: "restart" })).toEqual({ action: "restart" });
     expect(driverStationPatchSchema.parse({ enabled: false, mode: "teleop" })).toEqual({

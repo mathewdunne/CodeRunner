@@ -11,6 +11,7 @@ import {
   type AdminActionResponse,
   type AdminStatusResponse,
   type AdminWorkspaceStatus,
+  type AuthProvidersResponse,
   type AutoChoosersResponse,
   type ContainersStatusResponse,
   type HeartbeatResponse,
@@ -30,6 +31,7 @@ import { IdleManager } from "./idle";
 import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
 import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from "./storage";
 import { getSessionFromRequest, requireAdmin, requireWebSocketOrigin, requireWorkspaceOwnership } from "./auth/middleware";
+import { getEnabledAuthProviders } from "./auth/providers";
 import { recordAuditEvent, queryAuditLog, type AuditActor } from "./audit";
 import {
   ImportManager,
@@ -150,87 +152,6 @@ function jsonResponse(data: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(data), { ...init, headers });
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
-}
-
-function loginPage(storage: AppStorage, error: string | null = null, init: ResponseInit = {}): Response {
-  const friendlyError =
-    error === "forbidden" || error?.toLowerCase().includes("roster")
-      ? "You're not on the roster yet. Ask your coach to add you."
-      : error?.replaceAll("_", " ") ?? null;
-  const errorMarkup = friendlyError ? `<p id="login-error" role="alert">${escapeHtml(friendlyError)}</p>` : `<p id="login-error" role="alert" hidden></p>`;
-  const providers = [
-    storage.config.githubClientId && storage.config.githubClientSecret
-      ? { id: "github", label: "Sign in with GitHub" }
-      : null,
-    storage.config.googleClientId && storage.config.googleClientSecret
-      ? { id: "google", label: "Sign in with Google" }
-      : null,
-  ].filter((provider): provider is { id: string; label: string } => Boolean(provider));
-  const providerMarkup =
-    providers.length > 0
-      ? providers
-          .map((provider) => `<button class="btn" type="button" data-provider="${provider.id}">${provider.label}</button>`)
-          .join("\n")
-      : `<p role="alert">No OAuth provider is configured yet. Ask an operator to set GitHub or Google OAuth credentials.</p>`;
-
-  return htmlResponse(`<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>FRC Web Simulator V2</title>
-    <style>
-      body { margin: 0; min-height: 100vh; display: grid; place-items: center; font-family: system-ui, sans-serif; background: #101820; color: #f5f7fb; }
-      main { width: min(28rem, calc(100vw - 2rem)); text-align: center; }
-      .btn { display: block; width: 100%; font: inherit; padding: 0.7rem 0.8rem; border-radius: 0.4rem; border: 1px solid #52606d; background: #2f80ed; color: white; cursor: pointer; margin-bottom: 0.5rem; text-decoration: none; box-sizing: border-box; }
-      .btn:disabled { opacity: 0.65; cursor: wait; }
-      p[role="alert"] { color: #ffb4ab; }
-      .note { color: #97a6b6; font-size: 0.85rem; margin-top: 1rem; }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>FRC Web Simulator</h1>
-      ${errorMarkup}
-      <p>Sign in to access your workspace.</p>
-      ${providerMarkup}
-      <p class="note">Not on the roster? Ask your coach to add you.</p>
-    </main>
-    <script>
-      const error = document.getElementById("login-error");
-      async function signIn(provider) {
-        for (const button of document.querySelectorAll("button[data-provider]")) button.disabled = true;
-        try {
-          const response = await fetch("/api/auth/sign-in/social", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            credentials: "same-origin",
-            body: JSON.stringify({ provider, callbackURL: "/", errorCallbackURL: "/login" }),
-          });
-          const body = await response.json().catch(() => ({}));
-          if (!response.ok || !body.url) {
-            throw new Error(body.message || body.error || "Unable to start OAuth sign-in.");
-          }
-          window.location.assign(body.url);
-        } catch (err) {
-          error.hidden = false;
-          error.textContent = err instanceof Error ? err.message : "Unable to start OAuth sign-in.";
-          for (const button of document.querySelectorAll("button[data-provider]")) button.disabled = false;
-        }
-      }
-      for (const button of document.querySelectorAll("button[data-provider]")) {
-        button.addEventListener("click", () => signIn(button.dataset.provider));
-      }
-    </script>
-  </body>
-</html>`, init);
-}
 
 function notFound(): Response {
   return new Response("Not found", { status: 404 });
@@ -486,7 +407,7 @@ function openApiResponse(): Response {
   return jsonResponse({
     openapi: "3.1.0",
     info: {
-      title: "FRC Web Simulator Control API",
+      title: "CodeRunner Control API",
       version: "2.0.0",
     },
     paths: {
@@ -1113,6 +1034,12 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       return scopeResponse(storage, url.pathname);
     }
 
+    if (url.pathname === "/api/auth/providers" && request.method === "GET") {
+      return jsonResponse({
+        providers: getEnabledAuthProviders(storage.config),
+      } satisfies AuthProvidersResponse);
+    }
+
     // --- Better Auth API routes ---
     if (url.pathname.startsWith("/api/auth/")) {
       return storage.auth.handler(request);
@@ -1126,16 +1053,26 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
           return redirect(`/u/${workspace.slug}/`);
         }
       }
-      return loginPage(storage);
+      return webShellResponse(storage);
     }
 
     if (url.pathname === "/login" && request.method === "GET") {
-      const error = url.searchParams.get("error");
-      return loginPage(storage, error);
+      return webShellResponse(storage);
+    }
+
+    // Serve favicon for pages outside the /u/:slug/ scope (e.g. /login)
+    if (url.pathname === "/coderunner-icon.png" && request.method === "GET") {
+      return webAssetResponse(storage, "coderunner-icon.png");
+    }
+
+    // Serve Vite-processed assets for pages outside /u/:slug/ (e.g. /login)
+    if (url.pathname.startsWith("/assets/") && request.method === "GET") {
+      return webAssetResponse(storage, url.pathname.slice(1));
     }
 
     // --- Default-deny: everything below requires a session (or admin token). ---
-    // Public routes (healthz, scope, api/auth, /, /login) are handled above.
+    // Public routes (healthz, scope, /api/auth/providers, other api/auth routes, /, /login,
+    // /coderunner-icon.png, /assets/*) are handled above.
     // If we reach here without matching a gated route, we return 404.
 
     // --- Admin / operator routes ---

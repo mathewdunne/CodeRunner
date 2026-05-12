@@ -47,6 +47,12 @@ export const sessionResponseSchema = z.object({
   }),
 });
 
+export const authProviderSchema = z.enum(["github", "google"]);
+
+export const authProvidersResponseSchema = z.object({
+  providers: z.array(authProviderSchema),
+});
+
 export const heartbeatResponseSchema = z.object({
   ok: z.literal(true),
   closing: z.boolean(),
@@ -192,6 +198,8 @@ export const simRunCommandResponseSchema = z.object({
 
 export type HeartbeatRequest = z.infer<typeof heartbeatRequestSchema>;
 export type SessionResponse = z.infer<typeof sessionResponseSchema>;
+export type AuthProvider = z.infer<typeof authProviderSchema>;
+export type AuthProvidersResponse = z.infer<typeof authProvidersResponseSchema>;
 export type HeartbeatResponse = z.infer<typeof heartbeatResponseSchema>;
 export type ContainerRole = "sim" | "code" | "halsim";
 export type ContainerState = z.infer<typeof containerStateSchema>;
