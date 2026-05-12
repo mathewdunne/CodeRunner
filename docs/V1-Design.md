@@ -1,4 +1,4 @@
-# FRC Web Simulator V1: Design Document
+# CodeRunner V1: Design Document
 
 > Archived historical design. V2 is the current runtime model and source of
 > truth; see [`V2-Design.md`](V2-Design.md) before implementing current system

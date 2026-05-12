@@ -1,8 +1,8 @@
 {
-  "name": "frc-programming-training-sim",
+  "name": "frc-coderunner",
   "private": true,
   "version": "2.0.0",
-  "description": "V2 browser IDE and simulator for FRC programming training.",
+  "description": "CodeRunner browser IDE and simulator for FRC programming training.",
   "type": "module",
   "packageManager": "bun@1.3.13",
   "workspaces": [

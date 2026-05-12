@@ -1,6 +1,6 @@
-# FRC Web Simulator V2 — Operator Runbook
+# CodeRunner V2 — Operator Runbook
 
-This runbook covers deploying and operating the FRC Web Simulator V2 on a classroom machine. For architecture details, see [`V2-Design.md`](../V2-Design.md).
+This runbook covers deploying and operating CodeRunner V2 on a classroom machine. For architecture details, see [`V2-Design.md`](../V2-Design.md).
 
 ---
 
@@ -44,8 +44,8 @@ On Windows, use PowerShell 7 (`pwsh`) for all commands.
 ### 2.1 Clone and initialize
 
 ```bash
-git clone <repo-url> FRC-Programming-Training-Sim
-cd FRC-Programming-Training-Sim
+git clone <repo-url> CodeRunner
+cd CodeRunner
 git submodule update --init --recursive
 bun install
 ```
@@ -591,7 +591,7 @@ bun run measure
 
 Example output:
 ```
-═══ FRC Web Simulator — Resource Report ═══
+═══ CodeRunner — Resource Report ═══
 
 Host:
   Hostname:    classroom-pc

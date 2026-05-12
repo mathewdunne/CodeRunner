@@ -1,4 +1,4 @@
-# FRC Web Simulator — Repo Notes for Codex
+# CodeRunner — Repo Notes for Codex
 
 ## What This Is
 

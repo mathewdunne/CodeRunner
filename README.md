@@ -1,4 +1,4 @@
-# FRC Web Simulator
+# CodeRunner
 
 A browser-based IDE for learning FRC robot programming. Students write Java in a full VS Code editor (openvscode-server), run a WPILib simulation, and view telemetry through AdvantageScope Lite.
 

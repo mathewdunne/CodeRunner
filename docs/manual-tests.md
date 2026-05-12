@@ -1,4 +1,4 @@
-# FRC Web Simulator V2 — Manual Acceptance Tests
+# CodeRunner V2 — Manual Acceptance Tests
 
 Use this checklist after the automated V2 checks pass. The goal is to verify the real classroom path: each student gets their own openvscode-server editor, project files persist, Run starts only that student's sim, and AdvantageScope Lite connects to that student's NT4 stream.
 

@@ -1,4 +1,4 @@
-# FRC Web Simulator V2: Design Document
+# CodeRunner V2: Design Document
 
 **Status:** V2 implementation plan
 **Date:** 2026-05-09
@@ -1121,8 +1121,8 @@ After all stages are complete, an operator runs this sequence on a clean machine
 **Setup once.**
 
 ```
-git clone <repo-url> FRC-Programming-Training-Sim
-cd FRC-Programming-Training-Sim
+git clone <repo-url> CodeRunner
+cd CodeRunner
 git submodule update --init --recursive
 bun install
 cp .env.example .env

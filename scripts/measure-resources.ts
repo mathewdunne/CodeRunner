@@ -227,7 +227,7 @@ async function main(): Promise<void> {
   }
 
   // Human-readable output
-  console.log("═══ FRC Web Simulator — Resource Report ═══\n");
+  console.log("═══ CodeRunner — Resource Report ═══\n");
 
   console.log("Host:");
   console.log(`  Hostname:    ${host.hostname}`);
