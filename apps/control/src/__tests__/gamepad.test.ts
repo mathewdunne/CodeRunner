@@ -139,7 +139,7 @@ describe("GamepadSessions", () => {
     expect(sessions.getStatus(WORKSPACE_ID).status).toBe("disconnected");
   });
 
-  test("returns no-lease when the simulator is not running", () => {
+  test("silently drops state frames when the simulator is not running", () => {
     const { bridge } = setupBridgeAndSocket();
     const sessions = new GamepadSessions(bridge);
 
@@ -157,15 +157,46 @@ describe("GamepadSessions", () => {
       },
       () => null,
     );
-    expect(outcome).toBe("no-lease");
+    expect(outcome).toBe("ok");
   });
 
-  test("returns halsim-unavailable when the bridge socket is not open", () => {
+  test("reset preserves controller selection across sim restarts", () => {
+    const { bridge, socket } = setupBridgeAndSocket();
+    const sessions = new GamepadSessions(bridge);
+
+    sessions.handleMessage(WORKSPACE_ID, { type: "select", id: "pad-1", label: "Xbox" }, resolveLease);
+    expect(sessions.getStatus(WORKSPACE_ID)).toMatchObject({ status: "connected", label: "Xbox" });
+
+    sessions.reset(WORKSPACE_ID);
+    expect(sessions.getStatus(WORKSPACE_ID)).toMatchObject({ status: "connected", label: "Xbox" });
+    expect(sessions.getStatus(WORKSPACE_ID).lastInputAt).toBeNull();
+
+    // State frames still flow after reset once a lease is available.
+    socket.sent.length = 0;
+    const outcome = sessions.handleMessage(
+      WORKSPACE_ID,
+      {
+        type: "state",
+        seq: 0,
+        state: {
+          axes: [0.1, 0, 0, 0, 0, 0],
+          buttons: Array<boolean>(10).fill(false),
+          povs: [-1],
+        },
+      },
+      resolveLease,
+    );
+    expect(outcome).toBe("ok");
+    expect(socket.sent.length).toBe(2); // joystick state + DS flush
+    expect(sessions.getStatus(WORKSPACE_ID).lastInputAt).not.toBeNull();
+  });
+
+  test("silently drops state frames when HALSim bridge is not open", () => {
     const bridge = new HalSimBridge({
       webSocketFactory: () => new FakeWebSocket() as unknown as WebSocket,
     });
-    // Do not open the socket — applyJoystickState will throw the unavailable
-    // error.
+    // Do not open the socket — applyJoystickState would throw, but state
+    // frames are silently dropped so the client doesn't get a sticky error.
     const sessions = new GamepadSessions(bridge);
     sessions.handleMessage(WORKSPACE_ID, { type: "select", id: "pad-1", label: "Xbox" }, resolveLease);
     const outcome = sessions.handleMessage(
@@ -181,7 +212,7 @@ describe("GamepadSessions", () => {
       },
       resolveLease,
     );
-    expect(outcome).toBe("halsim-unavailable");
+    expect(outcome).toBe("ok");
     expect(HalSimBridgeUnavailableError).toBeDefined();
   });
 

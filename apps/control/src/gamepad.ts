@@ -83,7 +83,10 @@ export class GamepadSessions {
 
     const lease = resolveLease(workspaceId);
     if (!lease) {
-      return "no-lease";
+      // Silently drop state frames when the sim isn't running (e.g. during a
+      // restart).  The controller selection is preserved so frames will flow
+      // again once the sim is back up and a lease is available.
+      return "ok";
     }
     try {
       this.halsim.applyJoystickState(workspaceId, lease.halsimPort, DEFAULT_PORT, message.state);
@@ -91,7 +94,12 @@ export class GamepadSessions {
       return "ok";
     } catch (error) {
       if (error instanceof HalSimBridgeUnavailableError) {
-        return "halsim-unavailable";
+        // Silently drop — the bridge is transiently unavailable (e.g. during
+        // a restart).  The polled simulationStatus.halsim.connected flag
+        // already surfaces this in the UI with a gentler "Waiting for HALSim"
+        // warning, so spamming halsim-disconnected at 50 Hz would only cause
+        // a sticky error state on the client.
+        return "ok";
       }
       throw error;
     }
@@ -112,7 +120,13 @@ export class GamepadSessions {
   }
 
   reset(workspaceId: WorkspaceId): void {
-    this.sessions.delete(workspaceId);
+    const session = this.sessions.get(workspaceId);
+    if (session) {
+      // Preserve the user's controller selection across sim restarts so the
+      // frontend doesn't need to re-select.  Only runtime counters are reset.
+      session.lastSeq = -1;
+      session.lastInputAt = null;
+    }
   }
 
   private ensureSession(workspaceId: WorkspaceId): SessionState {
