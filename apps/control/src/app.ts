@@ -1024,6 +1024,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     nt4AutoWebSocketFactory ? { webSocketFactory: nt4AutoWebSocketFactory } : {},
   );
   const runs = new RunManager(storage, containers, { commandFactory: runCommandFactory });
+  const orphanedRuns = runs.reconcileOrphanedRuns();
+  if (orphanedRuns > 0) {
+    console.log(`Reconciled ${orphanedRuns} orphaned simulation run(s) after control-plane start.`);
+  }
 
   const resolveGamepadLease = (workspaceId: WorkspaceId): GamepadLease | null => {
     const snapshot = runs.getWorkspaceSnapshot(workspaceId);

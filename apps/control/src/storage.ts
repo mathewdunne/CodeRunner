@@ -491,6 +491,20 @@ export class AppStorage {
     );
   }
 
+  listOrphanableRunJobs(): RunJobRow[] {
+    return this.db
+      .query(
+        `
+          SELECT *
+          FROM run_jobs
+          WHERE state IN ('building', 'running')
+            AND finished_at IS NULL
+          ORDER BY requested_at ASC
+        `,
+      )
+      .all() as RunJobRow[];
+  }
+
   updateRunJob(input: {
     id: string;
     state: RunJobState;

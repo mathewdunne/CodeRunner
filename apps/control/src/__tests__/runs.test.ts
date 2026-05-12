@@ -7,6 +7,7 @@ import type { DockerRunner } from "../containers";
 import type { RunCommandFactory } from "../runs";
 import {
   cookieFrom,
+  createAdvantageScopeDist,
   createFakeDocker,
   createTemplate,
   createWebDist,
@@ -205,5 +206,62 @@ describe("run lifecycle and log streaming", () => {
         vscodePortRange: { start: 33030, end: 33039 },
       },
     );
+  });
+
+  test("control-plane startup marks persisted active runs as stopped", async () => {
+    const root = await mkdtemp(join(tmpdir(), "frc-v2-control-restart-"));
+    const fakeDocker = createFakeDocker();
+    const templateDir = await createTemplate(root);
+    const webDistDir = await createWebDist(root);
+    const advantageScopeDistDir = await createAdvantageScopeDist(root);
+    const dataDir = join(root, "data");
+    const baseOptions: ControlAppOptions = {
+      dataDir,
+      templateDir,
+      webDistDir,
+      advantageScopeDistDir,
+      sessionSecret: "test-session-secret",
+      containerAutoStart: false,
+      dockerRunner: fakeDocker.runner,
+      portAvailable: async () => true,
+      codeImage: "frc-code:test",
+      simPortRange: { start: 25850, end: 25859 },
+      vscodePortRange: { start: 33050, end: 33059 },
+      halsimPortRange: { start: 34050, end: 34059 },
+    };
+
+    let app = await createApp(baseOptions);
+    try {
+      const loginResponse = await login(app, "alice");
+      const cookie = cookieFrom(loginResponse);
+      const workspace = workspaceBySlug(app, "alice");
+      const run = app.storage.createRunJob({
+        id: "run_orphaned",
+        workspaceId: workspace.id,
+        logPath: join(root, "orphaned.log"),
+      });
+      app.storage.updateRunJob({ id: run.id, state: "running", started: true });
+      app.close();
+
+      app = await createApp(baseOptions);
+      expect(app.storage.getRunJob(run.id)).toMatchObject({
+        state: "stopped",
+        exit_code: null,
+      });
+      expect(app.storage.getRunJob(run.id)?.finished_at).toBeTruthy();
+
+      const response = await app.fetch(
+        new Request("http://localhost/u/alice/api/sim/status", {
+          headers: { cookie },
+        }),
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({
+        run: { status: "stopped", runId: run.id },
+      });
+    } finally {
+      app.close();
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });

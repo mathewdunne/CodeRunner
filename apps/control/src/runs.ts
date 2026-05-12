@@ -220,6 +220,21 @@ export class RunManager {
     return this.activeBuilds.size;
   }
 
+  reconcileOrphanedRuns(): number {
+    const orphaned = this.storage.listOrphanableRunJobs();
+    let reconciled = 0;
+    for (const row of orphaned) {
+      if (this.jobsByWorkspace.has(row.workspace_id)) {
+        continue;
+      }
+      this.storage.updateRunJob({ id: row.id, state: "stopped", finished: true, exitCode: null });
+      this.lastStatusByWorkspace.set(row.workspace_id, { status: "stopped", runId: row.id });
+      this.stopContainerSim(row.workspace_id);
+      reconciled += 1;
+    }
+    return reconciled;
+  }
+
   getWorkspaceSnapshot(workspaceId: WorkspaceId): RunSnapshot {
     const current = this.jobsByWorkspace.get(workspaceId);
     if (current) {
