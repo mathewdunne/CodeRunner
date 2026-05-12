@@ -4,10 +4,16 @@ import coderunnerHeaderImg from "@/assets/coderunner-header.png";
 interface TopbarProps {
   displayName: string;
   email: string;
+  isAdmin: boolean;
   workspaceSlug: string | null;
 }
 
-export function Topbar({ displayName, email, workspaceSlug }: TopbarProps) {
+export function Topbar({
+  displayName,
+  email,
+  isAdmin,
+  workspaceSlug,
+}: TopbarProps) {
   return (
     <header className="flex h-[48px] shrink-0 items-center border-b border-border px-4">
       <div className="flex items-center gap-2.5">
@@ -20,6 +26,7 @@ export function Topbar({ displayName, email, workspaceSlug }: TopbarProps) {
         <UserMenu
           displayName={displayName}
           email={email}
+          isAdmin={isAdmin}
           workspaceSlug={workspaceSlug}
         />
       </div>

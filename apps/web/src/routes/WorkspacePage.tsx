@@ -38,6 +38,8 @@ export function WorkspacePage() {
       : "Loading";
   const email =
     sessionState.status === "ready" ? sessionState.session.user.email : "";
+  const isAdmin =
+    sessionState.status === "ready" && sessionState.session.user.role === "admin";
 
   const sessionReady = sessionState.status === "ready";
   const errorMessage =
@@ -48,6 +50,7 @@ export function WorkspacePage() {
       <Topbar
         displayName={displayName}
         email={email}
+        isAdmin={isAdmin}
         workspaceSlug={workspaceSlug}
       />
       <IDELayout

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, LogOut } from "lucide-react";
+import { ChevronDown, LogOut, Shield } from "lucide-react";
 import { SiGithub } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 interface UserMenuProps {
   displayName: string;
   email: string;
+  isAdmin: boolean;
   workspaceSlug: string | null;
 }
 
@@ -62,7 +63,16 @@ async function signOut() {
   window.location.assign("/login");
 }
 
-export function UserMenu({ displayName, email, workspaceSlug }: UserMenuProps) {
+function navigateToAdmin() {
+  window.location.assign("/admin");
+}
+
+export function UserMenu({
+  displayName,
+  email,
+  isAdmin,
+  workspaceSlug,
+}: UserMenuProps) {
   const [importOpen, setImportOpen] = useState(false);
   const importHook = useImport(workspaceSlug);
 
@@ -95,6 +105,15 @@ export function UserMenu({ displayName, email, workspaceSlug }: UserMenuProps) {
             </div>
           </div>
           <div className="p-1">
+            {isAdmin ? (
+              <DropdownMenuItem
+                onClick={navigateToAdmin}
+                className="gap-2.5 px-2.5 py-2 text-[12.5px]"
+              >
+                <Shield className="size-[15px] text-muted-foreground" />
+                Admin
+              </DropdownMenuItem>
+            ) : null}
             <DropdownMenuItem
               onClick={() => setImportOpen(true)}
               className="gap-2.5 px-2.5 py-2 text-[12.5px]"
