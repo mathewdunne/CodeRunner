@@ -33,4 +33,4 @@ fi
 echo "setting permissions::config"
 lsiown -R abc:abc "${HOME}"
 echo "setting permissions::workspace"
-lsiown abc:abc /workspace/project
+lsiown -R abc:abc /workspace/project

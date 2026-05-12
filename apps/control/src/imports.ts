@@ -307,6 +307,12 @@ export class ImportManager {
         "bash", "-c", `cp -a ${projectRoot}/. /workspace/project/`,
       ]);
 
+      // Ensure the abc user owns all imported files
+      await this.dockerExec(dockerPath, [
+        "exec", containerName,
+        "bash", "-c", "lsiown -R abc:abc /workspace/project",
+      ]);
+
       send({ type: "log", line: "Project files replaced." });
 
     } finally {
