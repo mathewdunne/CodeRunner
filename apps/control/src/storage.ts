@@ -77,6 +77,7 @@ async function ensureWorkspaceFiles(config: ControlConfig, workspaceId: Workspac
   await mkdir(projectDir, { recursive: true });
   await mkdir(homeDir, { recursive: true, mode: 0o700 });
   await mkdir(resolve(workspaceDir, "logs", "runs"), { recursive: true });
+  await mkdir(resolve(workspaceDir, "assets"), { recursive: true });
 
   try {
     await chmod(homeDir, 0o700);

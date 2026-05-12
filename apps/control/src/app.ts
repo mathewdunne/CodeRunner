@@ -1,5 +1,6 @@
-import { cp, lstat, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/promises";
+import { cp, lstat, mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path";
+import { tmpdir } from "node:os";
 import {
   autoChooserPatchSchema,
   heartbeatRequestSchema,
@@ -32,7 +33,7 @@ import { Nt4AutoChooserBridge, type Nt4AutoWebSocketFactory } from "./nt4-auto";
 import { IdleManager } from "./idle";
 import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
 import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from "./storage";
-import { getSessionFromRequest, requireAdmin, requireWebSocketOrigin, requireWorkspaceOwnership } from "./auth/middleware";
+import { getSessionFromRequest, requireAdmin, requireSession, requireWebSocketOrigin, requireWorkspaceOwnership } from "./auth/middleware";
 import { getEnabledAuthProviders } from "./auth/providers";
 import { recordAuditEvent, queryAuditLog, type AuditActor } from "./audit";
 import {
@@ -549,11 +550,11 @@ async function webAssetResponse(storage: AppStorage, rawPath: string): Promise<R
 
 type AssetManifest = Record<string, unknown>;
 
-async function readScopeAssetManifest(storage: AppStorage): Promise<AssetManifest> {
+async function readScopeAssetManifest(storage: AppStorage, userAssetsDir?: string): Promise<AssetManifest> {
   const bundledAssetsRoot = resolve(storage.config.advantageScopeDistDir, "bundledAssets");
   const manifest: AssetManifest = {};
 
-  async function walk(directory: string): Promise<void> {
+  async function walk(directory: string, root: string): Promise<void> {
     const entries = await readdir(directory, { withFileTypes: true }).catch(() => null);
     if (!entries) {
       return;
@@ -566,14 +567,14 @@ async function readScopeAssetManifest(storage: AppStorage): Promise<AssetManifes
 
       const absolutePath = resolve(directory, entry.name);
       if (entry.isDirectory()) {
-        await walk(absolutePath);
+        await walk(absolutePath, root);
         continue;
       }
       if (!entry.isFile()) {
         continue;
       }
 
-      const manifestPath = relative(bundledAssetsRoot, absolutePath).split(sep).join("/");
+      const manifestPath = relative(root, absolutePath).split(sep).join("/");
       let contents: unknown = null;
       if (entry.name === "config.json") {
         try {
@@ -586,11 +587,16 @@ async function readScopeAssetManifest(storage: AppStorage): Promise<AssetManifes
     }
   }
 
-  await walk(bundledAssetsRoot);
+  await walk(bundledAssetsRoot, bundledAssetsRoot);
+
+  if (userAssetsDir) {
+    await walk(userAssetsDir, userAssetsDir);
+  }
+
   return manifest;
 }
 
-async function scopeResponse(storage: AppStorage, pathname: string): Promise<Response> {
+async function scopeResponse(storage: AppStorage, pathname: string, userAssetsDir?: string): Promise<Response> {
   let suffix = pathname === "/scope" ? "" : pathname.slice("/scope/".length);
   if (suffix === "" || suffix === "/") {
     suffix = "index.html";
@@ -608,15 +614,119 @@ async function scopeResponse(storage: AppStorage, pathname: string): Promise<Res
   }
 
   if (assetPath === "assets" || assetPath === "assets/") {
-    return jsonResponse(await readScopeAssetManifest(storage));
+    return jsonResponse(await readScopeAssetManifest(storage, userAssetsDir));
   }
 
   if (assetPath.startsWith("assets/")) {
     const relativeAssetPath = assetPath.slice("assets/".length);
+    // Check user assets first, then fall back to bundled
+    if (userAssetsDir) {
+      const userFile = resolve(userAssetsDir, relativeAssetPath);
+      if (isInsideDirectory(userAssetsDir, userFile)) {
+        try {
+          const fileStat = await stat(userFile);
+          if (fileStat.isFile()) {
+            return new Response(Bun.file(userFile), {
+              headers: { "content-type": contentTypeFor(userFile) },
+            });
+          }
+        } catch {
+          // Fall through to bundled assets
+        }
+      }
+    }
     return staticFileResponse(resolve(storage.config.advantageScopeDistDir, "bundledAssets"), relativeAssetPath);
   }
 
   return staticFileResponse(storage.config.advantageScopeDistDir, assetPath);
+}
+
+function userAssetsPath(workspace: { id: string; project_path: string }): string {
+  return resolve(dirname(workspace.project_path), "assets");
+}
+
+async function handleUploadAsset(storage: AppStorage, request: Request): Promise<Response> {
+  const session = await requireSession(storage.auth, request);
+  if (session instanceof Response) return session;
+
+  const workspace = storage.findWorkspaceByUserId(session.user.id);
+  if (!workspace) {
+    return new Response("No workspace found.", { status: 400 });
+  }
+
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return new Response("Invalid form data.", { status: 400 });
+  }
+
+  const file = formData.get("file");
+  if (!file || !(file instanceof File)) {
+    return new Response("No file provided.", { status: 400 });
+  }
+
+  if (!file.name.endsWith(".zip")) {
+    return new Response("File must be a .zip archive.", { status: 400 });
+  }
+
+  const maxSize = 50 * 1024 * 1024; // 50 MB
+  if (file.size > maxSize) {
+    return new Response("File is too large (max 50 MB).", { status: 400 });
+  }
+
+  const assetsDir = userAssetsPath(workspace);
+  await mkdir(assetsDir, { recursive: true });
+
+  const tmpDir = resolve(tmpdir(), `frc-upload-${crypto.randomUUID()}`);
+  const zipPath = resolve(tmpDir, "upload.zip");
+  try {
+    await mkdir(tmpDir, { recursive: true });
+    await writeFile(zipPath, new Uint8Array(await file.arrayBuffer()));
+
+    // Extract and validate ZIP structure
+    const proc = Bun.spawn(["unzip", "-o", "-d", tmpDir, zipPath], {
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    const exitCode = await proc.exited;
+    if (exitCode !== 0) {
+      return new Response("Failed to extract ZIP archive.", { status: 400 });
+    }
+
+    // Find top-level directories in the extracted content (skip the zip file itself)
+    const extractedEntries = await readdir(tmpDir, { withFileTypes: true });
+    const assetDirs = extractedEntries.filter((e) => e.isDirectory());
+
+    if (assetDirs.length === 0) {
+      return new Response("ZIP must contain at least one directory with asset files.", { status: 400 });
+    }
+
+    // Validate and move each asset directory
+    let movedCount = 0;
+    for (const assetDir of assetDirs) {
+      const srcDir = resolve(tmpDir, assetDir.name);
+      const configPath = resolve(srcDir, "config.json");
+      try {
+        await stat(configPath);
+      } catch {
+        continue; // Skip directories without config.json
+      }
+
+      const destDir = resolve(assetsDir, assetDir.name);
+      await rm(destDir, { recursive: true, force: true });
+      await cp(srcDir, destDir, { recursive: true });
+      movedCount++;
+    }
+
+    if (movedCount === 0) {
+      return new Response("No valid assets found. Each asset directory must contain a config.json.", { status: 400 });
+    }
+
+    return new Response("OK", { status: 200 });
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true }).catch(() => {});
+  }
 }
 
 function requestedProtocols(request: Request): string[] {
@@ -1060,8 +1170,22 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       return openApiResponse();
     }
 
+    // --- AdvantageScope Lite: upload asset (POST, authenticated) ---
+    if (url.pathname === "/scope/uploadAsset" && request.method === "POST") {
+      return handleUploadAsset(storage, request);
+    }
+
     if ((url.pathname === "/scope" || url.pathname.startsWith("/scope/")) && request.method === "GET") {
-      return scopeResponse(storage, url.pathname);
+      // Resolve user assets dir from session (best-effort; unauthenticated users get bundled only)
+      let scopeUserAssetsDir: string | undefined;
+      const session = await getSessionFromRequest(storage.auth, request);
+      if (session) {
+        const workspace = storage.findWorkspaceByUserId(session.user.id);
+        if (workspace) {
+          scopeUserAssetsDir = userAssetsPath(workspace);
+        }
+      }
+      return scopeResponse(storage, url.pathname, scopeUserAssetsDir);
     }
 
     if (url.pathname === "/api/auth/providers" && request.method === "GET") {

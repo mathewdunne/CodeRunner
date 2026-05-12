@@ -159,7 +159,7 @@ export class RateLimitError extends Error {
 
 // --- Import orchestration ---
 
-const MAX_CLONE_SIZE_BYTES = 100 * 1024 * 1024; // 100 MB
+const MAX_CLONE_SIZE_BYTES = 200 * 1024 * 1024; // 200 MB
 const CLONE_TIMEOUT_SECONDS = 60;
 const MAX_IMPORT_BACKUPS = 5;
 

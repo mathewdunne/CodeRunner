@@ -44,6 +44,7 @@ const GATED_PATHS: Array<{
   { path: "/u/alice/api/sim/status", expect: "deny" },
   { path: "/u/alice/api/sim/run", method: "POST", expect: "deny" },
   { path: "/u/alice/api/sim/driver-station", method: "PATCH", expect: "deny" },
+  { path: "/scope/uploadAsset", method: "POST", expect: "deny" },
 ];
 
 function isDenied(status: number, location: string | null): boolean {
