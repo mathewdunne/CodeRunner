@@ -29,9 +29,9 @@ logConfig(app);
 
 const server = Bun.serve({
   port,
-  idleTimeout: 30,
   fetch: (request, server) => app.fetch(request, server),
   websocket: app.websocket,
+  idleTimeout: 30,
 });
 
 console.log(`V2 control plane listening on http://localhost:${server.port}`);
