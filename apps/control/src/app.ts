@@ -4,6 +4,7 @@ import {
   autoChooserPatchSchema,
   heartbeatRequestSchema,
   driverStationPatchSchema,
+  gamepadClientMessageSchema,
   importRequestSchema,
   runClientMessageSchema,
   simRunCommandRequestSchema,
@@ -26,6 +27,7 @@ import {
 import type { ControlConfigInput } from "./config";
 import { ContainerOrchestrator, CapacityExceededError, type DockerRunner } from "./containers";
 import { HalSimBridge, type HalSimWebSocketFactory } from "./halsim";
+import { GamepadSessions, type GamepadLease } from "./gamepad";
 import { Nt4AutoChooserBridge, type Nt4AutoWebSocketFactory } from "./nt4-auto";
 import { IdleManager } from "./idle";
 import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
@@ -54,6 +56,7 @@ export type ControlApp = {
   storage: AppStorage;
   containers: ContainerOrchestrator;
   halsim: HalSimBridge;
+  gamepad: GamepadSessions;
   nt4Auto: Nt4AutoChooserBridge;
   runs: RunManager;
   imports: ImportManager;
@@ -125,7 +128,18 @@ type ImportSocketData = {
   userId: string;
 };
 
-type SocketData = RunSocketData | Nt4SocketData | VscodeSocketData | HalSimSocketData | ImportSocketData;
+type GamepadSocketData = {
+  kind: "gamepad";
+  workspace: AuthContext["workspace"];
+};
+
+type SocketData =
+  | RunSocketData
+  | Nt4SocketData
+  | VscodeSocketData
+  | HalSimSocketData
+  | ImportSocketData
+  | GamepadSocketData;
 
 type AppSocket = {
   data: SocketData;
@@ -314,6 +328,7 @@ async function simStatusSnapshot(
   containers: ContainerOrchestrator,
   runs: RunManager,
   halsim: HalSimBridge,
+  gamepad: GamepadSessions,
   auth: AuthContext,
 ): Promise<SimStatusResponse> {
   const containerStatus = await containers.containersStatus(auth.workspace);
@@ -356,7 +371,7 @@ async function simStatusSnapshot(
     },
     driverStation: bridge.driverStation,
     comms: { canEnable },
-    joysticks: { status: "unknown" },
+    joysticks: gamepad.getStatus(auth.workspace.id),
   };
 }
 
@@ -388,10 +403,11 @@ async function simStatusResponse(
   containers: ContainerOrchestrator,
   runs: RunManager,
   halsim: HalSimBridge,
+  gamepad: GamepadSessions,
   auth: AuthContext,
 ): Promise<Response> {
   try {
-    return jsonResponse(await simStatusSnapshot(storage, containers, runs, halsim, auth));
+    return jsonResponse(await simStatusSnapshot(storage, containers, runs, halsim, gamepad, auth));
   } catch (error) {
     if (error instanceof CapacityExceededError) {
       return jsonResponse(
@@ -1003,10 +1019,19 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
   const halsim = new HalSimBridge(
     halsimWebSocketFactory ? { webSocketFactory: halsimWebSocketFactory } : {},
   );
+  const gamepad = new GamepadSessions(halsim);
   const nt4Auto = new Nt4AutoChooserBridge(
     nt4AutoWebSocketFactory ? { webSocketFactory: nt4AutoWebSocketFactory } : {},
   );
   const runs = new RunManager(storage, containers, { commandFactory: runCommandFactory });
+
+  const resolveGamepadLease = (workspaceId: WorkspaceId): GamepadLease | null => {
+    const snapshot = runs.getWorkspaceSnapshot(workspaceId);
+    if (snapshot.status !== "running") return null;
+    const lease = storage.getContainerLease(workspaceId);
+    if (typeof lease?.halsim_port !== "number") return null;
+    return { halsimPort: lease.halsim_port };
+  };
   const imports = new ImportManager(storage, containers);
   const idle = new IdleManager({
     storage,
@@ -1014,6 +1039,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     onStop: (workspaceId) => {
       halsim.disconnect(workspaceId);
       nt4Auto.disconnect(workspaceId);
+      gamepad.reset(workspaceId);
       console.log(`Idle sweep stopped containers for workspace ${workspaceId}`);
     },
   });
@@ -1541,6 +1567,26 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         return undefined as unknown as Response;
       }
 
+      if (suffix === "/ws/gamepad" && request.method === "GET") {
+        if (!server || request.headers.get("upgrade")?.toLowerCase() !== "websocket") {
+          return new Response("Expected WebSocket upgrade.", { status: 426 });
+        }
+        const originError = requireWebSocketOrigin(request, storage.config.baseUrl);
+        if (originError) {
+          return originError;
+        }
+        const upgraded = server.upgrade(request, {
+          data: {
+            kind: "gamepad",
+            workspace: auth.workspace,
+          },
+        });
+        if (!upgraded) {
+          return new Response("WebSocket upgrade failed.", { status: 400 });
+        }
+        return undefined as unknown as Response;
+      }
+
       if (suffix === "/sim/alive" && request.method === "GET") {
         try {
           return await nt4AliveResponse(storage, containers, auth, upstreamFetch);
@@ -1600,7 +1646,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
       if (suffix === "/api/sim/status" && request.method === "GET") {
         try {
-          return await simStatusResponse(storage, containers, runs, halsim, auth);
+          return await simStatusResponse(storage, containers, runs, halsim, gamepad, auth);
         } catch (error) {
           return capacityErrorResponse(error) ?? apiErrorResponse(error, "Unable to read simulation status.");
         }
@@ -1622,9 +1668,11 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
             runs.stopWorkspace(auth.workspace.id);
             halsim.disconnect(auth.workspace.id);
             nt4Auto.disconnect(auth.workspace.id);
+            gamepad.reset(auth.workspace.id);
           } else {
             halsim.disconnect(auth.workspace.id);
             nt4Auto.disconnect(auth.workspace.id);
+            gamepad.reset(auth.workspace.id);
             runId = runs.start(auth.workspace);
           }
           const snapshot = runs.getWorkspaceSnapshot(auth.workspace.id);
@@ -1654,7 +1702,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
             return jsonResponse({ error: code.error ?? "HALSim is not available." }, { status: 503 });
           }
           halsim.applyDriverStationPatch(auth.workspace.id, lease.halsim_port, patch);
-          return jsonResponse(await simStatusSnapshot(storage, containers, runs, halsim, auth));
+          return jsonResponse(await simStatusSnapshot(storage, containers, runs, halsim, gamepad, auth));
         } catch (error) {
           const status = error instanceof Error && typeof (error as Error & { status?: unknown }).status === "number"
             ? ((error as Error & { status: number }).status)
@@ -1689,6 +1737,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       if (suffix === "/api/run" && request.method === "POST") {
         halsim.disconnect(auth.workspace.id);
         nt4Auto.disconnect(auth.workspace.id);
+        gamepad.reset(auth.workspace.id);
         const runId = runs.start(auth.workspace);
         return jsonResponse({ ok: true, runId }, { status: 202 });
       }
@@ -1696,6 +1745,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       if (suffix === "/api/run/stop" && request.method === "POST") {
         halsim.disconnect(auth.workspace.id);
         nt4Auto.disconnect(auth.workspace.id);
+        gamepad.reset(auth.workspace.id);
         return jsonResponse({ ok: true, stopped: runs.stopWorkspace(auth.workspace.id) });
       }
 
@@ -1861,6 +1911,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         // Import WS is open; client sends an import request message to start
         return;
       }
+      if (ws.data.kind === "gamepad") {
+        ws.send(JSON.stringify({ type: "hello" }));
+        return;
+      }
       ws.data.connection = runs.connect(ws.data.workspace, (message) => {
         ws.send(JSON.stringify(message));
       });
@@ -1875,6 +1929,22 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
             return;
           }
           ws.data.pendingMessages.push(message);
+        }
+        return;
+      }
+
+      if (ws.data.kind === "gamepad") {
+        try {
+          const parsed = gamepadClientMessageSchema.parse(JSON.parse(socketMessageText(message)));
+          const outcome = gamepad.handleMessage(ws.data.workspace.id, parsed, resolveGamepadLease);
+          if (outcome === "no-lease") {
+            ws.send(JSON.stringify({ type: "error", message: "Simulator is not running." }));
+          } else if (outcome === "halsim-unavailable") {
+            ws.send(JSON.stringify({ type: "halsim-disconnected" }));
+          }
+        } catch (error) {
+          const detail = error instanceof Error ? error.message : "Invalid gamepad message.";
+          try { ws.send(JSON.stringify({ type: "error", message: detail })); } catch {}
         }
         return;
       }
@@ -1941,6 +2011,11 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         return;
       }
 
+      if (ws.data.kind === "gamepad") {
+        gamepad.closeSession(ws.data.workspace.id, resolveGamepadLease);
+        return;
+      }
+
       if (ws.data.connection) {
         runs.disconnect(ws.data.connection);
       }
@@ -1953,6 +2028,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     storage,
     containers,
     halsim,
+    gamepad,
     nt4Auto,
     runs,
     imports,

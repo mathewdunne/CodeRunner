@@ -131,6 +131,83 @@ describe("HalSimBridge", () => {
     });
   });
 
+  test("applyJoystickState sends a Joystick message followed by a new_data flush", () => {
+    const sockets: FakeWebSocket[] = [];
+    const workspaceId = "ws_0123456789abcdef0123456789abcdef";
+    const bridge = new HalSimBridge({
+      webSocketFactory: () => {
+        const socket = new FakeWebSocket();
+        sockets.push(socket);
+        return socket as unknown as WebSocket;
+      },
+    });
+
+    bridge.ensureConnected(workspaceId, 34000);
+    const socket = sockets[0]!;
+    socket.open();
+    socket.sent.length = 0;
+
+    bridge.applyJoystickState(workspaceId, 34000, 0, {
+      axes: [0.5, -1, 0, 0, 0, 0],
+      buttons: [true, false, false, false, false, false, false, false, false, false],
+      povs: [90],
+    });
+
+    expect(socket.sent).toHaveLength(2);
+    const joystick = JSON.parse(socket.sent[0]!) as { type: string; device: string; data: Record<string, unknown> };
+    expect(joystick).toMatchObject({
+      type: "Joystick",
+      device: "0",
+      data: {
+        ">axes": [0.5, -1, 0, 0, 0, 0],
+        ">povs": [90],
+      },
+    });
+    expect((joystick.data as { ">buttons": boolean[] })[">buttons"][0]).toBe(true);
+
+    const flush = JSON.parse(socket.sent[1]!) as { type: string; data: Record<string, unknown> };
+    expect(flush).toMatchObject({ type: "DriverStation", data: { ">new_data": true } });
+  });
+
+  test("releaseJoystick zeroes the joystick and disables the DS", () => {
+    const sockets: FakeWebSocket[] = [];
+    const workspaceId = "ws_0123456789abcdef0123456789abcdef";
+    const bridge = new HalSimBridge({
+      webSocketFactory: () => {
+        const socket = new FakeWebSocket();
+        sockets.push(socket);
+        return socket as unknown as WebSocket;
+      },
+    });
+
+    bridge.ensureConnected(workspaceId, 34000);
+    const socket = sockets[0]!;
+    socket.open();
+
+    bridge.applyDriverStationPatch(workspaceId, 34000, { enabled: true });
+    socket.sent.length = 0;
+
+    bridge.releaseJoystick(workspaceId, 34000, 0);
+
+    const messages = socket.sent.map((raw) => JSON.parse(raw) as { type: string; data: Record<string, unknown> });
+    // First the zeroed joystick payload + flush, then the safety disable.
+    expect(messages[0]).toMatchObject({
+      type: "Joystick",
+      data: {
+        ">axes": [0, 0, 0, 0, 0, 0],
+        ">povs": [-1],
+      },
+    });
+    const zeroButtons = messages[0]!.data[">buttons"] as boolean[];
+    expect(zeroButtons.every((b) => b === false)).toBe(true);
+
+    const enabledDisable = messages.find(
+      (m) => m.type === "DriverStation" && m.data[">enabled"] === false,
+    );
+    expect(enabledDisable).toBeDefined();
+    expect(bridge.getSnapshot(workspaceId).driverStation.enabled).toBe(false);
+  });
+
   test("does not collapse TEST to TELEOP on partial mode readback while switching to AUTO", () => {
     const sockets: FakeWebSocket[] = [];
     const workspaceId = "ws_0123456789abcdef0123456789abcdef";

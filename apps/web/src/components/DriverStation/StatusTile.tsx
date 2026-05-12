@@ -2,7 +2,9 @@ import type { ComponentType } from "react";
 import { Bot, Gamepad2, Wifi } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RunConnection } from "@/hooks/useRunChannel";
-import type { BridgeConnection, SimRunStatus } from "@/lib/contracts";
+import type { BridgeConnection, SimRunStatus, SimStatusResponse } from "@/lib/contracts";
+
+type JoystickStatus = SimStatusResponse["joysticks"]["status"];
 
 export type StatusTone = "ok" | "warn" | "bad";
 
@@ -61,6 +63,12 @@ interface StatusTileRowProps {
   halConnection: BridgeConnection;
   runConnection: RunConnection;
   runStatus: SimRunStatus;
+  joystickStatus: JoystickStatus;
+}
+
+function joystickToneFromStatus(status: JoystickStatus): StatusTone {
+  if (status === "connected") return "ok";
+  return "warn";
 }
 
 function commsToneFromConnections(
@@ -82,11 +90,11 @@ export function StatusTileRow({
   halConnection,
   runConnection,
   runStatus,
+  joystickStatus,
 }: StatusTileRowProps) {
   const commsTone = commsToneFromConnections(halConnection, runConnection);
   const robotTone = robotToneFromRunStatus(runStatus);
-  // TODO: drive Joysticks tile when a joystick presence API exists.
-  const joystickTone: StatusTone = "warn";
+  const joystickTone = joystickToneFromStatus(joystickStatus);
 
   return (
     <div className="grid h-full min-h-0 grid-cols-3 gap-1.5 overflow-hidden rounded-lg border border-border bg-card p-1.5">

@@ -186,8 +186,45 @@ export const simStatusResponseSchema = z.object({
   }),
   joysticks: z.object({
     status: z.enum(["unknown", "connected", "disconnected"]),
+    port: z.number().int().min(0).max(5).nullable(),
+    label: z.string().nullable(),
+    lastInputAt: z.string().nullable(),
   }),
 });
+
+// --- Gamepad WebSocket messages ---
+
+export const gamepadStateSchema = z.object({
+  axes: z.array(z.number().min(-1.1).max(1.1)).max(8),
+  buttons: z.array(z.boolean()).max(32),
+  povs: z.array(z.number().int().min(-1).max(360)).max(2),
+});
+
+export const gamepadClientMessageSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("select"),
+    id: z.string().min(1).max(256),
+    label: z.string().min(1).max(256),
+  }),
+  z.object({
+    type: z.literal("state"),
+    seq: z.number().int().min(0),
+    state: gamepadStateSchema,
+  }),
+  z.object({
+    type: z.literal("release"),
+  }),
+]);
+
+export const gamepadServerMessageSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("hello") }),
+  z.object({ type: z.literal("halsim-disconnected") }),
+  z.object({ type: z.literal("error"), message: z.string() }),
+]);
+
+export type GamepadState = z.infer<typeof gamepadStateSchema>;
+export type GamepadClientMessage = z.infer<typeof gamepadClientMessageSchema>;
+export type GamepadServerMessage = z.infer<typeof gamepadServerMessageSchema>;
 
 export const simRunCommandResponseSchema = z.object({
   ok: z.literal(true),

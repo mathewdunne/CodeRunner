@@ -15,6 +15,9 @@ export type {
   BridgeConnection,
   ImportServerMessage,
   ImportBackupMetadata,
+  GamepadState,
+  GamepadClientMessage,
+  GamepadServerMessage,
 } from "@frc-sim/contracts";
 
 export {
@@ -24,4 +27,7 @@ export {
   importServerMessageSchema,
   simStatusResponseSchema,
   autoChoosersResponseSchema,
+  gamepadClientMessageSchema,
+  gamepadServerMessageSchema,
+  gamepadStateSchema,
 } from "@frc-sim/contracts";

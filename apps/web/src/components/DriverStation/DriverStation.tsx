@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { AutoPanel } from "./AutoPanel";
 import { ConsolePanel } from "./ConsolePanel";
+import { ControlsPanel } from "./ControlsPanel";
 import { IconRail, type RailTab } from "./IconRail";
 import { WorkbenchPanel } from "./WorkbenchPanel";
 import type { RunConnection } from "@/hooks/useRunChannel";
+import type { GamepadFrame, GamepadInfo } from "@/hooks/useGamepad";
+import type { GamepadChannelConnection } from "@/hooks/useGamepadChannel";
 import type { AutoChooserPatch, AutoChoosersResponse, DriverStationPatch, SimRunStatus, SimStatusResponse } from "@/lib/contracts";
 
 interface DriverStationProps {
@@ -13,6 +16,15 @@ interface DriverStationProps {
   sessionReady: boolean;
   consoleLines: string[];
   autoStatus: AutoChoosersResponse | null;
+  gamepad: {
+    available: GamepadInfo[];
+    selectedIndex: number | null;
+    frame: GamepadFrame | null;
+    channelConnection: GamepadChannelConnection;
+    channelHalsimDisconnected: boolean;
+    onSelect: (info: GamepadInfo) => void;
+    onRelease: () => void;
+  };
   onStartRun: () => void;
   onStopRun: () => void;
   onRestartRun: () => void;
@@ -27,6 +39,7 @@ export function DriverStation({
   sessionReady,
   consoleLines,
   autoStatus,
+  gamepad,
   onStartRun,
   onStopRun,
   onRestartRun,
@@ -54,6 +67,18 @@ export function DriverStation({
           runStatus={runStatus}
           sessionReady={sessionReady}
           onSelectAuto={onSelectAuto}
+        />
+      ) : railTab === "controls" ? (
+        <ControlsPanel
+          available={gamepad.available}
+          selectedIndex={gamepad.selectedIndex}
+          frame={gamepad.frame}
+          runStatus={runStatus}
+          simulationStatus={simulationStatus}
+          channelConnection={gamepad.channelConnection}
+          channelHalsimDisconnected={gamepad.channelHalsimDisconnected}
+          onSelect={gamepad.onSelect}
+          onRelease={gamepad.onRelease}
         />
       ) : (
         <ConsolePanel robotLines={consoleLines} runStatus={runStatus} />

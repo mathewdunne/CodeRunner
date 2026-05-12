@@ -72,12 +72,11 @@ export function IconRail({ active, onSelect }: IconRailProps) {
         title="Auto"
         onClick={() => onSelect("auto")}
       />
-      {/* TODO: implement Controls / joysticks tab — disabled until the
-          joystick UI lands. */}
       <IconRailButton
         Icon={Gamepad2}
-        disabled
+        active={active === "controls"}
         title="Controls"
+        onClick={() => onSelect("controls")}
       />
     </div>
   );

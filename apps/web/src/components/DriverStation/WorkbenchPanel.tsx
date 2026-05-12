@@ -68,6 +68,7 @@ export function WorkbenchPanel({
           halConnection={halConnection}
           runConnection={runConnection}
           runStatus={runStatus}
+          joystickStatus={simulationStatus?.joysticks.status ?? "unknown"}
         />
       </div>
 

@@ -183,6 +183,32 @@ Success criteria:
 - `data/users/<workspaceId>/project/` remains intact.
 - Returning to the workspace recreates the container automatically.
 
+### 9. Gamepad / Driver Controls
+
+Requires a USB or Bluetooth gamepad (Xbox / PS4 / DualSense / generic DInput-standard). Use a WPILib template that reads from `CommandXboxController(0)` so you can verify input reaches the robot code.
+
+1. Plug in a controller. In Chrome / Edge, gamepads only appear after the page receives a user input event on the pad — press any button.
+2. Open the workspace and click the **Controls** icon in the Driver Station rail.
+3. Confirm the controller appears in the dropdown. The "Joysticks" status tile in the Workbench shows amber ("warn") until the controller is selected.
+4. Select the controller. Move the sticks and press buttons — the SVG visualization must reflect state in real time (sticks displace, ABXY light their color, bumpers/triggers fill, D-pad arms light emerald).
+5. Switch to the **Console** rail tab. Confirm the visualization is not visible but `navigator.getGamepads()` is still polling (you can verify with `print` in `teleopPeriodic` once running).
+6. Click **Run** and wait for `simRunStatus === "running"`. The Workbench joystick tile flips to green ("connected").
+7. Switch DS to Teleop and click Enable.
+8. Drive the robot in AdvantageScope. Sticks and triggers must read the same values the SVG shows.
+9. With the robot still enabled, yank the USB cable (or power off the wireless controller). Within one frame:
+   - The Controls panel dropdown clears the selection and reverts to "Plug in a controller and press any button."
+   - The "Joysticks" status tile returns to amber.
+   - The DS reports `enabled: false` (safety release).
+10. Reconnect the controller, re-select it, re-enable. Resume driving.
+11. Close the browser tab while enabled. Open a second tab and load `/api/sim/status`; confirm `driverStation.enabled` is `false` (server-side safety on WS close).
+
+Success criteria:
+
+- Visualization updates at 60 Hz with no perceptible lag.
+- Selection and release send `select` / `release` over `/u/{slug}/ws/gamepad`; check the control plane logs are clean (no schema validation errors).
+- Hot-unplug always disables the robot.
+- Robot code observes the standard WPILib XboxController axis/button mapping (axes 0/1 = LeftX/Y, 2/3 = LT/RT, 4/5 = RightX/Y; buttons 1..10 = A,B,X,Y,LB,RB,Back,Start,LS,RS; POV 0 = D-pad).
+
 ## Troubleshooting
 
 | Symptom | Check |

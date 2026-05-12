@@ -4,6 +4,9 @@ import {
   autoChooserPatchSchema,
   autoChoosersResponseSchema,
   driverStationPatchSchema,
+  gamepadClientMessageSchema,
+  gamepadServerMessageSchema,
+  gamepadStateSchema,
   isWorkspaceSlug,
   runClientMessageSchema,
   runServerMessageSchema,
@@ -109,11 +112,67 @@ describe("simulation API schemas", () => {
           alliance: "red1",
         },
         comms: { canEnable: true },
-        joysticks: { status: "unknown" },
+        joysticks: { status: "unknown", port: null, label: null, lastInputAt: null },
       }),
     ).toMatchObject({
       run: { status: "running" },
       driverStation: { mode: "teleop" },
     });
+  });
+});
+
+describe("gamepad message schemas", () => {
+  test("accepts select / state / release frames", () => {
+    expect(
+      gamepadClientMessageSchema.parse({
+        type: "select",
+        id: "045e-0b13",
+        label: "Xbox Wireless Controller",
+      }),
+    ).toMatchObject({ type: "select" });
+
+    expect(
+      gamepadClientMessageSchema.parse({
+        type: "state",
+        seq: 42,
+        state: {
+          axes: [0.5, -0.25, 0, 0, 0, 0],
+          buttons: [true, false, false, false, false, false, false, false, false, false],
+          povs: [90],
+        },
+      }),
+    ).toMatchObject({ type: "state", seq: 42 });
+
+    expect(gamepadClientMessageSchema.parse({ type: "release" })).toEqual({ type: "release" });
+  });
+
+  test("rejects out-of-range axis values", () => {
+    expect(() =>
+      gamepadStateSchema.parse({
+        axes: [2.5, 0, 0, 0, 0, 0],
+        buttons: [false],
+        povs: [-1],
+      }),
+    ).toThrow();
+  });
+
+  test("rejects too many axes", () => {
+    expect(() =>
+      gamepadStateSchema.parse({
+        axes: new Array(20).fill(0),
+        buttons: [false],
+        povs: [-1],
+      }),
+    ).toThrow();
+  });
+
+  test("server messages include hello / halsim-disconnected / error", () => {
+    expect(gamepadServerMessageSchema.parse({ type: "hello" })).toEqual({ type: "hello" });
+    expect(
+      gamepadServerMessageSchema.parse({ type: "halsim-disconnected" }),
+    ).toEqual({ type: "halsim-disconnected" });
+    expect(
+      gamepadServerMessageSchema.parse({ type: "error", message: "Simulator is not running." }),
+    ).toMatchObject({ type: "error" });
   });
 });

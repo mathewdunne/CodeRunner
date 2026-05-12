@@ -53,8 +53,15 @@ export class HalSimBridgeUnavailableError extends Error {
 }
 
 const DRIVER_STATION_TYPE = "DriverStation";
+const JOYSTICK_TYPE = "Joystick";
 const DEFAULT_BACKOFF_MS = 500;
 const MAX_BACKOFF_MS = 10_000;
+
+export type JoystickWireState = {
+  axes: number[];
+  buttons: boolean[];
+  povs: number[];
+};
 
 const DEFAULT_DRIVER_STATION: DriverStationState = {
   enabled: false,
@@ -211,6 +218,55 @@ export class HalSimBridge {
     entry.stale = false;
     entry.error = null;
     return this.snapshotFromEntry(entry);
+  }
+
+  applyJoystickState(
+    workspaceId: WorkspaceId,
+    halsimPort: number,
+    port: number,
+    state: JoystickWireState,
+  ): void {
+    const snapshot = this.ensureConnected(workspaceId, halsimPort);
+    const entry = this.entries.get(workspaceId);
+    if (
+      !entry ||
+      entry.connection !== "connected" ||
+      !entry.socket ||
+      entry.socket.readyState !== WebSocket.OPEN
+    ) {
+      throw new HalSimBridgeUnavailableError(snapshot.error ?? "HALSim bridge is not connected.");
+    }
+
+    const message: HalSimMessage = {
+      type: JOYSTICK_TYPE,
+      device: String(port),
+      data: {
+        ">axes": state.axes,
+        ">buttons": state.buttons,
+        ">povs": state.povs,
+      },
+    };
+    entry.socket.send(JSON.stringify(message));
+    // Flush so robot code observes the new values on its next loop.
+    this.sendDs(entry, { ">new_data": true });
+  }
+
+  releaseJoystick(workspaceId: WorkspaceId, halsimPort: number, port: number): void {
+    // Zero out a joystick. We don't know the controller's axis/button count
+    // here, so send a generous zeroed payload (6 axes, 16 buttons, 1 POV)
+    // matching the standard WPILib XboxController layout plus headroom.
+    this.applyJoystickState(workspaceId, halsimPort, port, {
+      axes: [0, 0, 0, 0, 0, 0],
+      buttons: Array<boolean>(16).fill(false),
+      povs: [-1],
+    });
+    // Safety: disable the robot whenever a joystick is released, matching
+    // Conductor's apply_joystick_safety behavior on disconnect.
+    try {
+      this.applyDriverStationPatch(workspaceId, halsimPort, { enabled: false });
+    } catch {
+      // Already disconnected; the next ensureConnected will retry.
+    }
   }
 
   disconnect(workspaceId: WorkspaceId): void {
