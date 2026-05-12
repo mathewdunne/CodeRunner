@@ -123,6 +123,32 @@ export const driverStationPatchSchema = z
     message: "At least one Driver Station field is required.",
   });
 
+export const autoChooserSchema = z.object({
+  key: z.string().min(1),
+  displayKey: z.string().min(1),
+  options: z.array(z.string()),
+  default: z.string().nullable(),
+  active: z.string().nullable(),
+  selected: z.string().nullable(),
+});
+
+export const autoChoosersResponseSchema = z.object({
+  ok: z.literal(true),
+  nt4: z.object({
+    connection: bridgeConnectionSchema,
+    connected: z.boolean(),
+    stale: z.boolean(),
+    lastMessageAt: z.string().nullable(),
+    error: z.string().nullable(),
+  }),
+  choosers: z.array(autoChooserSchema),
+});
+
+export const autoChooserPatchSchema = z.object({
+  key: z.string().min(1),
+  selected: z.string().min(1),
+});
+
 export const simStatusResponseSchema = z.object({
   ok: z.literal(true),
   workspace: z.object({
@@ -179,6 +205,9 @@ export type AllianceStation = z.infer<typeof allianceStationSchema>;
 export type BridgeConnection = z.infer<typeof bridgeConnectionSchema>;
 export type SimRunCommandRequest = z.infer<typeof simRunCommandRequestSchema>;
 export type DriverStationPatch = z.infer<typeof driverStationPatchSchema>;
+export type AutoChooser = z.infer<typeof autoChooserSchema>;
+export type AutoChoosersResponse = z.infer<typeof autoChoosersResponseSchema>;
+export type AutoChooserPatch = z.infer<typeof autoChooserPatchSchema>;
 export type SimStatusResponse = z.infer<typeof simStatusResponseSchema>;
 export type SimRunCommandResponse = z.infer<typeof simRunCommandResponseSchema>;
 

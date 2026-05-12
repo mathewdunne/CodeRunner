@@ -5,6 +5,9 @@ export type {
   SimRunStatus,
   SimStatusResponse,
   DriverStationPatch,
+  AutoChooser,
+  AutoChoosersResponse,
+  AutoChooserPatch,
   DsMode,
   AllianceStation,
   BridgeConnection,
@@ -17,4 +20,5 @@ export {
   runServerMessageSchema,
   importServerMessageSchema,
   simStatusResponseSchema,
+  autoChoosersResponseSchema,
 } from "@frc-sim/contracts";

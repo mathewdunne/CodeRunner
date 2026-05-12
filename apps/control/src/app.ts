@@ -1,6 +1,7 @@
 import { cp, lstat, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/promises";
 import { dirname, extname, isAbsolute, relative, resolve, sep } from "node:path";
 import {
+  autoChooserPatchSchema,
   heartbeatRequestSchema,
   driverStationPatchSchema,
   importRequestSchema,
@@ -10,6 +11,7 @@ import {
   type AdminActionResponse,
   type AdminStatusResponse,
   type AdminWorkspaceStatus,
+  type AutoChoosersResponse,
   type ContainersStatusResponse,
   type HeartbeatResponse,
   type ImportServerMessage,
@@ -23,6 +25,7 @@ import {
 import type { ControlConfigInput } from "./config";
 import { ContainerOrchestrator, CapacityExceededError, type DockerRunner } from "./containers";
 import { HalSimBridge, type HalSimWebSocketFactory } from "./halsim";
+import { Nt4AutoChooserBridge, type Nt4AutoWebSocketFactory } from "./nt4-auto";
 import { IdleManager } from "./idle";
 import { RunManager, type RunCommandFactory, type RunConnection } from "./runs";
 import { createStorage, SlugTakenError, type AppStorage, type AuthContext } from "./storage";
@@ -49,6 +52,7 @@ export type ControlApp = {
   storage: AppStorage;
   containers: ContainerOrchestrator;
   halsim: HalSimBridge;
+  nt4Auto: Nt4AutoChooserBridge;
   runs: RunManager;
   imports: ImportManager;
   idle: IdleManager;
@@ -61,6 +65,7 @@ export type ControlAppOptions = ControlConfigInput & {
   upstreamFetch?: HttpFetch | undefined;
   runCommandFactory?: RunCommandFactory | undefined;
   halsimWebSocketFactory?: HalSimWebSocketFactory | undefined;
+  nt4AutoWebSocketFactory?: Nt4AutoWebSocketFactory | undefined;
 };
 
 type BunUpgradeServer = {
@@ -434,6 +439,29 @@ async function simStatusSnapshot(
   };
 }
 
+async function autoChoosersSnapshot(
+  storage: AppStorage,
+  containers: ContainerOrchestrator,
+  runs: RunManager,
+  nt4Auto: Nt4AutoChooserBridge,
+  auth: AuthContext,
+): Promise<AutoChoosersResponse> {
+  const containerStatus = await containers.containersStatus(auth.workspace);
+  const run = runs.getWorkspaceSnapshot(auth.workspace.id);
+  const lease = storage.getContainerLease(auth.workspace.id);
+  const shouldBridgeRun =
+    runIsActive(run.status) &&
+    containerStatus.code.state === "running" &&
+    typeof lease?.nt4_port === "number";
+  if (shouldBridgeRun && typeof lease?.nt4_port === "number") {
+    return nt4Auto.ensureConnected(auth.workspace.id, lease.nt4_port);
+  }
+  if (!runIsActive(run.status)) {
+    nt4Auto.disconnect(auth.workspace.id);
+  }
+  return nt4Auto.getSnapshot(auth.workspace.id);
+}
+
 async function simStatusResponse(
   storage: AppStorage,
   containers: ContainerOrchestrator,
@@ -522,6 +550,43 @@ function openApiResponse(): Response {
             "200": { description: "Updated simulation state snapshot." },
             "409": { description: "Robot code is not running." },
             "503": { description: "HALSim bridge is unavailable." },
+          },
+        },
+      },
+      "/u/{slug}/api/sim/auto-choosers": {
+        get: {
+          summary: "Read detected NetworkTables autonomous choosers.",
+          parameters: [{ name: "slug", in: "path", required: true, schema: { type: "string" } }],
+          responses: {
+            "200": { description: "Auto chooser snapshot." },
+            "401": { description: "Authentication required." },
+            "403": { description: "Workspace access denied." },
+          },
+        },
+      },
+      "/u/{slug}/api/sim/auto-chooser": {
+        patch: {
+          summary: "Select an autonomous routine through NetworkTables.",
+          parameters: [{ name: "slug", in: "path", required: true, schema: { type: "string" } }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["key", "selected"],
+                  properties: {
+                    key: { type: "string" },
+                    selected: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "Updated auto chooser snapshot." },
+            "409": { description: "Robot code is not running." },
+            "503": { description: "NT4 bridge is unavailable." },
           },
         },
       },
@@ -1008,6 +1073,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     upstreamFetch: configuredUpstreamFetch,
     runCommandFactory,
     halsimWebSocketFactory,
+    nt4AutoWebSocketFactory,
     ...storageConfig
   } = configInput;
   const upstreamFetch = configuredUpstreamFetch ?? globalThis.fetch;
@@ -1016,6 +1082,9 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
   const halsim = new HalSimBridge(
     halsimWebSocketFactory ? { webSocketFactory: halsimWebSocketFactory } : {},
   );
+  const nt4Auto = new Nt4AutoChooserBridge(
+    nt4AutoWebSocketFactory ? { webSocketFactory: nt4AutoWebSocketFactory } : {},
+  );
   const runs = new RunManager(storage, containers, { commandFactory: runCommandFactory });
   const imports = new ImportManager(storage, containers);
   const idle = new IdleManager({
@@ -1023,6 +1092,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     containers,
     onStop: (workspaceId) => {
       halsim.disconnect(workspaceId);
+      nt4Auto.disconnect(workspaceId);
       console.log(`Idle sweep stopped containers for workspace ${workspaceId}`);
     },
   });
@@ -1599,6 +1669,14 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         }
       }
 
+      if (suffix === "/api/sim/auto-choosers" && request.method === "GET") {
+        try {
+          return jsonResponse(await autoChoosersSnapshot(storage, containers, runs, nt4Auto, auth));
+        } catch (error) {
+          return capacityErrorResponse(error) ?? apiErrorResponse(error, "Unable to read auto choosers.");
+        }
+      }
+
       if (suffix === "/api/sim/run" && request.method === "POST") {
         try {
           const parsed = simRunCommandRequestSchema.parse(await request.json());
@@ -1606,8 +1684,10 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
           if (parsed.action === "stop") {
             runs.stopWorkspace(auth.workspace.id);
             halsim.disconnect(auth.workspace.id);
+            nt4Auto.disconnect(auth.workspace.id);
           } else {
             halsim.disconnect(auth.workspace.id);
+            nt4Auto.disconnect(auth.workspace.id);
             runId = runs.start(auth.workspace);
           }
           const snapshot = runs.getWorkspaceSnapshot(auth.workspace.id);
@@ -1647,14 +1727,38 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         }
       }
 
+      if (suffix === "/api/sim/auto-chooser" && request.method === "PATCH") {
+        try {
+          const patch = autoChooserPatchSchema.parse(await request.json());
+          const run = runs.getWorkspaceSnapshot(auth.workspace.id);
+          if (run.status !== "running") {
+            return jsonResponse({ error: "Robot code is not running." }, { status: 409 });
+          }
+          const code = await containers.ensureCodeContainer(auth.workspace);
+          const lease = storage.getContainerLease(auth.workspace.id);
+          if (code.state !== "running" || !lease?.nt4_port) {
+            return jsonResponse({ error: code.error ?? "NT4 is not available." }, { status: 503 });
+          }
+          return jsonResponse(nt4Auto.select(auth.workspace.id, lease.nt4_port, patch));
+        } catch (error) {
+          const status = error instanceof Error && typeof (error as Error & { status?: unknown }).status === "number"
+            ? ((error as Error & { status: number }).status)
+            : 400;
+          const message = error instanceof Error ? error.message : "Invalid auto chooser command.";
+          return jsonResponse({ error: message }, { status });
+        }
+      }
+
       if (suffix === "/api/run" && request.method === "POST") {
         halsim.disconnect(auth.workspace.id);
+        nt4Auto.disconnect(auth.workspace.id);
         const runId = runs.start(auth.workspace);
         return jsonResponse({ ok: true, runId }, { status: 202 });
       }
 
       if (suffix === "/api/run/stop" && request.method === "POST") {
         halsim.disconnect(auth.workspace.id);
+        nt4Auto.disconnect(auth.workspace.id);
         return jsonResponse({ ok: true, stopped: runs.stopWorkspace(auth.workspace.id) });
       }
 
@@ -1875,10 +1979,12 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
         const parsed = runClientMessageSchema.parse(JSON.parse(socketMessageText(message)));
         if (parsed.type === "start") {
           halsim.disconnect(ws.data.workspace.id);
+          nt4Auto.disconnect(ws.data.workspace.id);
           const runId = runs.start(ws.data.workspace, ws.data.connection);
           ws.send(JSON.stringify({ type: "hello", runId }));
         } else {
           halsim.disconnect(ws.data.workspace.id);
+          nt4Auto.disconnect(ws.data.workspace.id);
           runs.stopWorkspace(ws.data.workspace.id);
         }
       } catch (error) {
@@ -1910,12 +2016,14 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     storage,
     containers,
     halsim,
+    nt4Auto,
     runs,
     imports,
     idle,
     close() {
       idle.stop();
       halsim.close();
+      nt4Auto.close();
       storage.close();
     },
   };

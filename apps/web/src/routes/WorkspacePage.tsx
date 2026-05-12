@@ -4,6 +4,7 @@ import { isWorkspaceSlug } from "@/lib/contracts";
 import { useSession } from "@/hooks/useSession";
 import { useRunChannel } from "@/hooks/useRunChannel";
 import { useSimulationState } from "@/hooks/useSimulationState";
+import { useAutoChoosers } from "@/hooks/useAutoChoosers";
 import { useEditorReachability } from "@/hooks/useEditorReachability";
 import { useScopeHandshake } from "@/hooks/useScopeHandshake";
 import { Topbar } from "@/components/Topbar";
@@ -23,6 +24,7 @@ export function WorkspacePage() {
   const { connection: runConnection, consoleLines } =
     useRunChannel(workspaceSlug);
   const simulation = useSimulationState(workspaceSlug);
+  const autoChoosers = useAutoChoosers(workspaceSlug);
   const editorUrl = workspaceSlug
     ? `/u/${workspaceSlug}/vscode/?folder=/workspace/project`
     : null;
@@ -66,10 +68,12 @@ export function WorkspacePage() {
             runConnection={runConnection}
             sessionReady={sessionReady}
             consoleLines={consoleLines}
+            autoStatus={autoChoosers.status}
             onStartRun={simulation.startRun}
             onStopRun={simulation.stopRun}
             onRestartRun={simulation.restartRun}
             onSetDriverStation={simulation.setDriverStation}
+            onSelectAuto={autoChoosers.selectAuto}
           />
         }
       />

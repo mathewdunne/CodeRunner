@@ -4,7 +4,8 @@ import type { RunCommandFactory } from "../runs";
 
 class FakeWebSocket {
   readyState: number = WebSocket.CONNECTING;
-  sent: string[] = [];
+  binaryType = "blob";
+  sent: Array<string | Uint8Array> = [];
   private readonly listeners = new Map<string, Array<(event: any) => void>>();
 
   addEventListener(type: string, listener: (event: any) => void): void {
@@ -13,7 +14,7 @@ class FakeWebSocket {
     this.listeners.set(type, listeners);
   }
 
-  send(data: string): void {
+  send(data: string | Uint8Array): void {
     this.sent.push(data);
   }
 
@@ -31,11 +32,36 @@ class FakeWebSocket {
     this.emit("message", { data: JSON.stringify(data) });
   }
 
+  binary(data: Uint8Array): void {
+    this.emit("message", { data });
+  }
+
   private emit(type: string, event: any): void {
     for (const listener of this.listeners.get(type) ?? []) {
       listener(event);
     }
   }
+}
+
+function encodeMsgPack(value: unknown): Uint8Array {
+  const chunks: number[] = [];
+  const push = (...bytes: number[]) => chunks.push(...bytes.map((byte) => byte & 0xff));
+  const writeString = (item: string) => {
+    const encoded = new TextEncoder().encode(item);
+    push(0xa0 | encoded.length, ...encoded);
+  };
+  const write = (item: unknown) => {
+    if (Array.isArray(item)) {
+      push(0x90 | item.length);
+      for (const child of item) write(child);
+    } else if (typeof item === "string") {
+      writeString(item);
+    } else if (typeof item === "number") {
+      push(item);
+    }
+  };
+  write(value);
+  return new Uint8Array(chunks);
 }
 
 function createControlledRunCommands() {
@@ -260,7 +286,9 @@ describe("simulation HTTP API", () => {
         );
 
         expect(response.status).toBe(200);
-        const sent = sockets[0]!.sent.map((raw) => JSON.parse(raw) as { data: Record<string, unknown> });
+        const sent = sockets[0]!.sent
+          .filter((raw): raw is string => typeof raw === "string")
+          .map((raw) => JSON.parse(raw) as { data: Record<string, unknown> });
         expect(sent.some((message) => message.data[">test"] === true)).toBe(true);
         expect(sent.some((message) => message.data[">enabled"] === true)).toBe(true);
         app.runs.stopWorkspace(workspace.id);
@@ -291,6 +319,142 @@ describe("simulation HTTP API", () => {
         simPortRange: { start: 26050, end: 26059 },
         vscodePortRange: { start: 33350, end: 33359 },
         halsimPortRange: { start: 34350, end: 34359 },
+      },
+    );
+  });
+
+  test("auto chooser API discovers options and writes selected routine to NT4", async () => {
+    const fakeDocker = createFakeDocker();
+    const controlled = createControlledRunCommands();
+    const sockets: FakeWebSocket[] = [];
+
+    await withApp(
+      async (app) => {
+        const loginResponse = await login(app, "alice");
+        const cookie = cookieFrom(loginResponse);
+        const workspace = workspaceBySlug(app, "alice");
+        app.runs.start(workspace);
+        await waitFor(() => controlled.commands.length === 1);
+        controlled.commands[0]?.writeStdout("NT4 listening on 5810");
+        await waitFor(() => app.runs.getWorkspaceSnapshot(workspace.id).status === "running");
+
+        const statusResponse = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/auto-choosers", {
+            headers: { cookie },
+          }),
+        );
+        expect(statusResponse.status).toBe(200);
+        await waitFor(() => sockets.length === 1 && sockets[0]!.readyState === WebSocket.OPEN);
+
+        const chooserResponse = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/auto-choosers", {
+            headers: { cookie },
+          }),
+        );
+        expect(await chooserResponse.json()).toMatchObject({
+          choosers: [
+            {
+              key: "SmartDashboard/Auto Choices",
+              options: ["Taxi", "Score"],
+              default: "Taxi",
+              active: "Taxi",
+            },
+          ],
+        });
+
+        const selectResponse = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/auto-chooser", {
+            method: "PATCH",
+            headers: { cookie, "content-type": "application/json" },
+            body: JSON.stringify({ key: "SmartDashboard/Auto Choices", selected: "Score" }),
+          }),
+        );
+        expect(selectResponse.status).toBe(200);
+        const textMessages = sockets[0]!.sent.filter((data): data is string => typeof data === "string");
+        expect(textMessages.some((raw) => raw.includes("\"publish\"") && raw.includes("/SmartDashboard/Auto Choices/selected"))).toBe(true);
+        expect(sockets[0]!.sent.some((data) => data instanceof Uint8Array)).toBe(true);
+        app.runs.stopWorkspace(workspace.id);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        runCommandFactory: controlled.commandFactory,
+        nt4AutoWebSocketFactory: () => {
+          const socket = new FakeWebSocket();
+          sockets.push(socket);
+          queueMicrotask(() => {
+            socket.open();
+            socket.message([
+              { method: "announce", params: { id: 1, name: "/SmartDashboard/Auto Choices/.type", type: "string" } },
+              { method: "announce", params: { id: 2, name: "/SmartDashboard/Auto Choices/options", type: "string[]" } },
+              { method: "announce", params: { id: 3, name: "/SmartDashboard/Auto Choices/default", type: "string" } },
+              { method: "announce", params: { id: 4, name: "/SmartDashboard/Auto Choices/active", type: "string" } },
+            ]);
+            socket.binary(encodeMsgPack([1, 0, 4, "String Chooser"]));
+            socket.binary(encodeMsgPack([2, 0, 20, ["Taxi", "Score"]]));
+            socket.binary(encodeMsgPack([3, 0, 4, "Taxi"]));
+            socket.binary(encodeMsgPack([4, 0, 4, "Taxi"]));
+          });
+          return socket as unknown as WebSocket;
+        },
+        codeImage: "frc-code:test",
+        simPortRange: { start: 26060, end: 26069 },
+        vscodePortRange: { start: 33360, end: 33369 },
+        halsimPortRange: { start: 34360, end: 34369 },
+      },
+    );
+  });
+
+  test("auto chooser bridge ignores malformed NT4 binary frames instead of crashing", async () => {
+    const fakeDocker = createFakeDocker();
+    const controlled = createControlledRunCommands();
+    const sockets: FakeWebSocket[] = [];
+
+    await withApp(
+      async (app) => {
+        const loginResponse = await login(app, "alice");
+        const cookie = cookieFrom(loginResponse);
+        const workspace = workspaceBySlug(app, "alice");
+        app.runs.start(workspace);
+        await waitFor(() => controlled.commands.length === 1);
+        controlled.commands[0]?.writeStdout("NT4 listening on 5810");
+        await waitFor(() => app.runs.getWorkspaceSnapshot(workspace.id).status === "running");
+
+        const response = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/auto-choosers", {
+            headers: { cookie },
+          }),
+        );
+        await waitFor(() => sockets.length === 1 && sockets[0]!.readyState === WebSocket.OPEN);
+        const refreshed = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/auto-choosers", {
+            headers: { cookie },
+          }),
+        );
+
+        expect(response.status).toBe(200);
+        expect(refreshed.status).toBe(200);
+        expect(await refreshed.json()).toMatchObject({
+          ok: true,
+          nt4: { connected: true },
+        });
+        app.runs.stopWorkspace(workspace.id);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        runCommandFactory: controlled.commandFactory,
+        nt4AutoWebSocketFactory: () => {
+          const socket = new FakeWebSocket();
+          sockets.push(socket);
+          queueMicrotask(() => {
+            socket.open();
+            socket.binary(new Uint8Array([0xdd, 0xff, 0xff, 0xff, 0xff]));
+          });
+          return socket as unknown as WebSocket;
+        },
+        codeImage: "frc-code:test",
+        simPortRange: { start: 26070, end: 26079 },
+        vscodePortRange: { start: 33370, end: 33379 },
+        halsimPortRange: { start: 34370, end: 34379 },
       },
     );
   });

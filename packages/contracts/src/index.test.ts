@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
+  autoChooserPatchSchema,
+  autoChoosersResponseSchema,
   driverStationPatchSchema,
   isWorkspaceSlug,
   runClientMessageSchema,
@@ -47,6 +49,35 @@ describe("simulation API schemas", () => {
     });
     expect(driverStationPatchSchema.safeParse({}).success).toBe(false);
     expect(simRunCommandRequestSchema.safeParse({ action: "toggle" }).success).toBe(false);
+  });
+
+  test("parses auto chooser payloads", () => {
+    expect(autoChooserPatchSchema.parse({ key: "SmartDashboard/Auto Choices", selected: "Taxi" })).toEqual({
+      key: "SmartDashboard/Auto Choices",
+      selected: "Taxi",
+    });
+    expect(
+      autoChoosersResponseSchema.parse({
+        ok: true,
+        nt4: {
+          connection: "connected",
+          connected: true,
+          stale: false,
+          lastMessageAt: new Date(0).toISOString(),
+          error: null,
+        },
+        choosers: [
+          {
+            key: "SmartDashboard/Auto Choices",
+            displayKey: "SmartDashboard/Auto Choices",
+            options: ["Taxi", "Score"],
+            default: "Taxi",
+            active: "Score",
+            selected: "Score",
+          },
+        ],
+      }),
+    ).toMatchObject({ choosers: [{ active: "Score" }] });
   });
 
   test("parses a full sim status snapshot", () => {

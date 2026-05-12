@@ -1,9 +1,9 @@
 import type { ComponentType } from "react";
-import { Gamepad2, Terminal } from "lucide-react";
+import { Gamepad2, Route, Terminal } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-export type RailTab = "console" | "controls";
+export type RailTab = "console" | "controls" | "auto";
 
 interface IconRailProps {
   active: RailTab;
@@ -65,6 +65,12 @@ export function IconRail({ active, onSelect }: IconRailProps) {
         toneActive="red"
         title="Console"
         onClick={() => onSelect("console")}
+      />
+      <IconRailButton
+        Icon={Route}
+        active={active === "auto"}
+        title="Auto"
+        onClick={() => onSelect("auto")}
       />
       {/* TODO: implement Controls / joysticks tab — disabled until the
           joystick UI lands. */}

@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { AutoPanel } from "./AutoPanel";
 import { ConsolePanel } from "./ConsolePanel";
 import { IconRail, type RailTab } from "./IconRail";
 import { WorkbenchPanel } from "./WorkbenchPanel";
 import type { RunConnection } from "@/hooks/useRunChannel";
-import type { DriverStationPatch, SimRunStatus, SimStatusResponse } from "@/lib/contracts";
+import type { AutoChooserPatch, AutoChoosersResponse, DriverStationPatch, SimRunStatus, SimStatusResponse } from "@/lib/contracts";
 
 interface DriverStationProps {
   simulationStatus: SimStatusResponse | null;
@@ -11,10 +12,12 @@ interface DriverStationProps {
   runConnection: RunConnection;
   sessionReady: boolean;
   consoleLines: string[];
+  autoStatus: AutoChoosersResponse | null;
   onStartRun: () => void;
   onStopRun: () => void;
   onRestartRun: () => void;
   onSetDriverStation: (patch: DriverStationPatch) => void;
+  onSelectAuto: (patch: AutoChooserPatch) => void;
 }
 
 export function DriverStation({
@@ -23,10 +26,12 @@ export function DriverStation({
   runConnection,
   sessionReady,
   consoleLines,
+  autoStatus,
   onStartRun,
   onStopRun,
   onRestartRun,
   onSetDriverStation,
+  onSelectAuto,
 }: DriverStationProps) {
   const [railTab, setRailTab] = useState<RailTab>("console");
 
@@ -43,7 +48,16 @@ export function DriverStation({
         onRestartRun={onRestartRun}
         onSetDriverStation={onSetDriverStation}
       />
-      <ConsolePanel robotLines={consoleLines} runStatus={runStatus} />
+      {railTab === "auto" ? (
+        <AutoPanel
+          autoStatus={autoStatus}
+          runStatus={runStatus}
+          sessionReady={sessionReady}
+          onSelectAuto={onSelectAuto}
+        />
+      ) : (
+        <ConsolePanel robotLines={consoleLines} runStatus={runStatus} />
+      )}
     </section>
   );
 }
