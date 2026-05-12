@@ -1,33 +1,28 @@
-import { forwardRef } from "react";
-import type { ScopeStatus } from "@/hooks/useScopeHandshake";
+import { forwardRef, useCallback, useState } from "react";
+import { Loader2 } from "lucide-react";
 
-interface ScopePaneProps {
-  scopeStatus: ScopeStatus;
-}
+export const ScopePane = forwardRef<HTMLIFrameElement>(
+  function ScopePane(_props, ref) {
+    const [iframeLoaded, setIframeLoaded] = useState(false);
+    const handleLoad = useCallback(() => setIframeLoaded(true), []);
 
-const scopeLabel = (status: ScopeStatus) =>
-  status === "connected"
-    ? "Scope connected"
-    : status === "timeout"
-      ? "Scope timeout"
-      : "Scope connecting";
-
-export const ScopePane = forwardRef<HTMLIFrameElement, ScopePaneProps>(
-  function ScopePane({ scopeStatus }, ref) {
     return (
-      <aside className="flex h-full min-h-0 min-w-0 flex-col border-l border-border bg-card">
-        <header className="flex h-[38px] shrink-0 items-center justify-between gap-2 border-b border-border px-3 text-xs font-bold text-muted-foreground">
-          <span>AdvantageScope</span>
-          <span className="text-[11px] font-medium text-muted-foreground/70">
-            {scopeLabel(scopeStatus)}
-          </span>
-        </header>
+      <aside className="relative flex h-full min-h-0 min-w-0 flex-col border-l border-border bg-card">
         <iframe
           ref={ref}
           title="AdvantageScope Lite"
           src="/scope/?frcEndpoint=postMessage"
           className="min-h-0 w-full flex-1 border-0 bg-white"
+          onLoad={handleLoad}
         />
+        {!iframeLoaded && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-card">
+            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            <span className="font-mono text-sm text-muted-foreground">
+              Loading AdvantageScope…
+            </span>
+          </div>
+        )}
       </aside>
     );
   },

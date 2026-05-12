@@ -29,6 +29,7 @@ logConfig(app);
 
 const server = Bun.serve({
   port,
+  idleTimeout: 30,
   fetch: (request, server) => app.fetch(request, server),
   websocket: app.websocket,
 });

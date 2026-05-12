@@ -33,7 +33,7 @@ export function WorkspacePage() {
     : null;
   const editorStatus = useEditorReachability(editorUrl);
   const scopeFrameRef = useRef<HTMLIFrameElement>(null);
-  const scopeStatus = useScopeHandshake(workspaceSlug, scopeFrameRef);
+  useScopeHandshake(workspaceSlug, scopeFrameRef);
 
   const gamepad = useGamepad();
   const channel = useGamepadChannel(workspaceSlug);
@@ -99,7 +99,7 @@ export function WorkspacePage() {
           />
         }
         scope={
-          <ScopePane ref={scopeFrameRef} scopeStatus={scopeStatus} />
+          <ScopePane ref={scopeFrameRef} />
         }
         driverStation={
           <DriverStation
