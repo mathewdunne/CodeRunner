@@ -73,8 +73,8 @@ export function ControlsPanel({
   }, [channelConnection, selected, runStatus, channelHalsimDisconnected, simulationStatus, available.length]);
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden gap-2.5 border-r border-border p-3">
-      <div className="flex min-h-0 flex-col gap-2 overflow-hidden rounded-lg border border-border bg-card p-2">
+    <div className="flex h-full min-h-0 flex-1 flex-row overflow-hidden gap-2.5 border-r border-border p-3">
+      <div className="flex min-h-0 w-1/2 flex-col gap-2 overflow-hidden rounded-lg border border-border bg-card p-2">
         <TileHeader label="Controller" />
         <div className="flex items-center gap-2 px-1">
           <select
@@ -88,9 +88,9 @@ export function ControlsPanel({
               const info = available.find((g) => String(g.index) === value);
               if (info) onSelect(info);
             }}
-            className="min-w-0 flex-1 truncate rounded-md border border-border bg-white/[0.02] px-2.5 py-2 text-sm text-foreground focus:border-orange-400/60 focus:outline-none"
+            className="min-w-0 flex-1 truncate rounded-md border border-border bg-zinc-800 px-2.5 py-2 text-sm text-white focus:border-orange-400/60 focus:outline-none [&>option]:bg-zinc-800 [&>option]:text-white"
           >
-            <option value="">None — gamepad disabled</option>
+            <option value="">Connect a controller and press any button</option>
             {available.map((info) => (
               <option key={`${info.index}-${info.id}`} value={info.index}>
                 {info.label}
@@ -123,7 +123,7 @@ export function ControlsPanel({
         <p className="px-1 pb-1 text-[11px] text-muted-foreground">{statusText}</p>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden rounded-lg border border-border bg-card p-2">
+      <div className="flex min-h-0 w-1/2 flex-col gap-2 overflow-hidden rounded-lg border border-border bg-card p-2">
         <TileHeader label="Live State" />
         <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
           <GamepadVisualizer frame={frame} active={selected !== null} />
@@ -149,9 +149,9 @@ function GamepadVisualizer({ frame, active }: VisualizerProps) {
 
   return (
     <svg
-      viewBox="0 0 360 220"
+      viewBox="0 0 400 300"
       className={cn(
-        "h-full w-full max-h-[260px] max-w-[440px] select-none transition-opacity",
+        "h-full w-full max-h-[300px] max-w-[440px] select-none transition-opacity",
         active ? "opacity-100" : "opacity-50",
       )}
       role="img"
@@ -159,92 +159,99 @@ function GamepadVisualizer({ frame, active }: VisualizerProps) {
     >
       {/* Body silhouette */}
       <path
-        d="M 60 80
-           Q 30 80 30 130
-           Q 30 200 80 200
-           Q 110 200 130 180
-           L 230 180
-           Q 250 200 280 200
-           Q 330 200 330 130
-           Q 330 80 300 80
+        d="M 101 78
+           C 78 78 61 92 51 118
+           C 41 143 36 178 42 212
+           C 49 254 70 271 101 270
+           C 126 269 144 252 159 226
+           C 171 230 186 233 200 233
+           C 214 233 229 230 241 226
+           C 256 252 274 269 299 270
+           C 330 271 351 254 358 212
+           C 364 178 359 143 349 118
+           C 339 92 322 78 299 78
+           C 274 76 247 84 226 97
+           C 216 90 207 86 200 86
+           C 193 86 184 90 174 97
+           C 153 84 126 76 101 78
            Z"
         className="fill-white/[0.03] stroke-border"
         strokeWidth="1.5"
       />
 
       {/* Triggers */}
-      <Trigger x={70} value={bv(6)} label="LT" />
-      <Trigger x={258} value={bv(7)} label="RT" />
+      <Trigger x={92} value={bv(6)} label="LT" />
+      <Trigger x={274} value={bv(7)} label="RT" />
 
       {/* Bumpers */}
-      <Bumper x={60} pressed={bp(4)} label="LB" />
-      <Bumper x={250} pressed={bp(5)} label="RB" />
+      <Bumper x={76} pressed={bp(4)} label="LB" />
+      <Bumper x={264} pressed={bp(5)} label="RB" />
 
       {/* Back / Start */}
-      <SmallButton cx={160} cy={108} pressed={bp(8)} label="Back" />
-      <SmallButton cx={200} cy={108} pressed={bp(9)} label="Start" />
+      <SmallButton cx={176} cy={118} pressed={bp(8)} label="Back" />
+      <SmallButton cx={224} cy={118} pressed={bp(9)} label="Start" />
 
       {/* Left stick well + thumb */}
       <g>
-        <circle cx={100} cy={120} r={24} className="fill-white/[0.04] stroke-border" strokeWidth="1.5" />
+        <circle cx={118} cy={139} r={28} className="fill-white/[0.04] stroke-border" strokeWidth="1.5" />
         <circle
-          cx={100 + ax(0) * STICK_TRAVEL}
-          cy={120 + ax(1) * STICK_TRAVEL}
-          r={16}
+          cx={118 + ax(0) * STICK_TRAVEL}
+          cy={139 + ax(1) * STICK_TRAVEL}
+          r={18}
           className={cn(
             "stroke-white/30",
             bp(10) ? "fill-orange-400/40" : "fill-white/15",
           )}
           strokeWidth="1.5"
         />
-        <text x={100} y={163} textAnchor="middle" className="fill-muted-foreground text-[8px] uppercase tracking-[0.16em]">L</text>
+        <text x={118} y={187} textAnchor="middle" className="fill-muted-foreground text-[8px] uppercase tracking-[0.16em]">L</text>
       </g>
 
       {/* D-pad */}
-      <g transform="translate(160 170)">
-        <DpadArm dx={0} dy={-12} pressed={bp(12)} />
-        <DpadArm dx={0} dy={12} pressed={bp(13)} />
-        <DpadArm dx={-12} dy={0} pressed={bp(14)} />
-        <DpadArm dx={12} dy={0} pressed={bp(15)} />
-        <rect x={-6} y={-6} width={12} height={12} rx={2} className="fill-white/10 stroke-white/15" strokeWidth="1" />
+      <g transform="translate(154 180)">
+        <DpadArm dx={0} dy={-14} pressed={bp(12)} />
+        <DpadArm dx={0} dy={14} pressed={bp(13)} />
+        <DpadArm dx={-14} dy={0} pressed={bp(14)} />
+        <DpadArm dx={14} dy={0} pressed={bp(15)} />
+        <rect x={-8} y={-8} width={16} height={16} rx={3} className="fill-white/10 stroke-white/15" strokeWidth="1" />
       </g>
 
       {/* Face buttons (ABXY) */}
-      <g transform="translate(255 120)">
-        <FaceButton cx={0} cy={-20} pressed={bp(3)} className="fill-amber-400/70 stroke-amber-200/60" label="Y" />
-        <FaceButton cx={-22} cy={0} pressed={bp(2)} className="fill-sky-400/70 stroke-sky-200/60" label="X" />
-        <FaceButton cx={22} cy={0} pressed={bp(1)} className="fill-red-400/70 stroke-red-200/60" label="B" />
-        <FaceButton cx={0} cy={20} pressed={bp(0)} className="fill-emerald-400/70 stroke-emerald-200/60" label="A" />
+      <g transform="translate(292 132)">
+        <FaceButton cx={0} cy={-24} pressed={bp(3)} className="fill-amber-400/70 stroke-amber-200/60" label="Y" />
+        <FaceButton cx={-26} cy={0} pressed={bp(2)} className="fill-sky-400/70 stroke-sky-200/60" label="X" />
+        <FaceButton cx={26} cy={0} pressed={bp(1)} className="fill-red-400/70 stroke-red-200/60" label="B" />
+        <FaceButton cx={0} cy={24} pressed={bp(0)} className="fill-emerald-400/70 stroke-emerald-200/60" label="A" />
         {/* Inactive shadow for unpressed buttons */}
-        <UnpressedShadow cx={0} cy={-20} pressed={bp(3)} />
-        <UnpressedShadow cx={-22} cy={0} pressed={bp(2)} />
-        <UnpressedShadow cx={22} cy={0} pressed={bp(1)} />
-        <UnpressedShadow cx={0} cy={20} pressed={bp(0)} />
-        <text x={0} y={-17} textAnchor="middle" className="pointer-events-none fill-black/60 text-[8px] font-bold">Y</text>
-        <text x={-22} y={3} textAnchor="middle" className="pointer-events-none fill-black/60 text-[8px] font-bold">X</text>
-        <text x={22} y={3} textAnchor="middle" className="pointer-events-none fill-black/60 text-[8px] font-bold">B</text>
-        <text x={0} y={23} textAnchor="middle" className="pointer-events-none fill-black/60 text-[8px] font-bold">A</text>
+        <UnpressedShadow cx={0} cy={-24} pressed={bp(3)} />
+        <UnpressedShadow cx={-26} cy={0} pressed={bp(2)} />
+        <UnpressedShadow cx={26} cy={0} pressed={bp(1)} />
+        <UnpressedShadow cx={0} cy={24} pressed={bp(0)} />
+        <text x={0} y={-21} textAnchor="middle" className="pointer-events-none fill-white/70 text-[8px] font-bold">Y</text>
+        <text x={-26} y={3} textAnchor="middle" className="pointer-events-none fill-white/70 text-[8px] font-bold">X</text>
+        <text x={26} y={3} textAnchor="middle" className="pointer-events-none fill-white/70 text-[8px] font-bold">B</text>
+        <text x={0} y={27} textAnchor="middle" className="pointer-events-none fill-white/70 text-[8px] font-bold">A</text>
       </g>
 
       {/* Right stick */}
       <g>
-        <circle cx={205} cy={148} r={24} className="fill-white/[0.04] stroke-border" strokeWidth="1.5" />
+        <circle cx={238} cy={179} r={28} className="fill-white/[0.04] stroke-border" strokeWidth="1.5" />
         <circle
-          cx={205 + ax(2) * STICK_TRAVEL}
-          cy={148 + ax(3) * STICK_TRAVEL}
-          r={16}
+          cx={238 + ax(2) * STICK_TRAVEL}
+          cy={179 + ax(3) * STICK_TRAVEL}
+          r={18}
           className={cn(
             "stroke-white/30",
             bp(11) ? "fill-orange-400/40" : "fill-white/15",
           )}
           strokeWidth="1.5"
         />
-        <text x={205} y={191} textAnchor="middle" className="fill-muted-foreground text-[8px] uppercase tracking-[0.16em]">R</text>
+        <text x={238} y={227} textAnchor="middle" className="fill-muted-foreground text-[8px] uppercase tracking-[0.16em]">R</text>
       </g>
 
       {/* Optional: tiny hint text when no controller selected */}
       {!active ? (
-        <text x={180} y={42} textAnchor="middle" className="fill-muted-foreground text-[10px] uppercase tracking-[0.2em]">
+        <text x={200} y={37} textAnchor="middle" className="fill-muted-foreground text-[10px] uppercase tracking-[0.2em]">
           Awaiting controller
         </text>
       ) : null}
@@ -323,15 +330,16 @@ function UnpressedShadow({ cx, cy, pressed }: { cx: number; cy: number; pressed:
 }
 
 function DpadArm({ dx, dy, pressed }: { dx: number; dy: number; pressed: boolean }) {
-  const w = dx === 0 ? 12 : 12;
-  const h = dy === 0 ? 12 : 12;
+  const vertical = dx === 0;
+  const w = vertical ? 16 : 22;
+  const h = vertical ? 22 : 16;
   return (
     <rect
       x={dx - w / 2}
       y={dy - h / 2}
       width={w}
       height={h}
-      rx={2}
+      rx={3}
       className={cn(pressed ? "fill-emerald-400/70 stroke-emerald-200/60" : "fill-white/10 stroke-white/20")}
       strokeWidth="1"
     />
