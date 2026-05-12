@@ -404,6 +404,14 @@ export class Nt4AutoChooserBridge {
       entry.connected = true;
       entry.stale = false;
       entry.error = null;
+      for (const topic of entry.publishedTopics.values()) {
+        this.sendJson(entry, "publish", {
+          name: topic.name,
+          type: topic.type,
+          pubuid: topic.id,
+          properties: {},
+        });
+      }
       this.sendJson(entry, "subscribe", {
         topics: ["/"],
         subuid: SUBSCRIPTION_ID,

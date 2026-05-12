@@ -458,4 +458,90 @@ describe("simulation HTTP API", () => {
       },
     );
   });
+
+  test("auto chooser bridge republishes selected topic after NT4 reconnect", async () => {
+    const fakeDocker = createFakeDocker();
+    const controlled = createControlledRunCommands();
+    const sockets: FakeWebSocket[] = [];
+
+    function announceChooser(socket: FakeWebSocket): void {
+      socket.message([
+        { method: "announce", params: { id: 1, name: "/SmartDashboard/Auto Choices/.type", type: "string" } },
+        { method: "announce", params: { id: 2, name: "/SmartDashboard/Auto Choices/options", type: "string[]" } },
+        { method: "announce", params: { id: 3, name: "/SmartDashboard/Auto Choices/default", type: "string" } },
+        { method: "announce", params: { id: 4, name: "/SmartDashboard/Auto Choices/active", type: "string" } },
+      ]);
+      socket.binary(encodeMsgPack([1, 0, 4, "String Chooser"]));
+      socket.binary(encodeMsgPack([2, 0, 20, ["None", "Score"]]));
+      socket.binary(encodeMsgPack([3, 0, 4, "None"]));
+      socket.binary(encodeMsgPack([4, 0, 4, "None"]));
+    }
+
+    await withApp(
+      async (app) => {
+        const loginResponse = await login(app, "alice");
+        const cookie = cookieFrom(loginResponse);
+        const workspace = workspaceBySlug(app, "alice");
+        app.runs.start(workspace);
+        await waitFor(() => controlled.commands.length === 1);
+        controlled.commands[0]?.writeStdout("NT4 listening on 5810");
+        await waitFor(() => app.runs.getWorkspaceSnapshot(workspace.id).status === "running");
+
+        const initialSnapshot = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/auto-choosers", {
+            headers: { cookie },
+          }),
+        );
+        expect(initialSnapshot.status).toBe(200);
+        await waitFor(() => sockets.length === 1 && sockets[0]!.readyState === WebSocket.OPEN);
+
+        const firstSelect = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/auto-chooser", {
+            method: "PATCH",
+            headers: { cookie, "content-type": "application/json" },
+            body: JSON.stringify({ key: "SmartDashboard/Auto Choices", selected: "Score" }),
+          }),
+        );
+        expect(firstSelect.status).toBe(200);
+        sockets[0]!.close();
+
+        const reconnectSnapshot = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/auto-choosers", {
+            headers: { cookie },
+          }),
+        );
+        expect(reconnectSnapshot.status).toBe(200);
+        await waitFor(() => sockets.length === 2 && sockets[1]!.readyState === WebSocket.OPEN);
+
+        const secondSelect = await app.fetch(
+          new Request("http://localhost/u/alice/api/sim/auto-chooser", {
+            method: "PATCH",
+            headers: { cookie, "content-type": "application/json" },
+            body: JSON.stringify({ key: "SmartDashboard/Auto Choices", selected: "Score" }),
+          }),
+        );
+        expect(secondSelect.status).toBe(200);
+        const secondTextMessages = sockets[1]!.sent.filter((data): data is string => typeof data === "string");
+        expect(secondTextMessages.some((raw) => raw.includes("\"publish\"") && raw.includes("/SmartDashboard/Auto Choices/selected"))).toBe(true);
+        app.runs.stopWorkspace(workspace.id);
+      },
+      {
+        dockerRunner: fakeDocker.runner,
+        runCommandFactory: controlled.commandFactory,
+        nt4AutoWebSocketFactory: () => {
+          const socket = new FakeWebSocket();
+          sockets.push(socket);
+          queueMicrotask(() => {
+            socket.open();
+            announceChooser(socket);
+          });
+          return socket as unknown as WebSocket;
+        },
+        codeImage: "frc-code:test",
+        simPortRange: { start: 26080, end: 26089 },
+        vscodePortRange: { start: 33380, end: 33389 },
+        halsimPortRange: { start: 34380, end: 34389 },
+      },
+    );
+  });
 });
