@@ -90,7 +90,8 @@ RUN mkdir -p /opt/frc-extensions-cache \
 WORKDIR /workspace
 COPY templates/wpilib-java-command/ /workspace/template/
 
-RUN chown -R abc:abc /workspace
+RUN mkdir -p /config/.gradle \
+    && chown -R abc:abc /workspace /config/.gradle
 
 USER abc
 ENV GRADLE_USER_HOME=/config/.gradle
