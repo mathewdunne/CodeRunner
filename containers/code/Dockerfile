@@ -38,6 +38,8 @@ RUN sed -i 's/\r$//' /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh \
 # ── s6-overlay service definitions (additive to upstream) ─────────────
 # Adds init-frc-setup oneshot and overrides svc-openvscode-server run script.
 COPY containers/code/root/ /
+RUN chmod +x /etc/s6-overlay/s6-rc.d/init-frc-setup/run \
+             /etc/s6-overlay/s6-rc.d/svc-openvscode-server/run
 
 # ── Download and install VS Code extensions ────────────────────────────
 ARG REDHAT_JAVA_VERSION=1.38.0
