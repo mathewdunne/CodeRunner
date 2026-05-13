@@ -1,4 +1,4 @@
-import { useRef, useMemo, useEffect, useCallback } from "react";
+import { useRef, useMemo, useEffect, useCallback, useState } from "react";
 import { useParams } from "react-router";
 import { isWorkspaceSlug } from "@/lib/contracts";
 import { useSession } from "@/hooks/useSession";
@@ -10,6 +10,14 @@ import { useScopeHandshake } from "@/hooks/useScopeHandshake";
 import { useGamepad, type GamepadInfo } from "@/hooks/useGamepad";
 import { useGamepadChannel } from "@/hooks/useGamepadChannel";
 import { gamepadFrameToWpilib } from "@/lib/gamepad-mapping";
+import {
+  gamepadStateToVisualizerFrame,
+  keyboardCodesToWpilib,
+  KEYBOARD_GAMEPAD_ID,
+  KEYBOARD_GAMEPAD_LABEL,
+  NEUTRAL_GAMEPAD_STATE,
+} from "@/lib/keyboard-mapping";
+import { useUIStore } from "@/state/store";
 import { Topbar } from "@/components/Topbar";
 import { IDELayout } from "@/components/IDELayout";
 import { EditorPane } from "@/components/EditorPane";
@@ -37,21 +45,39 @@ export function WorkspacePage() {
 
   const gamepad = useGamepad();
   const channel = useGamepadChannel(workspaceSlug);
+  const inputMode = useUIStore((state) => state.inputMode);
+  const setInputMode = useUIStore((state) => state.setInputMode);
+  const [keyboardCodes, setKeyboardCodes] = useState<ReadonlySet<string>>(() => new Set());
+  const keyboardState = useMemo(
+    () => keyboardCodesToWpilib(keyboardCodes),
+    [keyboardCodes],
+  );
+  const keyboardFrame = useMemo(
+    () => gamepadStateToVisualizerFrame(keyboardState),
+    [keyboardState],
+  );
 
   // Bridge: when a gamepad frame arrives, ship the WPILib-mapped state to
   // the channel. pushState handles its own throttle / heartbeat / diffing,
   // so we can call it on every frame without burning bandwidth.
   useEffect(() => {
-    if (!gamepad.frame || gamepad.selectedIndex === null) return;
+    if (inputMode !== "controller" || !gamepad.frame || gamepad.selectedIndex === null) return;
     channel.pushState(gamepadFrameToWpilib(gamepad.frame));
-  }, [gamepad.frame, gamepad.selectedIndex, channel]);
+  }, [inputMode, gamepad.frame, gamepad.selectedIndex, channel]);
+
+  useEffect(() => {
+    if (inputMode !== "keyboard") return;
+    channel.pushState(keyboardState);
+  }, [inputMode, keyboardState, channel]);
 
   const onSelectGamepad = useCallback(
     (info: GamepadInfo) => {
+      setInputMode("controller");
+      setKeyboardCodes(new Set());
       gamepad.selectGamepad(info.index);
       channel.select(info.id, info.label);
     },
-    [gamepad, channel],
+    [gamepad, channel, setInputMode],
   );
 
   const onReleaseGamepad = useCallback(() => {
@@ -59,15 +85,49 @@ export function WorkspacePage() {
     channel.release();
   }, [gamepad, channel]);
 
+  const onSelectControllerMode = useCallback(() => {
+    setInputMode("controller");
+    setKeyboardCodes(new Set());
+    const selected = gamepad.available.find((info) => info.index === gamepad.selectedIndex);
+    if (selected) {
+      channel.select(selected.id, selected.label);
+    } else {
+      channel.release();
+    }
+  }, [channel, gamepad.available, gamepad.selectedIndex, setInputMode]);
+
+  const onSelectKeyboardMode = useCallback(() => {
+    setInputMode("keyboard");
+    gamepad.selectGamepad(null);
+    setKeyboardCodes(new Set());
+    channel.select(KEYBOARD_GAMEPAD_ID, KEYBOARD_GAMEPAD_LABEL);
+    channel.pushState(NEUTRAL_GAMEPAD_STATE);
+  }, [channel, gamepad, setInputMode]);
+
+  const onKeyboardCodesChange = useCallback((codes: ReadonlySet<string>) => {
+    setKeyboardCodes(codes);
+  }, []);
+
+  const onKeyboardRelease = useCallback(() => {
+    setKeyboardCodes(new Set());
+    if (inputMode === "keyboard") {
+      channel.pushState(NEUTRAL_GAMEPAD_STATE);
+    }
+  }, [channel, inputMode]);
+
   // Safety: if the selected gamepad disappears (useGamepad clears
   // selectedIndex), tell the server to release.
   const lastSelectedRef = useRef<number | null>(null);
   useEffect(() => {
-    if (lastSelectedRef.current !== null && gamepad.selectedIndex === null) {
+    if (
+      inputMode === "controller" &&
+      lastSelectedRef.current !== null &&
+      gamepad.selectedIndex === null
+    ) {
       channel.release();
     }
     lastSelectedRef.current = gamepad.selectedIndex;
-  }, [gamepad.selectedIndex, channel]);
+  }, [inputMode, gamepad.selectedIndex, channel]);
 
   const displayName =
     sessionState.status === "ready"
@@ -113,11 +173,18 @@ export function WorkspacePage() {
             consoleLines={consoleLines}
             autoStatus={autoChoosers.status}
             gamepad={{
+              inputMode,
               available: gamepad.available,
               selectedIndex: gamepad.selectedIndex,
               frame: gamepad.frame,
+              keyboardFrame,
+              keyboardPressedCodes: keyboardCodes,
               channelConnection: channel.connection,
               channelHalsimDisconnected: channel.halsimDisconnected,
+              onSelectControllerMode,
+              onSelectKeyboardMode,
+              onKeyboardCodesChange,
+              onKeyboardRelease,
               onSelect: onSelectGamepad,
               onRelease: onReleaseGamepad,
             }}
