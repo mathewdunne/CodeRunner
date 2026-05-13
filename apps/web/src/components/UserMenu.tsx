@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ChevronDown, LogOut, Shield } from "lucide-react";
+import { ChevronDown, LogOut, ShieldUser } from "lucide-react";
 import { SiGithub } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import {
@@ -125,7 +125,7 @@ export function UserMenu({
                 onClick={navigateToAdmin}
                 className="gap-2.5 px-2.5 py-2 text-[12.5px]"
               >
-                <Shield className="size-[15px] text-muted-foreground" />
+                <ShieldUser className="size-[15px] text-muted-foreground" />
                 Admin
               </DropdownMenuItem>
             ) : null}

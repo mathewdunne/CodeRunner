@@ -80,9 +80,18 @@ export function DriverStation({
 
   const handleMouseDownCapture = useCallback((event: MouseEvent<HTMLElement>) => {
     if (!(event.target instanceof HTMLElement)) return;
-    if (event.target.closest("button, input, textarea, select, [tabindex]")) return;
-    sectionRef.current?.focus();
-  }, []);
+    if (keyboardCaptureActive) {
+      // Keep focus on the section so keyboard events keep firing,
+      // even when clicking buttons (which would otherwise steal focus).
+      if (!event.target.closest("input, textarea, select")) {
+        event.preventDefault();
+        sectionRef.current?.focus();
+      }
+    } else {
+      if (event.target.closest("button, input, textarea, select, [tabindex]")) return;
+      sectionRef.current?.focus();
+    }
+  }, [keyboardCaptureActive]);
 
   const handleKeyDownCapture = useCallback((event: KeyboardEvent<HTMLElement>) => {
     if (!keyboardCaptureActive || event.repeat || shouldIgnoreKeyboardTarget(event.target)) return;
