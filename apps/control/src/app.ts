@@ -1214,8 +1214,12 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       return webShellResponse(storage);
     }
 
-    // Serve favicon for pages outside the /u/:slug/ scope (e.g. /login)
-    if (url.pathname === "/coderunner-icon.png" && request.method === "GET") {
+    // Serve the favicon from the site root for pages outside the /u/:slug/ scope
+    // and for browsers that fall back to requesting /favicon.ico automatically.
+    if (
+      (url.pathname === "/coderunner-icon.png" || url.pathname === "/favicon.ico") &&
+      request.method === "GET"
+    ) {
       return webAssetResponse(storage, "coderunner-icon.png");
     }
 
@@ -1661,6 +1665,15 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
       if (!workspaceSlugSchema.safeParse(slug).success) {
         return new Response("Invalid workspace slug.", { status: 400 });
+      }
+
+      // Older web bundles emitted a relative favicon path, which browsers resolve
+      // under /u/:slug/. Serve the root icon here so those bundles keep working.
+      if (
+        (suffix === "/coderunner-icon.png" || suffix === "/favicon.ico") &&
+        request.method === "GET"
+      ) {
+        return webAssetResponse(storage, "coderunner-icon.png");
       }
 
       const isApiRequest = suffix.startsWith("/api/");

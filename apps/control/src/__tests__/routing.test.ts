@@ -44,6 +44,20 @@ describe("routing and shell APIs", () => {
     });
   });
 
+  test("serves the favicon from root and workspace-scoped fallback paths", async () => {
+    await withApp(async (app) => {
+      const rootFavicon = await app.fetch(new Request("http://localhost/favicon.ico"));
+      expect(rootFavicon.status).toBe(200);
+      expect(rootFavicon.headers.get("content-type")).toContain("image/png");
+
+      const workspaceFavicon = await app.fetch(
+        new Request("http://localhost/u/alice/coderunner-icon.png"),
+      );
+      expect(workspaceFavicon.status).toBe(200);
+      expect(workspaceFavicon.headers.get("content-type")).toContain("image/png");
+    });
+  });
+
   test("returns session and heartbeat for the signed workspace", async () => {
     await withApp(async (app) => {
       const response = await login(app, "alice");

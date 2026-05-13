@@ -17,6 +17,7 @@ const PUBLIC_PATHS: Array<{ path: string; method?: "GET" | "POST" }> = [
   { path: "/api/openapi.json" },
   { path: "/api/auth/providers" },
   { path: "/coderunner-icon.png" },
+  { path: "/favicon.ico" },
   { path: "/assets/app.js" },
   { path: "/scope/" },
   { path: "/scope/index.html" },

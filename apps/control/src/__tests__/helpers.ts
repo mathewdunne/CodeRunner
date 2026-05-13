@@ -37,6 +37,7 @@ export async function createWebDist(root: string): Promise<string> {
     "utf8",
   );
   await writeFile(join(webDistDir, "assets", "app.js"), "console.log('v2 shell');\n", "utf8");
+  await writeFile(join(webDistDir, "coderunner-icon.png"), "fake png\n", "utf8");
   return webDistDir;
 }
 
