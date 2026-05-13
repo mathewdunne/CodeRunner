@@ -4,12 +4,15 @@ import { ModeColumn } from "./ModeColumn";
 import { EnableDisableRow } from "./EnableDisableRow";
 import type { RunConnection } from "@/hooks/useRunChannel";
 import type { DriverStationPatch, SimRunStatus, SimStatusResponse } from "@/lib/contracts";
+import type { InputMode } from "@/state/store";
 
 interface WorkbenchPanelProps {
   runStatus: SimRunStatus;
   sessionReady: boolean;
   simulationStatus: SimStatusResponse | null;
   runConnection: RunConnection;
+  inputMode: InputMode;
+  keyboardCaptureActive: boolean;
   onStartRun: () => void;
   onStopRun: () => void;
   onRestartRun: () => void;
@@ -21,6 +24,8 @@ export function WorkbenchPanel({
   sessionReady,
   simulationStatus,
   runConnection,
+  inputMode,
+  keyboardCaptureActive,
   onStartRun,
   onStopRun,
   onRestartRun,
@@ -69,6 +74,8 @@ export function WorkbenchPanel({
           runConnection={runConnection}
           runStatus={runStatus}
           joystickStatus={simulationStatus?.joysticks.status ?? "unknown"}
+          inputMode={inputMode}
+          keyboardCaptureActive={keyboardCaptureActive}
         />
       </div>
 

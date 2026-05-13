@@ -3,6 +3,7 @@ import { Bot, Gamepad2, Wifi } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RunConnection } from "@/hooks/useRunChannel";
 import type { BridgeConnection, SimRunStatus, SimStatusResponse } from "@/lib/contracts";
+import type { InputMode } from "@/state/store";
 
 type JoystickStatus = SimStatusResponse["joysticks"]["status"];
 
@@ -64,9 +65,18 @@ interface StatusTileRowProps {
   runConnection: RunConnection;
   runStatus: SimRunStatus;
   joystickStatus: JoystickStatus;
+  inputMode: InputMode;
+  keyboardCaptureActive: boolean;
 }
 
-function joystickToneFromStatus(status: JoystickStatus): StatusTone {
+function joystickToneFromStatus(
+  status: JoystickStatus,
+  inputMode: InputMode,
+  keyboardCaptureActive: boolean,
+): StatusTone {
+  if (inputMode === "keyboard") {
+    return keyboardCaptureActive ? "ok" : "warn";
+  }
   if (status === "connected") return "ok";
   return "warn";
 }
@@ -91,10 +101,12 @@ export function StatusTileRow({
   runConnection,
   runStatus,
   joystickStatus,
+  inputMode,
+  keyboardCaptureActive,
 }: StatusTileRowProps) {
   const commsTone = commsToneFromConnections(halConnection, runConnection);
   const robotTone = robotToneFromRunStatus(runStatus);
-  const joystickTone = joystickToneFromStatus(joystickStatus);
+  const joystickTone = joystickToneFromStatus(joystickStatus, inputMode, keyboardCaptureActive);
 
   return (
     <div className="grid h-full min-h-0 grid-cols-3 gap-1.5 overflow-hidden rounded-lg border border-border bg-card p-1.5">

@@ -91,7 +91,7 @@ export function ControlsPanel({
       if (simulationStatus && !simulationStatus.halsim.connected) {
         return { statusTone: "warn" as StatusTone, statusText: "Waiting for HALSim..." };
       }
-      return { statusTone: "ok" as StatusTone, statusText: "Connected: Keyboard (Standard Xbox)" };
+      return { statusTone: "ok" as StatusTone, statusText: "Connected: Keyboard" };
     }
     if (!selected) {
       return available.length === 0
@@ -208,7 +208,7 @@ export function ControlsPanel({
           </div>
           <div className="flex items-center justify-between gap-2 px-1">
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">Keyboard (Standard Xbox)</p>
+              <p className="truncate text-sm font-medium text-foreground">Keyboard (Xbox Mapping)</p>
               <p className="text-[11px] text-muted-foreground">
                 Focus the Driver Station to drive. Leaving it clears input.
               </p>

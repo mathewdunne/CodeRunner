@@ -139,6 +139,8 @@ export function DriverStation({
         sessionReady={sessionReady}
         simulationStatus={simulationStatus}
         runConnection={runConnection}
+        inputMode={gamepad.inputMode}
+        keyboardCaptureActive={keyboardCaptureActive}
         onStartRun={onStartRun}
         onStopRun={onStopRun}
         onRestartRun={onRestartRun}

@@ -2,7 +2,7 @@ import type { GamepadFrame } from "@/hooks/useGamepad";
 import type { GamepadState } from "@/lib/contracts";
 
 export const KEYBOARD_GAMEPAD_ID = "keyboard-standard-xbox";
-export const KEYBOARD_GAMEPAD_LABEL = "Keyboard (Standard Xbox)";
+export const KEYBOARD_GAMEPAD_LABEL = "Keyboard";
 
 export const NEUTRAL_GAMEPAD_STATE: GamepadState = {
   axes: [0, 0, 0, 0, 0, 0],
