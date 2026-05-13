@@ -136,6 +136,7 @@ describe("code container orchestration", () => {
       templateDir,
       webDistDir,
       sessionSecret: "test-session-secret",
+      baseUrl: "http://localhost:4000",
       containerAutoStart: false,
       dockerRunner: fakeDocker.runner,
       portAvailable: async () => true,

@@ -50,7 +50,7 @@ export type RunJobRow = {
 
 /** Context returned by Better Auth session resolution + workspace lookup. */
 export type AuthContext = {
-  user: { id: string; email: string; name: string; role: string; slug: string };
+  user: { id: string; email: string; name: string; image: string | null; role: string; slug: string };
   workspace: WorkspaceRow;
 };
 

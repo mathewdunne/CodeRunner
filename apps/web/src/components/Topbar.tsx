@@ -4,6 +4,7 @@ import coderunnerHeaderImg from "@/assets/coderunner-header.png";
 interface TopbarProps {
   displayName: string;
   email: string;
+  avatarUrl: string | null;
   isAdmin: boolean;
   workspaceSlug: string | null;
 }
@@ -11,6 +12,7 @@ interface TopbarProps {
 export function Topbar({
   displayName,
   email,
+  avatarUrl,
   isAdmin,
   workspaceSlug,
 }: TopbarProps) {
@@ -26,6 +28,7 @@ export function Topbar({
         <UserMenu
           displayName={displayName}
           email={email}
+          avatarUrl={avatarUrl}
           isAdmin={isAdmin}
           workspaceSlug={workspaceSlug}
         />

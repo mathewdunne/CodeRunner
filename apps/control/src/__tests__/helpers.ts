@@ -72,6 +72,8 @@ export async function withApp<T>(
     webDistDir,
     advantageScopeDistDir,
     sessionSecret: "test-session-secret",
+    baseUrl: "http://localhost:4000",
+    idleStopMinutes: 30,
     containerAutoStart: false,
     portAvailable: options.dockerRunner ? async () => true : undefined,
     ...options,
@@ -281,7 +283,7 @@ async function signToken(token: string, secret: string): Promise<string> {
   );
   const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(token));
   const signature = btoa(String.fromCharCode(...new Uint8Array(sig)));
-  return `${token}.${encodeURIComponent(signature)}`;
+  return encodeURIComponent(`${token}.${signature}`);
 }
 
 /** Better Auth generates random 32-char alphanumeric tokens, not UUIDs. */
@@ -307,6 +309,7 @@ export async function login(
   const secret = app.storage.config.sessionSecret;
   const email = (options.email ?? `${displayName.toLowerCase()}@test.local`).toLowerCase();
   const role = options.role ?? "student";
+  const avatarUrl = `https://example.test/avatar/${displayName.toLowerCase()}.png`;
   const slug = displayName.toLowerCase().replace(/[^a-z0-9_-]/g, "-").slice(0, 40);
   const now = new Date().toISOString();
   const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
@@ -339,8 +342,8 @@ export async function login(
   const sessionToken = randomToken();
   const signedToken = await signToken(sessionToken, secret);
   db.query(
-    "INSERT INTO user (id, name, email, emailVerified, createdAt, updatedAt, role, slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-  ).run(userId, displayName, email, 0, now, now, role, slug);
+    "INSERT INTO user (id, name, email, emailVerified, image, createdAt, updatedAt, role, slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+  ).run(userId, displayName, email, 0, avatarUrl, now, now, role, slug);
   db.query(
     "INSERT INTO session (id, expiresAt, token, createdAt, updatedAt, userId) VALUES (?, ?, ?, ?, ?, ?)",
   ).run(randomToken(), expiresAt, sessionToken, now, now, userId);

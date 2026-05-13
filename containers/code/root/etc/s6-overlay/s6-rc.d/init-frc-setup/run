@@ -4,9 +4,10 @@
 
 GRADLE_USER_HOME="${HOME}/.gradle"
 EXTENSIONS_DIR="${HOME}/extensions"
+MACHINE_SETTINGS="${HOME}/data/Machine/settings.json"
 SIM_LOG_FILE="${SIM_LOG_FILE:-${HOME}/sim.log}"
 
-mkdir -p "${GRADLE_USER_HOME}" "${EXTENSIONS_DIR}" "${HOME}/data"
+mkdir -p "${GRADLE_USER_HOME}" "${EXTENSIONS_DIR}" "${HOME}/data/Machine"
 
 # Seed Gradle cache on first run.
 if [[ -d /opt/frc-gradle-cache && ! -d "${GRADLE_USER_HOME}/caches" ]]; then
@@ -18,6 +19,23 @@ fi
 if [[ -d /opt/frc-extensions-cache ]] && [[ -z "$(ls -A "${EXTENSIONS_DIR}" 2>/dev/null)" ]]; then
   echo "Seeding VS Code extensions from image..."
   cp -a /opt/frc-extensions-cache/. "${EXTENSIONS_DIR}"/
+fi
+
+# Seed the remote-level editor theme. Existing non-default remote choices are preserved,
+# while absent settings and the old light default move to the classroom default.
+if [[ ! -s "${MACHINE_SETTINGS}" ]]; then
+  printf '{\n  "workbench.colorTheme": "Dark Modern"\n}\n' > "${MACHINE_SETTINGS}"
+else
+  current_theme="$(jq -r '."workbench.colorTheme" // ""' "${MACHINE_SETTINGS}" 2>/dev/null || true)"
+  if [[ "${current_theme}" == "" || "${current_theme}" == "Light Modern" ]]; then
+    tmp_settings="$(mktemp)"
+    if jq '."workbench.colorTheme" = "Dark Modern"' "${MACHINE_SETTINGS}" > "${tmp_settings}"; then
+      mv "${tmp_settings}" "${MACHINE_SETTINGS}"
+    else
+      rm -f "${tmp_settings}"
+      echo "WARNING: Could not update VS Code machine settings; leaving ${MACHINE_SETTINGS} unchanged."
+    fi
+  fi
 fi
 
 touch "${SIM_LOG_FILE}"

@@ -130,12 +130,12 @@ describe("workspace creation concurrency", () => {
     await withApp(async (app) => {
       const now = new Date().toISOString();
       const insertUser = app.storage.db.query(
-        "INSERT INTO user (id, name, email, emailVerified, createdAt, updatedAt, role, slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO user (id, name, email, emailVerified, image, createdAt, updatedAt, role, slug) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       );
 
       const ids = ["userAAAAAAAAAAAAAAAA", "userBBBBBBBBBBBBBBBB"];
       ids.forEach((id, i) => {
-        insertUser.run(id, `Alice${i}`, `alice${i}@example.com`, 0, now, now, "student", "alice");
+        insertUser.run(id, `Alice${i}`, `alice${i}@example.com`, 0, null, now, now, "student", "alice");
       });
 
       const results = await Promise.all(

@@ -12,17 +12,18 @@ import type { WorkspaceSlug } from "@frc-sim/contracts";
 export async function getSessionFromRequest(
   auth: Auth,
   request: Request,
-): Promise<{ user: { id: string; email: string; name: string; role: string; slug: string }; session: { token: string } } | null> {
+): Promise<{ user: { id: string; email: string; name: string; image: string | null; role: string; slug: string }; session: { token: string } } | null> {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session) return null;
 
-    const user = session.user as { id: string; email: string; name: string; role?: string; slug?: string };
+    const user = session.user as { id: string; email: string; name: string; image?: string | null; role?: string; slug?: string };
     return {
       user: {
         id: user.id,
         email: user.email,
         name: user.name,
+        image: user.image ?? null,
         role: (user.role as string) ?? "student",
         slug: (user.slug as string) ?? "",
       },
@@ -37,7 +38,7 @@ export async function getSessionFromRequest(
 export async function requireSession(
   auth: Auth,
   request: Request,
-): Promise<{ user: { id: string; email: string; name: string; role: string; slug: string }; session: { token: string } } | Response> {
+): Promise<{ user: { id: string; email: string; name: string; image: string | null; role: string; slug: string }; session: { token: string } } | Response> {
   const session = await getSessionFromRequest(auth, request);
   if (!session) {
     return new Response("Unauthorized", { status: 401 });
@@ -75,7 +76,7 @@ export async function requireAdmin(
   auth: Auth,
   storage: AppStorage,
   request: Request,
-): Promise<{ user: { id: string; email: string; name: string; role: string; slug: string } } | Response> {
+): Promise<{ user: { id: string; email: string; name: string; image: string | null; role: string; slug: string } } | Response> {
   // Break-glass: ADMIN_TOKEN header
   const adminToken = storage.config.adminToken;
   if (adminToken) {
@@ -86,6 +87,7 @@ export async function requireAdmin(
           id: "<admin-token>",
           email: "<admin-token>",
           name: "Admin Token",
+          image: null,
           role: "admin",
           slug: "",
         },

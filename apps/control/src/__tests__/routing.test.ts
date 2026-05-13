@@ -70,7 +70,7 @@ describe("routing and shell APIs", () => {
       );
       expect(session.status).toBe(200);
       expect(await session.json()).toMatchObject({
-        user: { displayName: "alice" },
+        user: { displayName: "alice", avatarUrl: "https://example.test/avatar/alice.png" },
         workspace: { slug: "alice" },
       });
 

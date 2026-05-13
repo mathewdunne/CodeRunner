@@ -75,6 +75,8 @@ export function WorkspacePage() {
       : "Loading";
   const email =
     sessionState.status === "ready" ? sessionState.session.user.email : "";
+  const avatarUrl =
+    sessionState.status === "ready" ? sessionState.session.user.avatarUrl : null;
   const isAdmin =
     sessionState.status === "ready" && sessionState.session.user.role === "admin";
 
@@ -87,6 +89,7 @@ export function WorkspacePage() {
       <Topbar
         displayName={displayName}
         email={email}
+        avatarUrl={avatarUrl}
         isAdmin={isAdmin}
         workspaceSlug={workspaceSlug}
       />

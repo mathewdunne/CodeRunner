@@ -38,6 +38,7 @@ export const sessionResponseSchema = z.object({
     id: userIdSchema,
     displayName: z.string(),
     email: z.string(),
+    avatarUrl: z.string().url().nullable(),
     slug: workspaceSlugSchema,
     role: z.enum(["student", "admin"]),
   }),

@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 interface UserMenuProps {
   displayName: string;
   email: string;
+  avatarUrl: string | null;
   isAdmin: boolean;
   workspaceSlug: string | null;
 }
@@ -33,27 +34,40 @@ function initialsOf(name: string) {
   );
 }
 
-// TODO: replace initials avatar with session.user.avatarUrl once the session
-// schema exposes it.
-function InitialsAvatar({
+function Avatar({
   name,
+  src,
   size = 24,
   className,
 }: {
   name: string;
+  src: string | null;
   size?: number;
   className?: string;
 }) {
   const initials = useMemo(() => initialsOf(name), [name]);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const showImage = src !== null && src !== failedSrc;
+
   return (
     <span
       style={{ width: size, height: size }}
       className={cn(
-        "inline-flex items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-[11px] font-semibold text-white ring-1 ring-white/10",
+        "inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-[11px] font-semibold text-white ring-1 ring-white/10",
         className,
       )}
     >
-      {initials}
+      {showImage ? (
+        <img
+          src={src}
+          alt=""
+          className="h-full w-full object-cover"
+          referrerPolicy="no-referrer"
+          onError={() => setFailedSrc(src)}
+        />
+      ) : (
+        initials
+      )}
     </span>
   );
 }
@@ -70,6 +84,7 @@ function navigateToAdmin() {
 export function UserMenu({
   displayName,
   email,
+  avatarUrl,
   isAdmin,
   workspaceSlug,
 }: UserMenuProps) {
@@ -89,12 +104,12 @@ export function UserMenu({
             />
           }
         >
-          <InitialsAvatar name={displayName} size={24} />
+          <Avatar name={displayName} src={avatarUrl} size={24} />
           <ChevronDown className="size-3.5 text-muted-foreground" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-64 p-0">
           <div className="flex items-center gap-2.5 border-b border-border px-3 py-3">
-            <InitialsAvatar name={displayName} size={36} />
+            <Avatar name={displayName} src={avatarUrl} size={36} />
             <div className="min-w-0">
               <div className="truncate text-[13px] font-medium text-foreground">
                 {displayName}

@@ -10,7 +10,7 @@ FROM linuxserver/openvscode-server:1.109.5
 # procps is needed for sim scripts (pkill/pgrep).
 RUN apt-get update -qq \
     && apt-get install -y --no-install-recommends \
-        procps wget \
+        jq procps wget \
     && rm -rf /var/lib/apt/lists/*
 
 # ── JDK 17 (Adoptium Temurin, Linux x64) ──────────────────────────────

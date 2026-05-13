@@ -7,8 +7,8 @@
 import type { ControlConfig } from "../config";
 
 export type SocialProviders = {
-  github?: { clientId: string; clientSecret: string };
-  google?: { clientId: string; clientSecret: string };
+  github?: { clientId: string; clientSecret: string; overrideUserInfoOnSignIn: boolean };
+  google?: { clientId: string; clientSecret: string; overrideUserInfoOnSignIn: boolean };
 };
 
 export type OAuthProvider = "github" | "google";
@@ -35,6 +35,7 @@ export function buildSocialProviders(config: ControlConfig): SocialProviders {
       providers.github = {
         clientId: config.githubClientId!,
         clientSecret: config.githubClientSecret!,
+        overrideUserInfoOnSignIn: true,
       };
     }
 
@@ -42,6 +43,7 @@ export function buildSocialProviders(config: ControlConfig): SocialProviders {
       providers.google = {
         clientId: config.googleClientId!,
         clientSecret: config.googleClientSecret!,
+        overrideUserInfoOnSignIn: true,
       };
     }
   }

@@ -178,6 +178,7 @@ function sessionResponse(auth: AuthContext): SessionResponse {
       id: auth.user.id,
       displayName: auth.user.name,
       email: auth.user.email,
+      avatarUrl: auth.user.image,
       slug: auth.workspace.slug,
       role: auth.user.role as "student" | "admin",
     },

@@ -221,6 +221,7 @@ describe("run lifecycle and log streaming", () => {
       webDistDir,
       advantageScopeDistDir,
       sessionSecret: "test-session-secret",
+      baseUrl: "http://localhost:4000",
       containerAutoStart: false,
       dockerRunner: fakeDocker.runner,
       portAvailable: async () => true,
