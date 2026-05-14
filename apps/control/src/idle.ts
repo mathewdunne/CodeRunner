@@ -1,9 +1,9 @@
-import type { ContainerOrchestrator } from "./containers";
+import type { WorkspaceRuntimeProvider } from "./runtime";
 import type { AppStorage } from "./storage";
 
 export type IdleManagerOptions = {
   storage: AppStorage;
-  containers: ContainerOrchestrator;
+  runtimeProvider: WorkspaceRuntimeProvider;
   onStop?: (workspaceId: string) => void;
 };
 
@@ -11,12 +11,12 @@ export class IdleManager {
   private timer: ReturnType<typeof setInterval> | null = null;
   private initialTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly storage: AppStorage;
-  private readonly containers: ContainerOrchestrator;
+  private readonly runtimeProvider: WorkspaceRuntimeProvider;
   private readonly onStop: (workspaceId: string) => void;
 
   constructor(options: IdleManagerOptions) {
     this.storage = options.storage;
-    this.containers = options.containers;
+    this.runtimeProvider = options.runtimeProvider;
     this.onStop = options.onStop ?? (() => {});
   }
 
@@ -49,7 +49,7 @@ export class IdleManager {
 
     for (const workspaceId of idleIds) {
       try {
-        await this.containers.stopWorkspaceContainers(workspaceId);
+        await this.runtimeProvider.stopWorkspace(workspaceId);
         stopped.push(workspaceId);
         this.onStop(workspaceId);
       } catch (error) {

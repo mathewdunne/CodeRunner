@@ -41,8 +41,8 @@ const SUBSCRIPTION_ID = 1;
 const STRING_TYPE_INDEX = 4;
 const DEFAULT_CHOOSER_KEY = "SmartDashboard/Auto Choices";
 
-function upstreamUrlFor(nt4Port: number): string {
-  return `ws://127.0.0.1:${nt4Port}/nt/${APP_NAME}`;
+function upstreamUrlFor(value: string | number): string {
+  return typeof value === "number" ? `ws://127.0.0.1:${value}/nt/${APP_NAME}` : value;
 }
 
 function normalizeTopicName(name: string): string {
@@ -304,8 +304,8 @@ export class Nt4AutoChooserBridge {
     this.webSocketFactory = options.webSocketFactory ?? ((url, protocols) => new WebSocket(url, protocols));
   }
 
-  ensureConnected(workspaceId: WorkspaceId, nt4Port: number): AutoChoosersResponse {
-    const upstreamUrl = upstreamUrlFor(nt4Port);
+  ensureConnected(workspaceId: WorkspaceId, target: string | number): AutoChoosersResponse {
+    const upstreamUrl = upstreamUrlFor(target);
     let entry = this.entries.get(workspaceId);
     if (entry && entry.upstreamUrl !== upstreamUrl) {
       this.disconnect(workspaceId);
@@ -343,8 +343,9 @@ export class Nt4AutoChooserBridge {
     };
   }
 
-  select(workspaceId: WorkspaceId, nt4Port: number, patch: AutoChooserPatch): AutoChoosersResponse {
-    const snapshot = this.ensureConnected(workspaceId, nt4Port);
+  select(workspaceId: WorkspaceId, target: string | number, patch: AutoChooserPatch): AutoChoosersResponse {
+    const upstreamUrl = upstreamUrlFor(target);
+    const snapshot = this.ensureConnected(workspaceId, upstreamUrl);
     const entry = this.entries.get(workspaceId);
     if (!entry || !entry.socket || entry.socket.readyState !== WebSocket.OPEN) {
       throw new Nt4AutoChooserUnavailableError(snapshot.nt4.error ?? "NT4 auto chooser bridge is not connected.");

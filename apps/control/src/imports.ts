@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import type { ImportBackupMetadata, ImportServerMessage, WorkspaceId } from "@frc-sim/contracts";
-import type { ContainerOrchestrator, DockerRunner } from "./containers";
+import type { WorkspaceRuntimeProvider } from "./runtime";
 import type { AppStorage, WorkspaceRow } from "./storage";
 
 // --- URL validation ---
@@ -176,7 +176,6 @@ export type ImportContext = {
 };
 
 export type ImportManagerOptions = {
-  dockerRunner?: DockerRunner;
 };
 
 export class ImportManager {
@@ -185,7 +184,7 @@ export class ImportManager {
 
   constructor(
     private readonly storage: AppStorage,
-    private readonly containers: ContainerOrchestrator,
+    private readonly runtimeProvider: WorkspaceRuntimeProvider,
     private readonly _options: ImportManagerOptions = {},
   ) {}
 
@@ -224,23 +223,20 @@ export class ImportManager {
     const stagingName = `.import-${timestamp}`;
 
     // 1. Ensure container is running
-    send({ type: "progress", stage: "container", detail: "Ensuring code container is running…" });
-    const code = await this.containers.ensureCodeContainer(workspace);
-    if (code.state !== "running" || !code.containerName) {
-      throw new ImportError(code.error ?? "Code container is not running.");
+    send({ type: "progress", stage: "container", detail: "Ensuring workspace runtime is running…" });
+    const runtime = await this.runtimeProvider.ensureWorkspaceRunning(workspace.id);
+    if (runtime.state !== "running") {
+      throw new ImportError(runtime.error ?? "Workspace runtime is not running.");
     }
-    const containerName = code.containerName;
-    const dockerPath = this.storage.config.dockerPath;
 
     try {
       // 2. Clone inside the container
       send({ type: "progress", stage: "cloning", detail: `Cloning ${cloneUrl} (branch: ${branch})…` });
       const cloneArgs = [
-        "exec", containerName,
         "git", "clone", "--depth", "1", "--branch", branch,
         "--", cloneUrl, `/workspace/${stagingName}/source`,
       ];
-      const cloneResult = await this.dockerExec(dockerPath, cloneArgs, CLONE_TIMEOUT_SECONDS);
+      const cloneResult = await this.runtimeExec(workspace.id, cloneArgs, CLONE_TIMEOUT_SECONDS);
       if (cloneResult.exitCode !== 0) {
         const detail = cloneResult.stderr.trim() || cloneResult.stdout.trim() || `exit ${cloneResult.exitCode}`;
         throw new ImportError(`Git clone failed: ${detail}`);
@@ -254,8 +250,7 @@ export class ImportManager {
 
       // 4. Validate build.gradle exists
       send({ type: "progress", stage: "validating", detail: "Checking for build.gradle…" });
-      const checkResult = await this.dockerExec(dockerPath, [
-        "exec", containerName,
+      const checkResult = await this.runtimeExec(workspace.id, [
         "test", "-f", `${projectRoot}/build.gradle`,
       ]);
       if (checkResult.exitCode !== 0) {
@@ -264,8 +259,7 @@ export class ImportManager {
 
       // 5. Check size
       send({ type: "progress", stage: "validating", detail: "Checking repository size…" });
-      const sizeResult = await this.dockerExec(dockerPath, [
-        "exec", containerName,
+      const sizeResult = await this.runtimeExec(workspace.id, [
         "du", "-sb", projectRoot,
       ]);
       if (sizeResult.exitCode === 0) {
@@ -280,8 +274,7 @@ export class ImportManager {
 
       // 6. Strip .git/
       send({ type: "progress", stage: "preparing", detail: "Stripping git history…" });
-      await this.dockerExec(dockerPath, [
-        "exec", containerName,
+      await this.runtimeExec(workspace.id, [
         "rm", "-rf", `${projectRoot}/.git`,
       ]);
 
@@ -296,20 +289,17 @@ export class ImportManager {
       send({ type: "progress", stage: "swapping", detail: "Replacing project files…" });
 
       // Remove existing contents inside /workspace/project (not the mount point itself)
-      await this.dockerExec(dockerPath, [
-        "exec", containerName,
+      await this.runtimeExec(workspace.id, [
         "bash", "-c", "find /workspace/project -mindepth 1 -delete",
       ]);
 
       // Copy imported project contents into the existing mount point
-      await this.dockerExec(dockerPath, [
-        "exec", containerName,
+      await this.runtimeExec(workspace.id, [
         "bash", "-c", `cp -a ${projectRoot}/. /workspace/project/`,
       ]);
 
       // Ensure the abc user owns all imported files
-      await this.dockerExec(dockerPath, [
-        "exec", containerName,
+      await this.runtimeExec(workspace.id, [
         "bash", "-c", "lsiown -R abc:abc /workspace/project",
       ]);
 
@@ -317,8 +307,7 @@ export class ImportManager {
 
     } finally {
       // 9. Clean up staging dir
-      await this.dockerExec(dockerPath, [
-        "exec", containerName,
+      await this.runtimeExec(workspace.id, [
         "rm", "-rf", `/workspace/${stagingName}`,
       ]).catch(() => {});
     }
@@ -326,40 +315,14 @@ export class ImportManager {
     send({ type: "progress", stage: "complete", detail: "Import finished." });
   }
 
-  private async dockerExec(
-    dockerPath: string,
+  private async runtimeExec(
+    workspaceId: WorkspaceId,
     args: string[],
     timeoutSeconds?: number,
   ): Promise<{ exitCode: number; stdout: string; stderr: string }> {
-    const subprocess = Bun.spawn([dockerPath, ...args], {
-      stdout: "pipe",
-      stderr: "pipe",
-      stdin: "ignore",
+    return this.runtimeProvider.exec(workspaceId, args, {
+      timeoutMs: timeoutSeconds ? timeoutSeconds * 1000 : undefined,
     });
-
-    let timedOut = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    if (timeoutSeconds) {
-      timer = setTimeout(() => {
-        timedOut = true;
-        try { subprocess.kill("SIGTERM"); } catch {}
-      }, timeoutSeconds * 1000);
-    }
-
-    const [stdout, stderr, exitCode] = await Promise.all([
-      new Response(subprocess.stdout).text(),
-      new Response(subprocess.stderr).text(),
-      subprocess.exited,
-    ]);
-
-    if (timer) clearTimeout(timer);
-
-    if (timedOut) {
-      return { exitCode: 1, stdout: "", stderr: `Clone timed out after ${timeoutSeconds} seconds.` };
-    }
-
-    return { exitCode, stdout, stderr };
   }
 
   private async backupProject(

@@ -3,24 +3,18 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { appendFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type { RunServerMessage, SimRunStatus, WorkspaceId } from "@frc-sim/contracts";
-import type { ContainerOrchestrator } from "./containers";
+import type { WorkspaceRuntime, WorkspaceRuntimeCommand, WorkspaceRuntimeProvider } from "./runtime";
 import type { AppStorage, WorkspaceRow } from "./storage";
 
-type RunExit = {
-  code: number | null;
-  signal: string | null;
-};
-
-export type RunCommand = {
-  stdout: ReadableStream<Uint8Array> | null;
-  stderr: ReadableStream<Uint8Array> | null;
-  exited: Promise<RunExit>;
-  kill(signal?: string): void;
-};
+export type RunCommand = WorkspaceRuntimeCommand;
 
 export type RunCommandContext = {
   workspace: WorkspaceRow;
+  runtime: WorkspaceRuntime;
+  runtimeProvider: WorkspaceRuntimeProvider;
+  /** @deprecated Use runtime.runtimeName; retained for narrow test compatibility during the provider refactor. */
   containerName: string;
+  /** @deprecated Runtime providers own command execution; retained for narrow test compatibility during the provider refactor. */
   dockerPath: string;
 };
 
@@ -82,50 +76,7 @@ function dockerRunScript(): string {
 }
 
 export function defaultRunCommandFactory(context: RunCommandContext): RunCommand {
-  const subprocess = Bun.spawn(
-    [context.dockerPath, "exec", context.containerName, "bash", "-lc", dockerRunScript()],
-    {
-      stdout: "pipe",
-      stderr: "pipe",
-      stdin: "ignore",
-    },
-  );
-  let stopRequested = false;
-
-  return {
-    stdout: subprocess.stdout,
-    stderr: subprocess.stderr,
-    exited: subprocess.exited.then((code) => ({ code, signal: null })),
-    kill(signal = "SIGTERM") {
-      if (stopRequested) {
-        return;
-      }
-      stopRequested = true;
-      const forwardedSignal = signal === "SIGKILL" ? "SIGKILL" : "SIGTERM";
-
-      const stop = Bun.spawn([context.dockerPath, "exec", context.containerName, "/usr/local/bin/stop-sim.sh"], {
-        stdin: "ignore",
-        stdout: "ignore",
-        stderr: "ignore",
-      });
-      void stop.exited.finally(() => {
-        try {
-          subprocess.kill(forwardedSignal);
-        } catch {
-          // The docker exec wrapper may have exited naturally after the sim stopped.
-        }
-      });
-
-      const fallback = setTimeout(() => {
-        try {
-          subprocess.kill(forwardedSignal);
-        } catch {
-          // best effort
-        }
-      }, 12_000);
-      fallback.unref?.();
-    },
-  };
+  return context.runtimeProvider.execStream(context.workspace.id, ["bash", "-lc", dockerRunScript()]);
 }
 
 async function consumeLines(
@@ -173,7 +124,7 @@ export class RunManager {
 
   constructor(
     private readonly storage: AppStorage,
-    private readonly containers: ContainerOrchestrator,
+    private readonly runtimeProvider: WorkspaceRuntimeProvider,
     options: RunManagerOptions = {},
   ) {
     this.commandFactory = options.commandFactory ?? defaultRunCommandFactory;
@@ -296,9 +247,9 @@ export class RunManager {
   }
 
   private stopContainerSim(workspaceId: WorkspaceId): void {
-    void this.containers.stopWorkspaceSim(workspaceId).catch(() => {
+    void this.runtimeProvider.exec(workspaceId, ["/usr/local/bin/stop-sim.sh"]).catch(() => {
       // Best effort. The run job still transitions through command exit, and
-      // stale/missing containers are surfaced by container status endpoints.
+      // stale/missing runtimes are surfaced by runtime status endpoints.
     });
   }
 
@@ -327,9 +278,9 @@ export class RunManager {
         return;
       }
 
-      const code = await this.containers.ensureCodeContainer(job.workspace);
-      if (code.state !== "running" || !code.containerName) {
-        throw new Error(code.error ?? "Code container is not running.");
+      const runtime = await this.runtimeProvider.ensureWorkspaceRunning(job.workspace.id);
+      if (runtime.state !== "running") {
+        throw new Error(runtime.error ?? "Workspace runtime is not running.");
       }
       if (job.canceled) {
         this.finishJob(job, "stopped", null);
@@ -338,7 +289,9 @@ export class RunManager {
 
       const command = this.commandFactory({
         workspace: job.workspace,
-        containerName: code.containerName,
+        runtime,
+        runtimeProvider: this.runtimeProvider,
+        containerName: runtime.runtimeName ?? "",
         dockerPath: this.storage.config.dockerPath,
       });
       job.command = command;

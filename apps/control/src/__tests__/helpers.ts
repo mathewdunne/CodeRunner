@@ -4,8 +4,16 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createApp, type ControlApp, type ControlAppOptions } from "../app";
 import type { DockerCommandResult, DockerRunner } from "../containers";
+import type {
+  ExecResult,
+  ManagedWorkspaceRuntime,
+  WorkspaceRuntime,
+  WorkspaceRuntimeCommand,
+  WorkspaceRuntimeProvider,
+} from "../runtime";
 import type { RunCommandFactory } from "../runs";
 import type { WorkspaceRow } from "../storage";
+import type { WorkspaceId } from "@frc-sim/contracts";
 
 export async function exists(path: string): Promise<boolean> {
   try {
@@ -259,6 +267,103 @@ export function createFakeDocker(options: {
   };
 
   return { runner, containers, calls };
+}
+
+export class MockWorkspaceRuntimeProvider implements WorkspaceRuntimeProvider {
+  readonly execCalls: Array<{ workspaceId: WorkspaceId; command: string[] }> = [];
+  readonly streamCalls: Array<{ workspaceId: WorkspaceId; command: string[] }> = [];
+  private readonly runtimes = new Map<WorkspaceId, WorkspaceRuntime>();
+
+  constructor(initialRuntimes: WorkspaceRuntime[] = []) {
+    for (const runtime of initialRuntimes) {
+      this.runtimes.set(runtime.workspaceId, runtime);
+    }
+  }
+
+  setRuntime(runtime: WorkspaceRuntime): void {
+    this.runtimes.set(runtime.workspaceId, runtime);
+  }
+
+  async ensureWorkspaceRunning(workspaceId: WorkspaceId): Promise<WorkspaceRuntime> {
+    const runtime = this.getRuntime(workspaceId);
+    if (runtime.state === "running") {
+      return runtime;
+    }
+    const running: WorkspaceRuntime = { ...runtime, state: "running", error: null };
+    this.runtimes.set(workspaceId, running);
+    return running;
+  }
+
+  async stopWorkspace(workspaceId: WorkspaceId): Promise<void> {
+    const runtime = this.getRuntime(workspaceId);
+    this.runtimes.set(workspaceId, { ...runtime, state: "stopped" });
+  }
+
+  async restartWorkspace(workspaceId: WorkspaceId): Promise<WorkspaceRuntime> {
+    const runtime = { ...this.getRuntime(workspaceId), state: "running" as const, error: null };
+    this.runtimes.set(workspaceId, runtime);
+    return runtime;
+  }
+
+  async removeWorkspace(workspaceId: WorkspaceId): Promise<void> {
+    const runtime = this.getRuntime(workspaceId);
+    this.runtimes.set(workspaceId, {
+      ...runtime,
+      state: "missing",
+      runtimeName: null,
+      ports: { nt4: null, vscode: null, halsim: null },
+      endpoints: { vscode: null, nt4: null, halsim: null },
+    });
+  }
+
+  async getWorkspaceStatus(workspaceId: WorkspaceId): Promise<WorkspaceRuntime> {
+    return this.getRuntime(workspaceId);
+  }
+
+  async exec(workspaceId: WorkspaceId, command: string[]): Promise<ExecResult> {
+    this.execCalls.push({ workspaceId, command: [...command] });
+    return { exitCode: 0, stdout: "", stderr: "" };
+  }
+
+  execStream(workspaceId: WorkspaceId, command: string[]): WorkspaceRuntimeCommand {
+    this.streamCalls.push({ workspaceId, command: [...command] });
+    return {
+      stdout: null,
+      stderr: null,
+      exited: Promise.resolve({ code: 0, signal: null }),
+      kill() {},
+    };
+  }
+
+  async listRuntimes(): Promise<ManagedWorkspaceRuntime[]> {
+    return [...this.runtimes.values()].map((runtime) => ({
+      name: runtime.runtimeName ?? runtime.workspaceId,
+      id: null,
+      workspaceId: runtime.workspaceId,
+      role: "code",
+      state: runtime.state,
+      cpuPercent: null,
+      memoryUsage: null,
+      memoryLimit: null,
+      memoryPercent: null,
+    }));
+  }
+
+  async cleanupStoppedRuntimes(): Promise<string[]> {
+    return [];
+  }
+
+  async countRunningWorkspaces(): Promise<number> {
+    return [...this.runtimes.values()].filter((runtime) => runtime.state === "running").length;
+  }
+
+  private getRuntime(workspaceId: WorkspaceId): WorkspaceRuntime {
+    const runtime = this.runtimes.get(workspaceId);
+    if (!runtime) {
+      throw new Error(`No mock runtime for workspace ${workspaceId}.`);
+    }
+    return runtime;
+  }
 }
 
 export async function waitFor(predicate: () => boolean): Promise<void> {

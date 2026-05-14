@@ -6,17 +6,21 @@ import type {
   ContainersStatusResponse,
   WorkspaceId,
 } from "@frc-sim/contracts";
+import type {
+  ExecOptions,
+  ExecResult,
+  ManagedWorkspaceRuntime,
+  WorkspaceRuntime,
+  WorkspaceRuntimeCommand,
+  WorkspaceRuntimeProvider,
+} from "./runtime";
 import type { AppStorage, ContainerLeaseRow, WorkspaceRow } from "./storage";
 
-export type DockerCommandResult = {
-  exitCode: number;
-  stdout: string;
-  stderr: string;
-};
+export type DockerCommandResult = ExecResult;
 
 export type DockerRunner = (args: string[]) => Promise<DockerCommandResult>;
 
-type ContainerOrchestratorOptions = {
+export type ContainerOrchestratorOptions = {
   dockerRunner?: DockerRunner | undefined;
   portAvailable?: ((port: number) => Promise<boolean>) | undefined;
 };
@@ -34,6 +38,8 @@ export type ManagedContainerStats = {
   memoryLimit: string | null;
   memoryPercent: number | null;
 };
+
+export type LocalDockerRuntimeProviderOptions = ContainerOrchestratorOptions;
 
 type DockerInspectContainer = {
   Name?: string;
@@ -60,17 +66,44 @@ const HALSIM_CONTAINER_PORT = 3300;
 const VSCODE_CONTAINER_PORT = 3000;
 const CODE_NAME_PREFIX = "frc-v2-code-";
 
-async function runDockerCli(dockerPath: string, args: string[]): Promise<DockerCommandResult> {
+async function runDockerCli(
+  dockerPath: string,
+  args: string[],
+  options: ExecOptions = {},
+): Promise<DockerCommandResult> {
   const subprocess = Bun.spawn([dockerPath, ...args], {
     stdout: "pipe",
     stderr: "pipe",
   });
+  let timedOut = false;
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  if (options.timeoutMs) {
+    timeout = setTimeout(() => {
+      timedOut = true;
+      try {
+        subprocess.kill("SIGTERM");
+      } catch {
+        // best effort
+      }
+    }, options.timeoutMs);
+    timeout.unref?.();
+  }
 
   const [stdout, stderr, exitCode] = await Promise.all([
     new Response(subprocess.stdout).text(),
     new Response(subprocess.stderr).text(),
     subprocess.exited,
   ]);
+  if (timeout) {
+    clearTimeout(timeout);
+  }
+  if (timedOut) {
+    return {
+      stdout,
+      stderr: stderr.trim() || `Command timed out after ${Math.round(options.timeoutMs! / 1000)} seconds.`,
+      exitCode: 1,
+    };
+  }
 
   return { stdout, stderr, exitCode };
 }
@@ -153,6 +186,55 @@ function statusFromLease(
   };
 }
 
+function runtimeFromLease(
+  image: string,
+  workspace: WorkspaceRow,
+  lease: ContainerLeaseRow | null,
+  state: ContainerState,
+  error: string | null = null,
+): WorkspaceRuntime {
+  const vscodePort = lease?.vscode_port ?? null;
+  const nt4Port = lease?.nt4_port ?? null;
+  const halsimPort = lease?.halsim_port ?? null;
+  const basePath = `/u/${workspace.slug}/vscode/`;
+  return {
+    workspaceId: workspace.id,
+    state,
+    image,
+    runtimeName: lease?.vscode_container ?? null,
+    ports: {
+      nt4: nt4Port,
+      vscode: vscodePort,
+      halsim: halsimPort,
+    },
+    endpoints: {
+      vscode:
+        vscodePort === null
+          ? null
+          : {
+              httpBaseUrl: `http://127.0.0.1:${vscodePort}`,
+              wsBaseUrl: `ws://127.0.0.1:${vscodePort}`,
+              basePath,
+            },
+      nt4:
+        nt4Port === null
+          ? null
+          : {
+              httpUrl: `http://127.0.0.1:${nt4Port}/`,
+              wsUrl: `ws://127.0.0.1:${nt4Port}/nt/AdvantageScopeLite`,
+            },
+      halsim:
+        halsimPort === null
+          ? null
+          : {
+              wsUrl: `ws://127.0.0.1:${halsimPort}/wpilibws`,
+            },
+    },
+    lastUsedAt: lease?.last_used_at ?? null,
+    error,
+  };
+}
+
 function parsePercent(value: string | undefined): number | null {
   if (!value) {
     return null;
@@ -226,8 +308,9 @@ export class CapacityExceededError extends Error {
   }
 }
 
-export class ContainerOrchestrator {
+export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
   private readonly dockerRunner: DockerRunner;
+  private readonly customDockerRunner: DockerRunner | null;
   private readonly portAvailable: (port: number) => Promise<boolean>;
   private readonly activeEnsures = new Map<string, Promise<CodeContainerStatus>>();
   private portReservationLock: Promise<void> = Promise.resolve();
@@ -238,6 +321,7 @@ export class ContainerOrchestrator {
     private readonly storage: AppStorage,
     options: ContainerOrchestratorOptions = {},
   ) {
+    this.customDockerRunner = options.dockerRunner ?? null;
     this.dockerRunner = options.dockerRunner ?? ((args) => runDockerCli(this.storage.config.dockerPath, args));
     this.portAvailable = options.portAvailable ?? portIsFree;
   }
@@ -261,6 +345,116 @@ export class ContainerOrchestrator {
       },
       code,
     };
+  }
+
+  async ensureWorkspaceRunning(workspaceId: WorkspaceId): Promise<WorkspaceRuntime> {
+    const workspace = this.requireWorkspace(workspaceId);
+    const code = await this.ensureCodeContainer(workspace);
+    const lease = this.storage.getContainerLease(workspaceId);
+    return runtimeFromLease(this.storage.config.codeImage, workspace, lease, code.state, code.error);
+  }
+
+  async stopWorkspace(workspaceId: WorkspaceId): Promise<void> {
+    await this.stopWorkspaceContainers(workspaceId);
+  }
+
+  async restartWorkspace(workspaceId: WorkspaceId): Promise<WorkspaceRuntime> {
+    const workspace = this.requireWorkspace(workspaceId);
+    const code = await this.restartCodeContainer(workspace);
+    const lease = this.storage.getContainerLease(workspaceId);
+    return runtimeFromLease(this.storage.config.codeImage, workspace, lease, code.state, code.error);
+  }
+
+  async removeWorkspace(workspaceId: WorkspaceId): Promise<void> {
+    await this.removeCodeContainer(workspaceId);
+  }
+
+  async getWorkspaceStatus(workspaceId: WorkspaceId): Promise<WorkspaceRuntime> {
+    const workspace = this.requireWorkspace(workspaceId);
+    const lease = this.storage.getContainerLease(workspaceId);
+    const name = lease?.vscode_container ?? codeContainerName(workspaceId);
+    const inspected = await this.inspectContainer(name);
+    const state = inspected ? containerRuntimeState(inspected) : (lease?.code_state ?? "missing");
+    return runtimeFromLease(this.storage.config.codeImage, workspace, lease, state);
+  }
+
+  async exec(workspaceId: WorkspaceId, command: string[], options: ExecOptions = {}): Promise<ExecResult> {
+    const name = codeContainerName(workspaceId);
+    if (!this.customDockerRunner) {
+      return runDockerCli(this.storage.config.dockerPath, ["exec", name, ...command], options);
+    }
+    const run = this.runDocker(["exec", name, ...command], true);
+    if (!options.timeoutMs) {
+      return run;
+    }
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    try {
+      return await Promise.race([
+        run,
+        new Promise<ExecResult>((resolveTimeout) => {
+          timeout = setTimeout(() => {
+            resolveTimeout({
+              exitCode: 1,
+              stdout: "",
+              stderr: `Command timed out after ${Math.round(options.timeoutMs! / 1000)} seconds.`,
+            });
+          }, options.timeoutMs);
+        }),
+      ]);
+    } finally {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    }
+  }
+
+  execStream(workspaceId: WorkspaceId, command: string[], options: ExecOptions = {}): WorkspaceRuntimeCommand {
+    const name = codeContainerName(workspaceId);
+    const subprocess = Bun.spawn([this.storage.config.dockerPath, "exec", name, ...command], {
+      stdout: "pipe",
+      stderr: "pipe",
+      stdin: "ignore",
+    });
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    if (options.timeoutMs) {
+      timeout = setTimeout(() => {
+        try {
+          subprocess.kill("SIGTERM");
+        } catch {
+          // best effort
+        }
+      }, options.timeoutMs);
+      timeout.unref?.();
+    }
+    return {
+      stdout: subprocess.stdout,
+      stderr: subprocess.stderr,
+      exited: subprocess.exited.then((code) => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+        return { code, signal: null };
+      }),
+      kill(signal = "SIGTERM") {
+        try {
+          subprocess.kill(signal as NodeJS.Signals);
+        } catch {
+          // best effort
+        }
+      },
+    };
+  }
+
+  async listRuntimes(): Promise<ManagedWorkspaceRuntime[]> {
+    return this.managedContainerStats();
+  }
+
+  async cleanupStoppedRuntimes(): Promise<string[]> {
+    return this.cleanupStoppedContainers();
+  }
+
+  async countRunningWorkspaces(): Promise<number> {
+    return this.countRunningContainers();
   }
 
   async stopCodeContainer(workspaceId: WorkspaceId): Promise<void> {
@@ -463,6 +657,14 @@ export class ContainerOrchestrator {
       throw dockerError(args, result);
     }
     return result;
+  }
+
+  private requireWorkspace(workspaceId: WorkspaceId): WorkspaceRow {
+    const workspace = this.storage.findWorkspaceById(workspaceId);
+    if (!workspace) {
+      throw new Error(`Workspace ${workspaceId} not found.`);
+    }
+    return workspace;
   }
 
   private async inspectContainer(name: string): Promise<DockerInspectContainer | null> {
@@ -815,3 +1017,5 @@ export class ContainerOrchestrator {
     return statusFromLease(this.storage.config.codeImage, lease, "error", message);
   }
 }
+
+export { LocalDockerRuntimeProvider as ContainerOrchestrator };

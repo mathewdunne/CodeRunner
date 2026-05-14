@@ -70,6 +70,10 @@ const DEFAULT_DRIVER_STATION: DriverStationState = {
   alliance: "red1",
 };
 
+function upstreamUrlFor(value: string | number): string {
+  return typeof value === "number" ? `ws://127.0.0.1:${value}/wpilibws` : value;
+}
+
 const STATION_VALUES: Record<AllianceStation, string> = {
   red1: "red1",
   red2: "red2",
@@ -116,10 +120,6 @@ function defaultSnapshot(): HalSimBridgeSnapshot {
   };
 }
 
-function upstreamUrlFor(halsimPort: number): string {
-  return `ws://127.0.0.1:${halsimPort}/wpilibws`;
-}
-
 export class HalSimBridge {
   private readonly webSocketFactory: HalSimWebSocketFactory;
   private readonly entries = new Map<WorkspaceId, BridgeEntry>();
@@ -136,8 +136,8 @@ export class HalSimBridge {
     return this.snapshotFromEntry(entry);
   }
 
-  ensureConnected(workspaceId: WorkspaceId, halsimPort: number): HalSimBridgeSnapshot {
-    const upstreamUrl = upstreamUrlFor(halsimPort);
+  ensureConnected(workspaceId: WorkspaceId, target: string | number): HalSimBridgeSnapshot {
+    const upstreamUrl = upstreamUrlFor(target);
     let entry = this.entries.get(workspaceId);
     if (entry && entry.upstreamUrl !== upstreamUrl) {
       this.disconnect(workspaceId);
@@ -164,8 +164,9 @@ export class HalSimBridge {
     return this.snapshotFromEntry(entry);
   }
 
-  applyDriverStationPatch(workspaceId: WorkspaceId, halsimPort: number, patch: DriverStationPatch): HalSimBridgeSnapshot {
-    const snapshot = this.ensureConnected(workspaceId, halsimPort);
+  applyDriverStationPatch(workspaceId: WorkspaceId, target: string | number, patch: DriverStationPatch): HalSimBridgeSnapshot {
+    const upstreamUrl = upstreamUrlFor(target);
+    const snapshot = this.ensureConnected(workspaceId, upstreamUrl);
     const entry = this.entries.get(workspaceId);
     if (!entry || entry.connection !== "connected" || !entry.socket || entry.socket.readyState !== WebSocket.OPEN) {
       throw new HalSimBridgeUnavailableError(snapshot.error ?? "HALSim bridge is not connected.");
@@ -222,11 +223,12 @@ export class HalSimBridge {
 
   applyJoystickState(
     workspaceId: WorkspaceId,
-    halsimPort: number,
+    target: string | number,
     port: number,
     state: JoystickWireState,
   ): void {
-    const snapshot = this.ensureConnected(workspaceId, halsimPort);
+    const upstreamUrl = upstreamUrlFor(target);
+    const snapshot = this.ensureConnected(workspaceId, upstreamUrl);
     const entry = this.entries.get(workspaceId);
     if (
       !entry ||
@@ -251,11 +253,12 @@ export class HalSimBridge {
     this.sendDs(entry, { ">new_data": true });
   }
 
-  releaseJoystick(workspaceId: WorkspaceId, halsimPort: number, port: number): void {
+  releaseJoystick(workspaceId: WorkspaceId, target: string | number, port: number): void {
+    const upstreamUrl = upstreamUrlFor(target);
     // Zero out a joystick. We don't know the controller's axis/button count
     // here, so send a generous zeroed payload (6 axes, 16 buttons, 1 POV)
     // matching the standard WPILib XboxController layout plus headroom.
-    this.applyJoystickState(workspaceId, halsimPort, port, {
+    this.applyJoystickState(workspaceId, upstreamUrl, port, {
       axes: [0, 0, 0, 0, 0, 0],
       buttons: Array<boolean>(16).fill(false),
       povs: [-1],
@@ -263,7 +266,7 @@ export class HalSimBridge {
     // Safety: disable the robot whenever a joystick is released, matching
     // Conductor's apply_joystick_safety behavior on disconnect.
     try {
-      this.applyDriverStationPatch(workspaceId, halsimPort, { enabled: false });
+      this.applyDriverStationPatch(workspaceId, upstreamUrl, { enabled: false });
     } catch {
       // Already disconnected; the next ensureConnected will retry.
     }

@@ -11,7 +11,7 @@ export type GamepadStatus = {
 // v1 always binds to WPILib joystick port 0.
 const DEFAULT_PORT = 0 as const;
 
-export type GamepadLease = { halsimPort: number };
+export type GamepadLease = { halsimUrl: string } | { halsimPort: number };
 
 export type GamepadLeaseResolver = (
   workspaceId: WorkspaceId,
@@ -89,7 +89,7 @@ export class GamepadSessions {
       return "ok";
     }
     try {
-      this.halsim.applyJoystickState(workspaceId, lease.halsimPort, DEFAULT_PORT, message.state);
+      this.halsim.applyJoystickState(workspaceId, halsimTarget(lease), DEFAULT_PORT, message.state);
       session.lastInputAt = new Date().toISOString();
       return "ok";
     } catch (error) {
@@ -150,7 +150,7 @@ export class GamepadSessions {
     const lease = resolveLease(workspaceId);
     if (!lease) return "no-lease";
     try {
-      this.halsim.releaseJoystick(workspaceId, lease.halsimPort, DEFAULT_PORT);
+      this.halsim.releaseJoystick(workspaceId, halsimTarget(lease), DEFAULT_PORT);
       return "ok";
     } catch (error) {
       if (error instanceof HalSimBridgeUnavailableError) {
@@ -159,4 +159,8 @@ export class GamepadSessions {
       throw error;
     }
   }
+}
+
+function halsimTarget(lease: GamepadLease): string | number {
+  return "halsimUrl" in lease ? lease.halsimUrl : lease.halsimPort;
 }
