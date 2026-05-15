@@ -332,7 +332,7 @@ export class Nt4AutoChooserBridge {
       this.entries.set(workspaceId, entry);
     }
     if (!entry.socket) {
-      nt4Log.info("nt4 attach", { workspaceId, url: upstreamUrl });
+      nt4Log.trace("nt4 attach", { workspaceId, url: upstreamUrl });
       this.open(entry);
     }
     return this.snapshotFromEntry(entry);
@@ -378,7 +378,11 @@ export class Nt4AutoChooserBridge {
   disconnect(workspaceId: WorkspaceId): void {
     const entry = this.entries.get(workspaceId);
     if (!entry) return;
-    nt4Log.info("nt4 detach", { workspaceId });
+    // Skip the noise when there's nothing to actually tear down — disconnect
+    // is called speculatively during teardown and per-poll cycles.
+    if (entry.socket) {
+      nt4Log.info("nt4 detach", { workspaceId });
+    }
     const socket = entry.socket;
     entry.socket = null;
     entry.connection = "disconnected";
@@ -430,7 +434,10 @@ export class Nt4AutoChooserBridge {
     });
     socket.addEventListener("close", (event) => {
       if (entry.socket !== socket) return;
-      nt4Log.warn("nt4 upstream close", {
+      // Code 1006 fires constantly when the sim isn't running; the frontend polls
+      // /sim/auto-choosers which re-attaches each time. Only log unexpected closes.
+      const level = event.code === 1006 ? "trace" : "debug";
+      nt4Log[level]("nt4 upstream close", {
         workspaceId: entry.workspaceId,
         code: event.code,
         reason: event.reason,
@@ -443,7 +450,7 @@ export class Nt4AutoChooserBridge {
     });
     socket.addEventListener("error", () => {
       if (entry.socket !== socket) return;
-      nt4Log.warn("nt4 upstream error", { workspaceId: entry.workspaceId, url: entry.upstreamUrl });
+      nt4Log.trace("nt4 upstream error", { workspaceId: entry.workspaceId, url: entry.upstreamUrl });
       entry.error = "NT4 upstream error.";
     });
   }

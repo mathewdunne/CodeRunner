@@ -126,7 +126,10 @@ function formatAttrValue(value: unknown): string {
   }
 }
 
-function formatAttrs(properties: Record<string, unknown>): { inline: string; trailing: string } {
+function formatAttrs(
+  properties: Record<string, unknown>,
+  includeStack: boolean,
+): { inline: string; trailing: string } {
   const keys = Object.keys(properties);
   if (keys.length === 0) return { inline: "", trailing: "" };
 
@@ -137,7 +140,7 @@ function formatAttrs(properties: Record<string, unknown>): { inline: string; tra
     const value = properties[key];
     if (value instanceof Error) {
       parts.push(`${renderKey(key)}=${formatAttrValue(value)}`);
-      if (value.stack) {
+      if (includeStack && value.stack) {
         const indent = "    ";
         trailing += "\n" + value.stack
           .split("\n")
@@ -160,13 +163,15 @@ function colorize(text: string, code: string): string {
   return useColor ? `${code}${text}${ANSI.reset}` : text;
 }
 
+const STACK_LEVELS = new Set<LogLevel>(["warning", "error", "fatal"]);
+
 function formatRecord(record: LogRecord): string {
   const ts = colorize(formatTimestamp(record.timestamp), ANSI.dim);
   const level = colorize(LEVEL_DISPLAY[record.level], LEVEL_COLOR[record.level]);
   const categoryStr = `[${record.category.join(".")}]`;
   const category = colorize(pad(categoryStr, CATEGORY_PAD), ANSI.dim);
   const message = renderMessage(record.message);
-  const { inline, trailing } = formatAttrs(record.properties);
+  const { inline, trailing } = formatAttrs(record.properties, STACK_LEVELS.has(record.level));
   const attrs = inline ? " " + colorize(inline, ANSI.dim) : "";
   return `${ts} ${level} ${category} ${message}${attrs}${trailing}`;
 }

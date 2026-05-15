@@ -279,7 +279,11 @@ export class HalSimBridge {
   disconnect(workspaceId: WorkspaceId): void {
     const entry = this.entries.get(workspaceId);
     if (!entry) return;
-    log.info("halsim detach", { workspaceId });
+    // Disconnect gets called repeatedly during polling/teardown; only log a
+    // real state transition, not no-op cleanup calls.
+    if (entry.socket || entry.shouldReconnect) {
+      log.info("halsim detach", { workspaceId });
+    }
     entry.shouldReconnect = false;
     if (entry.reconnectTimer) {
       clearTimeout(entry.reconnectTimer);
@@ -330,7 +334,9 @@ export class HalSimBridge {
 
     socket.addEventListener("close", (event) => {
       if (entry.socket !== socket) return;
-      log.warn("halsim upstream close", {
+      // 1006 fires when the sim isn't running and the reconnect loop keeps retrying.
+      const level = event.code === 1006 ? "trace" : "debug";
+      log[level]("halsim upstream close", {
         workspaceId: entry.workspaceId,
         code: event.code,
         reason: event.reason,
@@ -348,7 +354,7 @@ export class HalSimBridge {
 
     socket.addEventListener("error", () => {
       if (entry.socket !== socket) return;
-      log.warn("halsim upstream error", { workspaceId: entry.workspaceId, url: entry.upstreamUrl });
+      log.trace("halsim upstream error", { workspaceId: entry.workspaceId, url: entry.upstreamUrl });
       entry.error = "HALSim upstream error.";
     });
   }
@@ -357,7 +363,7 @@ export class HalSimBridge {
     if (entry.reconnectTimer) return;
     const delay = entry.reconnectBackoffMs;
     entry.reconnectBackoffMs = Math.min(entry.reconnectBackoffMs * 2, MAX_BACKOFF_MS);
-    log.debug("halsim scheduling reconnect", { workspaceId: entry.workspaceId, delayMs: delay });
+    log.trace("halsim scheduling reconnect", { workspaceId: entry.workspaceId, delayMs: delay });
     entry.reconnectTimer = setTimeout(() => {
       entry.reconnectTimer = null;
       if (entry.shouldReconnect && !entry.socket) {

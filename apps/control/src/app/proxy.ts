@@ -199,14 +199,14 @@ export async function nt4AliveResponse(
       signal: AbortSignal.timeout(500),
     });
     if (!upstream.ok) {
-      log.debug("nt4 alive probe not ready", { workspaceId: auth.workspace.id, status: upstream.status });
+      log.trace("nt4 alive probe not ready", { workspaceId: auth.workspace.id, status: upstream.status });
       return new Response("Simulator NT4 endpoint is not ready.", { status: 503 });
     }
     return new Response("ok\n", { status: 200, headers: { "content-type": "text/plain; charset=utf-8" } });
   } catch (err) {
-    log.debug("nt4 alive probe unreachable", {
+    log.trace("nt4 alive probe unreachable", {
       workspaceId: auth.workspace.id,
-      err: err instanceof Error ? err : new Error(String(err)),
+      err: err instanceof Error ? err.message : String(err),
     });
     return new Response("Simulator NT4 endpoint is not reachable.", { status: 503 });
   }

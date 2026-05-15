@@ -22,6 +22,9 @@ const bootLog = getLogger("boot");
 const httpLog = getLogger("http");
 const idleLog = getLogger("idle");
 
+// Frontend polls these every ~1s; logging each response would drown out useful events.
+const NOISY_WORKSPACE_PATH = /^\/u\/[^/]+\/(sim\/alive|api\/sim\/(status|auto-choosers))$/u;
+
 export { stripHopByHopHeaders } from "./app/proxy";
 export type {
   AppSocket,
@@ -97,7 +100,8 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       url.pathname.startsWith("/scope/") ||
       url.pathname.startsWith("/assets/") ||
       url.pathname === "/coderunner-icon.png" ||
-      url.pathname === "/favicon.ico";
+      url.pathname === "/favicon.ico" ||
+      NOISY_WORKSPACE_PATH.test(url.pathname);
     const fields = {
       method: request.method,
       path: url.pathname,
