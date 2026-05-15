@@ -49,7 +49,7 @@ const BINDING_GROUPS: KeyboardBindingGroup[] = ["Sticks", "Shoulders", "Buttons"
 
 function TileHeader({ label, Icon = Gamepad2 }: { label: string; Icon?: typeof Gamepad2 }) {
   return (
-    <div className="flex items-center gap-2 px-1 pt-0.5 text-[9.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+    <div className="flex shrink-0 items-center gap-2 text-[9.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
       <Icon className="size-3.5" />
       {label}
     </div>
@@ -77,38 +77,36 @@ export function ControlsPanel({
     [available, selectedIndex],
   );
 
-  const { statusTone, statusText } = useMemo(() => {
+  const statusTone = useMemo(() => {
     if (channelConnection !== "connected") {
-      return { statusTone: "warn" as StatusTone, statusText: "Connecting to control plane..." };
+      return "warn" as StatusTone;
     }
     if (inputMode === "keyboard") {
       if (runStatus !== "running") {
-        return { statusTone: "warn" as StatusTone, statusText: "Run robot code to drive." };
+        return "warn" as StatusTone;
       }
       if (channelHalsimDisconnected) {
-        return { statusTone: "bad" as StatusTone, statusText: "HALSim is not reachable." };
+        return "bad" as StatusTone;
       }
       if (simulationStatus && !simulationStatus.halsim.connected) {
-        return { statusTone: "warn" as StatusTone, statusText: "Waiting for HALSim..." };
+        return "warn" as StatusTone;
       }
-      return { statusTone: "ok" as StatusTone, statusText: "Connected: Keyboard" };
+      return "ok" as StatusTone;
     }
     if (!selected) {
-      return available.length === 0
-        ? { statusTone: "muted" as StatusTone, statusText: "Plug in a controller and press any button." }
-        : { statusTone: "muted" as StatusTone, statusText: "Select a controller to start driving." };
+      return "muted" as StatusTone;
     }
     if (runStatus !== "running") {
-      return { statusTone: "warn" as StatusTone, statusText: "Run robot code to drive." };
+      return "warn" as StatusTone;
     }
     if (channelHalsimDisconnected) {
-      return { statusTone: "bad" as StatusTone, statusText: "HALSim is not reachable." };
+      return "bad" as StatusTone;
     }
     if (simulationStatus && !simulationStatus.halsim.connected) {
-      return { statusTone: "warn" as StatusTone, statusText: "Waiting for HALSim..." };
+      return "warn" as StatusTone;
     }
-    return { statusTone: "ok" as StatusTone, statusText: `Connected: ${selected.label}` };
-  }, [channelConnection, inputMode, selected, runStatus, channelHalsimDisconnected, simulationStatus, available.length]);
+    return "ok" as StatusTone;
+  }, [channelConnection, inputMode, selected, runStatus, channelHalsimDisconnected, simulationStatus]);
 
   const visualizerFrame = inputMode === "keyboard" ? keyboardFrame : frame;
   const visualizerActive = inputMode === "keyboard" || selected !== null;
@@ -132,7 +130,7 @@ export function ControlsPanel({
         <div
           onClick={onSelectControllerMode}
           className={cn(
-            "relative flex min-h-0 flex-1 cursor-pointer flex-col gap-2 overflow-hidden rounded-lg border bg-card py-2 pr-2 pl-8",
+            "flex min-h-0 flex-1 cursor-pointer items-center gap-2 overflow-hidden rounded-lg border bg-card p-[10px]",
             inputMode === "controller" ? "border-orange-400/50" : "border-border",
           )}
         >
@@ -142,44 +140,42 @@ export function ControlsPanel({
             checked={inputMode === "controller"}
             onChange={onSelectControllerMode}
             aria-label="Controller input"
-            className="absolute top-1/2 left-3 size-3 -translate-y-1/2 accent-orange-400"
+            className="size-3 shrink-0 accent-orange-400"
           />
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <TileHeader label="Controller" />
+            {selected ? (
+              <span className="min-w-0 truncate text-sm font-medium text-foreground">{selected.label}</span>
+            ) : null}
           </div>
-          <div className="flex items-center gap-2 px-1">
-            <select
-              value={selectedIndex ?? ""}
-              onFocus={onSelectControllerMode}
-              onChange={(event) => {
-                const value = event.target.value;
-                if (value === "") {
-                  onRelease();
-                  return;
-                }
-                const info = available.find((g) => String(g.index) === value);
-                if (info) onSelect(info);
-              }}
-              className="min-w-0 flex-1 truncate rounded-md border border-border bg-zinc-800 px-2.5 py-2 text-sm text-white focus:border-orange-400/60 focus:outline-none [&>option]:bg-zinc-800 [&>option]:text-white"
-            >
-              <option value="">Connect a controller and press any button</option>
-              {available.map((info) => (
-                <option key={`${info.index}-${info.id}`} value={info.index}>
-                  {info.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <p className="px-1 pb-1 text-[11px] text-muted-foreground">
-            {inputMode === "controller" ? statusText : "Select to use a physical controller."}
-          </p>
+          <select
+            value={selectedIndex ?? ""}
+            onFocus={onSelectControllerMode}
+            onChange={(event) => {
+              const value = event.target.value;
+              if (value === "") {
+                onRelease();
+                return;
+              }
+              const info = available.find((g) => String(g.index) === value);
+              if (info) onSelect(info);
+            }}
+            className="ml-auto min-w-0 max-w-[22.5rem] shrink basis-[22.5rem] truncate rounded-md border border-border bg-zinc-800 px-2.5 py-1.5 text-sm text-white focus:border-orange-400/60 focus:outline-none [&>option]:bg-zinc-800 [&>option]:text-white"
+          >
+            <option value="">Connect a controller and press any button</option>
+            {available.map((info) => (
+              <option key={`${info.index}-${info.id}`} value={info.index}>
+                {info.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div
           tabIndex={0}
           onClick={onKeyboardTileClick}
           className={cn(
-            "relative flex min-h-0 flex-1 cursor-pointer flex-col gap-2 overflow-hidden rounded-lg border bg-card py-2 pr-2 pl-8 focus:border-orange-400/70 focus:outline-none focus:ring-2 focus:ring-orange-400/20",
+            "flex min-h-0 flex-1 cursor-pointer items-center gap-2 overflow-hidden rounded-lg border bg-card p-[10px] focus:border-orange-400/70 focus:outline-none focus:ring-2 focus:ring-orange-400/20",
             keyboardActive && keyboardCaptureActive ? "border-emerald-400/50" : "",
             keyboardActive && !keyboardCaptureActive ? "border-red-400/50" : "",
             !keyboardActive ? "border-border" : "",
@@ -191,33 +187,30 @@ export function ControlsPanel({
             checked={keyboardActive}
             onChange={onSelectKeyboardMode}
             aria-label="Keyboard input"
-            className="absolute top-1/2 left-3 size-3 -translate-y-1/2 accent-orange-400"
+            className="size-3 shrink-0 accent-orange-400"
           />
-          <div className="flex items-center gap-2">
-            <TileHeader label="Keyboard" Icon={Keyboard} />
-            {keyboardActive ? (
-              <span
-                className={cn(
-                  "rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em]",
-                  TONE_PILL[keyboardFocusTone],
-                )}
-              >
-                {keyboardCaptureActive ? "Keys active" : "Focus lost"}
-              </span>
-            ) : null}
-          </div>
-          <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">Keyboard (Xbox Mapping)</p>
-              <p className="text-[11px] text-muted-foreground">
-                Focus the Driver Station to drive. Leaving it clears input.
-              </p>
+              <div className="flex min-w-0 items-center gap-2">
+                <TileHeader label="Keyboard" Icon={Keyboard} />
+                <span className="min-w-0 truncate text-sm font-medium text-foreground">
+                  Keyboard (Xbox Mapping)
+                </span>
+                {keyboardActive ? (
+                  <span
+                    className={cn(
+                      "shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em]",
+                      TONE_PILL[keyboardFocusTone],
+                    )}
+                  >
+                    {keyboardCaptureActive ? "KEYS ACTIVE" : "FOCUS LOST"}
+                  </span>
+                ) : null}
+              </div>
+              <p className="text-[11px] text-muted-foreground">Focus the Driver Station to drive.</p>
             </div>
-            <KeyboardMappingDialog />
           </div>
-          <p className="px-1 pb-1 text-[11px] text-muted-foreground">
-            {keyboardActive ? statusText : "Select to use keyboard keys as joystick port 0."}
-          </p>
+          <KeyboardMappingDialog />
         </div>
       </div>
       <div className="flex min-h-0 w-1/2 flex-col gap-2 overflow-hidden rounded-lg border border-border bg-card p-2">
