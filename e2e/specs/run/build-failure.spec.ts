@@ -1,7 +1,7 @@
 /**
- * T13.1, T15.1, T16.1 — run-state edge cases, HTTP-driven.
+ * Run-state edge cases, HTTP-driven.
  *
- * UI-driven coverage (T14.x build/sim timeout, run-button testid scenarios)
+ * UI-driven coverage (build/sim timeout, run-button testid scenarios)
  * is left as `test.fixme` until DriverStation testids land.
  */
 import { test, expect } from "../../fixtures/app";
@@ -32,7 +32,7 @@ async function pollRunStatus(
   return last;
 }
 
-test.describe("T13.1 build failure", () => {
+test.describe("build failure", () => {
   test.use({
     runCommandFactory: {
       factory: makeScriptedRunCommandFactory([
@@ -82,15 +82,15 @@ test.describe("T13.1 build failure", () => {
   });
 });
 
-test("T14.1 build timeout kills the run", async () => {
+test("build timeout kills the run", async () => {
   test.fixme(true, "Needs runBuildTimeoutMs override path through ControlAppOptions.");
 });
 
-test("T14.2 sim readiness timeout fires separately", async () => {
+test("sim readiness timeout fires separately", async () => {
   test.fixme(true, "Needs simStartupTimeoutMs override + halsim never ready.");
 });
 
-test("T15.1 external runtime crash leaves run in stopped/failed state", async ({
+test("external runtime crash leaves run in stopped/failed state", async ({
   page,
   app,
   runtime,
@@ -131,11 +131,11 @@ test("T15.1 external runtime crash leaves run in stopped/failed state", async ({
   expect([409, 503]).toContain(probe.status);
 });
 
-test("T15.2 stale running status cleared on app restart", async () => {
+test("stale running status cleared on app restart", async () => {
   test.fixme(true, "Needs in-test re-creation of ControlApp with same DB.");
 });
 
-test("T16.1 second Run while one is active replaces / restarts the prior job", async ({
+test("second Run while one is active replaces / restarts the prior job", async ({
   page,
   app,
   runtime,

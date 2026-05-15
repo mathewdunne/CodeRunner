@@ -1,11 +1,11 @@
 /**
- * T2.1 / T2.2 / T2.3 — cross-workspace access must be rejected with 401/403.
+ * Cross-workspace access must be rejected with 401/403.
  * Anchor: routing security (default-deny + requireWorkspaceOwnership()).
  */
 import { test, expect } from "../../fixtures/app";
 import { loginAs, cookieHeader } from "../../fixtures/auth";
 
-test("T2.1 cross-workspace HTML access returns 403", async ({ page, app }) => {
+test("cross-workspace HTML access returns 403", async ({ page, app }) => {
   const alice = await loginAs(page, app, { name: "Alice" });
   await loginAs(page, app, { name: "Bob" });
 
@@ -18,7 +18,7 @@ test("T2.1 cross-workspace HTML access returns 403", async ({ page, app }) => {
   expect(resp.status).toBe(403);
 });
 
-test("T2.2 cross-workspace /vscode/ proxy returns 403", async ({ page, app }) => {
+test("cross-workspace /vscode/ proxy returns 403", async ({ page, app }) => {
   const alice = await loginAs(page, app, { name: "Alice" });
   await loginAs(page, app, { name: "Bob" });
 
@@ -30,7 +30,7 @@ test("T2.2 cross-workspace /vscode/ proxy returns 403", async ({ page, app }) =>
   expect(resp.status).toBe(403);
 });
 
-test("T2.3 unauthenticated request to a workspace returns 401", async ({ app }) => {
+test("unauthenticated request to a workspace returns 401", async ({ app }) => {
   const resp = await app.fetch(
     new Request(`${app.storage.config.baseUrl}/u/anyone/api/files`),
   );

@@ -1,6 +1,6 @@
 /**
- * T5.1 — first login seeds template files into project dir.
- * T5.3 — runtime failure surfaces an error to the workspace HTTP route.
+ * First login seeds template files into project dir.
+ * Runtime failure surfaces an error to the workspace HTTP route.
  */
 import { test, expect } from "../../fixtures/app";
 import { loginAs } from "../../fixtures/auth";
@@ -8,7 +8,7 @@ import { seedRuntimeRunning, seedRuntimeMissing } from "../../fixtures/runtime";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-test("T5.1 first login creates project dir with seeded template files", async ({ page, app }) => {
+test("first login creates project dir with seeded template files", async ({ page, app }) => {
   const { user } = await loginAs(page, app, { name: "Alice" });
   const workspace = app.storage.findWorkspaceBySlug(user.slug as never);
   expect(workspace).toBeTruthy();
@@ -17,7 +17,7 @@ test("T5.1 first login creates project dir with seeded template files", async ({
   expect(existsSync(join(projectPath, "build.gradle"))).toBe(true);
 });
 
-test("T5.2 web shell HTML is served from /u/<slug>/", async ({ page, app, fakeVscode, fakeHalsim, runtime }) => {
+test("web shell HTML is served from /u/<slug>/", async ({ page, app, fakeVscode, fakeHalsim, runtime }) => {
   const { user } = await loginAs(page, app, { name: "Alice" });
   const workspace = app.storage.findWorkspaceBySlug(user.slug as never)!;
   seedRuntimeRunning({ runtime, workspaceId: workspace.id, fakeVscode, fakeHalsim });

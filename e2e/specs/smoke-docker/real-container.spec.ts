@@ -1,5 +1,5 @@
 /**
- * T-D1 — real `frc-code:v2` container starts, editor loads, file save succeeds.
+ * Real `frc-code:v2` container starts, editor loads, file save succeeds.
  *
  * Requires:
  *   - Docker daemon running
@@ -16,7 +16,7 @@ test.skip(
   "Set DOCKER_E2E=1 and have Docker + frc-code:v2 to run docker-smoke tests",
 );
 
-test("T-D1 real container — editor iframe loads VS Code UI, file save succeeds", async ({
+test("real container — editor iframe loads VS Code UI, file save succeeds", async ({
   page,
 }) => {
   test.fixme(
