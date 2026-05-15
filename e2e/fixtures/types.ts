@@ -37,4 +37,5 @@ export type FakeHalsimHandle = {
   wsUrl: string;
   receivedFrames(): Array<unknown>;
   stop(): Promise<void>;
+  restart(): Promise<void>;
 };

@@ -13,34 +13,41 @@ export async function startFakeHalsim(): Promise<FakeHalsimHandle & {
   const receivedFrames: Array<unknown> = [];
   const conns = new Set<ServerWebSocket<unknown>>();
 
-  const server: Server = Bun.serve({
-    port: 0,
-    fetch(request, srv) {
-      if (request.headers.get("upgrade")?.toLowerCase() === "websocket") {
-        const upgraded = srv.upgrade(request);
-        return upgraded ? undefined : new Response("upgrade failed", { status: 400 });
+  const wsHandlers = {
+    open(ws: ServerWebSocket<unknown>) {
+      conns.add(ws);
+    },
+    message(_ws: ServerWebSocket<unknown>, message: string | Buffer) {
+      try {
+        receivedFrames.push(typeof message === "string" ? JSON.parse(message) : message);
+      } catch {
+        receivedFrames.push(message);
       }
-      return new Response("fake halsim ok");
     },
-    websocket: {
-      open(ws) {
-        conns.add(ws);
-      },
-      message(_ws, message) {
-        try {
-          receivedFrames.push(typeof message === "string" ? JSON.parse(message) : message);
-        } catch {
-          receivedFrames.push(message);
+    close(ws: ServerWebSocket<unknown>) {
+      conns.delete(ws);
+    },
+  };
+
+  function createServer(port: number): Server {
+    return Bun.serve({
+      port,
+      fetch(request, srv) {
+        if (request.headers.get("upgrade")?.toLowerCase() === "websocket") {
+          const upgraded = srv.upgrade(request);
+          return upgraded ? undefined : new Response("upgrade failed", { status: 400 });
         }
+        return new Response("fake halsim ok");
       },
-      close(ws) {
-        conns.delete(ws);
-      },
-    },
-  });
+      websocket: wsHandlers,
+    });
+  }
+
+  let server = createServer(0);
+  const boundPort = server.port;
 
   return {
-    wsUrl: `ws://127.0.0.1:${server.port}/`,
+    wsUrl: `ws://127.0.0.1:${boundPort}/`,
     receivedFrames: () => [...receivedFrames],
     pushFrame(frame: unknown) {
       const data = typeof frame === "string" ? frame : JSON.stringify(frame);
@@ -49,6 +56,12 @@ export async function startFakeHalsim(): Promise<FakeHalsimHandle & {
     connections: () => conns.size,
     async stop() {
       server.stop(true);
+      conns.clear();
+    },
+    async restart() {
+      server.stop(true);
+      conns.clear();
+      server = createServer(boundPort);
     },
   };
 }

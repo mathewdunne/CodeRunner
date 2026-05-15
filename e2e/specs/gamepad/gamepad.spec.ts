@@ -54,29 +54,6 @@ test("gamepad input before Run does not produce no-lease errors", async ({
   expect(leaseErrors).toEqual([]);
 });
 
-test("controller selection survives Stop+Run cycle", async () => {
-  test.fixme(
-    true,
-    "Needs data-testid on gamepad selector dropdown to programmatically select and verify persistence across stop/start.",
-  );
-});
-
-test("unplug while enabled sends disable + neutral joystick frame", async () => {
-  test.fixme(
-    true,
-    "Gamepad shim triggers TypeError in useGamepad hook iteration. Needs debugging of the RAF polling " +
-    "loop's interaction with the addInitScript shim — the Gamepad objects from the shim lack the " +
-    "iterable protocol that the hook expects on the buttons array.",
-  );
-});
-
-test("keyboard input only flows while Keyboard tile has focus", async () => {
-  test.fixme(
-    true,
-    "Needs data-testid='ds-keyboard-tile' on the KeyboardTile component to programmatically focus/blur and verify HALSim frames.",
-  );
-});
-
-test("auto chooser refreshes after sim restart", async () => {
-  test.fixme(true, "Needs NT4 fake fidelity + chooser data-testids.");
-});
+// Removed: controller selection (T20.1), unplug safety (T21.1), keyboard focus (T23.1),
+// auto chooser refresh (T24.1). These required data-testids or gamepad shim fidelity
+// that don't exist. See decision 022 and testing-followups.md.

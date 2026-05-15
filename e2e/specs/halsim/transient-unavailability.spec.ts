@@ -4,10 +4,9 @@
  * Verifies that when the HALSim WS endpoint becomes temporarily unavailable,
  * the run does not transition to `failed` and the system recovers gracefully.
  *
- * NOTE: The fakeHalsim fixture exposes stop() but no restart/reconnect method.
- * Until the fixture supports re-creation or reconnection, the "restart after
- * transient outage" portion cannot be fully validated. The test verifies that
- * stopping HALSim mid-run does not immediately crash the run to `failed`.
+ * The fakeHalsim fixture supports stop() and restart() (same port) so we can
+ * verify both that a mid-run outage doesn't crash the run and that the bridge
+ * reconnects when the server comes back.
  */
 import { test, expect } from "../../fixtures/app";
 import { loginAs, cookieHeader } from "../../fixtures/auth";
@@ -91,7 +90,56 @@ test.describe("HALSim transient unavailability", () => {
     expect(snapshot.run?.status).toBe("running");
   });
 
-  test("HALSim reconnects after transient outage", async () => {
-    test.fixme(true, "Needs fakeHalsim fixture to support restart() so we can verify bridge reconnection.");
+  test("HALSim reconnects after transient outage", async ({
+    page,
+    app,
+    runtime,
+    fakeVscode,
+    fakeHalsim,
+  }) => {
+    const session = await loginAs(page, app, { name: "TransientB" });
+    const workspace = app.storage.findWorkspaceBySlug(session.user.slug as never)!;
+    seedRuntimeRunning({ runtime, workspaceId: workspace.id, fakeVscode, fakeHalsim });
+
+    const baseUrl = app.storage.config.baseUrl;
+    const cookie = cookieHeader(session);
+
+    // Start the run.
+    const runResp = await app.fetch(
+      new Request(`${baseUrl}/u/${session.user.slug}/api/run`, {
+        method: "POST",
+        headers: { cookie },
+      }),
+    );
+    expect(runResp.status).toBe(202);
+
+    // Wait for the run to reach "running" state.
+    const running = await pollRunStatus(app, session.user.slug, cookie, (s) => s === "running");
+    expect(running).toBe("running");
+
+    // Wait for the bridge to connect to fakeHalsim.
+    const connDeadline = Date.now() + 5000;
+    while (Date.now() < connDeadline && fakeHalsim.connections() === 0) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    expect(fakeHalsim.connections()).toBeGreaterThan(0);
+
+    // Simulate transient outage.
+    await fakeHalsim.stop();
+    await new Promise((r) => setTimeout(r, 300));
+
+    // Restart fakeHalsim on the same port.
+    await fakeHalsim.restart();
+
+    // Wait for the bridge to reconnect (poll with 5s timeout).
+    const deadline = Date.now() + 5000;
+    while (Date.now() < deadline && fakeHalsim.connections() === 0) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    expect(fakeHalsim.connections()).toBeGreaterThan(0);
+
+    // Verify the run is still in "running" state after reconnection.
+    const statusAfter = await pollRunStatus(app, session.user.slug, cookie, (s) => s === "running");
+    expect(statusAfter).toBe("running");
   });
 });
