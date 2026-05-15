@@ -46,6 +46,10 @@ export type AppOptions = {
    * machinery confuses bare callables with fixture-setup functions.
    */
   runCommandFactory: { factory: RunCommandFactory };
+  /** Override build timeout (ms). Wrapped to avoid Playwright treating numbers as fixture fns. */
+  runBuildTimeoutMs: { value: number } | undefined;
+  /** Override sim startup timeout (ms). */
+  simStartupTimeoutMs: { value: number } | undefined;
 };
 
 async function preallocatePort(): Promise<number> {
@@ -67,6 +71,8 @@ const defaultRunCommandFactory: RunCommandFactory = makeScriptedRunCommandFactor
 
 export const test = base.extend<AppFixtures & AppOptions>({
   runCommandFactory: [{ factory: defaultRunCommandFactory }, { option: true }],
+  runBuildTimeoutMs: [undefined, { option: true }],
+  simStartupTimeoutMs: [undefined, { option: true }],
 
   // eslint-disable-next-line no-empty-pattern
   fakeVscode: async ({}, use) => {
@@ -82,7 +88,7 @@ export const test = base.extend<AppFixtures & AppOptions>({
     await handle.stop();
   },
 
-  app: async ({ fakeVscode, fakeHalsim, runCommandFactory }, use) => {
+  app: async ({ fakeVscode, fakeHalsim, runCommandFactory, runBuildTimeoutMs, simStartupTimeoutMs }, use) => {
     const root = await mkdtemp(join(tmpdir(), "frc-e2e-"));
     const templateDir = await createTemplate(root);
     const ascopeDistDir = await createAdvantageScopeDist(root);
@@ -109,6 +115,8 @@ export const test = base.extend<AppFixtures & AppOptions>({
         containerAutoStart: false,
         runtimeProvider: runtime,
         runCommandFactory: runCommandFactory.factory,
+        ...(runBuildTimeoutMs ? { runBuildTimeoutMs: runBuildTimeoutMs.value } : {}),
+        ...(simStartupTimeoutMs ? { simStartupTimeoutMs: simStartupTimeoutMs.value } : {}),
       });
       try {
         server = Bun.serve({

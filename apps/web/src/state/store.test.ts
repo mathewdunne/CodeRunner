@@ -41,4 +41,27 @@ describe("UI store", () => {
     // consoleCollapsed should NOT be persisted
     expect(persisted?.state?.consoleCollapsed).toBeUndefined();
   });
+
+  test("inputMode persists after store rehydration from localStorage", () => {
+    // Write keyboard mode into localStorage as if a previous session saved it
+    localStorage.setItem(
+      "frc-coderunner-ui",
+      JSON.stringify({ state: { inputMode: "keyboard" }, version: 0 }),
+    );
+    // Trigger rehydration
+    useUIStore.persist.rehydrate();
+    expect(useUIStore.getState().inputMode).toBe("keyboard");
+  });
+
+  test("multiple rapid toggles work correctly", () => {
+    const store = useUIStore.getState();
+    store.toggleConsoleCollapsed();
+    store.toggleConsoleCollapsed();
+    store.toggleConsoleCollapsed();
+    expect(useUIStore.getState().consoleCollapsed).toBe(true);
+
+    store.toggleScopeCollapsed();
+    store.toggleScopeCollapsed();
+    expect(useUIStore.getState().scopeCollapsed).toBe(false);
+  });
 });

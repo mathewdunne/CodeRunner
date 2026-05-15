@@ -28,6 +28,8 @@ export type FakeVscodeHandle = {
   wsBaseUrl: string;
   receivedHeaders(): Array<Record<string, string>>;
   receivedFrames(): Array<unknown>;
+  wsConnections(): number;
+  awaitWsConnection(target?: number, timeout?: number): Promise<void>;
   stop(): Promise<void>;
 };
 

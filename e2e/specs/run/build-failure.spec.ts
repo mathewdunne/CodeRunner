@@ -7,7 +7,11 @@
 import { test, expect } from "../../fixtures/app";
 import { loginAs, cookieHeader } from "../../fixtures/auth";
 import { seedRuntimeRunning } from "../../fixtures/runtime";
-import { makeScriptedRunCommandFactory } from "../../../apps/control/src/__tests__/helpers";
+import {
+  makeScriptedRunCommandFactory,
+  MockWorkspaceRuntimeProvider,
+} from "../../../apps/control/src/__tests__/helpers";
+import { createApp } from "../../../apps/control/src/app";
 
 async function pollRunStatus(
   app: import("../../../apps/control/src/app").ControlApp,
@@ -82,12 +86,95 @@ test.describe("build failure", () => {
   });
 });
 
-test("build timeout kills the run", async () => {
-  test.fixme(true, "Needs runBuildTimeoutMs override path through ControlAppOptions.");
+test.describe("build timeout kills the run", () => {
+  test.use({
+    runBuildTimeoutMs: { value: 500 },
+    simStartupTimeoutMs: { value: 500 },
+    runCommandFactory: {
+      factory: makeScriptedRunCommandFactory([
+        { stream: "stdout", line: "Starting build..." },
+        // No exit entry — simulates a build that hangs forever.
+      ]),
+    },
+  });
+
+  test("build timeout kills the run", async ({ page, app, runtime, fakeVscode, fakeHalsim }) => {
+    const session = await loginAs(page, app, { name: "TimeoutA" });
+    const workspace = app.storage.findWorkspaceBySlug(session.user.slug as never)!;
+    seedRuntimeRunning({ runtime, workspaceId: workspace.id, fakeVscode, fakeHalsim });
+
+    const cookie = cookieHeader(session);
+    const baseUrl = app.storage.config.baseUrl;
+
+    const runResp = await app.fetch(
+      new Request(`${baseUrl}/u/${session.user.slug}/api/run`, {
+        method: "POST",
+        headers: { cookie },
+      }),
+    );
+    expect(runResp.status).toBe(202);
+
+    const final = await pollRunStatus(app, session.user.slug, cookie, (s) => s === "failed", 3000);
+    expect(final).toBe("failed");
+
+    const logResp = await app.fetch(
+      new Request(`${baseUrl}/u/${session.user.slug}/api/run/logs`, { headers: { cookie } }),
+    );
+    if (logResp.status === 200) {
+      const text = await logResp.text();
+      expect(text).toMatch(/timed out/i);
+    }
+  });
 });
 
-test("sim readiness timeout fires separately", async () => {
-  test.fixme(true, "Needs simStartupTimeoutMs override + halsim never ready.");
+test.describe("sim readiness timeout fires separately", () => {
+  test.use({
+    runBuildTimeoutMs: { value: 500 },
+    simStartupTimeoutMs: { value: 500 },
+    runCommandFactory: {
+      factory: makeScriptedRunCommandFactory([
+        { stream: "stdout", line: "Build succeeded" },
+        // Deliberately no NT4/NetworkTables ready line — lineLooksReady() never fires,
+        // so the readiness timer stays armed. Process stays alive (no exit entry).
+      ]),
+    },
+  });
+
+  test("sim readiness timeout fires separately", async ({
+    page,
+    app,
+    runtime,
+    fakeVscode,
+    fakeHalsim,
+  }) => {
+    const session = await loginAs(page, app, { name: "TimeoutB" });
+    const workspace = app.storage.findWorkspaceBySlug(session.user.slug as never)!;
+    seedRuntimeRunning({ runtime, workspaceId: workspace.id, fakeVscode, fakeHalsim });
+
+    const cookie = cookieHeader(session);
+    const baseUrl = app.storage.config.baseUrl;
+
+    const runResp = await app.fetch(
+      new Request(`${baseUrl}/u/${session.user.slug}/api/run`, {
+        method: "POST",
+        headers: { cookie },
+      }),
+    );
+    expect(runResp.status).toBe(202);
+
+    // Combined timeout is 1000ms (500+500). The process never outputs a ready
+    // line, so the readiness timer fires and kills the run.
+    const final = await pollRunStatus(app, session.user.slug, cookie, (s) => s === "failed", 5000);
+    expect(final).toBe("failed");
+
+    const logResp = await app.fetch(
+      new Request(`${baseUrl}/u/${session.user.slug}/api/run/logs`, { headers: { cookie } }),
+    );
+    if (logResp.status === 200) {
+      const text = await logResp.text();
+      expect(text).toMatch(/timed out.*readiness/i);
+    }
+  });
 });
 
 test("external runtime crash leaves run in stopped/failed state", async ({
@@ -131,8 +218,63 @@ test("external runtime crash leaves run in stopped/failed state", async ({
   expect([409, 503]).toContain(probe.status);
 });
 
-test("stale running status cleared on app restart", async () => {
-  test.fixme(true, "Needs in-test re-creation of ControlApp with same DB.");
+test("stale running status cleared on app restart", async ({
+  page,
+  app,
+  runtime,
+  fakeVscode,
+  fakeHalsim,
+}) => {
+  const session = await loginAs(page, app, { name: "Stale" });
+  const workspace = app.storage.findWorkspaceBySlug(session.user.slug as never)!;
+  seedRuntimeRunning({ runtime, workspaceId: workspace.id, fakeVscode, fakeHalsim });
+
+  const cookie = cookieHeader(session);
+  const baseUrl = app.storage.config.baseUrl;
+
+  // Start a run and wait for it to reach "running"
+  const runResp = await app.fetch(
+    new Request(`${baseUrl}/u/${session.user.slug}/api/run`, {
+      method: "POST",
+      headers: { cookie },
+    }),
+  );
+  expect(runResp.status).toBe(202);
+
+  const running = await pollRunStatus(app, session.user.slug, cookie, (s) => s === "running");
+  expect(running).toBe("running");
+
+  // Close the app abruptly — the DB row stays in "running" state (orphaned).
+  const { dataDir, templateDir, webDistDir, advantageScopeDistDir, sessionSecret } = app.storage.config;
+  app.close();
+
+  // Re-create a new app instance pointing at the same SQLite database.
+  // reconcileOrphanedRuns() runs inside createApp() and should mark the
+  // orphaned "running" row as "stopped".
+  const runtime2 = new MockWorkspaceRuntimeProvider();
+  const app2 = await createApp({
+    dataDir,
+    templateDir,
+    webDistDir,
+    advantageScopeDistDir,
+    sessionSecret,
+    baseUrl,
+    idleStopMinutes: 30,
+    containerAutoStart: false,
+    runtimeProvider: runtime2,
+  });
+
+  try {
+    // Verify reconciliation happened: the run_jobs row should now be 'stopped'.
+    const rows = app2.storage.db
+      .query("SELECT state FROM run_jobs WHERE workspace_id = ?")
+      .all(workspace.id) as { state: string }[];
+    const states = rows.map((r) => r.state);
+    expect(states).toContain("stopped");
+    expect(states).not.toContain("running");
+  } finally {
+    app2.close();
+  }
 });
 
 test("second Run while one is active replaces / restarts the prior job", async ({

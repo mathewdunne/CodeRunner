@@ -10,6 +10,17 @@ import type { FakeVscodeHandle } from "./types";
 export async function startFakeVscode(): Promise<FakeVscodeHandle> {
   const receivedHeaders: Array<Record<string, string>> = [];
   const receivedFrames: Array<unknown> = [];
+  let wsConnectionCount = 0;
+  let wsConnectionWaiters: Array<{ resolve: () => void; target: number }> = [];
+
+  function checkWaiters() {
+    for (const waiter of wsConnectionWaiters) {
+      if (wsConnectionCount >= waiter.target) {
+        waiter.resolve();
+      }
+    }
+    wsConnectionWaiters = wsConnectionWaiters.filter((w) => wsConnectionCount < w.target);
+  }
 
   const server: Server = Bun.serve({
     port: 0,
@@ -45,11 +56,16 @@ export async function startFakeVscode(): Promise<FakeVscodeHandle> {
     },
     websocket: {
       open(ws) {
+        wsConnectionCount++;
+        checkWaiters();
         ws.send(JSON.stringify({ type: "hello", from: "fake-vscode" }));
       },
-      message(_ws, message) {
+      message(ws, message) {
         try {
-          receivedFrames.push(typeof message === "string" ? JSON.parse(message) : message);
+          const parsed = typeof message === "string" ? JSON.parse(message) : message;
+          receivedFrames.push(parsed);
+          // Echo back for round-trip assertions
+          ws.send(JSON.stringify({ type: "echo", payload: parsed }));
         } catch {
           receivedFrames.push(message);
         }
@@ -66,6 +82,24 @@ export async function startFakeVscode(): Promise<FakeVscodeHandle> {
     wsBaseUrl,
     receivedHeaders: () => [...receivedHeaders],
     receivedFrames: () => [...receivedFrames],
+    wsConnections: () => wsConnectionCount,
+    awaitWsConnection(target?: number, timeout = 5000): Promise<void> {
+      const t = target ?? wsConnectionCount + 1;
+      if (wsConnectionCount >= t) return Promise.resolve();
+      return new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => {
+          wsConnectionWaiters = wsConnectionWaiters.filter((w) => w.resolve !== resolve);
+          reject(new Error(`Timed out waiting for WS connection #${t} (got ${wsConnectionCount})`));
+        }, timeout);
+        wsConnectionWaiters.push({
+          resolve: () => {
+            clearTimeout(timer);
+            resolve();
+          },
+          target: t,
+        });
+      });
+    },
     async stop() {
       server.stop(true);
     },
