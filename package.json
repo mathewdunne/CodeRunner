@@ -31,13 +31,13 @@
     "migrate:status": "bun apps/control/src/migrate.ts status",
     "audit:prune": "bun scripts/audit-prune.ts",
     "typecheck": "bun scripts/typecheck.ts",
-    "test": "bun test",
+    "test": "bun test apps/control packages scripts apps/web/src/lib/keyboard-mapping.test.ts apps/web/src/lib/keyboard-mapping.property.test.ts",
     "test:web": "bun run --cwd apps/web test",
-    "e2e": "E2E_TEST=1 playwright test --project=mocked",
-    "e2e:ui": "E2E_TEST=1 playwright test --project=mocked --ui",
+    "e2e": "E2E_TEST=1 bun --bun playwright test --project=mocked",
+    "e2e:ui": "E2E_TEST=1 bun --bun playwright test --project=mocked --ui",
     "e2e:debug": "E2E_TEST=1 PWDEBUG=1 playwright test --project=mocked",
     "e2e:docker": "E2E_TEST=1 DOCKER_E2E=1 playwright test --project=docker-smoke",
-    "e2e:security": "E2E_TEST=1 playwright test --project=security",
+    "e2e:security": "E2E_TEST=1 bun --bun playwright test --project=security",
     "e2e:report": "playwright show-report"
   },
   "devDependencies": {

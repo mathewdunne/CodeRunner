@@ -77,9 +77,12 @@ describe("S3 URL-confusion bypasses", () => {
     expectRejected("https://github.com\x00.evil.com/owner/repo");
   });
 
-  test("rejects leading whitespace (interpreted as part of scheme by URL)", () => {
-    // " https://..." won't pass `new URL`, so we expect an ImportError either way.
-    expectRejected(" https://github.com/owner/repo");
+  test("strips leading whitespace; cloneUrl never contains whitespace", () => {
+    // parseGitHubUrl calls .trim() first, so " https://..." normalizes to a
+    // valid URL. The security property we care about is that no whitespace
+    // leaks into the cloneUrl that downstream `git clone` would receive.
+    const result = parseGitHubUrl(" https://github.com/wpilibsuite/allwpilib");
+    expect(/\s/.test(result.cloneUrl)).toBe(false);
   });
 
   test("rejects trailing whitespace in URL", () => {

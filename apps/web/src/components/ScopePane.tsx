@@ -11,6 +11,7 @@ export const ScopePane = forwardRef<HTMLIFrameElement>(
         <iframe
           ref={ref}
           title="AdvantageScope Lite"
+          data-pane="scope"
           src="/scope/?frcEndpoint=postMessage"
           className="min-h-0 w-full flex-1 border-0 bg-white"
           onLoad={handleLoad}

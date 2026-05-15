@@ -17,6 +17,7 @@ interface SimButtonProps {
   onClick: () => void;
   disabled: boolean;
   tone: "start" | "stop" | "restart";
+  testId?: string;
 }
 
 const TONE_CLASSES: Record<SimButtonProps["tone"], string> = {
@@ -25,12 +26,13 @@ const TONE_CLASSES: Record<SimButtonProps["tone"], string> = {
   restart: "text-muted-foreground [&_svg]:text-muted-foreground",
 };
 
-function SimButton({ label, Icon, onClick, disabled, tone }: SimButtonProps) {
+function SimButton({ label, Icon, onClick, disabled, tone, testId }: SimButtonProps) {
   return (
     <Button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      data-testid={testId}
       variant="outline"
       className={cn(
         "flex h-full min-h-0 flex-1 flex-row items-center justify-center gap-1.5 rounded-md border-border bg-card/40 px-2 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] transition-colors hover:bg-white/[0.05] disabled:opacity-40",
@@ -65,6 +67,7 @@ export function SimControlsBlock({
           onClick={onStart}
           disabled={runBusy || !sessionReady}
           tone="start"
+          testId="run-button"
         />
         <SimButton
           label="Stop"
@@ -72,6 +75,7 @@ export function SimControlsBlock({
           onClick={onStop}
           disabled={!runBusy}
           tone="stop"
+          testId="stop-button"
         />
         <SimButton
           label="Restart"
@@ -79,6 +83,7 @@ export function SimControlsBlock({
           onClick={onRestart}
           disabled={!canRestart || !sessionReady}
           tone="restart"
+          testId="restart-button"
         />
       </div>
     </div>

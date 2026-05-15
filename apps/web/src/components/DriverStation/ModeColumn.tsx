@@ -37,6 +37,8 @@ export function ModeColumn({ mode, onSelect }: ModeColumnProps) {
             key={m}
             type="button"
             onClick={() => onSelect(m)}
+            data-testid={`ds-mode-${m}`}
+            data-active={active}
             className={cn(
               "min-h-[18px] flex-1 rounded-md border px-2 py-1 text-[11px] font-semibold uppercase leading-none tracking-[0.12em] transition-colors",
               active

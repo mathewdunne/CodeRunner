@@ -269,10 +269,16 @@ export function createFakeDocker(options: {
   return { runner, containers, calls };
 }
 
+export type ExecOverride = {
+  predicate: (command: string[]) => boolean;
+  result: ExecResult;
+};
+
 export class MockWorkspaceRuntimeProvider implements WorkspaceRuntimeProvider {
   readonly execCalls: Array<{ workspaceId: WorkspaceId; command: string[] }> = [];
   readonly streamCalls: Array<{ workspaceId: WorkspaceId; command: string[] }> = [];
   private readonly runtimes = new Map<WorkspaceId, WorkspaceRuntime>();
+  private readonly execOverrides = new Map<WorkspaceId, ExecOverride[]>();
 
   constructor(initialRuntimes: WorkspaceRuntime[] = []) {
     for (const runtime of initialRuntimes) {
@@ -284,9 +290,41 @@ export class MockWorkspaceRuntimeProvider implements WorkspaceRuntimeProvider {
     this.runtimes.set(runtime.workspaceId, runtime);
   }
 
+  /**
+   * Flip a workspace runtime into the "error" state with the given message.
+   * Used by build-failure / run-state-recovery specs to simulate an upstream
+   * container crash after the runtime had been running.
+   */
+  simulateRuntimeFailure(workspaceId: WorkspaceId, message = "Container exited unexpectedly."): void {
+    const runtime = this.runtimes.get(workspaceId);
+    if (!runtime) {
+      throw new Error(`No mock runtime for workspace ${workspaceId}.`);
+    }
+    this.runtimes.set(workspaceId, { ...runtime, state: "error", error: message });
+  }
+
+  /**
+   * Register an exec() override matched by the given predicate over command
+   * shape. The first matching override is consumed (one-shot) and the runtime
+   * returns the provided result instead of the default empty success.
+   */
+  injectExecFailure(
+    workspaceId: WorkspaceId,
+    predicate: (command: string[]) => boolean,
+    result: ExecResult,
+  ): void {
+    const list = this.execOverrides.get(workspaceId) ?? [];
+    list.push({ predicate, result });
+    this.execOverrides.set(workspaceId, list);
+  }
+
   async ensureWorkspaceRunning(workspaceId: WorkspaceId): Promise<WorkspaceRuntime> {
     const runtime = this.getRuntime(workspaceId);
     if (runtime.state === "running") {
+      return runtime;
+    }
+    if (runtime.state === "error") {
+      // Mirror real provider: a simulated failure does not silently recover.
       return runtime;
     }
     const running: WorkspaceRuntime = { ...runtime, state: "running", error: null };
@@ -322,6 +360,16 @@ export class MockWorkspaceRuntimeProvider implements WorkspaceRuntimeProvider {
 
   async exec(workspaceId: WorkspaceId, command: string[]): Promise<ExecResult> {
     this.execCalls.push({ workspaceId, command: [...command] });
+    const overrides = this.execOverrides.get(workspaceId);
+    if (overrides) {
+      for (let i = 0; i < overrides.length; i += 1) {
+        const ov = overrides[i]!;
+        if (ov.predicate(command)) {
+          overrides.splice(i, 1);
+          return ov.result;
+        }
+      }
+    }
     return { exitCode: 0, stdout: "", stderr: "" };
   }
 
@@ -364,6 +412,91 @@ export class MockWorkspaceRuntimeProvider implements WorkspaceRuntimeProvider {
     }
     return runtime;
   }
+}
+
+/**
+ * Test helper: build a controllable RunCommandFactory. Each call returns a
+ * fresh `RunCommand`-shaped object whose stdout / stderr / exit can be driven
+ * from the test. Use `script` to enqueue lines (with stream tag and an
+ * optional terminal exit code).
+ *
+ *     const factory = makeScriptedRunCommandFactory([
+ *       { stream: "stdout", line: "Starting up" },
+ *       { stream: "stdout", line: "NetworkTables listening on 5810" },
+ *       // ... command stays alive until `kill()` or the next entry exits.
+ *     ]);
+ *
+ * If the script never sets an exit code, the command stays running until the
+ * caller invokes `command.kill()` (which resolves `exited`).
+ */
+export type ScriptedRunLine =
+  | { stream: "stdout" | "stderr"; line: string; delayMs?: number }
+  | { exit: number; signal?: string | null };
+
+export function makeScriptedRunCommandFactory(script: ScriptedRunLine[]): RunCommandFactory {
+  return () => {
+    let stdoutEnqueue: ((chunk: Uint8Array) => void) | null = null;
+    let stdoutClose: (() => void) | null = null;
+    let stderrEnqueue: ((chunk: Uint8Array) => void) | null = null;
+    let stderrClose: (() => void) | null = null;
+
+    const stdout = new ReadableStream<Uint8Array>({
+      start(controller) {
+        stdoutEnqueue = (c) => controller.enqueue(c);
+        stdoutClose = () => {
+          try { controller.close(); } catch {}
+        };
+      },
+    });
+    const stderr = new ReadableStream<Uint8Array>({
+      start(controller) {
+        stderrEnqueue = (c) => controller.enqueue(c);
+        stderrClose = () => {
+          try { controller.close(); } catch {}
+        };
+      },
+    });
+
+    let resolveExit!: (value: { code: number | null; signal: string | null }) => void;
+    const exited = new Promise<{ code: number | null; signal: string | null }>((resolve) => {
+      resolveExit = resolve;
+    });
+
+    let killed = false;
+    const finish = (code: number | null, signal: string | null) => {
+      if (stdoutClose) stdoutClose();
+      if (stderrClose) stderrClose();
+      resolveExit({ code, signal });
+    };
+
+    void (async () => {
+      const encoder = new TextEncoder();
+      for (const entry of script) {
+        if (killed) return;
+        if ("exit" in entry) {
+          finish(entry.exit, entry.signal ?? null);
+          return;
+        }
+        if (entry.delayMs) await new Promise((r) => setTimeout(r, entry.delayMs));
+        const enq = (entry.stream === "stdout" ? stdoutEnqueue : stderrEnqueue) as
+          | ((chunk: Uint8Array) => void)
+          | null;
+        if (enq) enq(encoder.encode(`${entry.line}\n`));
+      }
+      // Script ran out without an exit entry — keep the streams open so the
+      // run sits in `running` until the consumer kills it.
+    })();
+
+    return {
+      stdout,
+      stderr,
+      exited,
+      kill() {
+        killed = true;
+        finish(null, "SIGTERM");
+      },
+    };
+  };
 }
 
 export async function waitFor(predicate: () => boolean): Promise<void> {

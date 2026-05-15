@@ -1,32 +1,41 @@
 /**
- * T11.1 — every <script>/<link> tag in the workspace shell resolves under the
- * workspace base path (`./assets/...` or `/u/<slug>/assets/...`), not
- * `/assets/...` absolute. Anchor: commit 066141e Vite relative base.
+ * T11.1 — every <script>/<link> tag in the workspace shell resolves to a 2xx.
+ *
+ * The original phrasing pinned `base: "./"` (commit 066141e). That was later
+ * reverted to `base: "/"` (commit 1a4f5e6) because the control plane already
+ * serves `/assets/*` globally and the workspace-shell route also serves
+ * `/u/<slug>/assets/*`. So the contract we actually care about is "the asset
+ * URLs in the shell HTML resolve", not "they have a particular shape".
  */
 import { test, expect } from "../../fixtures/app";
 import { loginAs, cookieHeader } from "../../fixtures/auth";
 
-test("workspace shell uses relative asset paths (Vite `base: \"./\"`)", async ({
+test("workspace shell asset references all resolve under both /assets/ and /u/<slug>/assets/", async ({
   page,
   app,
 }) => {
   const session = await loginAs(page, app, { name: "Alice" });
-  const resp = await app.fetch(
+  const shell = await app.fetch(
     new Request(`${app.storage.config.baseUrl}/u/${session.user.slug}/`, {
       headers: { cookie: cookieHeader(session) },
     }),
   );
-  expect(resp.status).toBe(200);
-  const html = await resp.text();
+  expect(shell.status).toBe(200);
+  const html = await shell.text();
 
-  // The Vite build with base: "./" produces relative asset references.
-  // Catch absolute references that would 404 under /u/<slug>/ unless we set up
-  // a global /assets/ handler — the test guards against regressions of 066141e.
-  const matches = html.match(/(src|href)="([^"]+)"/g) ?? [];
-  for (const m of matches) {
-    if (m.includes("http://") || m.includes("https://")) continue;
-    if (m.includes('href="data:') || m.includes('src="data:')) continue;
-    // Allowed: "./assets/...", "assets/...", or "/u/<slug>/..."
-    expect(m).not.toMatch(/=["']\/assets\//);
+  const refs = new Set<string>();
+  for (const m of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
+    const url = m[1];
+    if (!url || url.startsWith("data:") || /^https?:/i.test(url)) continue;
+    refs.add(url);
+  }
+  expect(refs.size).toBeGreaterThan(0);
+
+  for (const ref of refs) {
+    const absolute = new URL(ref, `${app.storage.config.baseUrl}/u/${session.user.slug}/`).toString();
+    const resp = await app.fetch(
+      new Request(absolute, { headers: { cookie: cookieHeader(session) } }),
+    );
+    expect(resp.status, `asset ${ref} (${absolute}) should resolve`).toBeLessThan(400);
   }
 });

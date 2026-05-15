@@ -26,11 +26,15 @@ test("T1.3 session survives reload", async ({ page, app }) => {
 
 test("T1.4 logout endpoint clears the session cookie", async ({ page, app }) => {
   const login = await loginAs(page, app, { name: "Alice" });
-  // Better Auth's sign-out endpoint
+  // Better Auth's sign-out endpoint. Origin header is required to pass the
+  // built-in CSRF check that rejects cross-origin POSTs with 403.
   const response = await app.fetch(
     new Request(`${app.storage.config.baseUrl}/api/auth/sign-out`, {
       method: "POST",
-      headers: { cookie: `${login.cookieName}=${login.cookieValue}` },
+      headers: {
+        cookie: `${login.cookieName}=${login.cookieValue}`,
+        origin: app.storage.config.baseUrl,
+      },
     }),
   );
   // 200 OK or 204 No Content is acceptable; the key is the cookie clear header

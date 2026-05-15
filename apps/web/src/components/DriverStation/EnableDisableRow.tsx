@@ -6,6 +6,7 @@ interface BigButtonProps {
   active: boolean;
   disabled?: boolean;
   onClick: () => void;
+  testId?: string;
 }
 
 const TONE_ACTIVE: Record<BigButtonProps["tone"], string> = {
@@ -15,12 +16,13 @@ const TONE_ACTIVE: Record<BigButtonProps["tone"], string> = {
     "border-red-400/60 bg-red-500/25 text-red-50 shadow-[inset_0_-2px_0_rgba(0,0,0,0.25),0_0_24px_rgba(239,68,68,0.18)]",
 };
 
-function BigButton({ label, tone, active, disabled = false, onClick }: BigButtonProps) {
+function BigButton({ label, tone, active, disabled = false, onClick, testId }: BigButtonProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      data-testid={testId}
       className={cn(
         "h-full w-full rounded-lg border text-[14px] font-semibold uppercase tracking-wide transition-all disabled:cursor-not-allowed disabled:opacity-45",
         active
@@ -53,6 +55,7 @@ export function EnableDisableRow({
           active={enabled}
           disabled={enabled || !canEnable}
           onClick={() => onSetEnabled(true)}
+          testId="ds-enable"
         />
       </div>
       <div className="min-h-0 rounded-lg border border-border bg-card p-2">
@@ -62,6 +65,7 @@ export function EnableDisableRow({
           active={!enabled}
           disabled={!enabled}
           onClick={() => onSetEnabled(false)}
+          testId="ds-disable"
         />
       </div>
     </div>

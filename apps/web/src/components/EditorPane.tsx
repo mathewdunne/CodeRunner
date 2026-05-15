@@ -37,6 +37,7 @@ export function EditorPane({
       {editorReachable && (
         <iframe
           title="VS Code Editor"
+          data-pane="editor"
           src={editorUrl}
           allow="clipboard-read; clipboard-write"
           className="h-full w-full border-0"

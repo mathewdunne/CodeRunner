@@ -34,12 +34,17 @@ interface StatusTileProps {
   tone: StatusTone;
   label: string;
   Icon: ComponentType<{ className?: string }>;
+  testId?: string;
 }
 
-export function StatusTile({ tone, label, Icon }: StatusTileProps) {
+export function StatusTile({ tone, label, Icon, testId }: StatusTileProps) {
   const t = TONE_CLASSES[tone];
   return (
-    <div className="flex h-full min-h-0 flex-col items-center justify-center gap-1.5 px-2 py-1.5">
+    <div
+      data-testid={testId}
+      data-tone={tone}
+      className="flex h-full min-h-0 flex-col items-center justify-center gap-1.5 px-2 py-1.5"
+    >
       <div
         className={cn(
           "flex size-12 items-center justify-center rounded-md ring-1",
@@ -109,10 +114,14 @@ export function StatusTileRow({
   const joystickTone = joystickToneFromStatus(joystickStatus, inputMode, keyboardCaptureActive);
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-3 gap-1.5 overflow-hidden rounded-lg border border-border bg-card p-1.5">
-      <StatusTile tone={commsTone} label="Comms" Icon={Wifi} />
-      <StatusTile tone={robotTone} label="Robot Code" Icon={Bot} />
-      <StatusTile tone={joystickTone} label="Joysticks" Icon={Gamepad2} />
+    <div
+      data-testid="ds-status"
+      data-run-status={runStatus}
+      className="grid h-full min-h-0 grid-cols-3 gap-1.5 overflow-hidden rounded-lg border border-border bg-card p-1.5"
+    >
+      <StatusTile tone={commsTone} label="Comms" Icon={Wifi} testId="ds-status-comms" />
+      <StatusTile tone={robotTone} label="Robot Code" Icon={Bot} testId="run-status" />
+      <StatusTile tone={joystickTone} label="Joysticks" Icon={Gamepad2} testId="ds-status-joysticks" />
     </div>
   );
 }

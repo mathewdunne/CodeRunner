@@ -111,7 +111,10 @@ export function UserMenu({
           <div className="flex items-center gap-2.5 border-b border-border px-3 py-3">
             <Avatar name={displayName} src={avatarUrl} size={36} />
             <div className="min-w-0">
-              <div className="truncate text-[13px] font-medium text-foreground">
+              <div
+                data-testid="user-menu-name"
+                className="truncate text-[13px] font-medium text-foreground"
+              >
                 {displayName}
               </div>
               <div className="truncate text-[11.5px] text-muted-foreground">

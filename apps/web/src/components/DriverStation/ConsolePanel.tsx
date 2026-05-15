@@ -144,7 +144,7 @@ export function ConsolePanel({ robotLines, runStatus }: ConsolePanelProps) {
   const codeStatus = codeStatusFromRun(runStatus);
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col">
+    <section data-testid="run-console" className="flex min-h-0 flex-1 flex-col">
       <div className="flex h-10 shrink-0 items-center justify-between border-b border-border bg-card/40 px-3">
         <div className="flex items-center gap-2 text-[12px]">
           <Terminal className="size-3.5 text-muted-foreground" />
