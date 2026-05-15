@@ -34,6 +34,7 @@ import {
   stopWorkspaceSim,
 } from "./lifecycle";
 import { CapacityExceededError } from "./errors";
+import { containerStartDuration } from "../metrics";
 import {
   HALSIM_CONTAINER_PORT,
   SIM_CONTAINER_PORT,
@@ -532,9 +533,16 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
       await this.checkCapacity();
     });
 
+    const createdAt = performance.now();
+    let createdOk = false;
     try {
-      return await this.createWithRetries(workspace);
+      const result = await this.createWithRetries(workspace);
+      createdOk = true;
+      return result;
     } finally {
+      if (createdOk) {
+        containerStartDuration.observe((performance.now() - createdAt) / 1000);
+      }
       this.pendingCreates = Math.max(0, this.pendingCreates - 1);
     }
   }

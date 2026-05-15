@@ -43,3 +43,5 @@ graphify-out/.graphify_root
 
 playwright-report/
 test-results/
+
+data-alloy/

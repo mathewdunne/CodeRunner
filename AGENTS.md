@@ -20,6 +20,8 @@ apps/control/src/app.ts          slim factory + top-level fetch dispatcher
 apps/control/src/app/            response/asset/proxy/status helpers + admin, workspace, websocket route groups
 apps/control/src/containers.ts   barrel re-exporting the public container surface
 apps/control/src/containers/     Docker client, metadata, ports, lifecycle, and the LocalDockerRuntimeProvider class
+apps/control/src/metrics.ts      Prometheus registry, metric handles, route-templating helpers
+apps/control/src/metrics-collector.ts  15s Docker stats poller that writes per-container gauges
 apps/web/                      React + Vite browser IDE shell
 packages/contracts/            Shared API schemas, message types, and path rules
 containers/code/               V2 merged openvscode-server + sim container
@@ -57,6 +59,7 @@ V2 is complete. The system uses per-student merged containers (`frc-code:v2`) ru
 - Do not expose per-user editor or NT4 ports directly to the browser.
 - Keep AS Lite patches source-level and repeatable.
 - Do not re-verify upstream extension-owned behavior unless editor or extension versions changed. Decision 011 is the evidence record.
+- Keep metrics instrumentation backend-agnostic. The control plane only speaks Prometheus exposition at `/metrics`; deploy-specific shipping (Alloy → Grafana Cloud, or whatever replaces it) lives outside `apps/control/`. Decision 023 is the record.
 
 ## Key References
 
@@ -90,7 +93,7 @@ See `docs/runbook.md` for full operator documentation.
 
 Three test tiers, all runnable without Docker:
 
-- **`bun run test`** — Bun unit/integration tests for the control plane (~254 tests). Covers auth, runs, proxy, containers, security, reconciliation, and property-based tests.
+- **`bun run test`** — Bun unit/integration tests for the control plane (~263 tests). Covers auth, runs, proxy, containers, security, reconciliation, property-based tests, and metrics route-templating cardinality.
 - **`bun run test:web`** — Vitest frontend tests (~65 tests). Covers React hooks (`useSession`, `useSimulationState`, `useContainerStatus`, `useAutoChoosers`, `useGamepad`, `useRunChannel`), DriverStation components, Zustand store, keyboard/gamepad mappings.
 - **`bun run e2e`** — Playwright E2E mocked tier (~55 tests). Full login→editor→run→telemetry→DS flows against in-process `ControlApp` with fake openvscode-server, HALSim, and NT4 backends. No Docker required.
 - **`bun run e2e:security`** — Playwright security specs (CSRF, XSS output encoding, response headers).

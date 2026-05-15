@@ -434,6 +434,64 @@ The control plane emits structured logs to stdout/stderr (errors and fatals go t
 
 Set verbosity with `LOG_LEVEL` (`trace`, `debug`, `info`, `warning`, `error`, `fatal`). Default is `debug`; the test suite forces `warning` to keep CI output tidy. Categories follow `control.<subsystem>` — `boot`, `http`, `ws`, `proxy`, `runs`, `containers`, `idle`, `auth`, `admin`, `workspace`, `halsim`, `nt4`, `gamepad`, `imports`, `migrate`. Pipe stdout into a file or `tee` for a session capture; ANSI colors are auto-disabled when output isn't a TTY.
 
+### Prometheus metrics (`/metrics`)
+
+The control plane exposes Prometheus-format metrics at `GET /metrics`. Series include:
+
+- `http_request_duration_seconds{method, route, status_class}` — request latency (route is templated to keep cardinality bounded, e.g. `/u/:slug/api/sim/status`).
+- `http_requests_in_flight` — concurrency. Spikes here while latency rises indicate the Bun event loop is bogged down.
+- `proxy_upstream_duration_seconds{upstream, outcome}` — latency of upstream HTTP fetches (`vscode`, `nt4`).
+- `run_build_duration_seconds` — compile + boot time per run.
+- `run_active_duration_seconds{terminal_status}` — time spent in `running` state before termination.
+- `runs_total{terminal_status}` — counter of completed runs by outcome (`stopped`/`failed`/`canceled`).
+- `container_start_duration_seconds` — cold-start time for a workspace code container.
+- `container_cpu_percent{workspace_id}`, `container_memory_percent{workspace_id}` — sampled every 15s from `docker stats`.
+- `active_workspaces` — workspaces with a running container at the last poll.
+- `idle_sweep_stops_total` — workspaces stopped by the idle sweep.
+- Plus standard Node/process metrics (`process_cpu_seconds_total`, heap, GC, event-loop lag).
+
+**Auth.** `/metrics` requires authentication. If `METRICS_TOKEN` is set, scrapers send `Authorization: Bearer $METRICS_TOKEN`. If unset, the endpoint falls back to admin auth (same as `/admin/*`). Bind the control plane to localhost or a private interface so scrapers reach `/metrics` over a trusted network.
+
+```bash
+# Manual probe with bearer token
+curl -H "Authorization: Bearer $METRICS_TOKEN" http://localhost:4000/metrics
+```
+
+### Shipping metrics to Grafana Cloud (via Alloy)
+
+On the production VM, run [Grafana Alloy](https://grafana.com/docs/alloy/) as a systemd service. Alloy scrapes `localhost:4000/metrics` and remote-writes to Grafana Cloud Prometheus. The control plane has no Grafana Cloud-specific code — swap Alloy for any Prometheus-compatible scraper (vanilla Prometheus, GCP Ops Agent, etc.) without code changes.
+
+Minimum `config.alloy` (replace placeholders with Grafana Cloud stack credentials):
+
+```alloy
+prometheus.scrape "control_plane" {
+  targets = [{
+    __address__ = "127.0.0.1:4000",
+    job         = "frc-sim-control",
+  }]
+  metrics_path = "/metrics"
+  scrape_interval = "15s"
+  bearer_token = sys.env("METRICS_TOKEN")
+  forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.remote_write "grafana_cloud" {
+  endpoint {
+    url = "https://prometheus-prod-XX-prod-us-central-0.grafana.net/api/prom/push"
+    basic_auth {
+      username = "<grafana-cloud-username>"
+      password = sys.env("GRAFANA_CLOUD_API_KEY")
+    }
+  }
+}
+```
+
+Load `METRICS_TOKEN` and `GRAFANA_CLOUD_API_KEY` from GCP Secret Manager via systemd `LoadCredential=` and reference them with `EnvironmentFile` or `Environment=`. Suggested starter dashboards:
+
+1. **Control plane:** rate, error rate, p50/p95/p99 latency by `route`, `http_requests_in_flight`, event-loop lag, heap.
+2. **Runs:** start rate, `run_build_duration_seconds` quantiles, `run_active_duration_seconds` by `terminal_status`, failure ratio.
+3. **Containers:** `container_cpu_percent` and `container_memory_percent` per workspace, `container_start_duration_seconds` histogram, `active_workspaces` over time.
+
 ---
 
 ## 9. Common Failures and Recovery

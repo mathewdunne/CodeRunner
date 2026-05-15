@@ -6,6 +6,7 @@ import type { RunServerMessage, SimRunStatus, WorkspaceId } from "@frc-sim/contr
 import type { WorkspaceRuntime, WorkspaceRuntimeCommand, WorkspaceRuntimeProvider } from "./runtime";
 import type { AppStorage, WorkspaceRow } from "./storage";
 import { getLogger } from "./logging";
+import { runActiveDuration, runBuildDuration, runsTotal } from "./metrics";
 
 const log = getLogger("runs");
 
@@ -41,6 +42,8 @@ type RunJob = {
   buildSlotHeld: boolean;
   finished: boolean;
   readinessTimer: ReturnType<typeof setTimeout> | null;
+  buildStartedAtMs: number | null;
+  runningSinceMs: number | null;
 };
 
 export type RunSnapshot = {
@@ -232,6 +235,8 @@ export class RunManager {
       buildSlotHeld: false,
       finished: false,
       readinessTimer: null,
+      buildStartedAtMs: null,
+      runningSinceMs: null,
     };
 
     mkdirSync(dirname(logPath), { recursive: true });
@@ -277,6 +282,7 @@ export class RunManager {
 
   private async runJob(job: RunJob): Promise<void> {
     const startedAt = performance.now();
+    job.buildStartedAtMs = startedAt;
     try {
       this.setJobState(job, "building", { started: true });
       this.broadcast(job, { type: "status", status: "building" });
@@ -384,6 +390,11 @@ export class RunManager {
 
     if (!job.finished && !job.canceled && !job.reportedRunning && lineLooksReady(line)) {
       job.reportedRunning = true;
+      const now = performance.now();
+      job.runningSinceMs = now;
+      if (job.buildStartedAtMs !== null) {
+        runBuildDuration.observe((now - job.buildStartedAtMs) / 1000);
+      }
       this.setJobState(job, "running");
       log.info("sim started", { workspaceId: job.workspace.id, runId: job.id });
       this.broadcast(job, { type: "status", status: "running" });
@@ -443,6 +454,14 @@ export class RunManager {
     this.rememberStatus(job, state);
     this.broadcast(job, { type: "status", status: state });
     this.broadcast(job, { type: "exit", code, signal });
+    const terminalStatus = job.canceled ? "canceled" : state;
+    runsTotal.inc({ terminal_status: terminalStatus });
+    if (job.runningSinceMs !== null) {
+      runActiveDuration.observe(
+        { terminal_status: terminalStatus },
+        (performance.now() - job.runningSinceMs) / 1000,
+      );
+    }
     if (this.jobsByWorkspace.get(job.workspace.id)?.id === job.id) {
       this.jobsByWorkspace.delete(job.workspace.id);
     }

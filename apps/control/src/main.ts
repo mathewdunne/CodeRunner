@@ -1,6 +1,8 @@
 import { configureLogging, defaultLogLevel, getLogger } from "./logging";
+import { enableDefaultMetrics } from "./metrics";
 
 await configureLogging(defaultLogLevel());
+enableDefaultMetrics();
 
 const log = getLogger("boot");
 

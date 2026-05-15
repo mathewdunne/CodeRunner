@@ -9,6 +9,8 @@ import { createStorage } from "./storage";
 import { getSessionFromRequest, requireAdmin } from "./auth/middleware";
 import { getEnabledAuthProviders } from "./auth/providers";
 import { ImportManager } from "./imports";
+import { DockerStatsPoller } from "./metrics-collector";
+import { idleSweepStopsTotal } from "./metrics";
 import { handleAdminRoute } from "./app/admin-routes";
 import { handleWorkspaceRoute } from "./app/workspace-routes";
 import { handleUploadAsset, userAssetsPath, scopeResponse, webAssetResponse, webShellResponse } from "./app/assets";
@@ -16,6 +18,13 @@ import { openApiResponse } from "./app/status";
 import { jsonResponse, notFound, redirect } from "./app/responses";
 import { createWebSocketHandlers } from "./app/websocket";
 import { getLogger } from "./logging";
+import {
+  httpRequestDuration,
+  httpRequestsInFlight,
+  renderMetrics,
+  statusClass,
+  templateRoute,
+} from "./metrics";
 import type { AppSocket, BunUpgradeServer, ControlApp, ControlAppOptions } from "./app/types";
 
 const bootLog = getLogger("boot");
@@ -24,6 +33,35 @@ const idleLog = getLogger("idle");
 
 // Frontend polls these every ~1s; logging each response would drown out useful events.
 const NOISY_WORKSPACE_PATH = /^\/u\/[^/]+\/(sim\/alive|api\/sim\/(status|auto-choosers))$/u;
+
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
+async function authorizeMetrics(
+  storage: Awaited<ReturnType<typeof createStorage>>,
+  request: Request,
+): Promise<Response | null> {
+  const token = (typeof Bun !== "undefined" ? Bun.env.METRICS_TOKEN : process.env.METRICS_TOKEN) ?? "";
+  if (token) {
+    const header = request.headers.get("authorization") ?? "";
+    const match = /^Bearer\s+(.+)$/u.exec(header);
+    if (match && constantTimeEqual(match[1] ?? "", token)) {
+      return null;
+    }
+    return new Response("Unauthorized", { status: 401 });
+  }
+  const adminResult = await requireAdmin(storage.auth, storage, request);
+  if (adminResult instanceof Response) {
+    return adminResult;
+  }
+  return null;
+}
 
 export { stripHopByHopHeaders } from "./app/proxy";
 export type {
@@ -72,10 +110,13 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       halsim.disconnect(workspaceId);
       nt4Auto.disconnect(workspaceId);
       gamepad.reset(workspaceId);
+      idleSweepStopsTotal.inc();
       idleLog.info("idle sweep stopped workspace", { workspaceId });
     },
   });
   idle.start();
+  const dockerStatsPoller = new DockerStatsPoller({ containers });
+  dockerStatsPoller.start();
 
   const adminCtx = { storage, runs, runtimeProvider };
   const workspaceCtx = { storage, runs, runtimeProvider, halsim, gamepad, nt4Auto, upstreamFetch };
@@ -83,10 +124,19 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
   async function fetch(request: Request, server?: BunUpgradeServer): Promise<Response> {
     const url = new URL(request.url);
     const start = performance.now();
+    const route = templateRoute(url.pathname);
+    httpRequestsInFlight.inc();
     let response: Response;
+    let observedStatus: number;
     try {
       response = await dispatch(request, server, url);
+      observedStatus = response.status;
     } catch (err) {
+      httpRequestsInFlight.dec();
+      httpRequestDuration.observe(
+        { method: request.method, route, status_class: "5xx" },
+        (performance.now() - start) / 1000,
+      );
       httpLog.error("unhandled error in request dispatcher", {
         method: request.method,
         path: url.pathname,
@@ -94,7 +144,13 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       });
       throw err;
     }
-    const durationMs = Math.round(performance.now() - start);
+    httpRequestsInFlight.dec();
+    const durationSec = (performance.now() - start) / 1000;
+    httpRequestDuration.observe(
+      { method: request.method, route, status_class: statusClass(observedStatus) },
+      durationSec,
+    );
+    const durationMs = Math.round(durationSec * 1000);
     const isNoisy =
       url.pathname === "/healthz" ||
       url.pathname.startsWith("/scope/") ||
@@ -127,6 +183,19 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
     if (url.pathname === "/api/openapi.json" && request.method === "GET") {
       return openApiResponse();
+    }
+
+    if (url.pathname === "/metrics" && request.method === "GET") {
+      const authError = await authorizeMetrics(storage, request);
+      if (authError) return authError;
+      const { body, contentType } = await renderMetrics();
+      return new Response(body, {
+        status: 200,
+        headers: {
+          "content-type": contentType,
+          "cache-control": "no-store",
+        },
+      });
     }
 
     // --- AdvantageScope Lite: upload asset (POST, authenticated) ---
@@ -244,6 +313,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     close() {
       bootLog.info("shutting down");
       idle.stop();
+      dockerStatsPoller.stop();
       halsim.close();
       nt4Auto.close();
       storage.close();

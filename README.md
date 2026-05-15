@@ -66,7 +66,7 @@ Three test tiers, all runnable without Docker:
 
 | Command | What it runs |
 | --- | --- |
-| `bun run test` | Bun unit/integration tests — control plane, security, property-based (~254 tests) |
+| `bun run test` | Bun unit/integration tests — control plane, security, property-based, metrics (~263 tests) |
 | `bun run test:web` | Vitest frontend tests — hooks, components, store (~65 tests) |
 | `bun run e2e` | Playwright E2E — mocked tier, full login→editor→run→telemetry flows (~55 tests) |
 | `bun run e2e:security` | Playwright security specs — CSRF, XSS, response headers |
@@ -88,3 +88,7 @@ e2e/fixtures/                      Shared E2E fixtures: app, auth, fake servers,
 ## Operator Runbook
 
 See [`docs/runbook.md`](docs/runbook.md) for complete setup, deployment, backup/restore, monitoring, and troubleshooting instructions.
+
+## Observability
+
+The control plane exposes Prometheus metrics at `GET /metrics` (auth: `METRICS_TOKEN` bearer, or admin session). HTTP latency, run lifecycle, container CPU/memory, and default process metrics are all surfaced. The recommended production setup ships these to Grafana Cloud via Grafana Alloy on the host. See [`docs/runbook.md`](docs/runbook.md) § 8 for the Alloy config and Grafana Cloud setup, and [`docs/decisions/023-metrics-and-observability.md`](docs/decisions/023-metrics-and-observability.md) for the design rationale.

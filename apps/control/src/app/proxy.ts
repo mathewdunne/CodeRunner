@@ -3,6 +3,7 @@ import type { WorkspaceRuntimeProvider } from "../runtime";
 import type { AppStorage, AuthContext } from "../storage";
 import type { BunUpgradeServer, HttpFetch, SocketData } from "./types";
 import { getLogger } from "../logging";
+import { proxyUpstreamDuration } from "../metrics";
 
 const log = getLogger("proxy");
 
@@ -109,6 +110,8 @@ export async function vscodeHttpProxyResponse(
   const forwardHeaders = stripHopByHopHeaders(request.headers);
   log.trace("vscode http proxy", { workspaceId: auth.workspace.id, method: request.method, path: fullPath });
 
+  const startedAt = performance.now();
+  let outcome = "ok";
   try {
     const upstream = await upstreamFetch(upstreamUrl, {
       method: request.method,
@@ -118,6 +121,8 @@ export async function vscodeHttpProxyResponse(
       decompress: false,
     });
 
+    if (upstream.status >= 500) outcome = "upstream_5xx";
+    else if (upstream.status >= 400) outcome = "upstream_4xx";
     const responseHeaders = stripHopByHopHeaders(upstream.headers);
     return new Response(upstream.body, {
       status: upstream.status,
@@ -125,12 +130,18 @@ export async function vscodeHttpProxyResponse(
       headers: responseHeaders,
     });
   } catch (err) {
+    outcome = "error";
     log.warn("vscode upstream unreachable", {
       workspaceId: auth.workspace.id,
       upstreamUrl,
       err: err instanceof Error ? err : new Error(String(err)),
     });
     return new Response("Editor upstream is not reachable.", { status: 502 });
+  } finally {
+    proxyUpstreamDuration.observe(
+      { upstream: "vscode", outcome },
+      (performance.now() - startedAt) / 1000,
+    );
   }
 }
 
@@ -194,21 +205,30 @@ export async function nt4AliveResponse(
     return new Response(runtime.error ?? "Simulator is not running.", { status: 503 });
   }
 
+  const startedAt = performance.now();
+  let outcome = "ok";
   try {
     const upstream = await upstreamFetch(runtime.endpoints.nt4.httpUrl, {
       signal: AbortSignal.timeout(500),
     });
     if (!upstream.ok) {
+      outcome = "not_ready";
       log.trace("nt4 alive probe not ready", { workspaceId: auth.workspace.id, status: upstream.status });
       return new Response("Simulator NT4 endpoint is not ready.", { status: 503 });
     }
     return new Response("ok\n", { status: 200, headers: { "content-type": "text/plain; charset=utf-8" } });
   } catch (err) {
+    outcome = "error";
     log.trace("nt4 alive probe unreachable", {
       workspaceId: auth.workspace.id,
       err: err instanceof Error ? err.message : String(err),
     });
     return new Response("Simulator NT4 endpoint is not reachable.", { status: 503 });
+  } finally {
+    proxyUpstreamDuration.observe(
+      { upstream: "nt4", outcome },
+      (performance.now() - startedAt) / 1000,
+    );
   }
 }
 
