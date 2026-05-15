@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { defaultLogLevel, parseLogLevelEnv, type LogLevel } from "./logging";
 
 export type PortRange = {
   start: number;
@@ -7,6 +8,7 @@ export type PortRange = {
 };
 
 export type ControlConfig = {
+  logLevel: LogLevel;
   dataDir: string;
   dbPath: string;
   templateDir: string;
@@ -35,7 +37,7 @@ export type ControlConfig = {
   maxActiveContainers: number;
 };
 
-export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "vscodePortRange" | "halsimPortRange">> & {
+export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "vscodePortRange" | "halsimPortRange" | "logLevel">> & {
   simPortRange?: PortRange | string;
   vscodePortRange?: PortRange | string;
   halsimPortRange?: PortRange | string;
@@ -43,7 +45,20 @@ export type ControlConfigInput = Partial<Omit<ControlConfig, "simPortRange" | "v
   idleCheckIntervalMs?: number | string;
   maxActiveContainers?: number | string;
   port?: number | string;
+  logLevel?: LogLevel | string;
 };
+
+function parseLogLevelOrThrow(value: string | LogLevel | undefined): LogLevel {
+  if (!value) return defaultLogLevel();
+  if (typeof value !== "string") return value;
+  const parsed = parseLogLevelEnv(value);
+  if (!parsed) {
+    throw new Error(
+      `Invalid LOG_LEVEL "${value}". Expected one of: trace, debug, info, warning, error, fatal.`,
+    );
+  }
+  return parsed;
+}
 
 const repoRoot = resolve(fileURLToPath(new URL("../../..", import.meta.url)));
 const defaultDataDir = resolve(repoRoot, "data");
@@ -112,6 +127,7 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
   const dataDir = resolve(input.dataDir ?? Bun.env.FRC_DATA_DIR ?? defaultDataDir);
 
   return {
+    logLevel: parseLogLevelOrThrow(input.logLevel ?? Bun.env.LOG_LEVEL),
     dataDir,
     dbPath: resolve(input.dbPath ?? Bun.env.FRC_DB_PATH ?? resolve(dataDir, "app.db")),
     templateDir: resolve(

@@ -7,6 +7,9 @@
 import type { Auth } from "./auth";
 import type { AppStorage, AuthContext, WorkspaceRow } from "../storage";
 import type { WorkspaceSlug } from "@frc-sim/contracts";
+import { getLogger } from "../logging";
+
+const log = getLogger("auth");
 
 /** Resolve a Better Auth session from the incoming request. Returns null if no valid session. */
 export async function getSessionFromRequest(
@@ -15,9 +18,13 @@ export async function getSessionFromRequest(
 ): Promise<{ user: { id: string; email: string; name: string; image: string | null; role: string; slug: string }; session: { token: string } } | null> {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
-    if (!session) return null;
+    if (!session) {
+      log.trace("getSession: no session");
+      return null;
+    }
 
     const user = session.user as { id: string; email: string; name: string; image?: string | null; role?: string; slug?: string };
+    log.trace("getSession: ok", { userId: user.id, role: user.role });
     return {
       user: {
         id: user.id,
@@ -29,7 +36,8 @@ export async function getSessionFromRequest(
       },
       session: { token: session.session.token },
     };
-  } catch {
+  } catch (err) {
+    log.warn("getSession threw", { err: err instanceof Error ? err : new Error(String(err)) });
     return null;
   }
 }
@@ -60,6 +68,11 @@ export async function requireWorkspaceOwnership(
 
   const workspace = storage.findWorkspaceBySlug(slug as WorkspaceSlug);
   if (!workspace || workspace.user_id !== session.user.id) {
+    log.warn("workspace ownership rejected", {
+      slug,
+      userId: session.user.id,
+      reason: !workspace ? "not-found" : "mismatch",
+    });
     return new Response("Workspace is not available for this session.", { status: 403 });
   }
 
@@ -82,6 +95,7 @@ export async function requireAdmin(
   if (adminToken) {
     const authHeader = request.headers.get("authorization");
     if (authHeader === `Bearer ${adminToken}`) {
+      log.info("admin auth via break-glass token");
       return {
         user: {
           id: "<admin-token>",
@@ -97,13 +111,16 @@ export async function requireAdmin(
 
   const session = await getSessionFromRequest(auth, request);
   if (session && session.user.role === "admin") {
+    log.debug("admin auth via session", { userId: session.user.id });
     return session;
   }
 
   if (!session) {
+    log.warn("admin route rejected: unauthorized");
     return new Response("Unauthorized", { status: 401 });
   }
 
+  log.warn("admin route rejected: forbidden", { userId: session.user.id, role: session.user.role });
   return new Response("Forbidden", { status: 403 });
 }
 
@@ -140,7 +157,12 @@ export function isAllowedWebSocketOrigin(request: Request, baseUrl: string): boo
 }
 
 export function requireWebSocketOrigin(request: Request, baseUrl: string): Response | null {
-  return isAllowedWebSocketOrigin(request, baseUrl)
-    ? null
-    : new Response("WebSocket origin is not allowed.", { status: 403 });
+  if (isAllowedWebSocketOrigin(request, baseUrl)) {
+    return null;
+  }
+  log.warn("ws origin rejected", {
+    origin: request.headers.get("origin"),
+    baseUrl,
+  });
+  return new Response("WebSocket origin is not allowed.", { status: 403 });
 }

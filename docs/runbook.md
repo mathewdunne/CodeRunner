@@ -250,6 +250,7 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `GITHUB_CLIENT_SECRET` | *(none)* | GitHub OAuth app client secret |
 | `GOOGLE_CLIENT_ID` | *(none)* | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | *(none)* | Google OAuth client secret |
+| `LOG_LEVEL` | `debug` (`warning` under tests) | Control-plane log verbosity: `trace`, `debug`, `info`, `warning`, `error`, `fatal` |
 
 ### Tuning for constrained hosts
 
@@ -422,6 +423,16 @@ docker stats --filter label=frc-sim.managed=true --no-stream
 
 - **High memory:** `docker stats` shows containers near their limit → OOM risk
 - **Many active builds:** `/admin/status` activeBuilds is high while students are all starting sims → check CPU headroom and build timeouts
+
+### Control-plane logs
+
+The control plane emits structured logs to stdout/stderr (errors and fatals go to stderr). Format:
+
+```
+14:23:01.482 INFO  [control.runs]       run started workspaceId=alice-1 runId=run_abc
+```
+
+Set verbosity with `LOG_LEVEL` (`trace`, `debug`, `info`, `warning`, `error`, `fatal`). Default is `debug`; the test suite forces `warning` to keep CI output tidy. Categories follow `control.<subsystem>` — `boot`, `http`, `ws`, `proxy`, `runs`, `containers`, `idle`, `auth`, `admin`, `workspace`, `halsim`, `nt4`, `gamepad`, `imports`, `migrate`. Pipe stdout into a file or `tee` for a session capture; ANSI colors are auto-disabled when output isn't a TTY.
 
 ---
 

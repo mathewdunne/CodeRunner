@@ -4,6 +4,9 @@ import { resolve, dirname } from "node:path";
 import type { ImportBackupMetadata, ImportServerMessage, WorkspaceId } from "@frc-sim/contracts";
 import type { WorkspaceRuntimeProvider } from "./runtime";
 import type { AppStorage, WorkspaceRow } from "./storage";
+import { getLogger } from "./logging";
+
+const log = getLogger("imports");
 
 // --- URL validation ---
 
@@ -196,6 +199,7 @@ export class ImportManager {
     const { workspace, userId, send } = ctx;
 
     if (this.activeImports.has(workspace.id)) {
+      log.warn("import already in progress", { workspaceId: workspace.id });
       throw new ImportError("An import is already in progress for this workspace.");
     }
 
@@ -203,14 +207,28 @@ export class ImportManager {
 
     const importId = `import_${randomBytes(8).toString("hex")}`;
     this.activeImports.set(workspace.id, importId);
+    log.info("import started", {
+      workspaceId: workspace.id,
+      userId,
+      importId,
+      cloneUrl: ctx.cloneUrl,
+      branch: ctx.branch,
+      subdir: ctx.subdir ?? null,
+    });
     send({ type: "hello", importId });
 
     try {
       await this.executeImport(ctx, importId);
+      log.info("import completed", { workspaceId: workspace.id, importId });
       send({ type: "done", success: true, message: "Import completed successfully." });
       this.rateLimiter.record(userId);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Import failed.";
+      log.error("import failed", {
+        workspaceId: workspace.id,
+        importId,
+        err: error instanceof Error ? error : new Error(message),
+      });
       send({ type: "done", success: false, message });
     } finally {
       this.activeImports.delete(workspace.id);

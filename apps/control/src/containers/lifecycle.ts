@@ -4,6 +4,9 @@ import { inspectContainer, runDocker } from "./docker-client";
 import { codeContainerName, containerRuntimeState } from "./metadata";
 import { parseDockerStatsLine } from "./converters";
 import type { DockerRunner, ManagedContainerStats } from "./types";
+import { getLogger } from "../logging";
+
+const log = getLogger("containers");
 
 export async function stopCodeContainer(
   storage: AppStorage,
@@ -13,7 +16,10 @@ export async function stopCodeContainer(
   const name = codeContainerName(workspaceId);
   const existing = await inspectContainer(dockerRunner, name);
   if (existing?.State?.Running) {
+    log.info("stopping container", { workspaceId, name });
     await runDocker(dockerRunner, ["stop", name], true);
+  } else {
+    log.debug("stopCodeContainer: not running", { workspaceId, name });
   }
   const lease = storage.getContainerLease(workspaceId);
   if (lease) {
@@ -48,6 +54,7 @@ export async function removeCodeContainer(
   workspaceId: WorkspaceId,
 ): Promise<void> {
   const name = codeContainerName(workspaceId);
+  log.info("removing container", { workspaceId, name });
   await runDocker(dockerRunner, ["rm", "-f", name], true);
   const lease = storage.getContainerLease(workspaceId);
   if (lease) {
@@ -126,7 +133,12 @@ export async function cleanupStoppedContainers(dockerRunner: DockerRunner): Prom
     const removeResult = await runDocker(dockerRunner, ["rm", name], true);
     if (removeResult.exitCode === 0) {
       removed.push(name);
+    } else {
+      log.warn("failed to remove stopped container", { name, exitCode: removeResult.exitCode });
     }
+  }
+  if (removed.length > 0) {
+    log.info("cleaned up stopped containers", { count: removed.length });
   }
   return removed;
 }

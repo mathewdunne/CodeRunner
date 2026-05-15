@@ -14,6 +14,9 @@ import { createAuthMiddleware, APIError } from "better-auth/api";
 import type { ControlConfig } from "../config";
 import { buildSocialProviders } from "./providers";
 import { isEmailAllowed } from "./allowlist";
+import { getLogger } from "../logging";
+
+const log = getLogger("auth");
 
 export function slugFromEmail(email: string): string {
   const local = email.split("@")[0] ?? "student";
@@ -78,15 +81,17 @@ export function createAuth(db: Database, config: ControlConfig, callbacks: AuthC
           before: async (user) => {
             // Enforce allowlist on new user creation
             if (!isEmailAllowed(user.email)) {
+              log.warn("new user rejected: not on allowlist", { email: user.email });
               throw new APIError("FORBIDDEN", {
                 message: "Your email is not on the roster. Ask your coach to add you.",
               });
             }
-            // Generate slug from email
+            const slug = slugFromEmail(user.email);
+            log.info("creating new user", { email: user.email, slug });
             return {
               data: {
                 ...user,
-                slug: slugFromEmail(user.email),
+                slug,
                 role: "student",
               },
             };
@@ -100,6 +105,7 @@ export function createAuth(db: Database, config: ControlConfig, callbacks: AuthC
         if (ctx.path === "/callback/:id") {
           const newSession = ctx.context.newSession;
           if (newSession && !isEmailAllowed(newSession.user.email)) {
+            log.warn("oauth callback rejected: not on allowlist", { email: newSession.user.email });
             // Revoke the session that was just created
             await ctx.context.internalAdapter.deleteSession(newSession.session.token);
             throw new APIError("FORBIDDEN", {
@@ -111,6 +117,7 @@ export function createAuth(db: Database, config: ControlConfig, callbacks: AuthC
           if (newSession) {
             const user = newSession.user as { id: string; slug?: string };
             const slug = user.slug ?? slugFromEmail(newSession.user.email);
+            log.info("oauth callback ok", { userId: user.id, email: newSession.user.email, slug });
             await callbacks.ensureWorkspace(user.id, slug);
           }
         }

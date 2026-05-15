@@ -2,7 +2,11 @@ import { Database } from "bun:sqlite";
 import { dirname } from "node:path";
 import { mkdir } from "node:fs/promises";
 import { loadControlConfig } from "./config";
+import { configureLogging, defaultLogLevel, getLogger } from "./logging";
 import { applyMigrations, migrationStatus } from "./migrations";
+
+await configureLogging(defaultLogLevel());
+const log = getLogger("migrate");
 
 const command = Bun.argv[2] ?? "apply";
 const config = loadControlConfig();
@@ -15,21 +19,23 @@ try {
   if (command === "apply") {
     const applied = await applyMigrations(db, config.migrationsDir);
     if (applied.length === 0) {
-      console.log("No pending migrations.");
+      log.info("no pending migrations");
     } else {
       for (const migration of applied) {
-        console.log(`Applied ${migration.name}`);
+        log.info("applied migration", { name: migration.name });
       }
     }
   } else if (command === "status") {
     const statuses = await migrationStatus(db, config.migrationsDir);
     for (const status of statuses) {
-      const marker = status.applied ? "applied" : "pending";
-      const timestamp = status.appliedAt ? ` at ${status.appliedAt}` : "";
-      console.log(`${marker.padEnd(7)} ${status.name}${timestamp}`);
+      log.info("migration status", {
+        name: status.name,
+        applied: status.applied,
+        appliedAt: status.appliedAt ?? null,
+      });
     }
   } else {
-    console.error(`Unknown migration command: ${command}`);
+    log.error("unknown migration command", { command });
     process.exitCode = 1;
   }
 } finally {

@@ -1,5 +1,8 @@
 import type { GamepadClientMessage, WorkspaceId } from "@frc-sim/contracts";
 import { HalSimBridge, HalSimBridgeUnavailableError } from "./halsim";
+import { getLogger } from "./logging";
+
+const log = getLogger("gamepad");
 
 export type GamepadStatus = {
   status: "unknown" | "connected" | "disconnected";
@@ -57,12 +60,14 @@ export class GamepadSessions {
     const session = this.ensureSession(workspaceId);
 
     if (message.type === "select") {
+      log.info("gamepad select", { workspaceId, id: message.id, label: message.label });
       session.selected = { id: message.id, label: message.label };
       session.lastSeq = -1;
       return "ok";
     }
 
     if (message.type === "release") {
+      log.info("gamepad release", { workspaceId });
       const hadSelection = session.selected !== null;
       session.selected = null;
       session.lastSeq = -1;

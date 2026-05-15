@@ -7,6 +7,9 @@ import type { RunManager } from "../runs";
 import type { AppStorage } from "../storage";
 import { sendUpstreamWebSocketMessage } from "./proxy";
 import { PROXY_PENDING_LIMIT, type AppSocket } from "./types";
+import { getLogger } from "../logging";
+
+const log = getLogger("ws");
 
 export type WebSocketHandlerContext = {
   storage: AppStorage;
@@ -43,7 +46,8 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
     if (ws.data.kind !== "nt4" && ws.data.kind !== "vscode" && ws.data.kind !== "halsim") {
       return;
     }
-    const upstream = new WebSocket(ws.data.upstreamUrl, protocols && protocols.length > 0 ? protocols : undefined);
+    const upstreamUrl = ws.data.upstreamUrl;
+    const upstream = new WebSocket(upstreamUrl, protocols && protocols.length > 0 ? protocols : undefined);
     ws.data.upstream = upstream;
     upstream.binaryType = "arraybuffer";
 
@@ -62,13 +66,16 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
         upstream.protocol &&
         upstream.protocol !== protocols[0]
       ) {
-        console.warn(
-          `${label} upstream subprotocol mismatch: browser expected ${protocols[0]}, upstream chose ${upstream.protocol}.`,
-        );
+        log.warn("upstream subprotocol mismatch", {
+          label,
+          browserExpected: protocols[0],
+          upstreamChose: upstream.protocol,
+        });
         ws.close(1002, `${label} subprotocol mismatch.`);
         upstream.close();
         return;
       }
+      log.debug("ws upstream open", { label, url: upstreamUrl });
       ws.data.upstreamOpen = true;
       for (const message of ws.data.pendingMessages.splice(0)) {
         sendUpstreamWebSocketMessage(upstream, message);
@@ -84,15 +91,21 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
       }
     });
     upstream.addEventListener("close", (event) => {
+      log.debug("ws upstream close", { label, code: event.code, reason: event.reason });
       ws.close(event.code || 1011, event.reason || `${label} upstream closed.`);
     });
     upstream.addEventListener("error", () => {
+      log.warn("ws upstream error", { label, url: upstreamUrl });
       ws.close(1011, `${label} upstream error.`);
     });
   }
 
   return {
     open(ws: AppSocket): void {
+      log.debug("ws open", {
+        kind: ws.data.kind,
+        workspaceId: "workspace" in ws.data ? ws.data.workspace.id : null,
+      });
       if (ws.data.kind === "nt4") {
         openProxyUpstream(ws, "NT4", ws.data.protocols);
         return;
@@ -142,6 +155,10 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
           }
         } catch (error) {
           const detail = error instanceof Error ? error.message : "Invalid gamepad message.";
+          log.warn("invalid gamepad message", {
+            workspaceId: ws.data.workspace.id,
+            err: error instanceof Error ? error : new Error(detail),
+          });
           try { ws.send(JSON.stringify({ type: "error", message: detail })); } catch {}
         }
         return;
@@ -169,11 +186,19 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
           });
         } catch (error) {
           if (error instanceof RateLimitError) {
+            log.warn("import rate limited", {
+              workspaceId: ws.data.workspace.id,
+              err: error,
+            });
             ws.send(JSON.stringify({ type: "error", message: error.message }));
             ws.close(1000, "Rate limited.");
             return;
           }
           const detail = error instanceof Error ? error.message : "Invalid import request.";
+          log.warn("invalid import request", {
+            workspaceId: ws.data.workspace.id,
+            err: error instanceof Error ? error : new Error(detail),
+          });
           ws.send(JSON.stringify({ type: "error", message: detail }));
           ws.close(1000, "Invalid request.");
         }
@@ -186,18 +211,28 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
           halsim.disconnect(ws.data.workspace.id);
           nt4Auto.disconnect(ws.data.workspace.id);
           const runId = runs.start(ws.data.workspace, ws.data.connection);
+          log.info("run start requested", { workspaceId: ws.data.workspace.id, runId });
           ws.send(JSON.stringify({ type: "hello", runId }));
         } else {
+          log.info("run stop requested", { workspaceId: ws.data.workspace.id });
           halsim.disconnect(ws.data.workspace.id);
           nt4Auto.disconnect(ws.data.workspace.id);
           runs.stopWorkspace(ws.data.workspace.id);
         }
       } catch (error) {
         const detail = error instanceof Error ? error.message : "Invalid run message.";
+        log.warn("invalid run message", {
+          workspaceId: ws.data.workspace.id,
+          err: error instanceof Error ? error : new Error(detail),
+        });
         ws.send(JSON.stringify({ type: "error", message: detail }));
       }
     },
     close(ws: AppSocket): void {
+      log.debug("ws close", {
+        kind: ws.data.kind,
+        workspaceId: "workspace" in ws.data ? ws.data.workspace.id : null,
+      });
       if (ws.data.kind === "nt4" || ws.data.kind === "vscode" || ws.data.kind === "halsim") {
         ws.data.upstream?.close();
         ws.data.pendingMessages.length = 0;

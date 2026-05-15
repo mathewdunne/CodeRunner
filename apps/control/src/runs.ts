@@ -5,6 +5,9 @@ import { dirname, resolve } from "node:path";
 import type { RunServerMessage, SimRunStatus, WorkspaceId } from "@frc-sim/contracts";
 import type { WorkspaceRuntime, WorkspaceRuntimeCommand, WorkspaceRuntimeProvider } from "./runtime";
 import type { AppStorage, WorkspaceRow } from "./storage";
+import { getLogger } from "./logging";
+
+const log = getLogger("runs");
 
 export type RunCommand = WorkspaceRuntimeCommand;
 
@@ -238,6 +241,7 @@ export class RunManager {
     this.rememberStatus(job, "building");
     this.activeBuilds.add(job.id);
     job.buildSlotHeld = true;
+    log.info("run queued", { workspaceId: workspace.id, runId, slug: workspace.slug });
     void this.runJob(job);
     return runId;
   }
@@ -247,9 +251,10 @@ export class RunManager {
   }
 
   private stopContainerSim(workspaceId: WorkspaceId): void {
-    void this.runtimeProvider.exec(workspaceId, ["/usr/local/bin/stop-sim.sh"]).catch(() => {
+    void this.runtimeProvider.exec(workspaceId, ["/usr/local/bin/stop-sim.sh"]).catch((err) => {
       // Best effort. The run job still transitions through command exit, and
       // stale/missing runtimes are surfaced by runtime status endpoints.
+      log.debug("stop-sim best-effort failed", { workspaceId, err: err as unknown });
     });
   }
 
@@ -264,15 +269,18 @@ export class RunManager {
     job.canceled = true;
     this.rememberStatus(job, "stopping");
     this.broadcast(job, { type: "status", status: "stopping" });
+    log.info("run canceling", { workspaceId, runId: job.id });
     this.stopContainerSim(workspaceId);
     job.command?.kill("SIGTERM");
     return true;
   }
 
   private async runJob(job: RunJob): Promise<void> {
+    const startedAt = performance.now();
     try {
       this.setJobState(job, "building", { started: true });
       this.broadcast(job, { type: "status", status: "building" });
+      log.info("build started", { workspaceId: job.workspace.id, runId: job.id });
       if (job.canceled) {
         this.finishJob(job, "stopped", null);
         return;
@@ -280,6 +288,12 @@ export class RunManager {
 
       const runtime = await this.runtimeProvider.ensureWorkspaceRunning(job.workspace.id);
       if (runtime.state !== "running") {
+        log.error("workspace runtime not running", {
+          workspaceId: job.workspace.id,
+          runId: job.id,
+          state: runtime.state,
+          err: new Error(runtime.error ?? "Workspace runtime is not running."),
+        });
         throw new Error(runtime.error ?? "Workspace runtime is not running.");
       }
       if (job.canceled) {
@@ -306,15 +320,22 @@ export class RunManager {
         return;
       }
 
+      const durationMs = Math.round(performance.now() - startedAt);
       if (job.canceled) {
+        log.info("run finished", { workspaceId: job.workspace.id, runId: job.id, status: "stopped", durationMs, signal: exit.signal });
         this.finishJob(job, "stopped", null, exit.signal);
       } else if (exit.code === 0) {
-        this.finishJob(job, job.reportedRunning ? "stopped" : "failed", exit.code, exit.signal);
+        const status = job.reportedRunning ? "stopped" : "failed";
+        log.info("run finished", { workspaceId: job.workspace.id, runId: job.id, status, durationMs, exitCode: exit.code, signal: exit.signal });
+        this.finishJob(job, status, exit.code, exit.signal);
       } else {
+        log.warn("run finished", { workspaceId: job.workspace.id, runId: job.id, status: "failed", durationMs, exitCode: exit.code, signal: exit.signal });
         this.finishJob(job, "failed", exit.code, exit.signal);
       }
     } catch (error) {
-      await this.recordLog(job, "stderr", error instanceof Error ? error.message : "Run failed.");
+      const err = error instanceof Error ? error : new Error(String(error));
+      log.error("run threw", { workspaceId: job.workspace.id, runId: job.id, err });
+      await this.recordLog(job, "stderr", err.message);
       this.finishJob(job, job.canceled ? "stopped" : "failed", null);
     } finally {
       this.releaseBuildSlot(job);
@@ -333,6 +354,11 @@ export class RunManager {
       return;
     }
 
+    log.warn("run timed out before readiness", {
+      workspaceId: job.workspace.id,
+      runId: job.id,
+      timeoutMs,
+    });
     job.canceled = true;
     await this.recordLog(
       job,
@@ -344,14 +370,22 @@ export class RunManager {
   }
 
   private async recordLog(job: RunJob, stream: "stdout" | "stderr" | "sim", line: string): Promise<void> {
-    await appendFile(job.logPath, `[${stream}] ${line}\n`, "utf8").catch(() => {
+    await appendFile(job.logPath, `[${stream}] ${line}\n`, "utf8").catch((err: unknown) => {
       // The browser still gets the log line; disk-full recovery is handled by the operator path in later phases.
+      log.warn("failed to append run log line to disk", {
+        workspaceId: job.workspace.id,
+        runId: job.id,
+        logPath: job.logPath,
+        err: err instanceof Error ? err : new Error(String(err)),
+      });
     });
+    log.trace("run log line", { runId: job.id, stream, line });
     this.broadcast(job, { type: "log", stream, line });
 
     if (!job.finished && !job.canceled && !job.reportedRunning && lineLooksReady(line)) {
       job.reportedRunning = true;
       this.setJobState(job, "running");
+      log.info("sim started", { workspaceId: job.workspace.id, runId: job.id });
       this.broadcast(job, { type: "status", status: "running" });
       this.releaseBuildSlot(job);
     }

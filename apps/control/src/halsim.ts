@@ -5,6 +5,9 @@ import type {
   DsMode,
   WorkspaceId,
 } from "@frc-sim/contracts";
+import { getLogger } from "./logging";
+
+const log = getLogger("halsim");
 
 type HalSimMessage = {
   type: string;
@@ -158,6 +161,7 @@ export class HalSimBridge {
 
     entry.shouldReconnect = true;
     if (!entry.socket && !entry.reconnectTimer) {
+      log.info("halsim attach", { workspaceId, url: upstreamUrl });
       this.open(entry);
     }
 
@@ -275,6 +279,7 @@ export class HalSimBridge {
   disconnect(workspaceId: WorkspaceId): void {
     const entry = this.entries.get(workspaceId);
     if (!entry) return;
+    log.info("halsim detach", { workspaceId });
     entry.shouldReconnect = false;
     if (entry.reconnectTimer) {
       clearTimeout(entry.reconnectTimer);
@@ -308,6 +313,7 @@ export class HalSimBridge {
 
     socket.addEventListener("open", () => {
       if (entry.socket !== socket || !entry.shouldReconnect) return;
+      log.debug("halsim upstream open", { workspaceId: entry.workspaceId, url: entry.upstreamUrl });
       entry.connection = "connected";
       entry.connected = true;
       entry.stale = false;
@@ -324,6 +330,12 @@ export class HalSimBridge {
 
     socket.addEventListener("close", (event) => {
       if (entry.socket !== socket) return;
+      log.warn("halsim upstream close", {
+        workspaceId: entry.workspaceId,
+        code: event.code,
+        reason: event.reason,
+        willReconnect: entry.shouldReconnect,
+      });
       entry.socket = null;
       entry.connection = entry.shouldReconnect ? "reconnecting" : "disconnected";
       entry.connected = false;
@@ -336,6 +348,7 @@ export class HalSimBridge {
 
     socket.addEventListener("error", () => {
       if (entry.socket !== socket) return;
+      log.warn("halsim upstream error", { workspaceId: entry.workspaceId, url: entry.upstreamUrl });
       entry.error = "HALSim upstream error.";
     });
   }
@@ -344,6 +357,7 @@ export class HalSimBridge {
     if (entry.reconnectTimer) return;
     const delay = entry.reconnectBackoffMs;
     entry.reconnectBackoffMs = Math.min(entry.reconnectBackoffMs * 2, MAX_BACKOFF_MS);
+    log.debug("halsim scheduling reconnect", { workspaceId: entry.workspaceId, delayMs: delay });
     entry.reconnectTimer = setTimeout(() => {
       entry.reconnectTimer = null;
       if (entry.shouldReconnect && !entry.socket) {

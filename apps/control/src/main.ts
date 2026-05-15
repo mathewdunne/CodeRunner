@@ -1,31 +1,38 @@
-import { createApp } from "./app";
+import { configureLogging, defaultLogLevel, getLogger } from "./logging";
 
-function logConfig(app: Awaited<ReturnType<typeof createApp>>): void {
-  const c = app.storage.config;
-  const simRange = `${c.simPortRange.start}-${c.simPortRange.end}`;
-  const vscodeRange = `${c.vscodePortRange.start}-${c.vscodePortRange.end}`;
-  const maxStudents = Math.min(
-    c.simPortRange.end - c.simPortRange.start + 1,
-    c.vscodePortRange.end - c.vscodePortRange.start + 1,
-  );
-  console.log("─── V2 Configuration ───");
-  console.log(`  Data dir:            ${c.dataDir}`);
-  console.log(`  Code image:          ${c.codeImage}  (memory: ${c.codeMemoryLimit})`);
-  console.log(`  Sim ports:           ${simRange}`);
-  console.log(`  VSCode ports:        ${vscodeRange}`);
-  console.log(`  Build timeout:       ${c.runBuildTimeoutMs / 1000}s  (sim startup: ${c.simStartupTimeoutMs / 1000}s)`);
-  console.log(`  Idle stop:           ${c.idleStopMinutes} min  (check every ${c.idleCheckIntervalMs / 1000}s)`);
-  console.log(`  Container user:      ${c.containerUser ?? "(auto)"}`);
-  console.log(`  Container auto-start:${c.containerAutoStart ? " yes" : " no"}`);
-  console.log(`  Admin auth:          Better Auth admin role${c.adminToken ? " + bearer break-glass" : ""}`);
-  console.log(`  Max students (ports): ${maxStudents}`);
-  console.log("────────────────────────");
-}
+await configureLogging(defaultLogLevel());
+
+const log = getLogger("boot");
+
+const { createApp } = await import("./app");
 
 const port = Number(Bun.env.PORT ?? 4000);
 const app = await createApp();
+const c = app.storage.config;
 
-logConfig(app);
+const simRange = `${c.simPortRange.start}-${c.simPortRange.end}`;
+const vscodeRange = `${c.vscodePortRange.start}-${c.vscodePortRange.end}`;
+const maxStudents = Math.min(
+  c.simPortRange.end - c.simPortRange.start + 1,
+  c.vscodePortRange.end - c.vscodePortRange.start + 1,
+);
+
+log.info("control plane configuration", {
+  logLevel: c.logLevel,
+  dataDir: c.dataDir,
+  codeImage: c.codeImage,
+  codeMemoryLimit: c.codeMemoryLimit,
+  simPorts: simRange,
+  vscodePorts: vscodeRange,
+  buildTimeoutSec: c.runBuildTimeoutMs / 1000,
+  simStartupSec: c.simStartupTimeoutMs / 1000,
+  idleStopMinutes: c.idleStopMinutes,
+  idleCheckSec: c.idleCheckIntervalMs / 1000,
+  containerUser: c.containerUser ?? "(auto)",
+  containerAutoStart: c.containerAutoStart,
+  adminAuth: c.adminToken ? "better-auth + bearer break-glass" : "better-auth admin role",
+  maxStudents,
+});
 
 const server = Bun.serve({
   port,
@@ -34,4 +41,4 @@ const server = Bun.serve({
   idleTimeout: 30,
 });
 
-console.log(`V2 control plane listening on http://localhost:${server.port}`);
+log.info("listening", { url: `http://localhost:${server.port}`, port: server.port });

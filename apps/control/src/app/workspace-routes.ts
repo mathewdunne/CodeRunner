@@ -45,6 +45,9 @@ import {
   simStatusSnapshot,
 } from "./status";
 import type { BunUpgradeServer, HttpFetch, ImportSocketData } from "./types";
+import { getLogger } from "../logging";
+
+const log = getLogger("workspace");
 
 export type WorkspaceRouteContext = {
   storage: AppStorage;
@@ -95,9 +98,14 @@ export async function handleWorkspaceRoute(
   }
 
   if (suffix === "/" && request.method === "GET") {
+    log.debug("workspace shell requested", { slug, workspaceId: auth.workspace.id });
     if (storage.config.containerAutoStart) {
-      void runtimeProvider.ensureWorkspaceRunning(auth.workspace.id).catch(() => {
+      void runtimeProvider.ensureWorkspaceRunning(auth.workspace.id).catch((err: unknown) => {
         // Status endpoints expose startup failures; opening the shell should not block on runtime startup.
+        log.warn("background ensureWorkspaceRunning failed", {
+          workspaceId: auth.workspace.id,
+          err: err instanceof Error ? err : new Error(String(err)),
+        });
       });
     }
     return webShellResponse(storage);

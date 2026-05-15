@@ -15,7 +15,12 @@ import { handleUploadAsset, userAssetsPath, scopeResponse, webAssetResponse, web
 import { openApiResponse } from "./app/status";
 import { jsonResponse, notFound, redirect } from "./app/responses";
 import { createWebSocketHandlers } from "./app/websocket";
+import { getLogger } from "./logging";
 import type { AppSocket, BunUpgradeServer, ControlApp, ControlAppOptions } from "./app/types";
+
+const bootLog = getLogger("boot");
+const httpLog = getLogger("http");
+const idleLog = getLogger("idle");
 
 export { stripHopByHopHeaders } from "./app/proxy";
 export type {
@@ -51,7 +56,9 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
   const runs = new RunManager(storage, runtimeProvider, { commandFactory: runCommandFactory });
   const orphanedRuns = runs.reconcileOrphanedRuns();
   if (orphanedRuns > 0) {
-    console.log(`Reconciled ${orphanedRuns} orphaned simulation run(s) after control-plane start.`);
+    bootLog.info("reconciled orphaned simulation runs", { count: orphanedRuns });
+  } else {
+    bootLog.debug("no orphaned runs to reconcile");
   }
 
   const imports = new ImportManager(storage, runtimeProvider);
@@ -62,7 +69,7 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
       halsim.disconnect(workspaceId);
       nt4Auto.disconnect(workspaceId);
       gamepad.reset(workspaceId);
-      console.log(`Idle sweep stopped containers for workspace ${workspaceId}`);
+      idleLog.info("idle sweep stopped workspace", { workspaceId });
     },
   });
   idle.start();
@@ -72,7 +79,44 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
 
   async function fetch(request: Request, server?: BunUpgradeServer): Promise<Response> {
     const url = new URL(request.url);
+    const start = performance.now();
+    let response: Response;
+    try {
+      response = await dispatch(request, server, url);
+    } catch (err) {
+      httpLog.error("unhandled error in request dispatcher", {
+        method: request.method,
+        path: url.pathname,
+        err: err instanceof Error ? err : new Error(String(err)),
+      });
+      throw err;
+    }
+    const durationMs = Math.round(performance.now() - start);
+    const isNoisy =
+      url.pathname === "/healthz" ||
+      url.pathname.startsWith("/scope/") ||
+      url.pathname.startsWith("/assets/") ||
+      url.pathname === "/coderunner-icon.png" ||
+      url.pathname === "/favicon.ico";
+    const fields = {
+      method: request.method,
+      path: url.pathname,
+      status: response.status,
+      durationMs,
+    };
+    if (isNoisy) {
+      httpLog.trace("http", fields);
+    } else if (response.status >= 500) {
+      httpLog.error("http", fields);
+    } else if (response.status >= 400) {
+      httpLog.warn("http", fields);
+    } else {
+      httpLog.debug("http", fields);
+    }
+    return response;
+  }
 
+  async function dispatch(request: Request, server: BunUpgradeServer | undefined, url: URL): Promise<Response> {
     if (url.pathname === "/healthz") {
       return Response.json({ ok: true, service: "control", version: "v2-3" });
     }
@@ -194,10 +238,12 @@ export async function createApp(configInput: ControlAppOptions = {}): Promise<Co
     imports,
     idle,
     close() {
+      bootLog.info("shutting down");
       idle.stop();
       halsim.close();
       nt4Auto.close();
       storage.close();
+      bootLog.info("shutdown complete");
     },
   };
 }

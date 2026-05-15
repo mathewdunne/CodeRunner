@@ -2,6 +2,9 @@ import { requireWebSocketOrigin } from "../auth/middleware";
 import type { WorkspaceRuntimeProvider } from "../runtime";
 import type { AppStorage, AuthContext } from "../storage";
 import type { BunUpgradeServer, HttpFetch, SocketData } from "./types";
+import { getLogger } from "../logging";
+
+const log = getLogger("proxy");
 
 export function requestedProtocols(request: Request): string[] {
   return (request.headers.get("sec-websocket-protocol") ?? "")
@@ -95,11 +98,16 @@ export async function vscodeHttpProxyResponse(
   }
 
   if (!(await probeVscodeReady(vscode.httpBaseUrl, vscode.basePath, 30_000, upstreamFetch))) {
+    log.warn("vscode upstream did not become ready", {
+      workspaceId: auth.workspace.id,
+      httpBaseUrl: vscode.httpBaseUrl,
+    });
     return new Response("Editor upstream did not become ready.", { status: 503 });
   }
 
   const upstreamUrl = `${vscode.httpBaseUrl}${fullPath}`;
   const forwardHeaders = stripHopByHopHeaders(request.headers);
+  log.trace("vscode http proxy", { workspaceId: auth.workspace.id, method: request.method, path: fullPath });
 
   try {
     const upstream = await upstreamFetch(upstreamUrl, {
@@ -116,7 +124,12 @@ export async function vscodeHttpProxyResponse(
       statusText: upstream.statusText,
       headers: responseHeaders,
     });
-  } catch {
+  } catch (err) {
+    log.warn("vscode upstream unreachable", {
+      workspaceId: auth.workspace.id,
+      upstreamUrl,
+      err: err instanceof Error ? err : new Error(String(err)),
+    });
     return new Response("Editor upstream is not reachable.", { status: 502 });
   }
 }
@@ -186,10 +199,15 @@ export async function nt4AliveResponse(
       signal: AbortSignal.timeout(500),
     });
     if (!upstream.ok) {
+      log.debug("nt4 alive probe not ready", { workspaceId: auth.workspace.id, status: upstream.status });
       return new Response("Simulator NT4 endpoint is not ready.", { status: 503 });
     }
     return new Response("ok\n", { status: 200, headers: { "content-type": "text/plain; charset=utf-8" } });
-  } catch {
+  } catch (err) {
+    log.debug("nt4 alive probe unreachable", {
+      workspaceId: auth.workspace.id,
+      err: err instanceof Error ? err : new Error(String(err)),
+    });
     return new Response("Simulator NT4 endpoint is not reachable.", { status: 503 });
   }
 }

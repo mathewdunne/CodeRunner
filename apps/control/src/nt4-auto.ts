@@ -1,4 +1,5 @@
 import type { AutoChooser, AutoChooserPatch, AutoChoosersResponse, BridgeConnection, WorkspaceId } from "@frc-sim/contracts";
+import { getLogger } from "./logging";
 
 type Nt4Topic = {
   id: number;
@@ -296,6 +297,8 @@ function decodeMsgPack(buffer: ArrayBuffer | Uint8Array): unknown[] {
   return values;
 }
 
+const nt4Log = getLogger("nt4");
+
 export class Nt4AutoChooserBridge {
   private readonly webSocketFactory: Nt4AutoWebSocketFactory;
   private readonly entries = new Map<WorkspaceId, Nt4AutoEntry>();
@@ -329,6 +332,7 @@ export class Nt4AutoChooserBridge {
       this.entries.set(workspaceId, entry);
     }
     if (!entry.socket) {
+      nt4Log.info("nt4 attach", { workspaceId, url: upstreamUrl });
       this.open(entry);
     }
     return this.snapshotFromEntry(entry);
@@ -374,6 +378,7 @@ export class Nt4AutoChooserBridge {
   disconnect(workspaceId: WorkspaceId): void {
     const entry = this.entries.get(workspaceId);
     if (!entry) return;
+    nt4Log.info("nt4 detach", { workspaceId });
     const socket = entry.socket;
     entry.socket = null;
     entry.connection = "disconnected";
@@ -425,6 +430,11 @@ export class Nt4AutoChooserBridge {
     });
     socket.addEventListener("close", (event) => {
       if (entry.socket !== socket) return;
+      nt4Log.warn("nt4 upstream close", {
+        workspaceId: entry.workspaceId,
+        code: event.code,
+        reason: event.reason,
+      });
       entry.socket = null;
       entry.connection = "disconnected";
       entry.connected = false;
@@ -433,6 +443,7 @@ export class Nt4AutoChooserBridge {
     });
     socket.addEventListener("error", () => {
       if (entry.socket !== socket) return;
+      nt4Log.warn("nt4 upstream error", { workspaceId: entry.workspaceId, url: entry.upstreamUrl });
       entry.error = "NT4 upstream error.";
     });
   }

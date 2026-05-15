@@ -10,6 +10,9 @@ import { createProjectArchive, directorySizeBytes, restoreProjectArchive } from 
 import { isInsideDirectory, webAssetResponse } from "./assets";
 import { apiErrorResponse, jsonResponse, notFound } from "./responses";
 import { adminStatusResponse, auditActor } from "./status";
+import { getLogger } from "../logging";
+
+const log = getLogger("admin");
 
 export type AdminRouteContext = {
   storage: AppStorage;
@@ -27,6 +30,7 @@ export async function handleAdminRoute(
   if (adminResult instanceof Response) {
     return adminResult;
   }
+  log.debug("admin route", { method: request.method, path: url.pathname, actor: adminResult.user.id });
 
   // Serve static assets for the admin SPA
   if (url.pathname.startsWith("/admin/assets/") && request.method === "GET") {

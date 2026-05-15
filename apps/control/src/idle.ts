@@ -1,5 +1,8 @@
 import type { WorkspaceRuntimeProvider } from "./runtime";
 import type { AppStorage } from "./storage";
+import { getLogger } from "./logging";
+
+const log = getLogger("idle");
 
 export type IdleManagerOptions = {
   storage: AppStorage;
@@ -47,14 +50,22 @@ export class IdleManager {
     const idleIds = this.storage.listIdleWorkspaceIds(idleMinutes);
     const stopped: string[] = [];
 
+    if (idleIds.length === 0) {
+      log.trace("idle sweep: no candidates", { idleMinutes });
+    } else {
+      log.debug("idle sweep tick", { candidates: idleIds.length, idleMinutes });
+    }
+
     for (const workspaceId of idleIds) {
       try {
         await this.runtimeProvider.stopWorkspace(workspaceId);
         stopped.push(workspaceId);
         this.onStop(workspaceId);
       } catch (error) {
-        const detail = error instanceof Error ? error.message : "unknown error";
-        console.error(`Failed to stop idle containers for workspace ${workspaceId}: ${detail}`);
+        log.error("failed to stop idle containers", {
+          workspaceId,
+          err: error instanceof Error ? error : new Error(String(error)),
+        });
       }
     }
 

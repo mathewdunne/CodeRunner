@@ -45,6 +45,9 @@ import {
   type DockerRunner,
   type ManagedContainerStats,
 } from "./types";
+import { getLogger } from "../logging";
+
+const log = getLogger("containers");
 
 export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
   private readonly dockerRunner: DockerRunner;
@@ -69,8 +72,12 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
       return;
     }
 
-    void this.ensureCodeContainer(workspace).catch(() => {
+    void this.ensureCodeContainer(workspace).catch((err: unknown) => {
       // The status endpoint exposes startup failures; opening the IDE should not be blocked by Docker.
+      log.warn("background ensureCodeContainer failed", {
+        workspaceId: workspace.id,
+        err: err instanceof Error ? err : new Error(String(err)),
+      });
     });
   }
 
@@ -271,6 +278,7 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
     const image = this.storage.config.codeImage;
     const result = await this.runDocker(["image", "inspect", image], true);
     if (result.exitCode !== 0) {
+      log.error("code image not available", { image });
       throw new Error(`CODE image ${image} is not available. Build it with bun run docker:build:code.`);
     }
   }
@@ -456,6 +464,14 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
     }
 
     args.push(this.storage.config.codeImage);
+    log.info("creating code container", {
+      workspaceId: workspace.id,
+      name,
+      image: this.storage.config.codeImage,
+      simPort,
+      vscodePort,
+      halsimPort,
+    });
     await this.runDocker(args);
 
     const created = await this.inspectContainer(name);
@@ -494,8 +510,10 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
     const running = await this.countRunningContainers();
     const active = running + this.pendingCreates;
     if (active >= cap) {
+      log.warn("capacity exceeded", { cap, active, pending: this.pendingCreates });
       throw new CapacityExceededError(cap, active);
     }
+    log.debug("capacity admitted", { cap, active: active + 1 });
     this.pendingCreates += 1;
   }
 
@@ -556,11 +574,21 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
       }
     }
 
+    log.error("no free ports for code container", {
+      workspaceId: workspace.id,
+      simRange: `${simRange.start}-${simRange.end}`,
+      vscodeRange: `${vscodeRange.start}-${vscodeRange.end}`,
+      halsimRange: `${halsimRange.start}-${halsimRange.end}`,
+    });
     throw new Error("No free ports are available for the code container.");
   }
 
   private recordError(workspace: WorkspaceRow, error: unknown): CodeContainerStatus {
     const message = error instanceof Error ? error.message : "Unable to start code container.";
+    log.error("code container start failed", {
+      workspaceId: workspace.id,
+      err: error instanceof Error ? error : new Error(message),
+    });
     const previous = this.storage.getContainerLease(workspace.id);
     const name = codeContainerName(workspace.id);
     const lease = this.storage.upsertCodeContainerLease({

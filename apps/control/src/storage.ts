@@ -14,6 +14,9 @@ import { loadControlConfig } from "./config";
 import { applyMigrations } from "./migrations";
 import { createAuth, type Auth } from "./auth/auth";
 import { setAllowlistPath, loadAllowlist } from "./auth/allowlist";
+import { getLogger } from "./logging";
+
+const log = getLogger("storage");
 
 export type WorkspaceRow = {
   id: WorkspaceId;
@@ -108,7 +111,12 @@ export class AppStorage {
     await mkdir(dirname(this.config.dbPath), { recursive: true });
 
     // 1. Run our migrations (including the Better Auth schema handoff).
-    await applyMigrations(this.db, this.config.migrationsDir);
+    const applied = await applyMigrations(this.db, this.config.migrationsDir);
+    log.info("storage initialized", {
+      dbPath: this.config.dbPath,
+      migrationsApplied: applied.length,
+      migrationNames: applied.length > 0 ? applied.map((m) => m.name) : undefined,
+    });
 
     // 2. Initialize allowlist
     setAllowlistPath(this.config.dataDir);
@@ -123,6 +131,18 @@ export class AppStorage {
     const { getMigrations } = await import("better-auth/db/migration");
     const { runMigrations } = await getMigrations(this.auth.options);
     await runMigrations();
+
+    // 4. Warn if no auth providers are configured.
+    const hasGitHub = Boolean(this.config.githubClientId && this.config.githubClientSecret);
+    const hasGoogle = Boolean(this.config.googleClientId && this.config.googleClientSecret);
+    if (!hasGitHub && !hasGoogle) {
+      log.warn("no OAuth providers configured — login will not work", {
+        baseUrl: this.config.baseUrl,
+        hint: "Set GITHUB_CLIENT_ID/SECRET or GOOGLE_CLIENT_ID/SECRET in your .env",
+      });
+    } else {
+      log.debug("oauth providers configured", { github: hasGitHub, google: hasGoogle });
+    }
   }
 
   close(): void {
