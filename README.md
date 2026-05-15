@@ -36,6 +36,7 @@ templates/wpilib-java-command/ WPILib Java command-based starter template
 scripts/                       Bun utility scripts
 patches/advantagescope/        Source-level AS Lite patches
 vendor/AdvantageScope/         Pinned upstream submodule
+e2e/                           Playwright E2E tests and fixtures
 docs/archive/mvp-docs/         Archived MVP documents and decision logs
 ```
 
@@ -58,6 +59,31 @@ docs/archive/mvp-docs/         Archived MVP documents and decision logs
 | `bun run migrate:status` | Show SQLite migration status |
 | `bun run dev:control` | Start the Bun control plane on `:4000` |
 | `bun run dev:web` | Start the Vite web shell directly for frontend-only work |
+
+## Testing
+
+Three test tiers, all runnable without Docker:
+
+| Command | What it runs |
+| --- | --- |
+| `bun run test` | Bun unit/integration tests — control plane, security, property-based (~254 tests) |
+| `bun run test:web` | Vitest frontend tests — hooks, components, store (~65 tests) |
+| `bun run e2e` | Playwright E2E — mocked tier, full login→editor→run→telemetry flows (~55 tests) |
+| `bun run e2e:security` | Playwright security specs — CSRF, XSS, response headers |
+| `bun run e2e:ui` | Playwright UI mode for interactive debugging |
+| `bun run e2e:debug` | Playwright debug mode with inspector |
+| `bun run e2e:report` | Open the last Playwright HTML report |
+
+The E2E mocked tier uses in-process `ControlApp` instances with fake openvscode-server, HALSim, and NT4 backends — no containers needed. Each test gets its own random port and SQLite database. See [`TESTING-PLAN.md`](TESTING-PLAN.md) for architecture details.
+
+**Test layout:**
+
+```text
+apps/control/src/__tests__/        Bun tests: auth, runs, proxy, containers, security, property
+apps/web/src/**/*.test.{ts,tsx}    Vitest tests: hooks, components, store
+e2e/specs/                         Playwright specs organized by feature area
+e2e/fixtures/                      Shared E2E fixtures: app, auth, fake servers, gamepad shim
+```
 
 ## Operator Runbook
 

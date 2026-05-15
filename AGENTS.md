@@ -29,6 +29,7 @@ patches/advantagescope/        Source-level AS Lite patches
 docs/decisions/                Decision logs
 docs/archive/mvp-docs/         Archived MVP documents and decision logs
 vendor/AdvantageScope/         Pinned upstream submodule
+e2e/                           Playwright E2E tests (specs/ and fixtures/)
 data/                          Runtime data, gitignored
 ```
 
@@ -71,6 +72,9 @@ V2 is complete. The system uses per-student merged containers (`frc-code:v2`) ru
 - Install dependencies: `bun install`
 - Typecheck: `bun run typecheck`
 - Run Bun tests: `bun run test`
+- Run frontend tests (Vitest): `bun run test:web`
+- Run E2E tests (Playwright, mocked tier): `bun run e2e`
+- Run E2E security tests: `bun run e2e:security`
 - Build V2 code image: `bun run docker:build:code`
 - Apply/check migrations: `bun run migrate`, `bun run migrate:status`
 - Start control plane: `bun run dev:control`
@@ -81,6 +85,28 @@ V2 is complete. The system uses per-student merged containers (`frc-code:v2`) ru
 - Cleanup containers: `bun run docker:cleanup`
 
 See `docs/runbook.md` for full operator documentation.
+
+## Testing
+
+Three test tiers, all runnable without Docker:
+
+- **`bun run test`** — Bun unit/integration tests for the control plane (~254 tests). Covers auth, runs, proxy, containers, security, reconciliation, and property-based tests.
+- **`bun run test:web`** — Vitest frontend tests (~65 tests). Covers React hooks (`useSession`, `useSimulationState`, `useContainerStatus`, `useAutoChoosers`, `useGamepad`, `useRunChannel`), DriverStation components, Zustand store, keyboard/gamepad mappings.
+- **`bun run e2e`** — Playwright E2E mocked tier (~55 tests). Full login→editor→run→telemetry→DS flows against in-process `ControlApp` with fake openvscode-server, HALSim, and NT4 backends. No Docker required.
+- **`bun run e2e:security`** — Playwright security specs (CSRF, XSS output encoding, response headers).
+
+E2E tests use a custom Playwright fixture (`e2e/fixtures/app.ts`) that creates an isolated `ControlApp` per test with its own random port, SQLite DB, and fake upstream servers. Auth is seeded via `loginAs()` which writes user/session rows and HMAC-signs cookies.
+
+Key E2E fixtures:
+- `e2e/fixtures/fake-vscode.ts` — Fake openvscode-server (HTTP + WS upgrade)
+- `e2e/fixtures/fake-halsim.ts` — Fake HALSim bridge (WS, supports stop/restart)
+- `e2e/fixtures/fake-nt4.ts` — Fake NT4 server for topic announcement
+- `e2e/fixtures/gamepad-shim.ts` — Playwright addInitScript gamepad override
+- `e2e/fixtures/runtime.ts` — Runtime seeding helpers
+
+The Docker smoke tier (`e2e:docker`) was intentionally not implemented — see `docs/decisions/022-skip-docker-smoke-and-import-tests.md`. Import/backup-restore tests are deferred pending a flow rework.
+
+See `TESTING-PLAN.md` for the full test architecture and catalog.
 
 ## graphify
 
