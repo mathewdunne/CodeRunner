@@ -16,6 +16,10 @@ Inside the V2 code container, Java/Gradle/WPILib, openvscode-server, `redhat.jav
 
 ```text
 apps/control/                  Bun control plane: HTTP, WS, sessions, orchestration
+apps/control/src/app.ts          slim factory + top-level fetch dispatcher
+apps/control/src/app/            response/asset/proxy/status helpers + admin, workspace, websocket route groups
+apps/control/src/containers.ts   barrel re-exporting the public container surface
+apps/control/src/containers/     Docker client, metadata, ports, lifecycle, and the LocalDockerRuntimeProvider class
 apps/web/                      React + Vite browser IDE shell
 packages/contracts/            Shared API schemas, message types, and path rules
 containers/code/               V2 merged openvscode-server + sim container
