@@ -1,0 +1,93 @@
+{
+  "title": "CodeRunner — Node / Process Health",
+  "uid": "coderunner-node",
+  "tags": ["frc-sim"],
+  "schemaVersion": 38,
+  "version": 1,
+  "editable": true,
+  "refresh": "30s",
+  "time": {"from": "now-1h", "to": "now"},
+  "timepicker": {},
+  "templating": {
+    "list": [
+      {"name": "datasource", "type": "datasource", "query": "prometheus", "label": "Data source", "hide": 0, "refresh": 1, "current": {}}
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Event-loop lag (p99)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "targets": [
+        {"refId": "A", "expr": "nodejs_eventloop_lag_p99_seconds", "legendFormat": "p99", "datasource": {"type": "prometheus", "uid": "${datasource}"}},
+        {"refId": "B", "expr": "nodejs_eventloop_lag_mean_seconds", "legendFormat": "mean", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
+      ],
+      "fieldConfig": {"defaults": {"unit": "s", "custom": {"drawStyle": "line", "fillOpacity": 10}}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Heap used",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "targets": [
+        {"refId": "A", "expr": "nodejs_heap_size_used_bytes", "legendFormat": "used", "datasource": {"type": "prometheus", "uid": "${datasource}"}},
+        {"refId": "B", "expr": "nodejs_heap_size_total_bytes", "legendFormat": "total", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
+      ],
+      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"drawStyle": "line", "fillOpacity": 10}}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Process CPU %",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "targets": [
+        {"refId": "A", "expr": "rate(process_cpu_seconds_total[1m]) * 100", "legendFormat": "cpu %", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
+      ],
+      "fieldConfig": {"defaults": {"unit": "percent", "custom": {"drawStyle": "line", "fillOpacity": 15}}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single"}}
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "Open file descriptors",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "targets": [
+        {"refId": "A", "expr": "process_open_fds", "legendFormat": "open", "datasource": {"type": "prometheus", "uid": "${datasource}"}},
+        {"refId": "B", "expr": "process_max_fds", "legendFormat": "max", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
+      ],
+      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "fillOpacity": 5}}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}}
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Resident memory (RSS)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "targets": [
+        {"refId": "A", "expr": "process_resident_memory_bytes", "legendFormat": "rss", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
+      ],
+      "fieldConfig": {"defaults": {"unit": "bytes", "custom": {"drawStyle": "line", "fillOpacity": 15}}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single"}}
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "GC time (rate)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+      "datasource": {"type": "prometheus", "uid": "${datasource}"},
+      "targets": [
+        {"refId": "A", "expr": "sum by (kind) (rate(nodejs_gc_duration_seconds_sum[5m]))", "legendFormat": "{{kind}}", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
+      ],
+      "fieldConfig": {"defaults": {"unit": "s", "custom": {"drawStyle": "line", "fillOpacity": 10}}, "overrides": []},
+      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi"}}
+    }
+  ]
+}
