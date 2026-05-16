@@ -282,7 +282,7 @@ Day-to-day:
 bun run e2e              # mocked tier; globalSetup rebuilds apps/web/dist first
 bun run e2e specs/run/   # single suite
 bun run e2e:ui           # Playwright UI mode for debugging
-bun run e2e:docker       # @docker smoke tier; needs Docker + `bun run docker:build:code`
+bun run e2e:docker       # @docker smoke tier; needs Docker + `bun run docker:build:workspace`
 ```
 
 CI is out of scope for this plan; the mocked tier is designed to drop into a GitHub Actions job in a future phase by simply running `bun run e2e` on a stock `bun + chromium` image. The Docker tier needs a runner with the Docker socket.
@@ -667,7 +667,7 @@ A complementary Docker-tier check that a long-running `docker exec` is actually 
 
 ## Test catalog — Docker smoke tier (`@docker`-tagged)
 
-Each requires `bun run docker:build:code` first and a running Docker daemon. Default per-test timeout is 180 s (set on the `docker-smoke` Playwright project). Slow tests override per-spec with `test.setTimeout(ms)` — noted explicitly below where needed.
+Each requires `bun run docker:build:workspace` first and a running Docker daemon. Default per-test timeout is 180 s (set on the `docker-smoke` Playwright project). Slow tests override per-spec with `test.setTimeout(ms)` — noted explicitly below where needed.
 
 **T-D1 `real container starts, editor loads, file save succeeds`** — login, wait for real openvscode iframe to render full VS Code UI; create a file via the editor; assert no EACCES (anchor: `18ffcb0`).
 
@@ -713,7 +713,7 @@ After implementation, the following should all pass on a clean checkout:
 4. `bun run build:web` produces `apps/web/dist/index.html`.
 5. `bun run e2e` runs the mocked tier to completion in under ~3 min on a developer laptop, with all tests passing.
 6. `bun run e2e:report` opens the HTML report with traces for any failure.
-7. With the Docker daemon running and `bun run docker:build:code` complete, `bun run e2e:docker` passes all six smoke tests within ~10 min.
+7. With the Docker daemon running and `bun run docker:build:workspace` complete, `bun run e2e:docker` passes all six smoke tests within ~10 min.
 8. Inducing each regression manually (e.g., revert commit `cb9fea6`) makes the corresponding test fail with a clear diff.
 
 ---

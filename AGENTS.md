@@ -78,11 +78,13 @@ V2 is complete. The system uses per-student merged containers (`coderunner-works
 - Run frontend tests (Vitest): `bun run test:web`
 - Run E2E tests (Playwright, mocked tier): `bun run e2e`
 - Run E2E security tests: `bun run e2e:security`
-- Build V2 code image: `bun run docker:build:code`
+- Build workspace image locally: `bun run docker:build:workspace`
+- Pull workspace image from GHCR: `bun run docker:pull:workspace`
 - Apply/check migrations: `bun run migrate`, `bun run migrate:status`
-- Start control plane: `bun run dev:control`
-- Start web shell directly: `bun run dev:web`
-- Measure resources: `bun run measure`
+- Start control plane (dev, `--watch`): `bun run dev:control`
+- Start web shell with HMR: `bun run dev:web`
+- Start prod (migrates then serves): `bun run start`
+- Prod build (web + ascope + image pull): `bun run build`
 - Backup projects: `bun run backup`
 - Restore projects: `bun run restore -- <backup-dir>`
 - Cleanup containers: `bun run docker:cleanup`

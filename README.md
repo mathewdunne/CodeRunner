@@ -45,20 +45,24 @@ docs/archive/mvp-docs/         Archived MVP documents and decision logs
 | Command | What it does |
 | --- | --- |
 | `bun install` | Install workspace dependencies and write `bun.lock` |
+| `bun run start` | Apply pending migrations and serve the control plane (use as the prod entry point) |
+| `bun run build` | Prod build: web bundle + AdvantageScope Lite + pull workspace image from GHCR |
+| `bun run clean` | Remove `apps/web/dist` and `dist/advantagescope` |
 | `bun run typecheck` | Typecheck all TypeScript projects |
+| `bun run verify` | CI gate: typecheck + Bun tests + Vitest + Playwright (mocked + security) |
 | `bun test` | Run Bun tests |
 | `bun run build:web` | Build the static Vite shell into `apps/web/dist/` |
 | `bun run build:ascope` | Apply AS Lite patches, rebuild AdvantageScope Lite, and stage `dist/advantagescope/` |
-| `bun run verify:ascope` | Smoke-check the staged AS Lite bundle and `/scope/` serving contract |
-| `bun run docker:build:code` | Build the V2 merged openvscode-server + sim image as `coderunner-workspace` |
-| `bun run measure` | Report host resources and container memory, extrapolate for 10 students |
-| `bun run backup` | Back up all workspace project directories |
-| `bun run restore` | Restore workspace projects from a backup |
+| `bun run docker:build:workspace` | Build the merged openvscode-server + sim image as `coderunner-workspace` (local) |
+| `bun run docker:pull:workspace` | Pull the workspace image from GHCR |
+| `bun run docker:push:workspace` | Build locally and push to GHCR (escape hatch — CI normally publishes) |
 | `bun run docker:cleanup` | Remove stopped managed containers |
+| `bun run backup` | Snapshot the SQLite DB, allowlist, and every workspace's project + assets |
+| `bun run restore` | Restore DB, allowlist, and workspace project + assets from a backup |
 | `bun run migrate` | Apply pending SQLite migrations |
 | `bun run migrate:status` | Show SQLite migration status |
-| `bun run dev:control` | Start the Bun control plane on `:4000` |
-| `bun run dev:web` | Start the Vite web shell directly for frontend-only work |
+| `bun run dev:control` | Start the Bun control plane on `:4000` with `--watch` |
+| `bun run dev:web` | Start the Vite web shell on `:5173` with HMR (proxies API/WS to `:4000`) |
 
 ## Testing
 

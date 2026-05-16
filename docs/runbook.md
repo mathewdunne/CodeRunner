@@ -53,7 +53,7 @@ bun install
 ### 2.2 Build the code container image
 
 ```bash
-bun run docker:build:code
+bun run docker:build:workspace
 ```
 
 The first build downloads WPILib/Gradle dependencies and takes 5–15 minutes. Subsequent builds use Docker layer cache and are fast.
@@ -129,19 +129,23 @@ bun run test
 
 The integration test suite covers session isolation, multi-workspace routing, run log streaming, editor proxying, NT4 proxying, lifecycle reconciliation, and admin operations.
 
-### 2.7 Measure host resources
+### 2.7 Monitor host resources
 
-```bash
-bun run measure
-```
-
-This reports host RAM, CPU, disk, and (if containers are running) actual memory usage per container with extrapolation for 10 students.
+Per-container CPU and memory are exposed at `/metrics` by the control plane (collected every 15 s by `metrics-collector.ts`) and scraped into Grafana. Use the Grafana dashboards under `grafana/` for live host and container sizing data.
 
 ---
 
 ## 3. Starting the App
 
-### One-command start
+### Production
+
+```bash
+bun run start
+```
+
+This applies pending migrations and then serves the control plane. Use as the `ExecStart` of a systemd service.
+
+### Dev (one-command)
 
 ```bash
 bun run dev:control
@@ -281,10 +285,13 @@ Only `data/users/<workspaceId>/project/` contains student work. Everything else 
 
 | Path | Contains | Back up? |
 | --- | --- | --- |
+| `data/app.db` | User, workspace, session, audit, admin role metadata | **Yes** |
+| `data/allowlist.json` | Auth allowlist (emails permitted to sign in) | **Yes** |
 | `data/users/*/project/` | Student Java source code | **Yes** |
+| `data/users/*/assets/` | Uploaded AdvantageScope assets per workspace | **Yes** |
 | `data/users/*/home/` | Gradle cache, tool state, vscode user data | No (regenerated on container start) |
+| `data/users/*/jdtls-data/` | Java language server state | No (regenerated) |
 | `data/users/*/logs/` | Build/run log history | No (transient, safe to prune) |
-| `data/app.db` | User/workspace/session metadata | Optional (can be recreated) |
 
 ### Create a backup
 
@@ -292,13 +299,26 @@ Only `data/users/<workspaceId>/project/` contains student work. Everything else 
 bun run backup
 ```
 
-This creates a timestamped snapshot under `data/backups/YYYY-MM-DD-HHmmss/` containing only `project/` directories.
+Creates a timestamped snapshot under `data/backups/YYYY-MM-DD-HHmmss/`:
 
-To specify a custom output:
+```
+data/backups/2026-05-16-151038/
+  app.db                              # SQLite online-backup snapshot
+  allowlist.json                      # raw copy
+  workspaces/
+    <workspaceId>/
+      project.tar.gz
+      assets.tar.gz                   # if assets/ exists
+```
+
+Useful flags:
 
 ```bash
-bun run backup -- --output /path/to/backup
+bun run backup -- --output /path/to/backup     # custom output directory
+bun run backup -- --projects-only              # legacy mode: skip DB, allowlist, assets
 ```
+
+The `app.db` snapshot uses SQLite's online backup API (`Database.serialize()`), so it's safe to run while the control plane is up — you'll get a consistent view of committed state. For project/assets archives, prefer to stop the control plane or take the backup when no students are actively saving files.
 
 ### Restore from backup
 
@@ -308,16 +328,32 @@ bun run backup -- --output /path/to/backup
 bun run restore -- <backup-dir>
 ```
 
-To preview without writing:
+By default this restores DB, allowlist, and every workspace's project + assets. Restore is destructive — the existing files are overwritten.
+
+Useful flags:
 
 ```bash
-bun run restore -- <backup-dir> --dry-run
+bun run restore -- <backup-dir> --dry-run                      # preview only
+bun run restore -- <backup-dir> --workspace ws_abc123          # one workspace; implies --skip-db --skip-allowlist
+bun run restore -- <backup-dir> --skip-db                      # keep current DB
+bun run restore -- <backup-dir> --skip-allowlist               # keep current allowlist
+bun run restore -- <backup-dir> --skip-assets                  # only project files
 ```
 
-To restore a single workspace:
+Legacy backups created with `--projects-only` (or by older versions of `backup.ts`) restore the per-workspace project files only — `--skip-db` and `--skip-allowlist` are automatically no-ops because the backup doesn't include them.
+
+### Local-dev → VM migration
+
+To copy your local state up to the GCE VM:
 
 ```bash
-bun run restore -- <backup-dir> --workspace ws_abc123...
+# on the laptop, after stopping local dev
+bun run backup
+rsync -a data/backups/<timestamp>/ user@vm:/path/to/coderunner/data/backups/<timestamp>/
+
+# on the VM (with the control plane stopped)
+bun run restore -- data/backups/<timestamp>
+bun run start
 ```
 
 ### Recommended backup schedule
@@ -397,16 +433,10 @@ Returns:
 
 ### Resource measurement
 
-```bash
-bun run measure
-```
-
-Shows host RAM/CPU, per-container memory usage, and 10-student extrapolation.
-
-For JSON output (useful for scripting/dashboards):
+Per-container CPU/memory and host-level gauges are exported at `/metrics` and scraped into Grafana. See `grafana/` for the dashboards. Raw `docker stats` is still available locally if needed:
 
 ```bash
-bun run measure -- --json
+docker stats --filter label=frc-sim.managed=true --no-stream
 ```
 
 ### Docker container status
@@ -600,7 +630,7 @@ docker info
 docker images coderunner-workspace
 
 # Rebuild if missing
-bun run docker:build:code
+bun run docker:build:workspace
 
 # Check for port conflicts
 docker ps --format '{{.Ports}}'
@@ -620,7 +650,7 @@ docker ps --format '{{.Ports}}'
      http://localhost:4000/admin/config/max-active-containers
    ```
 3. If containers are stale, stop idle ones from the admin panel or wait for idle teardown.
-4. Verify host resources with `bun run measure` before raising the cap further.
+4. Verify host resources via the Grafana dashboards (or local `docker stats`) before raising the cap further.
 
 ---
 
@@ -652,35 +682,10 @@ Reserve ~4 GB for the OS, Docker daemon, and browser overhead.
 
 ### Measuring actual usage
 
-Run the measurement tool with active students to get real numbers:
+Per-container memory and CPU are exported at `/metrics` (Prometheus) and visualised in the Grafana dashboards under `grafana/`. For a quick local snapshot use:
 
 ```bash
-bun run measure
-```
-
-Example output:
-```
-═══ CodeRunner — Resource Report ═══
-
-Host:
-  Hostname:    classroom-pc
-  Platform:    linux x64
-  CPU:         Intel Core i7-12700 (20 cores)
-  RAM:         12.3 GB used / 32.0 GB total (19.7 GB free)
-
-V2 Containers:
-  Name                                Role  Mem Used   Mem Limit  Mem%    CPU%
-  coderunner-workspace-ws_abc123...            code  1280.5 MB  2560.0 MB  50.0%   0.1%
-  ...
-
-  Total: 3 code containers, 3841 MB memory
-
-Extrapolation for 10 Students:
-  Avg code memory:  1280 MB × 10 = 12.5 GB
-  Estimated total:  12.5 GB (+ ~4 GB OS/Docker/browser overhead)
-  Host headroom:    15.5 GB
-
-  → Host has ample capacity for 10 students (15.5 GB headroom).
+docker stats --filter label=frc-sim.managed=true --no-stream
 ```
 
 ### Tuning memory limits
@@ -853,16 +858,21 @@ bun run audit:prune -- --dry-run
 
 | Task | Command |
 | --- | --- |
-| **Start the app** | `bun run dev:control` |
+| **Start the app (prod)** | `bun run start` |
+| **Start the app (dev)** | `bun run dev:control` |
 | **Stop the app** | Ctrl+C |
-| **Build code image** | `bun run docker:build:code` |
+| **Prod build (web + ascope + GHCR pull)** | `bun run build` |
+| **Build workspace image (local)** | `bun run docker:build:workspace` |
+| **Pull workspace image (GHCR)** | `bun run docker:pull:workspace` |
 | **Build web shell** | `bun run build:web` |
 | **Build AS Lite** | `bun run build:ascope` |
+| **Clean build artifacts** | `bun run clean` |
 | **Run migrations** | `bun run migrate` |
 | **Check migration status** | `bun run migrate:status` |
 | **Typecheck** | `bun run typecheck` |
+| **CI gate (typecheck + tests)** | `bun run verify` |
 | **Test suite** | `bun run test` |
-| **Measure resources** | `bun run measure` |
+| **Resource monitoring** | Grafana dashboards under `grafana/` (or `docker stats`) |
 | **Backup projects** | `bun run backup` |
 | **Restore projects** | `bun run restore -- <dir>` |
 | **Cleanup containers** | `bun run docker:cleanup` |

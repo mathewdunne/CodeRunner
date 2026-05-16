@@ -8,7 +8,7 @@ Run these from the repo root:
 
 ```bash
 bun install
-bun run docker:build:code
+bun run docker:build:workspace   # or `bun run docker:pull:workspace`
 bun run build:ascope
 bun run build:web
 bun run migrate:status
@@ -16,7 +16,7 @@ bun run typecheck
 bun run test
 ```
 
-Use the manual checklist below after the automated suite is green. Run `bun run measure` with representative users if host capacity is uncertain.
+Use the manual checklist below after the automated suite is green. Check the Grafana dashboards under `grafana/` (or `docker stats`) if host capacity is uncertain.
 
 ## Start The Server
 

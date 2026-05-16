@@ -43,7 +43,7 @@ This directory documents the VS Code extensions bundled into the V2 code contain
 Extension versions are pinned as Docker build args in `containers/code/Dockerfile`. The image downloads versioned Open VSX, GitHub Release, and Marketplace artifacts; unpinned Marketplace "latest" URLs are intentionally avoided so builds remain reproducible. To update:
 
 1. Change the build arg default in the Dockerfile.
-2. Rebuild: `bun run docker:build:code`
+2. Rebuild: `bun run docker:build:workspace`
 3. Test auto-import and ctrl-click in the rebuilt container.
 4. Update this README and add a decision log if the version jump is non-trivial.
 
