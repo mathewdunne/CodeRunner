@@ -16,7 +16,7 @@ export function seedRuntimeRunning(opts: {
   runtime.setRuntime({
     workspaceId,
     state: "running",
-    image: "frc-code:v2",
+    image: "coderunner-workspace",
     runtimeName: `frc-${workspaceId.slice(0, 8)}`,
     ports: { nt4: 8080, vscode: 8081, halsim: 8082 },
     endpoints: {
@@ -43,7 +43,7 @@ export function seedRuntimeMissing(
   runtime.setRuntime({
     workspaceId,
     state: "missing",
-    image: "frc-code:v2",
+    image: "coderunner-workspace",
     runtimeName: null,
     ports: { nt4: null, vscode: null, halsim: null },
     endpoints: { vscode: null, nt4: null, halsim: null },

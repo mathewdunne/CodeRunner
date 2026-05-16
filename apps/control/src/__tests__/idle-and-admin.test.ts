@@ -53,7 +53,7 @@ describe("idle lifecycle and admin controls", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25980, end: 25980 },
         vscodePortRange: { start: 33120, end: 33120 },
       },
@@ -185,7 +185,7 @@ describe("idle lifecycle and admin controls", () => {
         const workspace = workspaceBySlug(app, "alice");
 
         await app.containers.ensureCodeContainer(workspace);
-        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.has(`coderunner-workspace-${workspace.id}`)).toBe(true);
 
         const response = await app.fetch(
           new Request(`http://localhost/admin/workspaces/${workspace.id}/restart-code`, {
@@ -198,12 +198,12 @@ describe("idle lifecycle and admin controls", () => {
         expect(body.ok).toBe(true);
         expect(body.action).toBe("restart-code");
 
-        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.has(`coderunner-workspace-${workspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${workspace.id}`)?.running).toBe(true);
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25981, end: 25982 },
         vscodePortRange: { start: 33121, end: 33122 },
       },
@@ -219,7 +219,7 @@ describe("idle lifecycle and admin controls", () => {
         const workspace = workspaceBySlug(app, "alice");
 
         await app.containers.ensureCodeContainer(workspace);
-        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${workspace.id}`)?.running).toBe(true);
 
         const response = await app.fetch(
           new Request(`http://localhost/admin/workspaces/${workspace.id}/stop-containers`, {
@@ -232,11 +232,11 @@ describe("idle lifecycle and admin controls", () => {
         expect(body.ok).toBe(true);
         expect(body.action).toBe("stop-containers");
 
-        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(false);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${workspace.id}`)?.running).toBe(false);
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25987, end: 25988 },
         vscodePortRange: { start: 33127, end: 33128 },
       },
@@ -418,7 +418,7 @@ describe("idle lifecycle and admin controls", () => {
         const workspace = workspaceBySlug(app, "alice");
 
         await app.containers.ensureCodeContainer(workspace);
-        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${workspace.id}`)?.running).toBe(true);
 
         const pastTime = new Date(Date.now() - 60 * 60 * 1000).toISOString();
         app.storage.db
@@ -428,11 +428,11 @@ describe("idle lifecycle and admin controls", () => {
         const stopped = await app.idle.sweep();
         expect(stopped).toContain(workspace.id);
 
-        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(false);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${workspace.id}`)?.running).toBe(false);
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25989, end: 25990 },
         vscodePortRange: { start: 33129, end: 33130 },
         idleStopMinutes: 30,
@@ -448,15 +448,15 @@ describe("idle lifecycle and admin controls", () => {
         const workspace = workspaceBySlug(app, "alice");
 
         await app.containers.ensureCodeContainer(workspace);
-        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${workspace.id}`)?.running).toBe(true);
 
         const stopped = await app.idle.sweep();
         expect(stopped).not.toContain(workspace.id);
-        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${workspace.id}`)?.running).toBe(true);
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25991, end: 25992 },
         vscodePortRange: { start: 33131, end: 33132 },
         idleStopMinutes: 30,
@@ -475,17 +475,17 @@ describe("idle lifecycle and admin controls", () => {
 
         await app.containers.stopWorkspaceContainers(workspace.id);
         await app.containers.removeCodeContainer(workspace.id);
-        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(false);
+        expect(fakeDocker.containers.has(`coderunner-workspace-${workspace.id}`)).toBe(false);
 
         expect(await exists(join(workspace.project_path, "src", "main", "java", "frc", "robot", "Robot.java"))).toBe(true);
 
         await app.containers.ensureCodeContainer(workspace);
-        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.has(`coderunner-workspace-${workspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${workspace.id}`)?.running).toBe(true);
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25993, end: 25994 },
         vscodePortRange: { start: 33133, end: 33134 },
       },
@@ -501,15 +501,15 @@ describe("idle lifecycle and admin controls", () => {
 
         await app.containers.ensureCodeContainer(workspace);
         await app.containers.stopCodeContainer(workspace.id);
-        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(false);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${workspace.id}`)?.running).toBe(false);
 
         const removed = await app.containers.cleanupStoppedContainers();
-        expect(removed).toContain(`frc-v2-code-${workspace.id}`);
-        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(false);
+        expect(removed).toContain(`coderunner-workspace-${workspace.id}`);
+        expect(fakeDocker.containers.has(`coderunner-workspace-${workspace.id}`)).toBe(false);
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25995, end: 25996 },
         vscodePortRange: { start: 33135, end: 33136 },
       },
@@ -531,8 +531,8 @@ describe("idle lifecycle and admin controls", () => {
           app.containers.ensureCodeContainer(bobWorkspace),
         ]);
 
-        expect(fakeDocker.containers.get(`frc-v2-code-${aliceWorkspace.id}`)?.running).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v2-code-${bobWorkspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${aliceWorkspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${bobWorkspace.id}`)?.running).toBe(true);
 
         const response = await app.fetch(
           new Request(`http://localhost/admin/workspaces/${bobWorkspace.id}/restart-code`, {
@@ -542,12 +542,12 @@ describe("idle lifecycle and admin controls", () => {
         );
         expect(response.status).toBe(200);
 
-        expect(fakeDocker.containers.get(`frc-v2-code-${aliceWorkspace.id}`)?.running).toBe(true);
-        expect(fakeDocker.containers.get(`frc-v2-code-${bobWorkspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${aliceWorkspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${bobWorkspace.id}`)?.running).toBe(true);
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25800, end: 25809 },
         vscodePortRange: { start: 33140, end: 33149 },
       },
@@ -607,7 +607,7 @@ describe("idle lifecycle and admin controls", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25970, end: 25970 },
         vscodePortRange: { start: 33110, end: 33110 },
         halsimPortRange: { start: 34110, end: 34110 },
@@ -660,7 +660,7 @@ describe("idle lifecycle and admin controls", () => {
         await login(app, "bob");
         const bobWorkspace = workspaceBySlug(app, "bob");
         await app.containers.ensureCodeContainer(bobWorkspace);
-        expect(fakeDocker.containers.has(`frc-v2-code-${bobWorkspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.has(`coderunner-workspace-${bobWorkspace.id}`)).toBe(true);
 
         const bob = app.storage.db.query("SELECT id FROM user WHERE email = ?").get("bob@test.local") as { id: string };
         const response = await app.fetch(
@@ -672,12 +672,12 @@ describe("idle lifecycle and admin controls", () => {
         expect(response.status).toBe(200);
         expect(app.storage.db.query("SELECT id FROM workspaces WHERE slug = ?").get("bob")).toBeNull();
         expect(app.storage.db.query("SELECT id FROM user WHERE id = ?").get(bob.id)).toBeNull();
-        expect(fakeDocker.containers.has(`frc-v2-code-${bobWorkspace.id}`)).toBe(false);
+        expect(fakeDocker.containers.has(`coderunner-workspace-${bobWorkspace.id}`)).toBe(false);
         expect(await exists(bobWorkspace.project_path)).toBe(false);
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25971, end: 25972 },
         vscodePortRange: { start: 33111, end: 33112 },
         halsimPortRange: { start: 34111, end: 34112 },

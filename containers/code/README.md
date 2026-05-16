@@ -1,4 +1,4 @@
-# V2 Code Container (`frc-code:v2`)
+# V2 Code Container (`coderunner-workspace`)
 
 Merged per-student container for V2. Combines openvscode-server + Java IDE + WPILib support in a single image using the linuxserver.io base (Ubuntu 24.04, s6-overlay).
 
@@ -21,7 +21,7 @@ Merged per-student container for V2. Combines openvscode-server + Java IDE + WPI
 bun run docker:build:code
 ```
 
-Tags the image as `frc-code:v2` by default. Override with `CODE_IMAGE` env var.
+Tags the image as `coderunner-workspace` by default. Override with `CODE_IMAGE` env var.
 
 ## Runtime Contract
 
@@ -63,7 +63,7 @@ frc-sim.workspace=<workspaceId>
 
 ```bash
 docker run -d \
-  --name frc-v2-code-<workspaceId> \
+  --name coderunner-workspace-<workspaceId> \
   --label frc-sim.managed=true \
   --label frc-sim.version=v2 \
   --label frc-sim.role=code \
@@ -77,7 +77,7 @@ docker run -d \
   -e PGID=$(id -g) \
   -e VSCODE_BASE_PATH=/u/<slug>/vscode/ \
   --memory=2560m \
-  frc-code:v2
+  coderunner-workspace
 ```
 
 ## s6-overlay Services

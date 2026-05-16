@@ -41,7 +41,7 @@ describe("code container orchestration", () => {
           code: {
             role: "code",
             state: "running",
-            image: "frc-code:test",
+            image: "coderunner-workspace:test",
             simPortAllocated: true,
             vscodePortAllocated: true,
             error: null,
@@ -52,7 +52,7 @@ describe("code container orchestration", () => {
           id: string;
           project_path: string;
         };
-        const expectedName = `frc-v2-code-${workspace.id}`;
+        const expectedName = `coderunner-workspace-${workspace.id}`;
         expect(body.code.containerName).toBe(expectedName);
         expect(fakeDocker.containers.has(expectedName)).toBe(true);
 
@@ -83,7 +83,7 @@ describe("code container orchestration", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 45910, end: 45910 },
         vscodePortRange: { start: 46000, end: 46000 },
         containerUser: "123:456",
@@ -111,7 +111,7 @@ describe("code container orchestration", () => {
       {
         dockerRunner: fakeDocker.runner,
         containerAutoStart: true,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25811, end: 25811 },
         vscodePortRange: { start: 33001, end: 33001 },
       },
@@ -140,7 +140,7 @@ describe("code container orchestration", () => {
       containerAutoStart: false,
       dockerRunner: fakeDocker.runner,
       portAvailable: async () => true,
-      codeImage: "frc-code:test",
+      codeImage: "coderunner-workspace:test",
       simPortRange: { start: 25812, end: 25812 },
       vscodePortRange: { start: 33002, end: 33002 },
     };
@@ -211,7 +211,7 @@ describe("code container orchestration", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25813, end: 25813 },
         vscodePortRange: { start: 33003, end: 33003 },
       },
@@ -246,7 +246,7 @@ describe("code container orchestration", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25814, end: 25815 },
         vscodePortRange: { start: 33004, end: 33005 },
       },
@@ -270,7 +270,7 @@ describe("code container orchestration", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25816, end: 25817 },
         vscodePortRange: { start: 33006, end: 33007 },
       },

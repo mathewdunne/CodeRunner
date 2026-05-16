@@ -47,7 +47,7 @@ data/                          Runtime data, gitignored
 - [x] V2-6: lifecycle, labels, and reconciliation
 - [x] V2-7: acceptance pass
 
-V2 is complete. The system uses per-student merged containers (`frc-code:v2`) running openvscode-server with bundled Java and WPILib extensions. The control plane proxies editor, run, and telemetry traffic through authenticated routes.
+V2 is complete. The system uses per-student merged containers (`coderunner-workspace`) running openvscode-server with bundled Java and WPILib extensions. The control plane proxies editor, run, and telemetry traffic through authenticated routes.
 
 ## Working Principles
 

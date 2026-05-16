@@ -7,7 +7,7 @@ Accepted
 
 The testing plan (TESTING-PLAN.md) described two categories of tests that we've decided not to implement:
 
-1. **Docker smoke tier (T-D1 through T-D7)**: Tests that exercise the real `frc-code:v2` container image — building, running Gradle, JNI loading, multi-workspace Gradle lock isolation, headless GUI removal, etc.
+1. **Docker smoke tier (T-D1 through T-D7)**: Tests that exercise the real `coderunner-workspace` container image — building, running Gradle, JNI loading, multi-workspace Gradle lock isolation, headless GUI removal, etc.
 
 2. **Import and backup/restore E2E tests**: Tests covering the GitHub project import flow, size limits, rate limits, post-import permissions, and backup/restore functionality.
 
@@ -17,7 +17,7 @@ The testing plan (TESTING-PLAN.md) described two categories of tests that we've 
 
 The Docker smoke tier requires:
 - A Docker daemon available in the test environment
-- The `frc-code:v2` image pre-built (`bun run docker:build:code`)
+- The `coderunner-workspace` image pre-built (`bun run docker:build:code`)
 - Multi-minute timeouts per test (180s default, up to 420s for extension cold start)
 - Fixture projects committed for specific edge cases (vendor-JNI, headless-incompatible, broken-build)
 

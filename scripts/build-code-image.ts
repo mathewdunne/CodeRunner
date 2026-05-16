@@ -1,5 +1,5 @@
 const dockerPath = Bun.env.FRC_DOCKER_PATH ?? "docker";
-const image = Bun.env.CODE_IMAGE ?? "frc-code:v2";
+const image = Bun.env.CODE_IMAGE ?? "coderunner-workspace";
 
 const args = [
   "build",

@@ -234,7 +234,7 @@ All configuration is via environment variables. Copy `.env.example` to `.env` an
 | `FRC_CONTAINER_USER` | auto-detected | UID:GID used inside code containers |
 | `FRC_UID` / `FRC_GID` | *(none)* | Alternative UID/GID inputs when `FRC_CONTAINER_USER` is unset |
 | `FRC_CONTAINER_AUTO_START` | `true` | Start the code container when a workspace opens |
-| `CODE_IMAGE` | `frc-code:v2` | Docker image for merged code containers |
+| `CODE_IMAGE` | `coderunner-workspace` | Docker image for merged code containers |
 | `CODE_MEMORY_LIMIT` | `2560m` | Memory cap per code container |
 | `SIM_PORT_RANGE` | `25810-25899` | Loopback port range for sim NT4 |
 | `VSCODE_PORT_RANGE` | `33000-33099` | Loopback port range for openvscode-server |
@@ -519,7 +519,7 @@ curl -H "Authorization: Bearer $ADMIN_TOKEN" \
 curl -H "Authorization: Bearer $ADMIN_TOKEN" \
   -X POST http://localhost:4000/admin/workspaces/<workspaceId>/restart-code
 # Check container logs
-docker logs frc-v2-code-<workspaceId> --tail 50
+docker logs coderunner-workspace-<workspaceId> --tail 50
 ```
 
 ### Gradle build timeout
@@ -597,7 +597,7 @@ bun run migrate:status  # verify DB is accessible
 docker info
 
 # Check image exists
-docker images frc-code:v2
+docker images coderunner-workspace
 
 # Rebuild if missing
 bun run docker:build:code
@@ -670,7 +670,7 @@ Host:
 
 V2 Containers:
   Name                                Role  Mem Used   Mem Limit  Mem%    CPU%
-  frc-v2-code-ws_abc123...            code  1280.5 MB  2560.0 MB  50.0%   0.1%
+  coderunner-workspace-ws_abc123...            code  1280.5 MB  2560.0 MB  50.0%   0.1%
   ...
 
   Total: 3 code containers, 3841 MB memory

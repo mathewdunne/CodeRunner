@@ -21,7 +21,7 @@ Goal: a Playwright suite that (a) covers the user-visible product end to end, (b
 
 This tier runs in <2 min total on a laptop, needs no Docker daemon, and is the default `bun run e2e` target.
 
-**Tier 2 — Docker smoke (`@docker`-tagged).** A handful (~6) of slow, end-to-end tests that exercise the real `frc-code:v2` image — building, running Gradle, JNI loading, multi-workspace Gradle lock isolation, headless GUI removal in imported projects. Run via `bun run e2e:docker`; requires Docker daemon and the prebuilt image.
+**Tier 2 — Docker smoke (`@docker`-tagged).** A handful (~6) of slow, end-to-end tests that exercise the real `coderunner-workspace` image — building, running Gradle, JNI loading, multi-workspace Gradle lock isolation, headless GUI removal in imported projects. Run via `bun run e2e:docker`; requires Docker daemon and the prebuilt image.
 
 ### Single server in tests (matches production topology, in-process)
 

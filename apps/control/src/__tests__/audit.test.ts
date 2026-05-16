@@ -114,7 +114,7 @@ describe("audit log", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 45700, end: 45710 },
         vscodePortRange: { start: 46700, end: 46710 },
         halsimPortRange: { start: 47700, end: 47710 },

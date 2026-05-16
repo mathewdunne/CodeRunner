@@ -110,7 +110,7 @@ describe("editor proxy", () => {
       {
         dockerRunner: fakeDocker.runner,
         upstreamFetch,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25920, end: 25920 },
         vscodePortRange: { start: 33200, end: 33200 },
       },
@@ -150,7 +150,7 @@ describe("editor proxy", () => {
       {
         dockerRunner: fakeDocker.runner,
         upstreamFetch,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25924, end: 25924 },
         vscodePortRange: { start: 33204, end: 33204 },
       },
@@ -209,7 +209,7 @@ describe("editor proxy", () => {
       {
         dockerRunner: fakeDocker.runner,
         upstreamFetch,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25921, end: 25921 },
         vscodePortRange: { start: 33201, end: 33201 },
       },
@@ -242,7 +242,7 @@ describe("editor proxy", () => {
       {
         dockerRunner: fakeDocker.runner,
         upstreamFetch,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25922, end: 25922 },
         vscodePortRange: { start: 33202, end: 33202 },
       },
@@ -275,7 +275,7 @@ describe("editor proxy", () => {
       {
         dockerRunner: fakeDocker.runner,
         upstreamFetch,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25923, end: 25923 },
         vscodePortRange: { start: 33203, end: 33203 },
       },
@@ -444,7 +444,7 @@ describe("HALSim WS proxy", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25940, end: 25940 },
         vscodePortRange: { start: 33220, end: 33220 },
         halsimPortRange: { start: 34220, end: 34220 },

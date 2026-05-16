@@ -77,7 +77,7 @@ describe("AdvantageScope Lite and NT4 routing", () => {
       {
         dockerRunner: fakeDocker.runner,
         upstreamFetch,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25910, end: 25910 },
         vscodePortRange: { start: 33100, end: 33100 },
       },

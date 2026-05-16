@@ -136,7 +136,7 @@ describe("simulation HTTP API", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 26010, end: 26019 },
         vscodePortRange: { start: 33310, end: 33319 },
         halsimPortRange: { start: 34310, end: 34319 },
@@ -173,7 +173,7 @@ describe("simulation HTTP API", () => {
       {
         dockerRunner: fakeDocker.runner,
         runCommandFactory: controlled.commandFactory,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 26020, end: 26029 },
         vscodePortRange: { start: 33320, end: 33329 },
         halsimPortRange: { start: 34320, end: 34329 },
@@ -202,7 +202,7 @@ describe("simulation HTTP API", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 26030, end: 26039 },
         vscodePortRange: { start: 33330, end: 33339 },
         halsimPortRange: { start: 34330, end: 34339 },
@@ -246,7 +246,7 @@ describe("simulation HTTP API", () => {
           sockets.push(socket);
           return socket as unknown as WebSocket;
         },
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 26040, end: 26049 },
         vscodePortRange: { start: 33340, end: 33349 },
         halsimPortRange: { start: 34340, end: 34349 },
@@ -315,7 +315,7 @@ describe("simulation HTTP API", () => {
           });
           return socket as unknown as WebSocket;
         },
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 26050, end: 26059 },
         vscodePortRange: { start: 33350, end: 33359 },
         halsimPortRange: { start: 34350, end: 34359 },
@@ -396,7 +396,7 @@ describe("simulation HTTP API", () => {
           });
           return socket as unknown as WebSocket;
         },
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 26060, end: 26069 },
         vscodePortRange: { start: 33360, end: 33369 },
         halsimPortRange: { start: 34360, end: 34369 },
@@ -451,7 +451,7 @@ describe("simulation HTTP API", () => {
           });
           return socket as unknown as WebSocket;
         },
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 26070, end: 26079 },
         vscodePortRange: { start: 33370, end: 33379 },
         halsimPortRange: { start: 34370, end: 34379 },
@@ -537,7 +537,7 @@ describe("simulation HTTP API", () => {
           });
           return socket as unknown as WebSocket;
         },
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 26080, end: 26089 },
         vscodePortRange: { start: 33380, end: 33389 },
         halsimPortRange: { start: 34380, end: 34389 },

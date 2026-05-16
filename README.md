@@ -50,7 +50,7 @@ docs/archive/mvp-docs/         Archived MVP documents and decision logs
 | `bun run build:web` | Build the static Vite shell into `apps/web/dist/` |
 | `bun run build:ascope` | Apply AS Lite patches, rebuild AdvantageScope Lite, and stage `dist/advantagescope/` |
 | `bun run verify:ascope` | Smoke-check the staged AS Lite bundle and `/scope/` serving contract |
-| `bun run docker:build:code` | Build the V2 merged openvscode-server + sim image as `frc-code:v2` |
+| `bun run docker:build:code` | Build the V2 merged openvscode-server + sim image as `coderunner-workspace` |
 | `bun run measure` | Report host resources and container memory, extrapolate for 10 students |
 | `bun run backup` | Back up all workspace project directories |
 | `bun run restore` | Restore workspace projects from a backup |

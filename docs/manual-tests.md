@@ -36,7 +36,7 @@ Expected startup output includes:
 
 ```text
 ─── V2 Configuration ───
-  Code image:          frc-code:v2
+  Code image:          coderunner-workspace
   VSCode ports:        33000-33099
 V2 control plane listening on http://localhost:4000
 ```
@@ -58,7 +58,7 @@ curl http://localhost:4000/admin/status
 Success criteria:
 
 - Each browser shows the V2 shell with Run, Stop, console, openvscode editor, and AdvantageScope Lite.
-- `docker ps --filter label=frc-sim.role=code` shows one `frc-v2-code-<workspaceId>` container per active user.
+- `docker ps --filter label=frc-sim.role=code` shows one `coderunner-workspace-<workspaceId>` container per active user.
 - No browser can open another user's `/u/<slug>/` or `/u/<slug>/vscode/` route.
 
 ### 2. Editor And Project Persistence
@@ -221,7 +221,7 @@ Success criteria:
 | LAN browser cannot connect | Open firewall port 4000 and verify `curl http://<host-ip>:4000` from another machine. |
 | Shell says web build missing | Run `bun run build:web`. |
 | AdvantageScope is blank | Run `bun run build:ascope` and verify `dist/advantagescope/index.html` exists. |
-| Editor iframe fails | Verify `frc-code:v2` exists and inspect `docker logs frc-v2-code-<workspaceId>`. |
+| Editor iframe fails | Verify `coderunner-workspace` exists and inspect `docker logs coderunner-workspace-<workspaceId>`. |
 | Java never becomes ready | Wait for first Gradle import; then check container memory and logs. |
 | Run stays building | Check Docker health, active containers, Gradle logs, and `RUN_BUILD_TIMEOUT_MS`. |
 | Permission errors | Build/run with matching `FRC_UID=$(id -u)` and `FRC_GID=$(id -g)`. |

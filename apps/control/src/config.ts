@@ -155,7 +155,7 @@ export function loadControlConfig(input: ControlConfigInput = {}): ControlConfig
     googleClientId: input.googleClientId ?? Bun.env.GOOGLE_CLIENT_ID ?? null,
     googleClientSecret: input.googleClientSecret ?? Bun.env.GOOGLE_CLIENT_SECRET ?? null,
     dockerPath: input.dockerPath ?? Bun.env.FRC_DOCKER_PATH ?? "docker",
-    codeImage: input.codeImage ?? Bun.env.CODE_IMAGE ?? "frc-code:v2",
+    codeImage: input.codeImage ?? Bun.env.CODE_IMAGE ?? "coderunner-workspace",
     codeMemoryLimit: input.codeMemoryLimit ?? Bun.env.CODE_MEMORY_LIMIT ?? "2560m",
     simPortRange: parsePortRange(input.simPortRange ?? Bun.env.SIM_PORT_RANGE, defaultSimPortRange),
     vscodePortRange: parsePortRange(input.vscodePortRange ?? Bun.env.VSCODE_PORT_RANGE, defaultVscodePortRange),

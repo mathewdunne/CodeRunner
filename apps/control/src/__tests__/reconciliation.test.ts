@@ -27,7 +27,7 @@ describe("container reconciliation", () => {
       async (app) => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
-        const name = `frc-v2-code-${workspace.id}`;
+        const name = `coderunner-workspace-${workspace.id}`;
 
         // Pre-create a container with a non-loopback (0.0.0.0) sim port
         fakeDocker.containers.set(name, {
@@ -54,7 +54,7 @@ describe("container reconciliation", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25830, end: 25831 },
         vscodePortRange: { start: 33050, end: 33051 },
       },
@@ -68,7 +68,7 @@ describe("container reconciliation", () => {
       async (app) => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
-        const name = `frc-v2-code-${workspace.id}`;
+        const name = `coderunner-workspace-${workspace.id}`;
 
         // Pre-create a container with wrong version label
         fakeDocker.containers.set(name, {
@@ -96,7 +96,7 @@ describe("container reconciliation", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25832, end: 25833 },
         vscodePortRange: { start: 33052, end: 33053 },
       },
@@ -110,7 +110,7 @@ describe("container reconciliation", () => {
       async (app) => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
-        const name = `frc-v2-code-${workspace.id}`;
+        const name = `coderunner-workspace-${workspace.id}`;
 
         // Pre-create a stopped container with correct labels
         fakeDocker.containers.set(name, {
@@ -139,7 +139,7 @@ describe("container reconciliation", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25834, end: 25835 },
         vscodePortRange: { start: 33054, end: 33055 },
         halsimPortRange: { start: 34054, end: 34055 },
@@ -154,7 +154,7 @@ describe("container reconciliation", () => {
       async (app) => {
         await login(app, "alice");
         const workspace = workspaceBySlug(app, "alice");
-        const name = `frc-v2-code-${workspace.id}`;
+        const name = `coderunner-workspace-${workspace.id}`;
 
         // Create a lease row without a matching Docker container
         app.storage.upsertCodeContainerLease({
@@ -175,7 +175,7 @@ describe("container reconciliation", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25836, end: 25837 },
         vscodePortRange: { start: 33056, end: 33057 },
         halsimPortRange: { start: 34056, end: 34057 },
@@ -191,7 +191,7 @@ describe("container reconciliation", () => {
         const workspace = workspaceBySlug(app, "alice");
 
         await app.containers.ensureCodeContainer(workspace);
-        expect(fakeDocker.containers.get(`frc-v2-code-${workspace.id}`)?.running).toBe(true);
+        expect(fakeDocker.containers.get(`coderunner-workspace-${workspace.id}`)?.running).toBe(true);
 
         // Write a file into the home directory (simulating vscode user data)
         const homePath = join(app.storage.config.dataDir, "users", workspace.id, "home");
@@ -205,11 +205,11 @@ describe("container reconciliation", () => {
         // Idle teardown
         await app.containers.stopWorkspaceContainers(workspace.id);
         await app.containers.removeCodeContainer(workspace.id);
-        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(false);
+        expect(fakeDocker.containers.has(`coderunner-workspace-${workspace.id}`)).toBe(false);
 
         // Reload creates new container
         await app.containers.ensureCodeContainer(workspace);
-        expect(fakeDocker.containers.has(`frc-v2-code-${workspace.id}`)).toBe(true);
+        expect(fakeDocker.containers.has(`coderunner-workspace-${workspace.id}`)).toBe(true);
 
         // User data should persist on the host (bind-mounted home)
         const settingsContent = await readFile(
@@ -220,7 +220,7 @@ describe("container reconciliation", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         simPortRange: { start: 25838, end: 25839 },
         vscodePortRange: { start: 33058, end: 33059 },
       },

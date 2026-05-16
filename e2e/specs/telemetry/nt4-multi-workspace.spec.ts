@@ -31,7 +31,7 @@ test("NT4 traffic isolated per workspace", async ({ app, page, runtime, fakeVsco
     runtime.setRuntime({
       workspaceId: aliceWs.id,
       state: "running",
-      image: "frc-code:v2",
+      image: "coderunner-workspace",
       runtimeName: `frc-${aliceWs.id.slice(0, 8)}`,
       ports: { nt4: 8080, vscode: 8081, halsim: 8082 },
       endpoints: {
@@ -53,7 +53,7 @@ test("NT4 traffic isolated per workspace", async ({ app, page, runtime, fakeVsco
     runtime.setRuntime({
       workspaceId: bobWs.id,
       state: "running",
-      image: "frc-code:v2",
+      image: "coderunner-workspace",
       runtimeName: `frc-${bobWs.id.slice(0, 8)}`,
       ports: { nt4: 9080, vscode: 9081, halsim: 9082 },
       endpoints: {
@@ -154,7 +154,7 @@ test("NT4 proxy rejects cross-workspace access", async ({ app, page, runtime, fa
     runtime.setRuntime({
       workspaceId: bobWs.id,
       state: "running",
-      image: "frc-code:v2",
+      image: "coderunner-workspace",
       runtimeName: `frc-${bobWs.id.slice(0, 8)}`,
       ports: { nt4: 8080, vscode: 8081, halsim: 8082 },
       endpoints: {

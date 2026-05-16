@@ -202,7 +202,7 @@ Preserved exactly:
 Unchanged: `userId`, `workspaceId`, `workspaceSlug`, `sessionId`. Container names change shape:
 
 ```
-frc-v2-code-<workspaceId>
+coderunner-workspace-<workspaceId>
 ```
 
 Container labels:
@@ -324,7 +324,7 @@ WS /u/:workspaceSlug/vscode/*         editor proxy, new
 
 ### 8.1 Merged code image
 
-Single Dockerfile under `containers/code/Dockerfile`. Build target: `frc-code:v2`.
+Single Dockerfile under `containers/code/Dockerfile`. Build target: `coderunner-workspace`.
 
 Base layer:
 
@@ -383,7 +383,7 @@ Runtime command shape:
 
 ```
 docker run -d
-  --name frc-v2-code-<workspaceId>
+  --name coderunner-workspace-<workspaceId>
   --label frc-sim.managed=true
   --label frc-sim.version=v2
   --label frc-sim.role=code
@@ -395,7 +395,7 @@ docker run -d
   --user <FRC_UID>:<FRC_GID>
   --memory=<codeMemoryLimit>
   -e VSCODE_BASE_PATH=/u/<slug>/vscode/
-  frc-code:v2
+  coderunner-workspace
 ```
 
 ### 8.2 Memory and lifecycle
@@ -639,7 +639,7 @@ If any check fails: stop. Open a follow-up question on the design document befor
 
 ### Stage 1: Merged container image
 
-**Purpose.** Produce a `frc-code:v2` image that runs openvscode-server with both extensions baked in and can also run `./gradlew simulateJava` against a mounted project. Hand-launched container must serve the editor and accept a `docker exec` run command.
+**Purpose.** Produce a `coderunner-workspace` image that runs openvscode-server with both extensions baked in and can also run `./gradlew simulateJava` against a mounted project. Hand-launched container must serve the editor and accept a `docker exec` run command.
 
 **Pre-conditions.** Stage 0 passed. Decision log 007 exists. The repo is otherwise V1.
 
@@ -675,14 +675,14 @@ bun run docker:build:code
 
 # Hand-launched, no proxy:
 docker run --rm -d \
-  --name frc-code-spike \
+  --name coderunner-workspace-spike \
   -p 127.0.0.1:3000:3000 \
   -p 127.0.0.1:5810:5810 \
   -v "$PWD/data/users/<some-existing-workspace>/project:/workspace/project" \
   -v "$PWD/data/users/<some-existing-workspace>/home:/home/frc" \
   -e VSCODE_BASE_PATH=/ \
   --user $(id -u):$(id -g) \
-  frc-code:v2
+  coderunner-workspace
 
 # HTTP check:
 curl -fsS http://127.0.0.1:3000/ | head -c 200      # should return openvscode-server HTML
@@ -692,16 +692,16 @@ curl -fsS http://127.0.0.1:3000/ | head -c 200      # should return openvscode-s
 #   unless editor or extension versions changed.
 
 # Run check:
-docker exec frc-code-spike bash -lc "/usr/local/bin/start-sim.sh"
-docker exec frc-code-spike bash -lc "tail -n 5 /home/frc/sim.log"
-docker exec frc-code-spike bash -lc "/usr/local/bin/stop-sim.sh"
+docker exec coderunner-workspace-spike bash -lc "/usr/local/bin/start-sim.sh"
+docker exec coderunner-workspace-spike bash -lc "tail -n 5 /home/frc/sim.log"
+docker exec coderunner-workspace-spike bash -lc "/usr/local/bin/stop-sim.sh"
 
-docker rm -f frc-code-spike
+docker rm -f coderunner-workspace-spike
 ```
 
 **Definition of Done.**
 
-- [ ] `bun run docker:build:code` succeeds on a clean machine and produces `frc-code:v2`.
+- [ ] `bun run docker:build:code` succeeds on a clean machine and produces `coderunner-workspace`.
 - [ ] Image size is documented in `containers/code/README.md` (informational only).
 - [ ] `containers/code/Dockerfile` references vendored `.vsix` files; build succeeds with the host offline.
 - [ ] Hand-launched container serves openvscode-server on `:3000` and answers HTTP within 30 seconds of `docker run`.
@@ -751,13 +751,13 @@ docker rm -f frc-code-spike
 
 ```
 # Build and start a Stage 1 container manually.
-docker run -d --name frc-code-dev \
+docker run -d --name coderunner-workspace-dev \
   -p 127.0.0.1:3000:3000 \
   -v "$PWD/data/users/<wsId>/project:/workspace/project" \
   -v "$PWD/data/users/<wsId>/home:/home/frc" \
   -e VSCODE_BASE_PATH=/u/<slug>/vscode/ \
   --user $(id -u):$(id -g) \
-  frc-code:v2
+  coderunner-workspace
 
 bun run dev:control      # control plane on :4000
 
@@ -801,7 +801,7 @@ bun test
 - `apps/control/migrations/004_v2_code_container.sql`: adds `vscode_container`, `vscode_port`, `code_state` columns and the unique index on `vscode_port`.
 - `apps/control/src/storage.ts`: `ContainerLeaseRow` adds `vscode_container`, `vscode_port`, `code_state`. New helpers mirror existing sim/lsp ones for the code role.
 - `apps/control/src/containers.ts`:
-  - new `RoleConfig` for `role: "code"`, container port `3000`, name prefix `frc-v2-code-`.
+  - new `RoleConfig` for `role: "code"`, container port `3000`, name prefix `coderunner-workspace-`.
   - merge sim and lsp ensure paths into a single code ensure path. The merged container publishes both `5810` and `3000` from the same `docker run`.
   - delete the LSP startup semaphore (no separate JDT LS warmup).
   - reconciliation: adopt `frc-sim.version=v2 role=code` containers.
@@ -858,7 +858,7 @@ curl -fsS -b cookies.txt http://localhost:4000/u/alice/api/containers/status
 # Reconciliation smoke:
 #   stop the control plane.
 #   restart it.
-#   confirm `docker ps` shows the same `frc-v2-code-<wsId>` container,
+#   confirm `docker ps` shows the same `coderunner-workspace-<wsId>` container,
 #   and that `/u/alice/api/containers/status` reports the same vscode_port.
 
 # Negative: confirm unrelated or mislabeled containers are not adopted.
@@ -867,7 +867,7 @@ curl -fsS -b cookies.txt http://localhost:4000/u/alice/api/containers/status
 **Definition of Done.**
 
 - [ ] Migration 004 applies cleanly and `bun run migrate:status` shows it green.
-- [ ] One `docker ps` row per active workspace, named `frc-v2-code-<wsId>`.
+- [ ] One `docker ps` row per active workspace, named `coderunner-workspace-<wsId>`.
 - [ ] `containers/lsp/` and `containers/sim/` are removed from the repo.
 - [ ] `bun run docker:build:lsp` and `bun run docker:build:sim` no longer exist.
 - [ ] Run manager runs `simulateJava` inside the merged container; logs reach the run WS.
@@ -1042,7 +1042,7 @@ bun run dev:control
 # Login alice; let container come up.
 # kill -9 the control plane.
 # bun run dev:control again.
-# Confirm the same `frc-v2-code-<wsId>` container is reused (ID unchanged in `docker ps`).
+# Confirm the same `coderunner-workspace-<wsId>` container is reused (ID unchanged in `docker ps`).
 
 # Admin actions:
 curl -fsS -X POST http://localhost:4000/admin/workspaces/<wsId>/restart-code
@@ -1178,7 +1178,7 @@ curl -fsS -X POST http://localhost:4000/login \
 
    Reload Alice's browser. Confirm the editor reloads with the same buffer state and the same Java state.
 
-9. **Idle teardown.** Set `IDLE_STOP_MINUTES=2` in `.env`, restart the control plane, log in as Alice, then leave the tab idle for 3 minutes. Run `docker ps`. Confirm `frc-v2-code-<aliceWsId>` is gone. Reload the tab. Confirm the editor comes back and Alice's files are intact.
+9. **Idle teardown.** Set `IDLE_STOP_MINUTES=2` in `.env`, restart the control plane, log in as Alice, then leave the tab idle for 3 minutes. Run `docker ps`. Confirm `coderunner-workspace-<aliceWsId>` is gone. Reload the tab. Confirm the editor comes back and Alice's files are intact.
 
 10. **Multi-user isolation.** In a second browser profile, log in as `Bob`. Make a unique change in Bob's `Robot.java`. Reload Alice. Confirm Alice's file is unchanged.
 

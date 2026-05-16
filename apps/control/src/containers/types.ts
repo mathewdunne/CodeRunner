@@ -49,4 +49,4 @@ export type PublishedPort = {
 export const SIM_CONTAINER_PORT = 5810;
 export const HALSIM_CONTAINER_PORT = 3300;
 export const VSCODE_CONTAINER_PORT = 3000;
-export const CODE_NAME_PREFIX = "frc-v2-code-";
+export const CODE_NAME_PREFIX = "coderunner-workspace-";

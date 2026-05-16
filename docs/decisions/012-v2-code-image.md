@@ -6,7 +6,7 @@
 
 ## Context
 
-Stage 1 requires building a `frc-code:v2` Docker image that merges the V1 sim and LSP containers. Two key architecture decisions:
+Stage 1 requires building a `coderunner-workspace` Docker image that merges the V1 sim and LSP containers. Two key architecture decisions:
 
 1. **Base image choice:** The V2 design doc specifies `eclipse-temurin:17-jdk-jammy`, but the Stage 0 spike proved `gitpod/openvscode-server:1.105.1` works. An alternative approach is to base on the openvscode-server image and install JDK into it.
 

@@ -28,7 +28,7 @@ describe("container concurrency cap", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         maxActiveContainers: 1,
         simPortRange: { start: 45800, end: 45810 },
         vscodePortRange: { start: 46800, end: 46810 },
@@ -69,7 +69,7 @@ describe("container concurrency cap", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         maxActiveContainers: 1,
         simPortRange: { start: 45820, end: 45830 },
         vscodePortRange: { start: 46820, end: 46830 },
@@ -116,7 +116,7 @@ describe("container concurrency cap", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         maxActiveContainers: 1,
         simPortRange: { start: 45840, end: 45850 },
         vscodePortRange: { start: 46840, end: 46850 },
@@ -207,7 +207,7 @@ describe("container concurrency cap", () => {
       },
       {
         dockerRunner: fakeDocker.runner,
-        codeImage: "frc-code:test",
+        codeImage: "coderunner-workspace:test",
         maxActiveContainers: 2,
         simPortRange: { start: 45860, end: 45870 },
         vscodePortRange: { start: 46860, end: 46870 },
