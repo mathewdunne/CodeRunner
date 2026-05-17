@@ -1,5 +1,5 @@
 {
-  "name": "@frc-sim/control",
+  "name": "@frc-coderunner/control",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@frc-sim/contracts": "workspace:*",
+    "@frc-coderunner/contracts": "workspace:*",
     "@logtape/logtape": "^2.0.7",
     "better-auth": "^1.6.10",
     "prom-client": "^15.1.3"

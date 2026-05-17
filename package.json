@@ -33,7 +33,12 @@
     "migrate:status": "bun apps/control/src/migrate.ts status",
     "audit:prune": "bun scripts/audit-prune.ts",
     "typecheck": "bun scripts/typecheck.ts",
-    "verify": "bun run typecheck && bun run test && bun run test:web && bun run e2e && bun run e2e:security",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "verify": "biome ci . && bun run typecheck && bun run test && bun run test:web && bun run e2e && bun run e2e:security",
     "test": "bun test apps/control packages scripts apps/web/src/lib/keyboard-mapping.test.ts apps/web/src/lib/keyboard-mapping.property.test.ts",
     "test:web": "bun run --cwd apps/web test",
     "e2e": "E2E_TEST=1 bun --bun playwright test --project=mocked",
@@ -43,6 +48,7 @@
     "e2e:report": "playwright show-report"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.15",
     "@playwright/test": "^1.60.0",
     "@types/bun": "^1.3.1",
     "@types/react": "^19.2.7",
