@@ -24,7 +24,7 @@
       "name": "@frc-coderunner/control",
       "version": "0.0.0",
       "dependencies": {
-        "@frc-@frc-coderunner/contracts": "workspace:*",
+        "@frc-coderunner/contracts": "workspace:*",
         "@logtape/logtape": "^2.0.7",
         "better-auth": "^1.6.10",
         "prom-client": "^15.1.3",
@@ -36,7 +36,7 @@
       "dependencies": {
         "@base-ui/react": "^1.4.1",
         "@fontsource-variable/geist": "^5.2.8",
-        "@frc-@frc-coderunner/contracts": "workspace:*",
+        "@frc-coderunner/contracts": "workspace:*",
         "@tailwindcss/vite": "^4.2.1",
         "better-auth": "^1.6.10",
         "class-variance-authority": "^0.7.1",
@@ -71,7 +71,7 @@
       },
     },
     "packages/contracts": {
-      "name": "@frc-@frc-coderunner/contracts",
+      "name": "@frc-coderunner/contracts",
       "version": "0.0.0",
       "dependencies": {
         "zod": "^4.1.13",
@@ -1166,8 +1166,8 @@
       {},
       "sha512-cJ6m9e+8MQ5dCYJsLylfZrgBh6KkG4bOLckB35Tr9J/EqdkEM6QllH5PxqP1dhTvFup+HtMRPuz9xOjxXJggxw=="
     ],
-    "@frc-@frc-coderunner/contracts": [
-      "@frc-@frc-coderunner/contracts@workspace:packages/contracts"
+    "@frc-coderunner/contracts": [
+      "@frc-coderunner/contracts@workspace:packages/contracts"
     ],
     "@frc-coderunner/control": [
       "@frc-coderunner/control@workspace:apps/control"
