@@ -24,7 +24,7 @@ resource "google_compute_instance" "coderunner" {
 
   boot_disk {
     initialize_params {
-      image = "debian-cloud/debian-12"
+      image = "ubuntu-os-cloud/ubuntu-2404-lts-amd64"
       size  = var.boot_disk_size_gb
       type  = "pd-balanced"
     }
