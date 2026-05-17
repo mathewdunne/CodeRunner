@@ -35,7 +35,7 @@ describe("S12 — session-cookie tampering", () => {
 
 	test("tampered HMAC → 401 (rejected at the auth layer)", async () => {
 		await withApp(async (app) => {
-			const garbage = "frc_session=AAAA.BAD_SIG; Path=/";
+			const garbage = "coderunner_session=AAAA.BAD_SIG; Path=/";
 			const response = await app.fetch(
 				new Request("http://localhost:4000/admin/status", {
 					headers: { cookie: garbage },
@@ -129,9 +129,9 @@ describe("S15 — ADMIN_TOKEN break-glass", () => {
 });
 
 describe("S20 — session cookie attributes (Better Auth default config)", () => {
-	test("cookie name is the configured `frc_session` prefix", () => {
-		const cookieStr = "frc_session=AAA; HttpOnly; SameSite=Lax; Path=/";
-		expect(cookieStr.split("=")[0]).toBe("frc_session");
+	test("cookie name is the configured `coderunner_session` prefix", () => {
+		const cookieStr = "coderunner_session=AAA; HttpOnly; SameSite=Lax; Path=/";
+		expect(cookieStr.split("=")[0]).toBe("coderunner_session");
 	});
 	test("HttpOnly + SameSite are required attributes (compile-time presence)", () => {
 		// This is a lightweight smoke; the real attributes are validated by Better Auth.

@@ -78,7 +78,7 @@ export function createAuth(
 			cookiePrefix: "frc",
 			cookies: {
 				session_token: {
-					name: "frc_session",
+					name: "coderunner_session",
 				},
 			},
 		},

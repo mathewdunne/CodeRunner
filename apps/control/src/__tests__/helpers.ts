@@ -686,7 +686,7 @@ export async function login(
 		return new Response(null, {
 			status: 303,
 			headers: new Headers([
-				["set-cookie", `frc_session=${signedToken}; Path=/; HttpOnly`],
+				["set-cookie", `coderunner_session=${signedToken}; Path=/; HttpOnly`],
 				["location", `/u/${existing.slug}/`],
 			]),
 		});
@@ -707,7 +707,7 @@ export async function login(
 	return new Response(null, {
 		status: 303,
 		headers: new Headers([
-			["set-cookie", `frc_session=${signedToken}; Path=/; HttpOnly`],
+			["set-cookie", `coderunner_session=${signedToken}; Path=/; HttpOnly`],
 			["location", `/u/${slug}/`],
 		]),
 	});

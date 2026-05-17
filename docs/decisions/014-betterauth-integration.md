@@ -35,7 +35,7 @@ The question is how to integrate without creating a compatibility mess.
 
 4. **Session management.** Better Auth manages sessions, cookies, and
    token refresh. The old `cookies.ts` HMAC module is deleted. Better Auth's
-   session cookie is explicitly named `frc_session`.
+   session cookie is explicitly named `coderunner_session`.
 
 5. **Migration strategy.** Our migration runner applies migration 007 (remove
    old auth tables, rebuild FK-dependent tables). Then Better Auth's programmatic

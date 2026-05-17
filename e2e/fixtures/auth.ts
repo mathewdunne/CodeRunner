@@ -50,7 +50,7 @@ export type LoginResult = {
 		role: "student" | "admin";
 	};
 	cookieValue: string;
-	cookieName: "frc_session";
+	cookieName: "coderunner_session";
 };
 
 export async function loginAs(
@@ -103,7 +103,7 @@ export async function loginAs(
 	const url = new URL(app.storage.config.baseUrl);
 	await page.context().addCookies([
 		{
-			name: "frc_session",
+			name: "coderunner_session",
 			value: signed,
 			domain: url.hostname,
 			path: "/",
@@ -116,7 +116,7 @@ export async function loginAs(
 	return {
 		user: { id: userId, email, name: opts.name, slug, role },
 		cookieValue: signed,
-		cookieName: "frc_session",
+		cookieName: "coderunner_session",
 	};
 }
 

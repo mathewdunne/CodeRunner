@@ -29,7 +29,7 @@ This plan does two things together because they share the user/role model:
 
 - **[Plan 03](03-ui-scaffolding.md)** must land first. The login page and
   admin UI both use shadcn primitives.
-- Plan 01 should have renamed the cookie to `frc_session`. If it hasn't, do
+- Plan 01 should have renamed the cookie to `coderunner_session`. If it hasn't, do
   the rename here (cheap).
 
 ## Tasks
@@ -97,7 +97,7 @@ preserve `usr_*` IDs or the old `sessions` table semantics.
 
 #### A.4 Cookie + session
 
-- Cookie name `frc_session` (renamed in Plan 01). Betterauth manages the
+- Cookie name `coderunner_session` (renamed in Plan 01). Betterauth manages the
   session; the existing signed-cookie code in [apps/control/src/cookies.ts](../../apps/control/src/cookies.ts)
   is deleted in favor of betterauth's session middleware.
 - HttpOnly + SameSite=Lax + Secure (in prod) — defaults betterauth gives.

@@ -57,7 +57,7 @@ existing dev DBs at `data/app.db` migrate forward without error;
 
 ### 3. Rename cookie and default secret
 
-- Cookie name: change `frc_v1_session` → `frc_session` at [apps/control/src/cookies.ts:5](../../apps/control/src/cookies.ts:5).
+- Cookie name: change `frc_v1_session` → `coderunner_session` at [apps/control/src/cookies.ts:5](../../apps/control/src/cookies.ts:5).
 - Acceptable to break existing classroom sessions — students re-login.
   No fallback-read needed.
 - Default session secret string at [apps/control/src/config.ts:122](../../apps/control/src/config.ts:122) —

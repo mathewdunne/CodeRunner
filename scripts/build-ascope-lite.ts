@@ -150,7 +150,7 @@ async function stageBundle(): Promise<void> {
 	}
 
 	await rm(distDir, { recursive: true, force: true });
-	await cp(ascopeLiteStatic, distDir, { recursive: true });
+	await cp(ascopeLiteStatic, distDir, { recursive: true, dereference: true });
 	await resolveSymlinksInDist();
 }
 

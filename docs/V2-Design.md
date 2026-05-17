@@ -176,7 +176,7 @@ The control plane is still the only browser-facing server, the only process that
 | Run control | `WS /u/:slug/ws/run` running `docker exec` against `frc-sim` | Same protocol, runs immediately against the merged container |
 | NT4 proxy | `/u/:slug/sim/{alive,nt4}` to `frc-sim` loopback port | Same endpoints, upstream is the merged container's NT4 port |
 | AS Lite | `/scope/*` static + postMessage endpoint injection | Unchanged |
-| Sessions | Signed cookie | Better Auth OAuth session; cookie name is `frc_session` |
+| Sessions | Signed cookie | Better Auth OAuth session; cookie name is `coderunner_session` |
 | Admin API | `/admin/status`, restart sim/lsp, reset-lsp-data | Restart and stop adapt to single container; `reset-lsp-data` removed (redhat.java owns its index inside the container) |
 | Containers in DB | `container_leases` with `sim_*` and `lsp_*` columns | Schema uses `nt4_port`, `vscode_*`, and `code_state`; one row per workspace |
 | Container labels | `frc-sim.role=sim` and `frc-sim.role=lsp` | New `frc-sim.role=code`, version `v2` |
@@ -542,7 +542,7 @@ Every recovery path must preserve `data/users/<workspaceId>/project`.
 
 V2 is still classroom-LAN. Required:
 
-- Better Auth HttpOnly session cookie (`frc_session`).
+- Better Auth HttpOnly session cookie (`coderunner_session`).
 - SameSite=Lax cookie. Editor iframe must stay same-origin with the shell so cookies attach.
 - No editor proxy access without cookie ownership of the slug.
 - openvscode-server runs `--without-connection-token`; the control plane is the only auth boundary.
