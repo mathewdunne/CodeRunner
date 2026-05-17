@@ -1,4 +1,4 @@
-import { cp, lstat, readFile, readlink, rm, stat } from "node:fs/promises";
+import { cp, rm, stat } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { applyAdvantageScopePatches } from "./apply-ascope-patches";
 
@@ -83,7 +83,9 @@ function envWithEmsdk(emsdkRoot: string): Record<string, string> {
 	};
 }
 
-async function gitSymlinksUnder(prefix: string): Promise<string[]> {
+type GitSymlink = { path: string; hash: string };
+
+async function gitSymlinksUnder(prefix: string): Promise<GitSymlink[]> {
 	const subprocess = Bun.spawn(
 		["git", "-C", ascopeRoot, "ls-files", "-s", prefix],
 		{
@@ -102,33 +104,51 @@ async function gitSymlinksUnder(prefix: string): Promise<string[]> {
 		);
 	}
 
-	return stdout
-		.split(/\r?\n/u)
-		.filter((line) => line.startsWith("120000 "))
-		.map((line) => line.slice(line.indexOf("\t") + 1))
-		.filter(Boolean);
+	const symlinks: GitSymlink[] = [];
+	for (const line of stdout.split(/\r?\n/u)) {
+		// Format: "120000 <hash> <stage>\t<path>"
+		if (!line.startsWith("120000 ")) continue;
+		const tabIdx = line.indexOf("\t");
+		if (tabIdx < 0) continue;
+		const fields = line.slice(0, tabIdx).split(/\s+/u);
+		const hash = fields[1];
+		const path = line.slice(tabIdx + 1);
+		if (!hash || !path) continue;
+		symlinks.push({ path, hash });
+	}
+	return symlinks;
+}
+
+async function gitBlobContent(hash: string): Promise<string> {
+	const subprocess = Bun.spawn(
+		["git", "-C", ascopeRoot, "cat-file", "-p", hash],
+		{ stdout: "pipe", stderr: "pipe" },
+	);
+	const [stdout, stderr, exitCode] = await Promise.all([
+		new Response(subprocess.stdout).text(),
+		new Response(subprocess.stderr).text(),
+		subprocess.exited,
+	]);
+	if (exitCode !== 0) {
+		throw new Error(
+			stderr.trim() || `git cat-file failed with exit ${exitCode}.`,
+		);
+	}
+	return stdout;
 }
 
 async function resolveSymlinksInDist(): Promise<void> {
-	for (const repoRelativePath of await gitSymlinksUnder("lite/static")) {
+	for (const { path: repoRelativePath, hash } of await gitSymlinksUnder(
+		"lite/static",
+	)) {
 		const distRelativePath = repoRelativePath.replace(/^lite\/static\//u, "");
 		const placeholder = resolve(distDir, ...distRelativePath.split("/"));
-		if (!(await exists(placeholder))) {
-			continue;
-		}
 
-		// On Linux/macOS git materializes symlinks as real symlinks; on Windows
-		// without developer mode it stores them as regular text files whose
-		// content is the link target. lstat distinguishes the two cases.
-		const placeholderLstat = await lstat(placeholder);
-		let linkText: string;
-		if (placeholderLstat.isSymbolicLink()) {
-			linkText = await readlink(placeholder);
-		} else if (placeholderLstat.isFile()) {
-			linkText = (await readFile(placeholder, "utf8")).trim();
-		} else {
-			continue;
-		}
+		// Read the link target from git, not from the filesystem. The upstream
+		// bundleLiteAssets.mjs rewrites some symlinks at build time into corrupt
+		// absolute paths (e.g. lite/static/www → /abs/.../lite/static/www, which
+		// loops back on itself). The git blob holds the canonical relative target.
+		const linkText = (await gitBlobContent(hash)).trim();
 
 		const linkSourceDir = dirname(
 			resolve(ascopeRoot, ...repoRelativePath.split("/")),
