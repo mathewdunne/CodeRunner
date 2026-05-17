@@ -6,7 +6,7 @@ const repoRoot = resolve(import.meta.dirname, "..");
 const targets = ["apps/web/dist", "dist/advantagescope"];
 
 for (const target of targets) {
-  const path = resolve(repoRoot, target);
-  await rm(path, { recursive: true, force: true });
-  console.log(`removed ${target}`);
+	const path = resolve(repoRoot, target);
+	await rm(path, { recursive: true, force: true });
+	console.log(`removed ${target}`);
 }

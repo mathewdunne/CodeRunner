@@ -123,6 +123,7 @@ bun run migrate
 ### 2.6 Verify the setup
 
 ```bash
+bun run check
 bun run typecheck
 bun run test
 ```
@@ -870,7 +871,9 @@ bun run audit:prune -- --dry-run
 | **Run migrations** | `bun run migrate` |
 | **Check migration status** | `bun run migrate:status` |
 | **Typecheck** | `bun run typecheck` |
-| **CI gate (typecheck + tests)** | `bun run verify` |
+| **Lint + format + organize imports (write)** | `bun run check:fix` |
+| **Lint + format check only** | `bun run check` |
+| **CI gate (biome + typecheck + tests)** | `bun run verify` |
 | **Test suite** | `bun run test` |
 | **Resource monitoring** | Grafana dashboards under `grafana/` (or `docker stats`) |
 | **Backup projects** | `bun run backup` |

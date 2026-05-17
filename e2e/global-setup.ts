@@ -16,29 +16,31 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
 export default async function globalSetup(): Promise<void> {
-  if (process.env.E2E_TEST !== "1") {
-    throw new Error(
-      "E2E_TEST=1 must be set before running Playwright. The npm scripts (`bun run e2e`) do this for you.",
-    );
-  }
+	if (process.env.E2E_TEST !== "1") {
+		throw new Error(
+			"E2E_TEST=1 must be set before running Playwright. The npm scripts (`bun run e2e`) do this for you.",
+		);
+	}
 
-  if (process.env.PLAYWRIGHT_SKIP_WEB_BUILD === "1") {
-    return;
-  }
+	if (process.env.PLAYWRIGHT_SKIP_WEB_BUILD === "1") {
+		return;
+	}
 
-  const root = resolve(__dirname, "..");
-  const distIndex = resolve(root, "apps/web/dist/index.html");
+	const root = resolve(__dirname, "..");
+	const distIndex = resolve(root, "apps/web/dist/index.html");
 
-  // Always rebuild — a stale dist that exists is worse than no dist.
-  const result = spawnSync("bun", ["run", "build:web"], {
-    cwd: root,
-    stdio: "inherit",
-    env: process.env,
-  });
-  if (result.status !== 0) {
-    throw new Error(`bun run build:web failed with status ${result.status}`);
-  }
-  if (!existsSync(distIndex)) {
-    throw new Error(`Expected web bundle at ${distIndex} but it doesn't exist.`);
-  }
+	// Always rebuild — a stale dist that exists is worse than no dist.
+	const result = spawnSync("bun", ["run", "build:web"], {
+		cwd: root,
+		stdio: "inherit",
+		env: process.env,
+	});
+	if (result.status !== 0) {
+		throw new Error(`bun run build:web failed with status ${result.status}`);
+	}
+	if (!existsSync(distIndex)) {
+		throw new Error(
+			`Expected web bundle at ${distIndex} but it doesn't exist.`,
+		);
+	}
 }

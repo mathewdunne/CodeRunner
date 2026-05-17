@@ -8,10 +8,10 @@
 	"files": {
 		"includes": [
 			"**",
-			"!vendor/**",
-			"!templates/**",
-			"!patches/**",
-			"!graphify-out/**",
+			"!vendor",
+			"!templates",
+			"!patches",
+			"!graphify-out",
 			"!**/*.min.js",
 			"!**/*.min.css"
 		]
@@ -23,12 +23,20 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"style": {
+				"noNonNullAssertion": "off"
+			}
 		}
 	},
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "double"
+		}
+	},
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
 		}
 	},
 	"assist": {
@@ -52,16 +60,21 @@
 			}
 		},
 		{
-			"includes": [
-				"**/*.test.ts",
-				"**/*.test.tsx",
-				"**/*.spec.ts",
-				"e2e/**"
-			],
+			"includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "e2e/**"],
 			"linter": {
 				"rules": {
 					"suspicious": {
 						"noExplicitAny": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["e2e/**"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noEmptyPattern": "off"
 					}
 				}
 			}

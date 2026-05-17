@@ -60,6 +60,7 @@ V2 is complete. The system uses per-student merged containers (`coderunner-works
 - Keep AS Lite patches source-level and repeatable.
 - Do not re-verify upstream extension-owned behavior unless editor or extension versions changed. Decision 011 is the evidence record.
 - Keep metrics instrumentation backend-agnostic. The control plane only speaks Prometheus exposition at `/metrics`; deploy-specific shipping (Alloy → Grafana Cloud, or whatever replaces it) lives outside `apps/control/`. Decision 023 is the record.
+- Run `bun run check:fix` before finalizing any code change. It applies Biome's safe lint fixes, formatting, and import organization in one pass. `bun run verify` gates on `biome ci` so unfixed issues will fail CI.
 
 ## Key References
 
@@ -74,6 +75,10 @@ V2 is complete. The system uses per-student merged containers (`coderunner-works
 
 - Install dependencies: `bun install`
 - Typecheck: `bun run typecheck`
+- Lint + format + organize imports (write fixes): `bun run check:fix`
+- Lint + format check only (no writes): `bun run check`
+- Lint only: `bun run lint` (use `lint:fix` to apply safe fixes)
+- Format only: `bun run format`
 - Run Bun tests: `bun run test`
 - Run frontend tests (Vitest): `bun run test:web`
 - Run E2E tests (Playwright, mocked tier): `bun run e2e`

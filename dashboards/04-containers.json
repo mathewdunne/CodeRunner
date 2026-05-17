@@ -1,102 +1,235 @@
 {
-  "title": "CodeRunner — Containers & Workspaces",
-  "uid": "coderunner-containers",
-  "tags": ["frc-sim"],
-  "schemaVersion": 38,
-  "version": 1,
-  "editable": true,
-  "refresh": "30s",
-  "time": {"from": "now-1h", "to": "now"},
-  "timepicker": {},
-  "templating": {
-    "list": [
-      {"name": "datasource", "type": "datasource", "query": "prometheus", "label": "Data source", "hide": 0, "refresh": 1, "current": {}}
-    ]
-  },
-  "panels": [
-    {
-      "id": 1,
-      "type": "timeseries",
-      "title": "Active workspaces",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "targets": [
-        {"refId": "A", "expr": "active_workspaces", "legendFormat": "active", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
-      ],
-      "fieldConfig": {"defaults": {"unit": "short", "custom": {"drawStyle": "line", "fillOpacity": 20}}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single"}}
-    },
-    {
-      "id": 2,
-      "type": "stat",
-      "title": "Cold container start p95 (30m)",
-      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "targets": [
-        {"refId": "A", "expr": "histogram_quantile(0.95, sum by (le) (rate(container_start_duration_seconds_bucket[30m])))", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
-      ],
-      "fieldConfig": {"defaults": {"unit": "s", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "yellow", "value": 5}, {"color": "red", "value": 15}]}}, "overrides": []},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "area"}
-    },
-    {
-      "id": 3,
-      "type": "stat",
-      "title": "Idle-sweep stops (1h)",
-      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "targets": [
-        {"refId": "A", "expr": "increase(idle_sweep_stops_total[1h])", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
-      ],
-      "fieldConfig": {"defaults": {"unit": "short"}, "overrides": []},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "value", "graphMode": "area"}
-    },
-    {
-      "id": 4,
-      "type": "stat",
-      "title": "Workspaces > 80% mem",
-      "gridPos": {"h": 4, "w": 12, "x": 12, "y": 4},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "targets": [
-        {"refId": "A", "expr": "count(container_memory_percent > 80)", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
-      ],
-      "fieldConfig": {"defaults": {"unit": "short", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}, {"color": "red", "value": 3}]}}, "overrides": []},
-      "options": {"reduceOptions": {"calcs": ["lastNotNull"]}, "colorMode": "background", "graphMode": "none"}
-    },
-    {
-      "id": 5,
-      "type": "timeseries",
-      "title": "CPU % per workspace",
-      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "targets": [
-        {"refId": "A", "expr": "container_cpu_percent", "legendFormat": "{{workspace_id}}", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
-      ],
-      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "custom": {"drawStyle": "line", "fillOpacity": 5}}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}}
-    },
-    {
-      "id": 6,
-      "type": "timeseries",
-      "title": "Memory % per workspace",
-      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "targets": [
-        {"refId": "A", "expr": "container_memory_percent", "legendFormat": "{{workspace_id}}", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
-      ],
-      "fieldConfig": {"defaults": {"unit": "percent", "min": 0, "max": 100, "custom": {"drawStyle": "line", "fillOpacity": 5}}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "multi", "sort": "desc"}}
-    },
-    {
-      "id": 7,
-      "type": "timeseries",
-      "title": "Container cold-start rate",
-      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
-      "datasource": {"type": "prometheus", "uid": "${datasource}"},
-      "targets": [
-        {"refId": "A", "expr": "rate(container_start_duration_seconds_count[5m])", "legendFormat": "starts/sec", "datasource": {"type": "prometheus", "uid": "${datasource}"}}
-      ],
-      "fieldConfig": {"defaults": {"unit": "ops", "custom": {"drawStyle": "line", "fillOpacity": 10}}, "overrides": []},
-      "options": {"legend": {"displayMode": "list", "placement": "bottom", "showLegend": true}, "tooltip": {"mode": "single"}}
-    }
-  ]
+	"title": "CodeRunner — Containers & Workspaces",
+	"uid": "coderunner-containers",
+	"tags": ["frc-sim"],
+	"schemaVersion": 38,
+	"version": 1,
+	"editable": true,
+	"refresh": "30s",
+	"time": { "from": "now-1h", "to": "now" },
+	"timepicker": {},
+	"templating": {
+		"list": [
+			{
+				"name": "datasource",
+				"type": "datasource",
+				"query": "prometheus",
+				"label": "Data source",
+				"hide": 0,
+				"refresh": 1,
+				"current": {}
+			}
+		]
+	},
+	"panels": [
+		{
+			"id": 1,
+			"type": "timeseries",
+			"title": "Active workspaces",
+			"gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+			"datasource": { "type": "prometheus", "uid": "${datasource}" },
+			"targets": [
+				{
+					"refId": "A",
+					"expr": "active_workspaces",
+					"legendFormat": "active",
+					"datasource": { "type": "prometheus", "uid": "${datasource}" }
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"custom": { "drawStyle": "line", "fillOpacity": 20 }
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"tooltip": { "mode": "single" }
+			}
+		},
+		{
+			"id": 2,
+			"type": "stat",
+			"title": "Cold container start p95 (30m)",
+			"gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+			"datasource": { "type": "prometheus", "uid": "${datasource}" },
+			"targets": [
+				{
+					"refId": "A",
+					"expr": "histogram_quantile(0.95, sum by (le) (rate(container_start_duration_seconds_bucket[30m])))",
+					"datasource": { "type": "prometheus", "uid": "${datasource}" }
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "s",
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{ "color": "green", "value": null },
+							{ "color": "yellow", "value": 5 },
+							{ "color": "red", "value": 15 }
+						]
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": { "calcs": ["lastNotNull"] },
+				"colorMode": "background",
+				"graphMode": "area"
+			}
+		},
+		{
+			"id": 3,
+			"type": "stat",
+			"title": "Idle-sweep stops (1h)",
+			"gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+			"datasource": { "type": "prometheus", "uid": "${datasource}" },
+			"targets": [
+				{
+					"refId": "A",
+					"expr": "increase(idle_sweep_stops_total[1h])",
+					"datasource": { "type": "prometheus", "uid": "${datasource}" }
+				}
+			],
+			"fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
+			"options": {
+				"reduceOptions": { "calcs": ["lastNotNull"] },
+				"colorMode": "value",
+				"graphMode": "area"
+			}
+		},
+		{
+			"id": 4,
+			"type": "stat",
+			"title": "Workspaces > 80% mem",
+			"gridPos": { "h": 4, "w": 12, "x": 12, "y": 4 },
+			"datasource": { "type": "prometheus", "uid": "${datasource}" },
+			"targets": [
+				{
+					"refId": "A",
+					"expr": "count(container_memory_percent > 80)",
+					"datasource": { "type": "prometheus", "uid": "${datasource}" }
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "short",
+					"thresholds": {
+						"mode": "absolute",
+						"steps": [
+							{ "color": "green", "value": null },
+							{ "color": "orange", "value": 1 },
+							{ "color": "red", "value": 3 }
+						]
+					}
+				},
+				"overrides": []
+			},
+			"options": {
+				"reduceOptions": { "calcs": ["lastNotNull"] },
+				"colorMode": "background",
+				"graphMode": "none"
+			}
+		},
+		{
+			"id": 5,
+			"type": "timeseries",
+			"title": "CPU % per workspace",
+			"gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+			"datasource": { "type": "prometheus", "uid": "${datasource}" },
+			"targets": [
+				{
+					"refId": "A",
+					"expr": "container_cpu_percent",
+					"legendFormat": "{{workspace_id}}",
+					"datasource": { "type": "prometheus", "uid": "${datasource}" }
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "percent",
+					"min": 0,
+					"custom": { "drawStyle": "line", "fillOpacity": 5 }
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"tooltip": { "mode": "multi", "sort": "desc" }
+			}
+		},
+		{
+			"id": 6,
+			"type": "timeseries",
+			"title": "Memory % per workspace",
+			"gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+			"datasource": { "type": "prometheus", "uid": "${datasource}" },
+			"targets": [
+				{
+					"refId": "A",
+					"expr": "container_memory_percent",
+					"legendFormat": "{{workspace_id}}",
+					"datasource": { "type": "prometheus", "uid": "${datasource}" }
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "percent",
+					"min": 0,
+					"max": 100,
+					"custom": { "drawStyle": "line", "fillOpacity": 5 }
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"tooltip": { "mode": "multi", "sort": "desc" }
+			}
+		},
+		{
+			"id": 7,
+			"type": "timeseries",
+			"title": "Container cold-start rate",
+			"gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
+			"datasource": { "type": "prometheus", "uid": "${datasource}" },
+			"targets": [
+				{
+					"refId": "A",
+					"expr": "rate(container_start_duration_seconds_count[5m])",
+					"legendFormat": "starts/sec",
+					"datasource": { "type": "prometheus", "uid": "${datasource}" }
+				}
+			],
+			"fieldConfig": {
+				"defaults": {
+					"unit": "ops",
+					"custom": { "drawStyle": "line", "fillOpacity": 10 }
+				},
+				"overrides": []
+			},
+			"options": {
+				"legend": {
+					"displayMode": "list",
+					"placement": "bottom",
+					"showLegend": true
+				},
+				"tooltip": { "mode": "single" }
+			}
+		}
+	]
 }
