@@ -1,0 +1,10 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xms64m -Xmx512m -XX:ReservedCodeCacheSize=96m -Xlog:disable",
+  "java.gradle.buildServer.enabled": "off",
+  "gradle.autoDetect": "off",
+  "java.import.gradle.jvmArguments": "-Xms64m -Xmx384m -XX:MaxMetaspaceSize=192m -XX:ReservedCodeCacheSize=96m -XX:+HeapDumpOnOutOfMemoryError -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8",
+  "java.import.gradle.arguments": "--no-daemon --no-watch-fs --max-workers=2",
+  "wpilib.autoStartRioLog": false,
+  "wpilib.skipSelectSimulateExtension": true
+}

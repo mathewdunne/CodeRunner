@@ -15,6 +15,13 @@ Merged per-student container for V2. Combines openvscode-server + Java IDE + WPI
 | Spotless Gradle | 1.2.1 | Code formatting via Spotless |
 | Gradle cache | Primed from template | Fast first builds (~seconds vs ~minutes) |
 
+The runtime seeds conservative memory defaults for classroom density:
+
+- JDT LS defaults to `-Xmx512m` instead of the WPILib-generated `-Xmx8G`.
+- The VS Code Gradle Build Server path is disabled by default; JDT LS still imports Gradle projects through the Java extension.
+- Gradle imports and simulation runs use `--no-watch-fs`, `--max-workers=2`, and a bounded `-Xmx384m` daemon.
+- The robot simulation JVM is capped at `-Xmx256m` unless `ROBOT_SIM_JVMARGS` overrides it.
+
 ## Build
 
 ```bash
@@ -58,6 +65,12 @@ frc-sim.workspace=<workspaceId>
 | `PUID` | Yes | User ID for file permissions (matches host UID) |
 | `PGID` | Yes | Group ID for file permissions (matches host GID) |
 | `VSCODE_BASE_PATH` | Yes behind proxy | Reverse proxy base path, e.g. `/u/<slug>/vscode/` |
+| `CODERUNNER_JDT_LS_VMARGS` | No | Overrides the seeded Java language-server VM args |
+| `CODERUNNER_GRADLE_JVMARGS` | No | Overrides the seeded Gradle daemon/import VM args |
+| `CODERUNNER_GRADLE_ARGS` | No | Overrides the seeded Gradle import arguments |
+| `GRADLE_SIM_JVMARGS` | No | Overrides the Gradle daemon VM args for `start-sim.sh` |
+| `GRADLE_MAX_WORKERS` | No | Overrides the Gradle worker cap for `start-sim.sh` |
+| `ROBOT_SIM_JVMARGS` | No | Overrides the robot JavaExec VM args applied by `sim-headless.init.gradle` |
 
 ### Example run
 
@@ -94,8 +107,10 @@ On first start with an empty `/config`, the init script:
 
 1. Copies the primed Gradle cache from `/opt/frc-gradle-cache/` into `/config/.gradle/`.
 2. Copies pre-installed VS Code extensions from `/opt/frc-extensions-cache/` into `/config/extensions/`.
+3. Seeds Gradle and VS Code settings with the bounded runtime defaults above.
 
 Subsequent starts skip these copies (directories already populated from the bind mount).
+Settings migration still runs on later starts so existing imported WPILib projects with `java.jdt.ls.vmargs` set to `-Xmx8G` are lowered to the container default.
 
 ## Sim Scripts
 

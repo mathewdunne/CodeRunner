@@ -24,6 +24,7 @@ describe("WPILib Java command starter template", () => {
 			expectTemplateFile("gradlew.bat"),
 			expectTemplateFile("gradle/wrapper/gradle-wrapper.jar"),
 			expectTemplateFile("gradle/wrapper/gradle-wrapper.properties"),
+			expectTemplateFile(".vscode/settings.json"),
 			expectTemplateFile(".wpilib/wpilib_preferences.json"),
 			expectTemplateFile("vendordeps/WPILibNewCommands.json"),
 			expectTemplateFile("src/main/java/frc/robot/Main.java"),

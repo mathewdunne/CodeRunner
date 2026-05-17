@@ -23,6 +23,8 @@ bin/
 # IDEs
 .idea/
 .vscode/
+!templates/wpilib-java-command/.vscode/
+!templates/wpilib-java-command/.vscode/settings.json
 !.wpilib/
 
 # OS

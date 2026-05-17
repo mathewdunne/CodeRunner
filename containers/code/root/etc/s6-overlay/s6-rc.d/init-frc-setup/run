@@ -5,9 +5,17 @@
 GRADLE_USER_HOME="${HOME}/.gradle"
 EXTENSIONS_DIR="${HOME}/extensions"
 MACHINE_SETTINGS="${HOME}/data/Machine/settings.json"
+USER_SETTINGS="${HOME}/data/User/settings.json"
+PROJECT_SETTINGS="/workspace/project/.vscode/settings.json"
 SIM_LOG_FILE="${SIM_LOG_FILE:-${HOME}/sim.log}"
+DEFAULT_JDT_LS_VMARGS="-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xms64m -Xmx512m -XX:ReservedCodeCacheSize=96m -Xlog:disable"
+DEFAULT_GRADLE_JVMARGS="-Xms64m -Xmx384m -XX:MaxMetaspaceSize=192m -XX:ReservedCodeCacheSize=96m -XX:+HeapDumpOnOutOfMemoryError -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8"
+DEFAULT_GRADLE_ARGS="--no-daemon --no-watch-fs --max-workers=2"
+CODERUNNER_JDT_LS_VMARGS="${CODERUNNER_JDT_LS_VMARGS:-${DEFAULT_JDT_LS_VMARGS}}"
+CODERUNNER_GRADLE_JVMARGS="${CODERUNNER_GRADLE_JVMARGS:-${DEFAULT_GRADLE_JVMARGS}}"
+CODERUNNER_GRADLE_ARGS="${CODERUNNER_GRADLE_ARGS:-${DEFAULT_GRADLE_ARGS}}"
 
-mkdir -p "${GRADLE_USER_HOME}" "${EXTENSIONS_DIR}" "${HOME}/data/Machine"
+mkdir -p "${GRADLE_USER_HOME}" "${EXTENSIONS_DIR}" "${HOME}/data/Machine" "${HOME}/data/User"
 
 # Seed Gradle cache on first run.
 if [[ -d /opt/frc-gradle-cache && ! -d "${GRADLE_USER_HOME}/caches" ]]; then
@@ -19,6 +27,72 @@ fi
 if [[ -d /opt/frc-extensions-cache ]] && [[ -z "$(ls -A "${EXTENSIONS_DIR}" 2>/dev/null)" ]]; then
   echo "Seeding VS Code extensions from image..."
   cp -a /opt/frc-extensions-cache/. "${EXTENSIONS_DIR}"/
+fi
+
+GRADLE_PROPERTIES="${GRADLE_USER_HOME}/gradle.properties"
+if [[ ! -e "${GRADLE_PROPERTIES}" ]]; then
+  cat > "${GRADLE_PROPERTIES}" <<EOF
+org.gradle.jvmargs=${CODERUNNER_GRADLE_JVMARGS}
+org.gradle.daemon=false
+org.gradle.parallel=false
+org.gradle.workers.max=2
+org.gradle.vfs.watch=false
+EOF
+else
+  grep -q '^org\.gradle\.jvmargs=' "${GRADLE_PROPERTIES}" || printf 'org.gradle.jvmargs=%s\n' "${CODERUNNER_GRADLE_JVMARGS}" >> "${GRADLE_PROPERTIES}"
+  grep -q '^org\.gradle\.daemon=' "${GRADLE_PROPERTIES}" || printf 'org.gradle.daemon=false\n' >> "${GRADLE_PROPERTIES}"
+  grep -q '^org\.gradle\.parallel=' "${GRADLE_PROPERTIES}" || printf 'org.gradle.parallel=false\n' >> "${GRADLE_PROPERTIES}"
+  grep -q '^org\.gradle\.workers\.max=' "${GRADLE_PROPERTIES}" || printf 'org.gradle.workers.max=2\n' >> "${GRADLE_PROPERTIES}"
+  grep -q '^org\.gradle\.vfs\.watch=' "${GRADLE_PROPERTIES}" || printf 'org.gradle.vfs.watch=false\n' >> "${GRADLE_PROPERTIES}"
+fi
+
+merge_vscode_settings() {
+  local settings_file="$1"
+  local mode="${2:-defaults}"
+  local tmp_settings
+
+  mkdir -p "$(dirname "${settings_file}")"
+  if [[ ! -s "${settings_file}" ]]; then
+    printf '{}\n' > "${settings_file}"
+  fi
+
+  tmp_settings="$(mktemp)"
+  if jq \
+    --arg jdtVmargs "${CODERUNNER_JDT_LS_VMARGS}" \
+    --arg gradleJvmargs "${CODERUNNER_GRADLE_JVMARGS}" \
+    --arg gradleArgs "${CODERUNNER_GRADLE_ARGS}" \
+    --arg mode "${mode}" \
+    '
+      def oldJdtVmargs:
+        type == "string" and (contains("-Xmx8G") or contains("-Xmx2G"));
+      if $mode == "project" then
+        if (."java.jdt.ls.vmargs" | oldJdtVmargs) then
+          ."java.jdt.ls.vmargs" = $jdtVmargs
+        else
+          .
+        end
+      else
+        if (."java.jdt.ls.vmargs" == null or (."java.jdt.ls.vmargs" | oldJdtVmargs)) then
+          ."java.jdt.ls.vmargs" = $jdtVmargs
+        else
+          .
+        end
+      end
+      | ."java.gradle.buildServer.enabled" //= "off"
+      | ."gradle.autoDetect" //= "off"
+      | ."java.import.gradle.jvmArguments" //= $gradleJvmargs
+      | ."java.import.gradle.arguments" //= $gradleArgs
+    ' "${settings_file}" > "${tmp_settings}"; then
+    mv "${tmp_settings}" "${settings_file}"
+  else
+    rm -f "${tmp_settings}"
+    echo "WARNING: Could not update VS Code settings at ${settings_file}; leaving it unchanged."
+  fi
+}
+
+merge_vscode_settings "${USER_SETTINGS}" defaults
+if [[ -f "${PROJECT_SETTINGS}" ]]; then
+  merge_vscode_settings "${PROJECT_SETTINGS}" project
 fi
 
 # Seed the remote-level editor theme. Existing non-default remote choices are preserved,

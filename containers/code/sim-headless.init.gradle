@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.JavaExec
+
 // sim-headless.init.gradle
 //
 // Gradle init script for headless simulation in the Docker environment.
@@ -5,6 +7,8 @@
 //
 // - Removes halsim_gui and halsim_ds_socket (no X11/display available)
 // - Ensures halsim_ws_server is enabled (for web Driver Station control)
+// - Bounds the robot sim JVM heap so a student program cannot consume the
+//   entire per-workspace container budget.
 //
 // See docs/decisions/016-imported-project-sim-compat.md
 
@@ -46,6 +50,22 @@ allprojects {
                 )
             } catch (Exception e) {
                 project.logger.warn("sim-headless: could not add ws server: ${e.message}")
+            }
+        }
+
+        def defaultRobotSimJvmArgs =
+            '-Xms32m -Xmx256m -XX:MaxMetaspaceSize=128m -XX:ReservedCodeCacheSize=96m -XX:ActiveProcessorCount=2'
+        def robotSimJvmArgs = (System.getenv('ROBOT_SIM_JVMARGS') ?: defaultRobotSimJvmArgs)
+            .trim()
+            .split(/\s+/)
+            .findAll { it }
+
+        project.tasks.withType(JavaExec).configureEach { task ->
+            if (task.name.toLowerCase(Locale.ROOT).contains('simulate')) {
+                task.jvmArgs(robotSimJvmArgs)
+                project.logger.lifecycle(
+                    "sim-headless: bounded JVM args for ${task.path}"
+                )
             }
         }
     }
