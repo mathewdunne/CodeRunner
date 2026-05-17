@@ -1,5 +1,5 @@
-import { cp, readFile, rm, stat } from "node:fs/promises";
-import { dirname, posix, resolve } from "node:path";
+import { cp, lstat, readFile, readlink, rm, stat } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { applyAdvantageScopePatches } from "./apply-ascope-patches";
 
 const repoRoot = resolve(import.meta.dirname, "..");
@@ -117,19 +117,23 @@ async function resolveSymlinksInDist(): Promise<void> {
 			continue;
 		}
 
-		// On Linux, cp copies symlinks as symlinks (or follows them), so the
-		// placeholder may already be a directory rather than a text-file stub.
-		// Only attempt readFile on regular files; skip resolved directories.
-		const placeholderStat = await stat(placeholder);
-		if (!placeholderStat.isFile()) {
+		// On Linux/macOS git materializes symlinks as real symlinks; on Windows
+		// without developer mode it stores them as regular text files whose
+		// content is the link target. lstat distinguishes the two cases.
+		const placeholderLstat = await lstat(placeholder);
+		let linkText: string;
+		if (placeholderLstat.isSymbolicLink()) {
+			linkText = await readlink(placeholder);
+		} else if (placeholderLstat.isFile()) {
+			linkText = (await readFile(placeholder, "utf8")).trim();
+		} else {
 			continue;
 		}
 
-		const linkText = (await readFile(placeholder, "utf8")).trim();
 		const linkSourceDir = dirname(
 			resolve(ascopeRoot, ...repoRelativePath.split("/")),
 		);
-		const target = resolve(linkSourceDir, ...linkText.split(posix.sep));
+		const target = resolve(linkSourceDir, linkText);
 		await rm(placeholder, { force: true, recursive: true });
 		if (!(await exists(target))) {
 			console.warn(
@@ -150,7 +154,7 @@ async function stageBundle(): Promise<void> {
 	}
 
 	await rm(distDir, { recursive: true, force: true });
-	await cp(ascopeLiteStatic, distDir, { recursive: true, dereference: true });
+	await cp(ascopeLiteStatic, distDir, { recursive: true });
 	await resolveSymlinksInDist();
 }
 
