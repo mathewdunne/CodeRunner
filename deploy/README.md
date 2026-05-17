@@ -94,6 +94,8 @@ echo -n '<glc_eyJ... token>' \
   | gcloud secrets versions add coderunner-grafana-cloud-token --data-file=-
 ```
 
+Find the Grafana values in the Grafana Cloud portal, not inside the dashboard-only view. Open your stack, then open the Prometheus/Metrics card's **Details** page. Use the **Remote Write Endpoint** ending in `/api/prom/push` for `coderunner-grafana-cloud-url`, and the **Username / Instance ID** from that same page for `coderunner-grafana-cloud-user`. For `coderunner-grafana-cloud-token`, create a Cloud **Access Policy Token** with the `metrics:write` scope and use the token value as the password.
+
 OAuth callback URLs to register with each provider:
 - GitHub: `https://<your domain>/api/auth/callback/github`
 - Google: `https://<your domain>/api/auth/callback/google`
@@ -115,6 +117,8 @@ After ~30 s, `curl -I https://<your domain>/healthz` should return 200 with a va
 ### 8. Configure GitHub repo for the deploy workflow
 
 Under *Settings → Secrets and variables → Actions → Variables*, set:
+
+Here `var.*` means the Terraform variable value from `deploy/terraform/terraform.tfvars`. For example, `var.project_id` is your Google Cloud project ID, and `var.zone` is the VM zone you chose.
 
 | Variable | Source | Required |
 |---|---|---|
