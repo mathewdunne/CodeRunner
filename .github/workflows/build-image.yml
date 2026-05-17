@@ -42,3 +42,61 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # Prebuild web + AdvantageScope Lite and attach them to the GitHub Release.
+  # The deploy workflow fetches these tarballs instead of rebuilding on the VM,
+  # which removes emsdk/Node from the VM bootstrap and shortens the rollout
+  # window. Only runs on tag pushes — there's no release to attach to otherwise.
+  release-artifacts:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # to attach release assets
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache emsdk
+        id: cache-emsdk
+        uses: actions/cache@v4
+        with:
+          path: ~/emsdk
+          key: emsdk-4.0.12-${{ runner.os }}
+
+      - name: Install emsdk
+        run: |
+          set -euo pipefail
+          if [ ! -d "$HOME/emsdk" ]; then
+            git clone https://github.com/emscripten-core/emsdk.git "$HOME/emsdk"
+          fi
+          cd "$HOME/emsdk"
+          ./emsdk install 4.0.12
+          ./emsdk activate 4.0.12
+          echo "EMSDK=$HOME/emsdk" >> "$GITHUB_ENV"
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run build:web
+      - run: bun run build:ascope
+
+      - name: Package tarballs
+        run: |
+          set -euo pipefail
+          tar -czf web-dist.tar.gz -C apps/web/dist .
+          tar -czf ascope-dist.tar.gz -C dist/advantagescope .
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            web-dist.tar.gz
+            ascope-dist.tar.gz
+          fail_on_unmatched_files: true

@@ -39,6 +39,11 @@ variable "git_ref" {
 variable "ssh_break_glass_cidr" {
   description = "CIDR allowed to SSH on port 22 for emergencies. Set to your home IP /32. Routine deploys use IAP, not this rule."
   type        = string
+
+  validation {
+    condition     = can(cidrnetmask(var.ssh_break_glass_cidr))
+    error_message = "ssh_break_glass_cidr must be a valid CIDR (e.g. 203.0.113.42/32)."
+  }
 }
 
 variable "machine_type" {

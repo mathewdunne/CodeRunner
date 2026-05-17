@@ -13,6 +13,16 @@ output "vm_zone" {
   value       = google_compute_instance.coderunner.zone
 }
 
+output "region" {
+  description = "GCP region. Useful as a quick reference when setting the optional GCP_ZONE/GCP_VM_NAME repo variables."
+  value       = var.region
+}
+
+output "zone" {
+  description = "GCP zone (matches vm_zone). Plug into the GCP_ZONE repo variable for the deploy workflow."
+  value       = var.zone
+}
+
 output "deployer_service_account" {
   description = "Service account the GitHub Actions deploy workflow impersonates."
   value       = google_service_account.deployer.email

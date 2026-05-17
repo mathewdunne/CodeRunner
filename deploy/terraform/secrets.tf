@@ -28,7 +28,7 @@ resource "google_secret_manager_secret" "all" {
 
 resource "google_secret_manager_secret_iam_member" "vm_accessor" {
   for_each  = google_secret_manager_secret.all
-  secret_id = each.value.id
+  secret_id = each.value.secret_id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.vm.email}"
 }

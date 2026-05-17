@@ -44,20 +44,33 @@ jobs:
     steps:
       - name: Resolve tag to deploy
         id: tag
+        # Read GitHub-provided values via env, NOT direct ${{ }} interpolation
+        # into the run block — otherwise a hostile workflow_dispatch input could
+        # inject shell. The strict regex check happens below regardless.
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          UPSTREAM_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            TAG="$INPUT_TAG"
           else
             # workflow_run carries the upstream event. For tag pushes,
             # head_branch is the tag name (e.g. "v2.4.0").
-            echo "tag=${{ github.event.workflow_run.head_branch }}" >> "$GITHUB_OUTPUT"
+            TAG="$UPSTREAM_BRANCH"
           fi
+          if [ -z "$TAG" ]; then
+            echo "empty tag (head_branch missing on workflow_run event?)"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Sanity check tag format and required vars
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
           set -euo pipefail
-          TAG="${{ steps.tag.outputs.tag }}"
           # Strict semver-ish pattern: v<major>.<minor>.<patch> with optional pre-release suffix.
           # Rejects shell metacharacters, backticks, $(...), spaces, etc.
           if ! echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
@@ -86,12 +99,15 @@ jobs:
       - name: Roll service on VM
         env:
           TAG: ${{ steps.tag.outputs.tag }}
+          GITHUB_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
 
           # Heredoc is sent over the IAP-tunneled SSH connection and executed
-          # by the remote shell. $TAG is interpolated by the local shell before
-          # the heredoc closes, so the remote side sees a literal tag.
+          # by the remote shell. $TAG, $WORKSPACE_IMAGE, and $GITHUB_REPO are
+          # interpolated by the LOCAL shell before the heredoc closes, so the
+          # remote side sees literal values. Anything intended for the remote
+          # shell is escaped (\$name, \$(cmd)).
           read -r -d '' DEPLOY_SCRIPT <<EOF || true
           set -euo pipefail
           export DEBIAN_FRONTEND=noninteractive
@@ -106,10 +122,19 @@ jobs:
           cd /opt/coderunner/app
           sudo -u coderunner git fetch --tags --depth=1 origin tag $TAG
           sudo -u coderunner git checkout $TAG
-          sudo -u coderunner git submodule update --init --recursive
           sudo -u coderunner bun install --frozen-lockfile
-          sudo -u coderunner bun run build:web
-          sudo -u coderunner bash -lc "cd /opt/coderunner/app && bun run build:ascope"
+
+          # Fetch prebuilt web + ascope artifacts from the GitHub Release.
+          # Public repo → no auth needed. release-artifacts job in
+          # build-image.yml attached these to the same tag.
+          RELEASE_URL="https://github.com/$GITHUB_REPO/releases/download/$TAG"
+          sudo -u coderunner curl -fsSL -o /tmp/web.tgz "\$RELEASE_URL/web-dist.tar.gz"
+          sudo -u coderunner curl -fsSL -o /tmp/ascope.tgz "\$RELEASE_URL/ascope-dist.tar.gz"
+          sudo -u coderunner rm -rf apps/web/dist && sudo -u coderunner mkdir -p apps/web/dist
+          sudo -u coderunner tar -xzf /tmp/web.tgz -C apps/web/dist
+          sudo -u coderunner rm -rf dist/advantagescope && sudo -u coderunner mkdir -p dist/advantagescope
+          sudo -u coderunner tar -xzf /tmp/ascope.tgz -C dist/advantagescope
+          sudo -u coderunner rm -f /tmp/web.tgz /tmp/ascope.tgz
 
           # Pull the matching workspace image and re-tag :latest locally so
           # CODE_IMAGE=<image>:latest keeps working.

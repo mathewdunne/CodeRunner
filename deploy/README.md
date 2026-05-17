@@ -35,7 +35,7 @@ Pick a globally-unique project ID (lowercase, hyphens). The examples below use `
 ```bash
 export PROJECT_ID=your-coderunner-project   # CHANGE this
 gcloud projects create $PROJECT_ID --name="CodeRunner"
-gcloud beta billing projects link $PROJECT_ID --billing-account=<YOUR_BILLING_ID>
+gcloud billing projects link $PROJECT_ID --billing-account=<YOUR_BILLING_ID>
 gcloud config set project $PROJECT_ID
 
 gcloud services enable \
@@ -138,10 +138,16 @@ gcloud compute ssh coderunner --zone=us-central1-a --tunnel-through-iap \
 ## How releases deploy
 
 1. Push a `vX.Y.Z` tag.
-2. [`Build workspace image`](.github/workflows/build-image.yml) publishes the workspace image to GHCR.
-3. [`Deploy to GCE`](.github/workflows/deploy.yml) fires on the `workflow_run` completion, authenticates via WIF, SSHes into the VM through IAP, and runs the deploy script: `git checkout <tag> && bun install && build:web && build:ascope && docker pull && systemctl restart coderunner`, then polls `/healthz`.
+2. [`Build workspace image`](../.github/workflows/build-image.yml) runs two parallel jobs:
+   - `build` publishes the workspace image to `ghcr.io/<owner>/coderunner-workspace:<tag>`.
+   - `release-artifacts` builds `apps/web/dist` and `dist/advantagescope`, tars them, and attaches `web-dist.tar.gz` + `ascope-dist.tar.gz` to the GitHub Release for that tag.
+3. [`Deploy to GCE`](../.github/workflows/deploy.yml) fires once the upstream workflow's `conclusion == 'success'`, authenticates via WIF, SSHes into the VM through IAP, and runs: `git checkout <tag> && bun install && curl tarballs && tar -xz && docker pull && systemctl restart coderunner`, then polls `/healthz`. **Nothing is built on the VM** — emsdk and Node aren't installed there.
 
 Migrations apply automatically — `bun run start` runs `bun run migrate` first ([package.json:13](../package.json)).
+
+### First-deploy gotcha
+
+After `terraform apply` + populating secrets + VM reset (steps 4–7), the control plane runs but `apps/web/dist` is empty — `/` will 404 until the **first** tag-driven deploy lands the prebuilt web bundle. `/healthz` works regardless, so use that to verify the VM came up. Push a `vX.Y.Z` tag (or run *Deploy to GCE* manually against an existing release tag) to populate the dist.
 
 ## Rollback
 
@@ -161,6 +167,8 @@ Or via the GitHub Actions UI: *Deploy to GCE* → *Run workflow* → enter the p
 | Workspace image present | `docker images \| grep coderunner-workspace` |
 | Metrics flowing to Grafana | In Grafana Cloud Explore: `up{instance="<var.instance_label>"}` (defaults to `"coderunner"`) — expect three series (`coderunner`, `node`, `cadvisor`), all `1` |
 | Disaster recovery | `terraform destroy -target=google_compute_instance.coderunner` then `terraform apply` — site comes back up; data disk is `prevent_destroy=true` |
+
+> **Teardown note:** `prevent_destroy = true` on `google_compute_disk.data` means a plain `terraform destroy` will error. To fully tear down (e.g. a throwaway test project): temporarily set `prevent_destroy = false` in `deploy/terraform/disk.tf`, `terraform apply` (no-op other than the lifecycle change), then `terraform destroy`. Production should leave the guard on.
 
 ## Sizing reference
 
@@ -183,8 +191,13 @@ deploy/
 │   └── terraform.tfvars.example
 └── cloud-init/
     └── user-data.yaml           # First-boot provisioning (installs Bun, Docker,
-                                 # Caddy, Alloy; clones repo; writes systemd units)
+                                 # Caddy, Alloy; clones repo; writes systemd units).
+                                 # Does NOT build web/ascope — those arrive as
+                                 # prebuilt tarballs on each deploy.
 .github/workflows/
-├── build-image.yml              # Existing — builds workspace image to GHCR on v* tags
-└── deploy.yml                   # NEW — chains off build-image, rolls the VM service
+├── build-image.yml              # On v* tag: builds workspace image to GHCR
+                                 # AND prebuilds web + ascope tarballs and
+                                 # attaches them to the GitHub Release.
+└── deploy.yml                   # Chains off build-image. Fetches the release
+                                 # tarballs and rolls the VM service.
 ```

@@ -35,18 +35,22 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   }
 
   attribute_mapping = {
-    "google.subject"       = "assertion.sub"
-    "attribute.repository" = "assertion.repository"
-    "attribute.ref"        = "assertion.ref"
+    "google.subject"         = "assertion.sub"
+    "attribute.repository"   = "assertion.repository"
+    "attribute.ref"          = "assertion.ref"
     "attribute.workflow_ref" = "assertion.workflow_ref"
   }
 
-  # Only allow tokens from the deploy workflow in our specific repo on a
-  # version tag. This prevents other workflows or unprotected branches from
-  # minting credentials for the deployer SA.
+  # Only allow tokens from this repo's deploy workflow. Auto-deploy is triggered
+  # by `workflow_run` chaining off build-image.yml, and workflow_run-triggered
+  # workflows always execute the workflow file from the default branch — so
+  # workflow_ref is `<repo>/.github/workflows/deploy.yml@refs/heads/main`, NOT
+  # @refs/tags/v.... Matching just the deploy.yml path (any ref) is the right
+  # WIF-layer gate; tag validation lives in the workflow itself via the strict
+  # regex on `inputs.tag` / `workflow_run.head_branch`.
   attribute_condition = <<-EOT
     assertion.repository == "${var.github_repo}" &&
-    assertion.workflow_ref.startsWith("${var.github_repo}/.github/workflows/deploy.yml@refs/tags/v")
+    assertion.workflow_ref.startsWith("${var.github_repo}/.github/workflows/deploy.yml@")
   EOT
 }
 

@@ -18,7 +18,7 @@ resource "google_compute_resource_policy" "daily_snapshot" {
     schedule {
       daily_schedule {
         days_in_cycle = 1
-        start_time    = "08:00" # UTC; ~3am Central, well outside classroom hours
+        start_time    = "08:00" # UTC; ~03:00 Eastern / 02:00 Central, well outside classroom hours
       }
     }
 

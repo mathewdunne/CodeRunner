@@ -51,8 +51,8 @@ resource "google_compute_instance" "coderunner" {
   }
 
   metadata = {
-    user-data       = local.user_data
-    enable-oslogin  = "TRUE"
+    user-data              = local.user_data
+    enable-oslogin         = "TRUE"
     # Block legacy SSH keys path. OS Login is the only way in.
     block-project-ssh-keys = "TRUE"
   }
@@ -61,11 +61,12 @@ resource "google_compute_instance" "coderunner" {
   allow_stopping_for_update = true
 
   # Re-render .env from Secret Manager on every boot, in case secrets rotated.
+  # Only restart services if render-env.sh succeeded — a transient gcloud blip
+  # must NOT silently swap in a broken .env.
   metadata_startup_script = <<-EOT
     #!/usr/bin/env bash
     set -euo pipefail
-    if [ -x /opt/coderunner/render-env.sh ]; then
-      /opt/coderunner/render-env.sh
+    if [ -x /opt/coderunner/render-env.sh ] && /opt/coderunner/render-env.sh; then
       systemctl restart coderunner alloy || true
     fi
   EOT
