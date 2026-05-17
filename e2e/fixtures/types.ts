@@ -1,4 +1,4 @@
-import type { WorkspaceId, WorkspaceSlug } from "@frc-sim/contracts";
+import type { WorkspaceId, WorkspaceSlug } from "@frc-coderunner/contracts";
 import type { ControlApp } from "../../apps/control/src/app";
 
 export type SeededUser = {

@@ -22,7 +22,7 @@ Gamepad input is high-frequency: a polished feel needs 50–60 Hz updates. The t
 2. Multiplex over `/ws/run`. Couples unrelated lifecycles; complicates the protocol.
 3. HTTP PATCH like `/api/sim/driver-station`. 50 Hz of POSTs is heavy, pollutes logs, and request setup latency adds up.
 
-The new WebSocket reuses the existing auth + origin middleware used by `/ws/run`. Messages are validated by `gamepadClientMessageSchema` in `@frc-sim/contracts`. The browser hook (`useGamepadChannel`) throttles state pushes to ~50 Hz, diffs against the last sent frame, and sends a heartbeat every 250 ms so HALSim sees the joystick alive even when the sticks are still.
+The new WebSocket reuses the existing auth + origin middleware used by `/ws/run`. Messages are validated by `gamepadClientMessageSchema` in `@frc-coderunner/contracts`. The browser hook (`useGamepadChannel`) throttles state pushes to ~50 Hz, diffs against the last sent frame, and sends a heartbeat every 250 ms so HALSim sees the joystick alive even when the sticks are still.
 
 ## Why a single controller on port 0 for v1
 

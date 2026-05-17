@@ -24,7 +24,7 @@ The question is how to integrate without creating a compatibility mess.
 
 2. **User identity.** Better Auth generates opaque string IDs for users.
    The `workspaces` table's `user_id` column now stores Better Auth user
-   IDs (not `usr_*`). The `@frc-sim/contracts` package treats user IDs as
+   IDs (not `usr_*`). The `@frc-coderunner/contracts` package treats user IDs as
    bounded opaque strings and no longer exports the old `usr_*`/`ses_*`
    pattern constants.
 

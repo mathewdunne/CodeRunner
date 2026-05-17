@@ -15,7 +15,7 @@
 	"dependencies": {
 		"@base-ui/react": "^1.4.1",
 		"@fontsource-variable/geist": "^5.2.8",
-		"@frc-coderunner/contracts": "workspace:*",
+		"@frc-@frc-coderunner/contracts": "workspace:*",
 		"@tailwindcss/vite": "^4.2.1",
 		"better-auth": "^1.6.10",
 		"class-variance-authority": "^0.7.1",

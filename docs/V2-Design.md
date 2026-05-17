@@ -891,7 +891,7 @@ curl -fsS -b cookies.txt http://localhost:4000/u/alice/api/containers/status
 - `apps/web/src/style.css`: simplified grid layout.
 - Delete `apps/web/src/java-lsp.ts`.
 - Delete `apps/web/src/save-before-run.ts` and `apps/web/src/save-before-run.test.ts`.
-- `apps/web/package.json`: drop `monaco-editor`. Keep `react`, `react-dom`, `@frc-sim/contracts`.
+- `apps/web/package.json`: drop `monaco-editor`. Keep `react`, `react-dom`, `@frc-coderunner/contracts`.
 - `apps/web/index.html`: trim Monaco-related assets.
 
 **Out of scope.**

@@ -1,4 +1,4 @@
-import type { ContainersStatusResponse } from "@frc-sim/contracts";
+import type { ContainersStatusResponse } from "@frc-coderunner/contracts";
 import type { ExecResult } from "../runtime";
 
 export type DockerCommandResult = ExecResult;

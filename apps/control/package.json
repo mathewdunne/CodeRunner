@@ -10,7 +10,7 @@
 		"typecheck": "tsc -b"
 	},
 	"dependencies": {
-		"@frc-coderunner/contracts": "workspace:*",
+		"@frc-@frc-coderunner/contracts": "workspace:*",
 		"@logtape/logtape": "^2.0.7",
 		"better-auth": "^1.6.10",
 		"prom-client": "^15.1.3"

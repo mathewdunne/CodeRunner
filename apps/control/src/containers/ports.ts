@@ -1,5 +1,5 @@
 import { createServer } from "node:net";
-import type { WorkspaceId } from "@frc-sim/contracts";
+import type { WorkspaceId } from "@frc-coderunner/contracts";
 import type { AppStorage } from "../storage";
 
 export async function portIsFree(port: number): Promise<boolean> {

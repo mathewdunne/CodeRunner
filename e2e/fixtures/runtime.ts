@@ -2,7 +2,7 @@
  * Helpers for seeding the MockWorkspaceRuntimeProvider exposed by the `app`
  * fixture. Centralizes the WorkspaceRuntime shape so specs don't repeat it.
  */
-import type { WorkspaceId } from "@frc-sim/contracts";
+import type { WorkspaceId } from "@frc-coderunner/contracts";
 import type { MockWorkspaceRuntimeProvider } from "../../apps/control/src/__tests__/helpers";
 import type { FakeHalsimHandle, FakeVscodeHandle } from "./types";
 

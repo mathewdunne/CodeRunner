@@ -55,7 +55,7 @@ state as a backup, and the student's editor refreshes onto the new code.
 
 `POST /u/{slug}/project/import`
 
-Body schema (validate with zod via `@frc-sim/contracts`):
+Body schema (validate with zod via `@frc-coderunner/contracts`):
 ```ts
 {
   url: string,           // https://github.com/...

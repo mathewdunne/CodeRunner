@@ -4,7 +4,7 @@ import type {
 	DriverStationPatch,
 	DsMode,
 	WorkspaceId,
-} from "@frc-sim/contracts";
+} from "@frc-coderunner/contracts";
 import { getLogger } from "./logging";
 
 const log = getLogger("halsim");

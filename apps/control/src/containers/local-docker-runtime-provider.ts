@@ -1,5 +1,5 @@
 import { mkdir } from "node:fs/promises";
-import type { ContainersStatusResponse, WorkspaceId } from "@frc-sim/contracts";
+import type { ContainersStatusResponse, WorkspaceId } from "@frc-coderunner/contracts";
 import { getLogger } from "../logging";
 import { containerStartDuration } from "../metrics";
 import type {

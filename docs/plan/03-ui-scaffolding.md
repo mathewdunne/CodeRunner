@@ -136,7 +136,7 @@ main.tsx                      # Stays small: ReactDOM.render → <App />
 index.css                     # Tailwind directives + global resets
 lib/
   utils.ts                    # shadcn cn() helper
-  contracts.ts                # Re-export / narrow types from @frc-sim/contracts
+  contracts.ts                # Re-export / narrow types from @frc-coderunner/contracts
 routes/
   WorkspaceLayout.tsx         # Layout route: session gate, Topbar, IDELayout shell
   WorkspacePage.tsx           # Renders EditorPane, ScopePane, ConsolePane, RunControls
@@ -255,7 +255,7 @@ ACK timeout is preserved. The hook exposes `scopeStatus` ("loading" |
 
 **Created:**
 - `apps/web/src/App.tsx` — router setup, global providers, `<Toaster />`
-- `apps/web/src/lib/contracts.ts` — re-export / narrow types from `@frc-sim/contracts`
+- `apps/web/src/lib/contracts.ts` — re-export / narrow types from `@frc-coderunner/contracts`
 - `apps/web/src/routes/WorkspaceLayout.tsx`
 - `apps/web/src/routes/WorkspacePage.tsx`
 - `apps/web/src/components/{Topbar,IDELayout,EditorPane,ScopePane,ConsolePane,RunControls,StatusStrip}.tsx`

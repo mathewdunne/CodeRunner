@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { WorkspaceId } from "@frc-sim/contracts";
+import type { WorkspaceId } from "@frc-coderunner/contracts";
 import { type GamepadLease, GamepadSessions } from "../gamepad";
 import { HalSimBridge, HalSimBridgeUnavailableError } from "../halsim";
 

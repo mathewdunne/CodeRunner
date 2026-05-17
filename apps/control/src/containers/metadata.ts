@@ -1,5 +1,5 @@
 import { dirname, resolve } from "node:path";
-import type { ContainerState, WorkspaceId } from "@frc-sim/contracts";
+import type { ContainerState, WorkspaceId } from "@frc-coderunner/contracts";
 import type { WorkspaceRow } from "../storage";
 import {
 	CODE_NAME_PREFIX,

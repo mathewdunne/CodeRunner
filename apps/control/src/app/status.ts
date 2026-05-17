@@ -5,7 +5,7 @@ import type {
 	ContainersStatusResponse,
 	SimRunStatus,
 	SimStatusResponse,
-} from "@frc-sim/contracts";
+} from "@frc-coderunner/contracts";
 import type { AuditActor } from "../audit";
 import { CapacityExceededError } from "../containers";
 import type { GamepadSessions } from "../gamepad";
@@ -67,9 +67,9 @@ export async function simStatusSnapshot(
 	const bridge =
 		shouldBridgeRun && runtime.endpoints.halsim !== null
 			? halsim.ensureConnected(
-					auth.workspace.id,
-					runtime.endpoints.halsim.wsUrl,
-				)
+				auth.workspace.id,
+				runtime.endpoints.halsim.wsUrl,
+			)
 			: halsim.getSnapshot(auth.workspace.id);
 	if (!shouldBridgeRun && !runIsActive(run.status)) {
 		halsim.disconnect(auth.workspace.id);

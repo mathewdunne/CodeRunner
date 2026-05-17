@@ -1,4 +1,4 @@
-import type { WorkspaceId } from "@frc-sim/contracts";
+import type { WorkspaceId } from "@frc-coderunner/contracts";
 import { getLogger } from "../logging";
 import type { AppStorage } from "../storage";
 import { parseDockerStatsLine } from "./converters";

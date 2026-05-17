@@ -18,7 +18,7 @@ export type {
 	SessionResponse,
 	SimRunStatus,
 	SimStatusResponse,
-} from "@frc-sim/contracts";
+} from "@frc-coderunner/contracts";
 
 export {
 	authProvidersResponseSchema,
@@ -30,4 +30,4 @@ export {
 	isWorkspaceSlug,
 	runServerMessageSchema,
 	simStatusResponseSchema,
-} from "@frc-sim/contracts";
+} from "@frc-coderunner/contracts";

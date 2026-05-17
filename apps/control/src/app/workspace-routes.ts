@@ -5,7 +5,7 @@ import {
 	type SimRunCommandResponse,
 	simRunCommandRequestSchema,
 	workspaceSlugSchema,
-} from "@frc-sim/contracts";
+} from "@frc-coderunner/contracts";
 import {
 	requireWebSocketOrigin,
 	requireWorkspaceOwnership,
@@ -390,7 +390,7 @@ export async function handleWorkspaceRoute(
 		} catch (error) {
 			const status =
 				error instanceof Error &&
-				typeof (error as Error & { status?: unknown }).status === "number"
+					typeof (error as Error & { status?: unknown }).status === "number"
 					? (error as Error & { status: number }).status
 					: 400;
 			const message =
@@ -426,7 +426,7 @@ export async function handleWorkspaceRoute(
 		} catch (error) {
 			const status =
 				error instanceof Error &&
-				typeof (error as Error & { status?: unknown }).status === "number"
+					typeof (error as Error & { status?: unknown }).status === "number"
 					? (error as Error & { status: number }).status
 					: 400;
 			const message =

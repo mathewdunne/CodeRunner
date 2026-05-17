@@ -1,4 +1,4 @@
-import type { AuthProvidersResponse } from "@frc-sim/contracts";
+import type { AuthProvidersResponse } from "@frc-coderunner/contracts";
 import { handleAdminRoute } from "./app/admin-routes";
 import {
 	handleUploadAsset,

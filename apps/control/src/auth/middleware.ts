@@ -5,7 +5,7 @@
  * with centralized helpers backed by Better Auth.
  */
 
-import type { WorkspaceSlug } from "@frc-sim/contracts";
+import type { WorkspaceSlug } from "@frc-coderunner/contracts";
 import { getLogger } from "../logging";
 import type { AppStorage, AuthContext } from "../storage";
 import type { Auth } from "./auth";
@@ -68,16 +68,16 @@ export async function requireSession(
 	request: Request,
 ): Promise<
 	| {
-			user: {
-				id: string;
-				email: string;
-				name: string;
-				image: string | null;
-				role: string;
-				slug: string;
-			};
-			session: { token: string };
-	  }
+		user: {
+			id: string;
+			email: string;
+			name: string;
+			image: string | null;
+			role: string;
+			slug: string;
+		};
+		session: { token: string };
+	}
 	| Response
 > {
 	const session = await getSessionFromRequest(auth, request);
@@ -126,15 +126,15 @@ export async function requireAdmin(
 	request: Request,
 ): Promise<
 	| {
-			user: {
-				id: string;
-				email: string;
-				name: string;
-				image: string | null;
-				role: string;
-				slug: string;
-			};
-	  }
+		user: {
+			id: string;
+			email: string;
+			name: string;
+			image: string | null;
+			role: string;
+			slug: string;
+		};
+	}
 	| Response
 > {
 	// Break-glass: ADMIN_TOKEN header

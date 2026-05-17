@@ -7,7 +7,7 @@
  * S11 — Git clone target paths never interpolated into a shell.
  */
 import { describe, expect, test } from "bun:test";
-import type { WorkspaceId } from "@frc-sim/contracts";
+import type { WorkspaceId } from "@frc-coderunner/contracts";
 import { type ImportContext, ImportManager } from "../../imports";
 import type { WorkspaceRow } from "../../storage";
 import {
@@ -54,7 +54,7 @@ describe("S9 — ImportManager passes argv as arrays to the runtime", () => {
 				branch: "main",
 				subdir: "",
 				backup: false,
-				send: () => {},
+				send: () => { },
 			};
 			await importer.run(ctx);
 
@@ -111,7 +111,7 @@ describe("S9 — ImportManager passes argv as arrays to the runtime", () => {
 				branch: "main",
 				subdir: "",
 				backup: false,
-				send: () => {},
+				send: () => { },
 			});
 
 			// The clone target path uses /workspace/<.import-{timestamp}>/source
@@ -179,7 +179,7 @@ describe("S11 — clone target path never includes user-supplied subdir before v
 				branch: "main",
 				subdir: "",
 				backup: false,
-				send: () => {},
+				send: () => { },
 			});
 
 			// Check that no bash -c invocation interpolates the user URL

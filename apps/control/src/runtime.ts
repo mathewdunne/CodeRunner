@@ -1,4 +1,4 @@
-import type { ContainerState, WorkspaceId } from "@frc-sim/contracts";
+import type { ContainerState, WorkspaceId } from "@frc-coderunner/contracts";
 
 export type ExecResult = {
 	exitCode: number;

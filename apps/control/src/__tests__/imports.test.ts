@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { ImportServerMessage } from "@frc-sim/contracts";
+import type { ImportServerMessage } from "@frc-coderunner/contracts";
 import {
 	ImportManager,
 	ImportRateLimiter,
