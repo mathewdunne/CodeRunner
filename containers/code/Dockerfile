@@ -29,11 +29,11 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 RUN java -version
 
 # ── Scripts ────────────────────────────────────────────────────────────
-COPY containers/code/start-sim.sh containers/code/stop-sim.sh /usr/local/bin/
+COPY containers/code/start-sim.sh containers/code/run-sim.sh containers/code/stop-sim.sh /usr/local/bin/
 COPY containers/code/sim-headless.init.gradle /usr/local/share/frc/sim-headless.init.gradle
 
-RUN sed -i 's/\r$//' /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh \
-    && chmod +x /usr/local/bin/start-sim.sh /usr/local/bin/stop-sim.sh
+RUN sed -i 's/\r$//' /usr/local/bin/start-sim.sh /usr/local/bin/run-sim.sh /usr/local/bin/stop-sim.sh \
+    && chmod +x /usr/local/bin/start-sim.sh /usr/local/bin/run-sim.sh /usr/local/bin/stop-sim.sh
 
 # ── s6-overlay service definitions (additive to upstream) ─────────────
 # Adds init-frc-setup oneshot and overrides svc-openvscode-server run script.

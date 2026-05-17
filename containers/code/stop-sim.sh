@@ -74,7 +74,7 @@ sim_candidate_pids() {
     [[ -n "${pid:-}" && -n "${args:-}" ]] || continue
     [[ "$pid" != "$$" && "$pid" != "$BASHPID" ]] || continue
     case "$args" in
-      *"org.gradle.wrapper.GradleWrapperMain"*simulateJava*|*"$project_root/build/libs/"*.jar*)
+      *"org.gradle.wrapper.GradleWrapperMain"*simulate*|*"$project_root/build/libs/"*.jar*)
         echo "$pid"
         ;;
     esac

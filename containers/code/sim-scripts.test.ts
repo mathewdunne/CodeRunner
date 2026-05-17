@@ -60,6 +60,7 @@ describe("sim container scripts", () => {
 					SIM_PID_FILE: join(home, "sim.pid"),
 					SIM_LOG_FILE: join(home, "sim.log"),
 					SIM_PROJECT_ROOT: projectRoot,
+					RUN_SIM_SCRIPT: join(import.meta.dir, "run-sim.sh"),
 				},
 				stdin: "ignore",
 				stdout: "pipe",
@@ -88,7 +89,7 @@ describe("sim container scripts", () => {
 			expect(args).toContain(
 				"-Dorg.gradle.jvmargs=-Xms64m -Xmx384m -XX:MaxMetaspaceSize=192m -XX:ReservedCodeCacheSize=96m -XX:+HeapDumpOnOutOfMemoryError -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8",
 			);
-			expect(args.at(-1)).toBe("simulateJava");
+			expect(args.at(-1)).toBe("simulateExternalJavaRelease");
 			expect(await readFile(userHomePath, "utf8")).toBe(
 				`${join(home, ".gradle")}\n`,
 			);
