@@ -1,0 +1,7 @@
+project_id           = "your-gcp-project-id"
+region               = "us-central1"
+zone                 = "us-central1-a"
+domain               = "coderunner.example.com"        # Hostname users hit. Set up an A record after `terraform apply`.
+github_repo          = "yourname/FRC-Programming-Training-Sim" # owner/repo of YOUR fork — must match the repo you push tags from.
+git_ref              = "main"                          # Initial ref the VM checks out on first boot.
+ssh_break_glass_cidr = "203.0.113.42/32"               # YOUR home IP, /32. Used only for emergency SSH; routine deploys use IAP.

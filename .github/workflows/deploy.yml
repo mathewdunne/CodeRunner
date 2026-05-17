@@ -1,0 +1,138 @@
+name: Deploy to GCE
+
+on:
+  # Chain off the image build so we only deploy once the workspace image is
+  # actually on GHCR. workflow_run fires for ANY conclusion of the upstream
+  # workflow, so we gate on `success` inside the job.
+  workflow_run:
+    workflows: ["Build workspace image"]
+    types: [completed]
+  # Manual deploy of an arbitrary tag for rollbacks.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag to deploy (e.g. v2.4.0)"
+        required: true
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write # required for Workload Identity Federation
+
+    env:
+      # Forks deploy by setting these as repo variables (Settings → Secrets and
+      # variables → Actions → Variables). Required: GCP_PROJECT, GCP_DEPLOY_SA,
+      # GCP_WIF_PROVIDER. Optional (with defaults below): GCP_ZONE, GCP_VM_NAME.
+      #
+      # Values come from `terraform output` after the first apply.
+      GCP_PROJECT: ${{ vars.GCP_PROJECT }}
+      GCP_ZONE: ${{ vars.GCP_ZONE || 'us-central1-a' }}
+      VM_NAME: ${{ vars.GCP_VM_NAME || 'coderunner' }}
+      DEPLOY_SA: ${{ vars.GCP_DEPLOY_SA }}
+      WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
+      # Derived from the repo owner — matches how build-image.yml tags the image.
+      WORKSPACE_IMAGE: ghcr.io/${{ github.repository_owner }}/coderunner-workspace
+
+    steps:
+      - name: Resolve tag to deploy
+        id: tag
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            # workflow_run carries the upstream event. For tag pushes,
+            # head_branch is the tag name (e.g. "v2.4.0").
+            echo "tag=${{ github.event.workflow_run.head_branch }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sanity check tag format and required vars
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.tag.outputs.tag }}"
+          # Strict semver-ish pattern: v<major>.<minor>.<patch> with optional pre-release suffix.
+          # Rejects shell metacharacters, backticks, $(...), spaces, etc.
+          if ! echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
+            echo "refusing to deploy tag '$TAG' — must match vX.Y.Z[-prerelease]"
+            exit 1
+          fi
+          for var in GCP_PROJECT DEPLOY_SA WIF_PROVIDER; do
+            if [ -z "${!var:-}" ]; then
+              echo "Missing repo variable: $var. See deploy/README.md for setup."
+              exit 1
+            fi
+          done
+
+      - id: auth
+        name: Authenticate to GCP via Workload Identity Federation
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOY_SA }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT }}
+
+      - name: Roll service on VM
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          # Heredoc is sent over the IAP-tunneled SSH connection and executed
+          # by the remote shell. $TAG is interpolated by the local shell before
+          # the heredoc closes, so the remote side sees a literal tag.
+          read -r -d '' DEPLOY_SCRIPT <<EOF || true
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+
+          # Wait for first-boot bootstrap (idempotent — usually already done).
+          for _ in \$(seq 1 60); do
+            test -f /var/log/coderunner-bootstrap-done && break
+            sleep 2
+          done
+          test -f /var/log/coderunner-bootstrap-done
+
+          cd /opt/coderunner/app
+          sudo -u coderunner git fetch --tags --depth=1 origin tag $TAG
+          sudo -u coderunner git checkout $TAG
+          sudo -u coderunner git submodule update --init --recursive
+          sudo -u coderunner bun install --frozen-lockfile
+          sudo -u coderunner bun run build:web
+          sudo -u coderunner bash -lc "cd /opt/coderunner/app && bun run build:ascope"
+
+          # Pull the matching workspace image and re-tag :latest locally so
+          # CODE_IMAGE=<image>:latest keeps working.
+          sudo -u coderunner docker pull $WORKSPACE_IMAGE:$TAG
+          sudo -u coderunner docker tag $WORKSPACE_IMAGE:$TAG $WORKSPACE_IMAGE:latest
+
+          sudo systemctl restart coderunner
+
+          # Health gate: wait up to 30s for /healthz.
+          for _ in \$(seq 1 30); do
+            if curl -sf http://localhost:4000/healthz >/dev/null; then
+              echo "healthz OK"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "healthz did not respond within 30s"
+          sudo journalctl -u coderunner -n 80 --no-pager || true
+          exit 1
+          EOF
+
+          gcloud compute ssh "$VM_NAME" \
+            --zone="$GCP_ZONE" \
+            --tunnel-through-iap \
+            --quiet \
+            --command="$DEPLOY_SCRIPT"

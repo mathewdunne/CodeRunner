@@ -1,0 +1,327 @@
+#cloud-config
+# CodeRunner GCE first-boot provisioning.
+#
+# This file is templated by Terraform: ${domain}, ${git_ref}, ${github_repo}
+# are substituted in vm.tf via templatefile(). Anything secret comes from Secret
+# Manager at runtime via render-env.sh — NOT from this file.
+
+write_files:
+  - path: /etc/coderunner/deploy.env
+    permissions: "0644"
+    content: |
+      DOMAIN=${domain}
+      GITHUB_REPO=${github_repo}
+      INITIAL_GIT_REF=${git_ref}
+      APP_DIR=/opt/coderunner/app
+      DATA_DIR=/var/lib/coderunner/data
+      APP_USER=coderunner
+      WORKSPACE_IMAGE=${workspace_image}
+
+  - path: /opt/coderunner/render-env.sh
+    permissions: "0750"
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      # Materialize /opt/coderunner/.env from Secret Manager.
+      # Runs at first boot (from bootstrap.sh) and on every restart (from
+      # metadata_startup_script in vm.tf).
+      set -euo pipefail
+      source /etc/coderunner/deploy.env
+
+      # Tolerate not-yet-populated secrets on first boot: render-env.sh runs
+      # before the operator has added secret versions. Empty values keep the
+      # control plane up (it'll just refuse OAuth login until secrets land);
+      # a later `gcloud compute instances reset` re-renders with real values.
+      fetch() {
+        gcloud secrets versions access latest --secret="$1" 2>/dev/null || echo ""
+      }
+
+      tmp="$(mktemp)"
+      chmod 600 "$tmp"
+      {
+        echo "# Auto-generated. Do not edit by hand. See render-env.sh."
+        echo "BETTER_AUTH_URL=https://$${DOMAIN}"
+        echo "BETTER_AUTH_SECRET=$(fetch coderunner-better-auth-secret)"
+        echo "GITHUB_CLIENT_ID=$(fetch coderunner-github-client-id)"
+        echo "GITHUB_CLIENT_SECRET=$(fetch coderunner-github-client-secret)"
+        echo "GOOGLE_CLIENT_ID=$(fetch coderunner-google-client-id)"
+        echo "GOOGLE_CLIENT_SECRET=$(fetch coderunner-google-client-secret)"
+        echo "ADMIN_TOKEN=$(fetch coderunner-admin-token)"
+        echo "METRICS_TOKEN=$(fetch coderunner-metrics-token)"
+        echo "FRC_DATA_DIR=$${DATA_DIR}"
+        echo "FRC_DB_PATH=$${DATA_DIR}/app.db"
+        echo "CODE_IMAGE=$${WORKSPACE_IMAGE}"
+        echo "PORT=4000"
+        echo "LOG_LEVEL=info"
+      } > "$tmp"
+      install -o "$${APP_USER}" -g "$${APP_USER}" -m 600 "$tmp" /opt/coderunner/.env
+      rm -f "$tmp"
+
+      # Render Alloy config too. Separate file so the metrics token is only
+      # readable by the alloy user.
+      alloy_tmp="$(mktemp)"
+      chmod 600 "$alloy_tmp"
+      METRICS_TOKEN="$(fetch coderunner-metrics-token)" \
+      GC_URL="$(fetch coderunner-grafana-cloud-url)" \
+      GC_USER="$(fetch coderunner-grafana-cloud-user)" \
+      GC_TOKEN="$(fetch coderunner-grafana-cloud-token)" \
+        envsubst < /etc/alloy/config.alloy.tmpl > "$alloy_tmp"
+      install -o alloy -g alloy -m 640 "$alloy_tmp" /etc/alloy/config.alloy
+      rm -f "$alloy_tmp"
+
+  - path: /etc/systemd/system/coderunner.service
+    permissions: "0644"
+    content: |
+      [Unit]
+      Description=CodeRunner control plane
+      After=network-online.target docker.service
+      Wants=network-online.target docker.service
+
+      [Service]
+      Type=simple
+      User=coderunner
+      Group=coderunner
+      WorkingDirectory=/opt/coderunner/app
+      EnvironmentFile=/opt/coderunner/.env
+      ExecStart=/usr/local/bin/bun run start
+      Restart=always
+      RestartSec=5
+      LimitNOFILE=65535
+      # Don't kill workspace docker containers when this service stops.
+      KillMode=mixed
+      TimeoutStopSec=30
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /etc/alloy/config.alloy.tmpl
+    permissions: "0644"
+    owner: root:root
+    content: |
+      // Grafana Alloy config template. render-env.sh substitutes $METRICS_TOKEN,
+      // $GC_URL, $GC_USER, $GC_TOKEN at boot and writes /etc/alloy/config.alloy
+      // (mode 640 alloy:alloy so the token isn't world-readable).
+
+      logging {
+        level  = "info"
+        format = "logfmt"
+      }
+
+      // ─── Scrape: control plane /metrics (requires bearer auth) ───────
+      prometheus.scrape "coderunner" {
+        targets = [
+          { __address__ = "localhost:4000", job = "coderunner" },
+        ]
+        metrics_path = "/metrics"
+        scrape_interval = "30s"
+        bearer_token = "$METRICS_TOKEN"
+        forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+      }
+
+      // ─── Host metrics: CPU, memory, disk, network ────────────────────
+      prometheus.exporter.unix "host" {
+        include_exporter_metrics = false
+      }
+
+      prometheus.scrape "host" {
+        targets    = prometheus.exporter.unix.host.targets
+        job_name   = "node"
+        scrape_interval = "30s"
+        forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+      }
+
+      // ─── Per-container metrics (workspace containers) ────────────────
+      prometheus.exporter.cadvisor "containers" {
+        docker_host = "unix:///var/run/docker.sock"
+      }
+
+      prometheus.scrape "containers" {
+        targets    = prometheus.exporter.cadvisor.containers.targets
+        job_name   = "cadvisor"
+        scrape_interval = "30s"
+        forward_to = [prometheus.remote_write.grafana_cloud.receiver]
+      }
+
+      // ─── Ship to Grafana Cloud ───────────────────────────────────────
+      prometheus.remote_write "grafana_cloud" {
+        endpoint {
+          url = "$GC_URL"
+          basic_auth {
+            username = "$GC_USER"
+            password = "$GC_TOKEN"
+          }
+        }
+        external_labels = {
+          instance   = "${instance_label}",
+          deployment = "gce",
+        }
+      }
+
+  - path: /opt/coderunner/bootstrap.sh
+    permissions: "0750"
+    owner: root:root
+    content: |
+      #!/usr/bin/env bash
+      # First-boot provisioning. Idempotent — safe to re-run.
+      set -euo pipefail
+      source /etc/coderunner/deploy.env
+
+      log() { echo "[bootstrap] $*"; }
+
+      # ─── Packages ──────────────────────────────────────────────────────
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -y
+      apt-get install -y \
+        ca-certificates curl git jq unzip gnupg lsb-release \
+        debian-keyring debian-archive-keyring apt-transport-https \
+        gettext-base
+
+      # ─── Caddy ─────────────────────────────────────────────────────────
+      if ! command -v caddy >/dev/null; then
+        log "installing Caddy"
+        curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' \
+          | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+        curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' \
+          > /etc/apt/sources.list.d/caddy-stable.list
+        apt-get update -y
+        apt-get install -y caddy
+      fi
+
+      # ─── Docker ────────────────────────────────────────────────────────
+      if ! command -v docker >/dev/null; then
+        log "installing Docker Engine"
+        install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/debian/gpg \
+          | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        chmod a+r /etc/apt/keyrings/docker.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+          https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
+          > /etc/apt/sources.list.d/docker.list
+        apt-get update -y
+        apt-get install -y docker-ce docker-ce-cli containerd.io
+      fi
+
+      # ─── Grafana Alloy ─────────────────────────────────────────────────
+      if ! command -v alloy >/dev/null; then
+        log "installing Grafana Alloy"
+        mkdir -p /etc/apt/keyrings
+        curl -fsSL https://apt.grafana.com/gpg.key \
+          | gpg --dearmor -o /etc/apt/keyrings/grafana.gpg
+        echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" \
+          > /etc/apt/sources.list.d/grafana.list
+        apt-get update -y
+        apt-get install -y alloy
+      fi
+
+      # ─── App user ──────────────────────────────────────────────────────
+      if ! id -u "$${APP_USER}" >/dev/null 2>&1; then
+        log "creating $${APP_USER} user"
+        useradd --system --create-home --shell /bin/bash --home-dir /home/$${APP_USER} "$${APP_USER}"
+      fi
+      usermod -aG docker "$${APP_USER}"
+      # cadvisor exporter reads /var/run/docker.sock.
+      if id -u alloy >/dev/null 2>&1; then
+        usermod -aG docker alloy
+      fi
+
+      # ─── Bun (pinned to the version in package.json) ───────────────────
+      if ! sudo -u "$${APP_USER}" bash -lc 'command -v bun' >/dev/null 2>&1; then
+        log "installing Bun for $${APP_USER}"
+        sudo -u "$${APP_USER}" bash -lc 'curl -fsSL https://bun.sh/install | bash -s "bun-v1.3.13"'
+      fi
+      ln -sf /home/$${APP_USER}/.bun/bin/bun /usr/local/bin/bun
+
+      # ─── Node.js (required by AS Lite npm build) ────────────────────────
+      if ! command -v node >/dev/null; then
+        log "installing Node.js 20.x"
+        curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+        apt-get install -y nodejs
+      fi
+
+      # ─── Emscripten SDK (required by AS Lite WASM build) ───────────────
+      EMSDK_DIR="/opt/emsdk"
+      if [ ! -d "$${EMSDK_DIR}" ]; then
+        log "installing emsdk 4.0.12"
+        git clone https://github.com/emscripten-core/emsdk.git "$${EMSDK_DIR}"
+        cd "$${EMSDK_DIR}"
+        ./emsdk install 4.0.12
+        ./emsdk activate 4.0.12
+        cd /
+        chown -R "$${APP_USER}:$${APP_USER}" "$${EMSDK_DIR}"
+      fi
+      # Make emsdk available via EMSDK env var for the build script
+      echo "export EMSDK=$${EMSDK_DIR}" >> /home/$${APP_USER}/.bashrc
+      echo "export PATH=$${EMSDK_DIR}:$${EMSDK_DIR}/upstream/emscripten:\$PATH" >> /home/$${APP_USER}/.bashrc
+
+      # ─── Data disk ─────────────────────────────────────────────────────
+      DEV=/dev/disk/by-id/google-coderunner-data
+      if [ -e "$DEV" ]; then
+        if ! blkid "$DEV" >/dev/null 2>&1; then
+          log "formatting fresh data disk"
+          mkfs.ext4 -F -L coderunner-data "$DEV"
+        fi
+        mkdir -p "$${DATA_DIR}"
+        if ! grep -q coderunner-data /etc/fstab; then
+          echo "LABEL=coderunner-data $${DATA_DIR} ext4 defaults,nofail 0 2" >> /etc/fstab
+        fi
+        mount -a
+        chown -R "$${APP_USER}:$${APP_USER}" "$${DATA_DIR}"
+      else
+        log "WARN: data disk not present at $DEV"
+      fi
+
+      # ─── App checkout ──────────────────────────────────────────────────
+      mkdir -p /opt/coderunner
+      chown "$${APP_USER}:$${APP_USER}" /opt/coderunner
+      if [ ! -d "$${APP_DIR}/.git" ]; then
+        log "cloning repo"
+        sudo -u "$${APP_USER}" git clone --recurse-submodules \
+          "https://github.com/$${GITHUB_REPO}.git" "$${APP_DIR}"
+        sudo -u "$${APP_USER}" git -C "$${APP_DIR}" checkout "$${INITIAL_GIT_REF}"
+      fi
+      # data/ inside the repo points at the persistent disk so backups + DB
+      # survive VM recreation.
+      if [ ! -L "$${APP_DIR}/data" ]; then
+        rm -rf "$${APP_DIR}/data"
+        sudo -u "$${APP_USER}" ln -s "$${DATA_DIR}" "$${APP_DIR}/data"
+      fi
+
+      # ─── Pre-pull workspace image (public GHCR — no login) ─────────────
+      log "pulling workspace image"
+      sudo -u "$${APP_USER}" docker pull "$${WORKSPACE_IMAGE}" || true
+
+      # ─── Render .env + Alloy config from Secret Manager ────────────────
+      /opt/coderunner/render-env.sh
+
+      # ─── Install + build ───────────────────────────────────────────────
+      log "bun install"
+      sudo -u "$${APP_USER}" bash -lc "cd $${APP_DIR} && bun install --frozen-lockfile"
+      log "bun run build:web && build:ascope"
+      sudo -u "$${APP_USER}" bash -lc "cd $${APP_DIR} && bun run build:web && bun run build:ascope"
+
+      # ─── Caddyfile ─────────────────────────────────────────────────────
+      cat > /etc/caddy/Caddyfile <<EOF
+      $${DOMAIN} {
+        reverse_proxy localhost:4000
+        encode gzip
+      }
+      EOF
+
+      # ─── Enable services ───────────────────────────────────────────────
+      systemctl daemon-reload
+      systemctl enable --now docker
+      # On first boot, secrets may not be populated yet — services may fail to
+      # start but `enable` still wires them up. Operator runs `gcloud compute
+      # instances reset coderunner` after populating Secret Manager (see
+      # deploy/README.md step 7) which re-renders .env + alloy config and the
+      # startup-script restarts these services.
+      systemctl enable coderunner caddy alloy
+      systemctl start coderunner || true
+      systemctl start caddy || true
+      systemctl start alloy || true
+
+      log "bootstrap complete"
+      touch /var/log/coderunner-bootstrap-done
+
+runcmd:
+  - [bash, -lc, "/opt/coderunner/bootstrap.sh 2>&1 | tee -a /var/log/coderunner-bootstrap.log"]
