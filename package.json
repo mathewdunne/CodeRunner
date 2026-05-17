@@ -21,6 +21,7 @@
 		"docker:pull:workspace": "docker pull ghcr.io/mathewdunne/coderunner-workspace:latest",
 		"docker:push:workspace": "bun scripts/build-code-image.ts && docker push ghcr.io/mathewdunne/coderunner-workspace:latest",
 		"docker:cleanup": "bun scripts/cleanup-containers.ts",
+		"docker:rebuild-workspaces": "bun scripts/rebuild-workspaces.ts",
 		"backup": "bun scripts/backup.ts",
 		"restore": "bun scripts/restore.ts",
 		"allowlist:list": "bun scripts/allowlist.ts list",

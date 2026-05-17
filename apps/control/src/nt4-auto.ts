@@ -393,16 +393,16 @@ export class Nt4AutoChooserBridge {
 		return entry
 			? this.snapshotFromEntry(entry)
 			: {
-				ok: true,
-				nt4: {
-					connection: "disconnected",
-					connected: false,
-					stale: true,
-					lastMessageAt: null,
-					error: null,
-				},
-				choosers: [],
-			};
+					ok: true,
+					nt4: {
+						connection: "disconnected",
+						connected: false,
+						stale: true,
+						lastMessageAt: null,
+						error: null,
+					},
+					choosers: [],
+				};
 	}
 
 	select(

@@ -206,7 +206,7 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 					});
 					try {
 						ws.send(JSON.stringify({ type: "error", message: detail }));
-					} catch { }
+					} catch {}
 				}
 				return;
 			}
@@ -226,7 +226,7 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 					const send = (msg: ImportServerMessage) => {
 						try {
 							ws.send(JSON.stringify(msg));
-						} catch { }
+						} catch {}
 					};
 					void imports
 						.run({
@@ -241,7 +241,7 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 						.finally(() => {
 							try {
 								ws.close(1000, "Import finished.");
-							} catch { }
+							} catch {}
 						});
 				} catch (error) {
 					if (error instanceof RateLimitError) {

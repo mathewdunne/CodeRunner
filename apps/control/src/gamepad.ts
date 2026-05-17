@@ -1,4 +1,7 @@
-import type { GamepadClientMessage, WorkspaceId } from "@frc-coderunner/contracts";
+import type {
+	GamepadClientMessage,
+	WorkspaceId,
+} from "@frc-coderunner/contracts";
 import { type HalSimBridge, HalSimBridgeUnavailableError } from "./halsim";
 import { getLogger } from "./logging";
 
@@ -32,7 +35,7 @@ type SessionState = {
 export class GamepadSessions {
 	private readonly sessions = new Map<WorkspaceId, SessionState>();
 
-	constructor(private readonly halsim: HalSimBridge) { }
+	constructor(private readonly halsim: HalSimBridge) {}
 
 	getStatus(workspaceId: WorkspaceId): GamepadStatus {
 		const session = this.sessions.get(workspaceId);

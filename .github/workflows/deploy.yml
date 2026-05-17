@@ -1,82 +1,198 @@
 name: Deploy to GCE
 
 on:
-  # Chain off the image build so we only deploy once the workspace image is
-  # actually on GHCR. workflow_run fires for ANY conclusion of the upstream
-  # workflow, so we gate on `success` inside the job.
-  workflow_run:
-    workflows: ["Build workspace image"]
-    types: [completed]
-  # Manual deploy of an arbitrary tag for rollbacks.
   workflow_dispatch:
     inputs:
       tag:
-        description: "Git tag to deploy (e.g. v2.4.0)"
+        description: "Semver git tag to deploy (for example v2.4.0)"
         required: true
+        type: string
 
 concurrency:
   group: deploy-prod
   cancel-in-progress: false
 
-jobs:
-  deploy:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
+env:
+  WORKSPACE_IMAGE: ghcr.io/${{ github.repository_owner }}/coderunner-workspace
 
+jobs:
+  validate:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # required for Workload Identity Federation
+    outputs:
+      tag: ${{ steps.validate.outputs.tag }}
+      tag_sha: ${{ steps.validate.outputs.tag_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
 
+      - name: Validate release tag and main ancestry
+        id: validate
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          GITHUB_REF_NAME_SAFE: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+
+          if [ "$GITHUB_REF_NAME_SAFE" != "refs/heads/main" ]; then
+            echo "Deploy to GCE must be dispatched from refs/heads/main; got $GITHUB_REF_NAME_SAFE."
+            exit 1
+          fi
+
+          TAG="$INPUT_TAG"
+          if ! echo "$TAG" | grep -qE '^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$'; then
+            echo "Refusing to deploy '$TAG'. Expected vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-prerelease; build metadata (+...) is not allowed."
+            exit 1
+          fi
+
+          git fetch --force origin \
+            "+refs/heads/main:refs/remotes/origin/main" \
+            "+refs/tags/$TAG:refs/tags/$TAG"
+
+          TAG_SHA="$(git rev-parse "refs/tags/$TAG^{commit}")"
+          if ! git merge-base --is-ancestor "$TAG_SHA" origin/main; then
+            echo "Tag $TAG ($TAG_SHA) is not reachable from origin/main."
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "tag_sha=$TAG_SHA" >> "$GITHUB_OUTPUT"
+
+  verify:
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag }}
+          submodules: recursive
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: bun --bun playwright install chromium
+
+      - name: Verify
+        run: bun run verify
+
+  publish:
+    needs: [validate, verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
     env:
-      # Forks deploy by setting these as repo variables (Settings → Secrets and
-      # variables → Actions → Variables). Required: GCP_PROJECT, GCP_DEPLOY_SA,
-      # GCP_WIF_PROVIDER. Optional (with defaults below): GCP_ZONE, GCP_VM_NAME.
-      #
-      # Values come from `terraform output` after the first apply.
+      TAG: ${{ needs.validate.outputs.tag }}
+      TAG_SHA: ${{ needs.validate.outputs.tag_sha }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag }}
+          submodules: recursive
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push workspace image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: containers/code/Dockerfile
+          push: true
+          tags: |
+            ${{ env.WORKSPACE_IMAGE }}:${{ env.TAG }}
+            ${{ env.WORKSPACE_IMAGE }}:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ env.TAG_SHA }}
+            org.opencontainers.image.version=${{ env.TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Cache emsdk
+        id: cache-emsdk
+        uses: actions/cache@v4
+        with:
+          path: ~/emsdk
+          key: emsdk-4.0.12-${{ runner.os }}
+
+      - name: Install emsdk
+        run: |
+          set -euo pipefail
+          if [ ! -d "$HOME/emsdk" ]; then
+            git clone https://github.com/emscripten-core/emsdk.git "$HOME/emsdk"
+          fi
+          cd "$HOME/emsdk"
+          ./emsdk install 4.0.12
+          ./emsdk activate 4.0.12
+          echo "EMSDK=$HOME/emsdk" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build release artifacts
+        run: |
+          set -euo pipefail
+          bun run build:web
+          bun run build:ascope
+          tar -czf web-dist.tar.gz -C apps/web/dist .
+          tar -czf ascope-dist.tar.gz -C dist/advantagescope .
+
+      - name: Upload release artifacts
+        run: |
+          set -euo pipefail
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" \
+              --target "$TAG_SHA" \
+              --title "$TAG" \
+              --notes "CodeRunner release $TAG"
+          fi
+          gh release upload "$TAG" web-dist.tar.gz ascope-dist.tar.gz --clobber
+
+  deploy:
+    needs: [validate, publish]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      # Forks deploy by setting these as repo variables (Settings -> Secrets and
+      # variables -> Actions -> Variables). Required: GCP_PROJECT, GCP_DEPLOY_SA,
+      # GCP_WIF_PROVIDER. Optional: GCP_ZONE, GCP_VM_NAME.
       GCP_PROJECT: ${{ vars.GCP_PROJECT }}
       GCP_ZONE: ${{ vars.GCP_ZONE || 'us-central1-a' }}
       VM_NAME: ${{ vars.GCP_VM_NAME || 'coderunner' }}
       DEPLOY_SA: ${{ vars.GCP_DEPLOY_SA }}
       WIF_PROVIDER: ${{ vars.GCP_WIF_PROVIDER }}
-      # Derived from the repo owner — matches how build-image.yml tags the image.
-      WORKSPACE_IMAGE: ghcr.io/${{ github.repository_owner }}/coderunner-workspace
-
+      TAG: ${{ needs.validate.outputs.tag }}
     steps:
-      - name: Resolve tag to deploy
-        id: tag
-        # Read GitHub-provided values via env, NOT direct ${{ }} interpolation
-        # into the run block — otherwise a hostile workflow_dispatch input could
-        # inject shell. The strict regex check happens below regardless.
-        env:
-          INPUT_TAG: ${{ inputs.tag }}
-          UPSTREAM_BRANCH: ${{ github.event.workflow_run.head_branch }}
-          EVENT_NAME: ${{ github.event_name }}
+      - name: Check required GCP variables
         run: |
           set -euo pipefail
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            TAG="$INPUT_TAG"
-          else
-            # workflow_run carries the upstream event. For tag pushes,
-            # head_branch is the tag name (e.g. "v2.4.0").
-            TAG="$UPSTREAM_BRANCH"
-          fi
-          if [ -z "$TAG" ]; then
-            echo "empty tag (head_branch missing on workflow_run event?)"
-            exit 1
-          fi
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-
-      - name: Sanity check tag format and required vars
-        env:
-          TAG: ${{ steps.tag.outputs.tag }}
-        run: |
-          set -euo pipefail
-          # Strict semver-ish pattern: v<major>.<minor>.<patch> with optional pre-release suffix.
-          # Rejects shell metacharacters, backticks, $(...), spaces, etc.
-          if ! echo "$TAG" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
-            echo "refusing to deploy tag '$TAG' — must match vX.Y.Z[-prerelease]"
-            exit 1
-          fi
           for var in GCP_PROJECT DEPLOY_SA WIF_PROVIDER; do
             if [ -z "${!var:-}" ]; then
               echo "Missing repo variable: $var. See deploy/README.md for setup."
@@ -98,35 +214,27 @@ jobs:
 
       - name: Roll service on VM
         env:
-          TAG: ${{ steps.tag.outputs.tag }}
           GITHUB_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
 
-          # Heredoc is sent over the IAP-tunneled SSH connection and executed
-          # by the remote shell. $TAG, $WORKSPACE_IMAGE, and $GITHUB_REPO are
-          # interpolated by the LOCAL shell before the heredoc closes, so the
-          # remote side sees literal values. Anything intended for the remote
-          # shell is escaped (\$name, \$(cmd)).
           read -r -d '' DEPLOY_SCRIPT <<EOF || true
           set -euo pipefail
           export DEBIAN_FRONTEND=noninteractive
 
-          # Wait for first-boot bootstrap (idempotent — usually already done).
           for _ in \$(seq 1 60); do
             test -f /var/log/coderunner-bootstrap-done && break
             sleep 2
           done
           test -f /var/log/coderunner-bootstrap-done
 
+          sudo systemctl stop coderunner
+
           cd /opt/coderunner/app
           sudo -u coderunner git fetch --tags --depth=1 origin tag $TAG
           sudo -u coderunner git checkout $TAG
           sudo -u coderunner bun install --frozen-lockfile
 
-          # Fetch prebuilt web + ascope artifacts from the GitHub Release.
-          # Public repo → no auth needed. release-artifacts job in
-          # build-image.yml attached these to the same tag.
           RELEASE_URL="https://github.com/$GITHUB_REPO/releases/download/$TAG"
           sudo -u coderunner curl -fsSL -o /tmp/web.tgz "\$RELEASE_URL/web-dist.tar.gz"
           sudo -u coderunner curl -fsSL -o /tmp/ascope.tgz "\$RELEASE_URL/ascope-dist.tar.gz"
@@ -136,14 +244,13 @@ jobs:
           sudo -u coderunner tar -xzf /tmp/ascope.tgz -C dist/advantagescope
           sudo -u coderunner rm -f /tmp/web.tgz /tmp/ascope.tgz
 
-          # Pull the matching workspace image and re-tag :latest locally so
-          # CODE_IMAGE=<image>:latest keeps working.
           sudo -u coderunner docker pull $WORKSPACE_IMAGE:$TAG
           sudo -u coderunner docker tag $WORKSPACE_IMAGE:$TAG $WORKSPACE_IMAGE:latest
 
-          sudo systemctl restart coderunner
+          sudo -u coderunner bash -lc 'set -a; source /opt/coderunner/.env; set +a; bun run docker:rebuild-workspaces'
 
-          # Health gate: wait up to 30s for /healthz.
+          sudo systemctl start coderunner
+
           for _ in \$(seq 1 30); do
             if curl -sf http://localhost:4000/healthz >/dev/null; then
               echo "healthz OK"

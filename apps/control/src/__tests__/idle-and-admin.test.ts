@@ -24,7 +24,7 @@ describe("idle lifecycle and admin controls", () => {
 
 				const leaseBefore = app.storage.getContainerLease(workspace.id);
 				expect(leaseBefore).toBeTruthy();
-				const lastUsedBefore = leaseBefore?.last_used_at;
+				const lastUsedBefore = leaseBefore!.last_used_at;
 
 				await Bun.sleep(20);
 
@@ -41,7 +41,7 @@ describe("idle lifecycle and admin controls", () => {
 
 				const leaseAfter = app.storage.getContainerLease(workspace.id);
 				expect(leaseAfter).toBeTruthy();
-				expect(leaseAfter?.last_used_at >= lastUsedBefore).toBe(true);
+				expect(leaseAfter!.last_used_at >= lastUsedBefore).toBe(true);
 			},
 			{
 				dockerRunner: fakeDocker.runner,

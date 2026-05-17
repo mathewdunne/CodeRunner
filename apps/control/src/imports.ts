@@ -201,7 +201,7 @@ export class ImportManager {
 		readonly _storage: AppStorage,
 		private readonly runtimeProvider: WorkspaceRuntimeProvider,
 		readonly _options: ImportManagerOptions = {},
-	) { }
+	) {}
 
 	isImporting(workspaceId: WorkspaceId): boolean {
 		return this.activeImports.has(workspaceId);
@@ -415,7 +415,7 @@ export class ImportManager {
 				"rm",
 				"-rf",
 				`/workspace/${stagingName}`,
-			]).catch(() => { });
+			]).catch(() => {});
 		}
 
 		send({ type: "progress", stage: "complete", detail: "Import finished." });
@@ -499,9 +499,9 @@ export class ImportManager {
 		);
 		for (const metaFile of toRemove) {
 			const archiveFile = metaFile.replace(/\.json$/, ".tar.gz");
-			await rm(resolve(backupsDir, metaFile), { force: true }).catch(() => { });
+			await rm(resolve(backupsDir, metaFile), { force: true }).catch(() => {});
 			await rm(resolve(backupsDir, archiveFile), { force: true }).catch(
-				() => { },
+				() => {},
 			);
 		}
 	}

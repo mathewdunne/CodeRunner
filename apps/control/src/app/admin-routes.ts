@@ -1,6 +1,9 @@
 import { cp, mkdir, readdir, rm, stat } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import type { AdminActionResponse, WorkspaceId } from "@frc-coderunner/contracts";
+import type {
+	AdminActionResponse,
+	WorkspaceId,
+} from "@frc-coderunner/contracts";
 import { queryAuditLog, recordAuditEvent } from "../audit";
 import { requireAdmin } from "../auth/middleware";
 import { getLogger } from "../logging";
@@ -281,16 +284,16 @@ export async function handleAdminRoute(
       `,
 			)
 			.all() as Array<{
-				id: string;
-				name: string;
-				email: string;
-				role: string | null;
-				slug: string | null;
-				createdAt: string;
-				updatedAt: string;
-				workspaceId: string | null;
-				lastSeenAt: string | null;
-			}>;
+			id: string;
+			name: string;
+			email: string;
+			role: string | null;
+			slug: string | null;
+			createdAt: string;
+			updatedAt: string;
+			workspaceId: string | null;
+			lastSeenAt: string | null;
+		}>;
 		return jsonResponse({ ok: true, users });
 	}
 
@@ -303,11 +306,11 @@ export async function handleAdminRoute(
 		const user = storage.db
 			.query("SELECT id, name, email, role FROM user WHERE id = ?")
 			.get(userId) as {
-				id: string;
-				name: string;
-				email: string;
-				role: string | null;
-			} | null;
+			id: string;
+			name: string;
+			email: string;
+			role: string | null;
+		} | null;
 		if (!user) {
 			return jsonResponse({ error: "User not found." }, { status: 404 });
 		}
@@ -341,11 +344,11 @@ export async function handleAdminRoute(
 		const user = storage.db
 			.query("SELECT id, name, email, role FROM user WHERE id = ?")
 			.get(userId) as {
-				id: string;
-				name: string;
-				email: string;
-				role: string | null;
-			} | null;
+			id: string;
+			name: string;
+			email: string;
+			role: string | null;
+		} | null;
 		if (!user) {
 			return jsonResponse({ error: "User not found." }, { status: 404 });
 		}

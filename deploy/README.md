@@ -26,7 +26,7 @@ One-VM deployment of the CodeRunner control plane to Google Compute Engine. Zero
 
 ## One-time bootstrap
 
-You run these once. After this, every release auto-deploys.
+You run these once. After this, releases are deployed manually from `main`.
 
 ### 1. GCP project
 
@@ -137,22 +137,28 @@ gcloud compute ssh coderunner --zone=us-central1-a --tunnel-through-iap \
 
 ## How releases deploy
 
-1. Push a `vX.Y.Z` tag.
-2. [`Build workspace image`](../.github/workflows/build-image.yml) runs two parallel jobs:
-   - `build` publishes the workspace image to `ghcr.io/<owner>/coderunner-workspace:<tag>`.
-   - `release-artifacts` builds `apps/web/dist` and `dist/advantagescope`, tars them, and attaches `web-dist.tar.gz` + `ascope-dist.tar.gz` to the GitHub Release for that tag.
-3. [`Deploy to GCE`](../.github/workflows/deploy.yml) fires once the upstream workflow's `conclusion == 'success'`, authenticates via WIF, SSHes into the VM through IAP, and runs: `git checkout <tag> && bun install && curl tarballs && tar -xz && docker pull && systemctl restart coderunner`, then polls `/healthz`. **Nothing is built on the VM** — emsdk and Node aren't installed there.
+1. Create or update a `vX.Y.Z` or `vX.Y.Z-prerelease` tag on a commit reachable from `main`.
+2. Dispatch the manual deploy workflow from `main`:
+
+   ```bash
+   gh workflow run "Deploy to GCE" --ref main -f tag=v2.4.0
+   ```
+
+3. [`Deploy to GCE`](../.github/workflows/deploy.yml) validates the tag format and ancestry, runs `bun run verify`, publishes `ghcr.io/<owner>/coderunner-workspace:<tag>` and `:latest`, builds the web and AdvantageScope Lite tarballs, and uploads `web-dist.tar.gz` + `ascope-dist.tar.gz` to the GitHub Release for that tag.
+4. The deploy job authenticates via WIF, SSHes into the VM through IAP, stops `coderunner`, checks out the tag, installs dependencies, fetches the prebuilt tarballs, pulls the matching workspace image, removes all managed V2 workspace containers, clears their leases, starts `coderunner`, then polls `/healthz`. **Nothing is built on the VM** — emsdk and Node aren't installed there.
 
 Migrations apply automatically — `bun run start` runs `bun run migrate` first ([package.json:13](../package.json)).
 
+Workspace rebuilds intentionally disrupt active sessions during deploy. Student data is preserved because projects and editor homes are bind-mounted under `data/users/<workspaceId>/`; only disposable Docker containers labeled `frc-sim.managed=true` and `frc-sim.version=v2` are removed.
+
 ### First-deploy gotcha
 
-After `terraform apply` + populating secrets + VM reset (steps 4–7), the control plane runs but `apps/web/dist` is empty — `/` will 404 until the **first** tag-driven deploy lands the prebuilt web bundle. `/healthz` works regardless, so use that to verify the VM came up. Push a `vX.Y.Z` tag (or run *Deploy to GCE* manually against an existing release tag) to populate the dist.
+After `terraform apply` + populating secrets + VM reset (steps 4–7), the control plane runs but `apps/web/dist` is empty — `/` will 404 until the **first** manual deploy lands the prebuilt web bundle. `/healthz` works regardless, so use that to verify the VM came up. Run *Deploy to GCE* from `main` against a valid release tag to populate the dist.
 
 ## Rollback
 
 ```bash
-gh workflow run "Deploy to GCE" -f tag=v2.3.0
+gh workflow run "Deploy to GCE" --ref main -f tag=v2.3.0
 ```
 
 Or via the GitHub Actions UI: *Deploy to GCE* → *Run workflow* → enter the previous tag.
@@ -195,9 +201,7 @@ deploy/
                                  # Does NOT build web/ascope — those arrive as
                                  # prebuilt tarballs on each deploy.
 .github/workflows/
-├── build-image.yml              # On v* tag: builds workspace image to GHCR
-                                 # AND prebuilds web + ascope tarballs and
-                                 # attaches them to the GitHub Release.
-└── deploy.yml                   # Chains off build-image. Fetches the release
-                                 # tarballs and rolls the VM service.
+└── deploy.yml                   # Manual main-branch release path: validates,
+                                 # verifies, publishes image/artifacts, rebuilds
+                                 # managed workspace containers, and rolls the VM.
 ```

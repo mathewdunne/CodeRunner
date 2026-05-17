@@ -54,7 +54,7 @@ describe("S9 — ImportManager passes argv as arrays to the runtime", () => {
 				branch: "main",
 				subdir: "",
 				backup: false,
-				send: () => { },
+				send: () => {},
 			};
 			await importer.run(ctx);
 
@@ -64,7 +64,7 @@ describe("S9 — ImportManager passes argv as arrays to the runtime", () => {
 			);
 			expect(cloneCall).toBeTruthy();
 			// The URL is its own arg, not concatenated with quotes or ; or backticks
-			const cloneArgs = cloneCall?.command;
+			const cloneArgs = cloneCall!.command;
 			const urlArg = cloneArgs[cloneArgs.indexOf("--") + 1];
 			expect(urlArg).toBe("https://github.com/o/r.git");
 			// No arg contains a shell metachar — that would be evidence of shell-string construction.
@@ -111,7 +111,7 @@ describe("S9 — ImportManager passes argv as arrays to the runtime", () => {
 				branch: "main",
 				subdir: "",
 				backup: false,
-				send: () => { },
+				send: () => {},
 			});
 
 			// The clone target path uses /workspace/<.import-{timestamp}>/source
@@ -179,7 +179,7 @@ describe("S11 — clone target path never includes user-supplied subdir before v
 				branch: "main",
 				subdir: "",
 				backup: false,
-				send: () => { },
+				send: () => {},
 			});
 
 			// Check that no bash -c invocation interpolates the user URL

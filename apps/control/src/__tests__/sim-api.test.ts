@@ -312,7 +312,7 @@ describe("simulation HTTP API", () => {
 				);
 
 				expect(response.status).toBe(200);
-				const sent = sockets[0]?.sent
+				const sent = sockets[0]!.sent
 					.filter((raw): raw is string => typeof raw === "string")
 					.map((raw) => JSON.parse(raw) as { data: Record<string, unknown> });
 				expect(sent.some((message) => message.data[">test"] === true)).toBe(
@@ -409,7 +409,7 @@ describe("simulation HTTP API", () => {
 					}),
 				);
 				expect(selectResponse.status).toBe(200);
-				const textMessages = sockets[0]?.sent.filter(
+				const textMessages = sockets[0]!.sent.filter(
 					(data): data is string => typeof data === "string",
 				);
 				expect(
@@ -647,7 +647,7 @@ describe("simulation HTTP API", () => {
 					}),
 				);
 				expect(secondSelect.status).toBe(200);
-				const secondTextMessages = sockets[1]?.sent.filter(
+				const secondTextMessages = sockets[1]!.sent.filter(
 					(data): data is string => typeof data === "string",
 				);
 				expect(

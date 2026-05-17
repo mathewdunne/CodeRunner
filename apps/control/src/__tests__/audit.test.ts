@@ -199,7 +199,7 @@ describe("audit log", () => {
 			expect(body.ok).toBe(true);
 			expect(body.entries.length).toBe(3);
 			// Ordered by id DESC
-			expect(body.entries[0]?.id).toBeGreaterThan(body.entries[1]?.id);
+			expect(body.entries[0]!.id).toBeGreaterThan(body.entries[1]!.id);
 		});
 	});
 

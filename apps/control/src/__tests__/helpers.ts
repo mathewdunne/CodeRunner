@@ -468,7 +468,7 @@ export class MockWorkspaceRuntimeProvider implements WorkspaceRuntimeProvider {
 			stdout: null,
 			stderr: null,
 			exited: Promise.resolve({ code: 0, signal: null }),
-			kill() { },
+			kill() {},
 		};
 	}
 
@@ -539,7 +539,7 @@ export function makeScriptedRunCommandFactory(
 				stdoutClose = () => {
 					try {
 						controller.close();
-					} catch { }
+					} catch {}
 				};
 			},
 		});
@@ -549,7 +549,7 @@ export function makeScriptedRunCommandFactory(
 				stderrClose = () => {
 					try {
 						controller.close();
-					} catch { }
+					} catch {}
 				};
 			},
 		});
@@ -667,9 +667,9 @@ export async function login(
 	const existing = db
 		.query("SELECT id, slug FROM user WHERE email = ?")
 		.get(email) as {
-			id: string;
-			slug: string;
-		} | null;
+		id: string;
+		slug: string;
+	} | null;
 	if (existing) {
 		if (options.role) {
 			db.query("UPDATE user SET role = ?, updatedAt = ? WHERE id = ?").run(
@@ -723,8 +723,8 @@ export function workspaceProjectPath(app: ControlApp, slug: string): string {
 	const workspace = app.storage.db
 		.query("SELECT * FROM workspaces WHERE slug = ?")
 		.get(slug) as {
-			project_path: string;
-		} | null;
+		project_path: string;
+	} | null;
 	expect(workspace).toBeTruthy();
 	return workspace?.project_path ?? "";
 }

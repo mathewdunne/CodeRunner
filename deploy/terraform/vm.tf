@@ -51,8 +51,8 @@ resource "google_compute_instance" "coderunner" {
   }
 
   metadata = {
-    user-data              = local.user_data
-    enable-oslogin         = "TRUE"
+    user-data      = local.user_data
+    enable-oslogin = "TRUE"
     # Block legacy SSH keys path. OS Login is the only way in.
     block-project-ssh-keys = "TRUE"
   }
