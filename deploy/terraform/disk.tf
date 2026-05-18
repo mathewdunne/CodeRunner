@@ -1,6 +1,6 @@
 resource "google_compute_disk" "data" {
   name = "coderunner-data"
-  type = "pd-balanced"
+  type = var.data_disk_type
   zone = var.zone
   size = var.data_disk_size_gb
 

@@ -47,9 +47,42 @@ variable "ssh_break_glass_cidr" {
 }
 
 variable "machine_type" {
-  description = "GCE machine type. e2-standard-4 fits the ~10-student profile."
+  description = "GCE machine type. e2-standard-2 is the low-cost 2 vCPU / 8 GiB profile."
   type        = string
-  default     = "e2-standard-4"
+  default     = "e2-standard-2"
+}
+
+variable "network_tier" {
+  description = "Network Service Tier for the VM's external IPv4. STANDARD lowers egress costs for a single-region classroom deployment; use PREMIUM for Google's default global backbone routing."
+  type        = string
+  default     = "STANDARD"
+
+  validation {
+    condition     = contains(["PREMIUM", "STANDARD"], var.network_tier)
+    error_message = "network_tier must be either PREMIUM or STANDARD."
+  }
+}
+
+variable "boot_disk_type" {
+  description = "Boot disk class. Keep pd-balanced for Docker image/layer IO unless cost pressure is more important than responsiveness."
+  type        = string
+  default     = "pd-balanced"
+
+  validation {
+    condition     = contains(["pd-standard", "pd-balanced", "pd-ssd"], var.boot_disk_type)
+    error_message = "boot_disk_type must be one of: pd-standard, pd-balanced, pd-ssd."
+  }
+}
+
+variable "data_disk_type" {
+  description = "Persistent data disk class for SQLite, student projects, and editor homes. pd-balanced preserves IDE responsiveness; pd-standard is cheaper but slower."
+  type        = string
+  default     = "pd-balanced"
+
+  validation {
+    condition     = contains(["pd-standard", "pd-balanced", "pd-ssd"], var.data_disk_type)
+    error_message = "data_disk_type must be one of: pd-standard, pd-balanced, pd-ssd."
+  }
 }
 
 variable "data_disk_size_gb" {

@@ -26,7 +26,7 @@ resource "google_compute_instance" "coderunner" {
     initialize_params {
       image = "ubuntu-os-cloud/ubuntu-2404-lts-amd64"
       size  = var.boot_disk_size_gb
-      type  = "pd-balanced"
+      type  = var.boot_disk_type
     }
   }
 
@@ -39,7 +39,8 @@ resource "google_compute_instance" "coderunner" {
   network_interface {
     subnetwork = google_compute_subnetwork.coderunner.self_link
     access_config {
-      nat_ip = google_compute_address.coderunner.address
+      nat_ip       = google_compute_address.coderunner.address
+      network_tier = var.network_tier
     }
   }
 

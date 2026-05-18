@@ -6,8 +6,9 @@ One-VM deployment of the CodeRunner control plane to Google Compute Engine. Zero
 
 ## What this provisions
 
-- One `e2-standard-4` VM (4 vCPU, 16 GB) in `us-central1-a`
+- One `e2-standard-2` VM (2 vCPU, 8 GB) in `us-central1-a`
 - A 50 GB persistent disk mounted at `/var/lib/coderunner/data` for SQLite + student projects (survives VM recreation, daily snapshots, 7-day retention)
+- Standard Network Tier for the VM's public IPv4 by default, which is cheaper for this single-region classroom deployment than Premium Tier
 - Caddy in front of the control plane terminating TLS via Let's Encrypt
 - Grafana Alloy scraping the control plane's `/metrics`, host metrics, and per-container metrics; `remote_write` to Grafana Cloud
 - Workload Identity Federation so GitHub Actions can deploy without long-lived keys
@@ -208,7 +209,14 @@ Or via the GitHub Actions UI: *Deploy to GCE* → *Run workflow* → enter the p
 
 ## Sizing reference
 
-From [.env.example](../.env.example): each active student uses ~2.5 GB. The default `e2-standard-4` (16 GB) fits the ~10-student target. To bump, set `machine_type = "e2-standard-8"` in `terraform.tfvars` and `terraform apply` (the VM will stop, resize, and restart — no data loss because the data disk is separate).
+From [.env.example](../.env.example): each active student uses ~2.5 GB at the normal memory cap. The low-cost default is now `e2-standard-2` (2 vCPU, 8 GB), with production bootstrap setting `CODE_MEMORY_LIMIT=2048m` to reduce per-container memory pressure. To bump back toward a classroom profile, set `machine_type = "e2-standard-4"` or larger in `terraform.tfvars`, then verify real capacity with Grafana or `docker stats`.
+
+## Cost notes
+
+- `network_tier = "STANDARD"` is the default because this app serves one regional classroom-style audience. It reduces outbound bandwidth cost compared with Premium Tier. Switching an existing reserved static IPv4 between tiers can allocate a new IP, so plan for a DNS update if Terraform shows the address being replaced.
+- Boot and data disks stay on `pd-balanced` by default. `pd-standard` is cheaper and can use the Compute Engine 30 GB-month standard persistent disk free tier in eligible regions/accounts, but it is HDD-backed and noticeably worse for Docker layers, openvscode-server homes, Java language-server caches, SQLite, and Gradle project IO.
+- Existing persistent disks cannot be shrunk in place. Reducing `boot_disk_size_gb` or `data_disk_size_gb` is not a safe cost cleanup for a live deployment; create a smaller replacement disk from backup/snapshot if you later decide the current 50 GB sizes are too large.
+- Daily snapshots are incremental and stored regionally. Keeping 7-day retention is a good value tradeoff for student data; lower it only if billing reports show snapshot storage becoming meaningful.
 
 ## Files
 

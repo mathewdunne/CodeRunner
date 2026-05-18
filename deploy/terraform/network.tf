@@ -14,6 +14,7 @@ resource "google_compute_address" "coderunner" {
   name         = "coderunner-ip"
   address_type = "EXTERNAL"
   region       = var.region
+  network_tier = var.network_tier
 }
 
 resource "google_compute_firewall" "http" {
