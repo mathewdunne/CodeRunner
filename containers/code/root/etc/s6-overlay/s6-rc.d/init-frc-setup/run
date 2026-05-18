@@ -95,21 +95,16 @@ if [[ -f "${PROJECT_SETTINGS}" ]]; then
   merge_vscode_settings "${PROJECT_SETTINGS}" project
 fi
 
-# Seed the remote-level editor theme. Existing non-default remote choices are preserved,
-# while absent settings and the old light default move to the classroom default.
 if [[ ! -s "${MACHINE_SETTINGS}" ]]; then
-  printf '{\n  "workbench.colorTheme": "Dark Modern"\n}\n' > "${MACHINE_SETTINGS}"
+  printf '{}\n' > "${MACHINE_SETTINGS}"
+fi
+
+tmp_settings="$(mktemp)"
+if jq '."workbench.colorTheme" //= "Default Dark Modern"' "${MACHINE_SETTINGS}" > "${tmp_settings}"; then
+  mv "${tmp_settings}" "${MACHINE_SETTINGS}"
 else
-  current_theme="$(jq -r '."workbench.colorTheme" // ""' "${MACHINE_SETTINGS}" 2>/dev/null || true)"
-  if [[ "${current_theme}" == "" || "${current_theme}" == "Light Modern" ]]; then
-    tmp_settings="$(mktemp)"
-    if jq '."workbench.colorTheme" = "Dark Modern"' "${MACHINE_SETTINGS}" > "${tmp_settings}"; then
-      mv "${tmp_settings}" "${MACHINE_SETTINGS}"
-    else
-      rm -f "${tmp_settings}"
-      echo "WARNING: Could not update VS Code machine settings; leaving ${MACHINE_SETTINGS} unchanged."
-    fi
-  fi
+  rm -f "${tmp_settings}"
+  echo "WARNING: Could not update VS Code machine settings; leaving ${MACHINE_SETTINGS} unchanged."
 fi
 
 touch "${SIM_LOG_FILE}"
