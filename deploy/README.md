@@ -139,6 +139,32 @@ gcloud compute ssh coderunner --zone=us-central1-a --tunnel-through-iap \
   --command='cd /opt/coderunner/app && sudo -u coderunner bun run users:promote <your-email>'
 ```
 
+## Changing control-plane env vars
+
+The control plane reads `/opt/coderunner/.env`, but that file is regenerated on every boot by `render-env.sh` (defined inline in [`cloud-init/user-data.yaml`](./cloud-init/user-data.yaml)). Hand-edits to `.env` on the VM survive until the next reboot, then vanish — so make the change in the cloud-init template, not on the VM.
+
+Three buckets, depending on what you're changing:
+
+**A. Secrets (already wired to Secret Manager).** `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_*`, `GOOGLE_CLIENT_*`, `ADMIN_TOKEN`, `METRICS_TOKEN`, and the three `coderunner-grafana-cloud-*`. Update the secret and re-render:
+
+```bash
+printf '<new value>' | gcloud secrets versions add coderunner-<name> --data-file=-
+gcloud compute ssh coderunner --zone=<zone> --tunnel-through-iap \
+  --command="sudo /opt/coderunner/render-env.sh && sudo systemctl restart coderunner"
+```
+
+**B. Non-secret defaults already in the template.** `PORT`, `LOG_LEVEL`, `CODE_IMAGE`, `FRC_DATA_DIR`, `FRC_DB_PATH`, `CODE_MEMORY_LIMIT`, `IDLE_STOP_MINUTES` — edit the literal in the `echo` block inside `cloud-init/user-data.yaml` (look for the "Control plane env vars" comment), commit, then on the VM:
+
+```bash
+sudo /opt/coderunner/render-env.sh && sudo systemctl restart coderunner
+```
+
+The cloud-init template lives in the repo, not on the VM — `render-env.sh` on the VM is a frozen copy from first boot. So edits to the template only take effect on the live VM after one of: (a) `terraform apply` recreating the VM, (b) you hand-copy the updated `render-env.sh` onto the VM, or (c) for the urgent path, edit `/opt/coderunner/.env` directly + restart (just remember the same edit must land in the template too, or the next VM rebuild loses it).
+
+**C. New vars not in the template yet** (e.g. anything from [`.env.example`](../../.env.example) like `SIM_PORT_RANGE`, `RUN_BUILD_TIMEOUT_MS`, `FRC_CONTAINER_AUTO_START`). Add a new `echo "VAR=value"` line in that same block in `user-data.yaml`. If the value is a secret, also `fetch` it from Secret Manager near the top of `render-env.sh` and reference the shell variable — follow the pattern of `BETTER_AUTH_SECRET`. Same rollout as bucket B.
+
+> Per-workspace container env (what `docker run -e ...` passes into student containers) is **not** controlled from `.env` — see [`apps/control/src/containers/local-docker-runtime-provider.ts`](../apps/control/src/containers/local-docker-runtime-provider.ts) around the `docker run` argv. The control plane intentionally does not propagate its own secrets into student containers.
+
 ## How releases deploy
 
 1. Create or update a `vX.Y.Z` or `vX.Y.Z-prerelease` tag on a commit reachable from `main`.
