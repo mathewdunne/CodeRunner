@@ -26,7 +26,7 @@ variable "github_repo" {
 
   validation {
     condition     = can(regex("^[^/]+/[^/]+$", var.github_repo))
-    error_message = "github_repo must be in owner/repo format (e.g. yourname/FRC-Programming-Training-Sim)."
+    error_message = "github_repo must be in owner/repo format (e.g. yourname/CodeRunner)."
   }
 }
 
