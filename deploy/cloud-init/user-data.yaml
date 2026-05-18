@@ -184,8 +184,14 @@ write_files:
       }
 
       // ─── Per-container metrics (workspace containers) ────────────────
+      // disabled_metrics = ["disk"] turns off cadvisor's filesystem-usage /
+      // inode collector. That collector stat()s files under /var/lib/docker
+      // which is root-only, so on this VM it logs a "permission denied"
+      // every scrape. diskIO (block-device I/O) is a separate category and
+      // stays on — that's the useful per-container disk signal.
       prometheus.exporter.cadvisor "containers" {
         docker_host = "unix:///var/run/docker.sock"
+        disabled_metrics = ["disk"]
       }
 
       prometheus.scrape "containers" {
@@ -278,9 +284,25 @@ write_files:
         useradd --system --create-home --shell /bin/bash --home-dir /home/$${APP_USER} "$${APP_USER}"
       fi
       usermod -aG docker "$${APP_USER}"
-      # cadvisor exporter reads /var/run/docker.sock.
+      # cadvisor exporter reads /var/run/docker.sock AND
+      # /run/containerd/containerd.sock. docker.sock is docker-group readable
+      # out of the box; containerd.sock is root:root 0660 by default, so we
+      # tell containerd's grpc listener to chown its socket to the docker
+      # group too. Without this, cadvisor's containerd backend fails with
+      # "cannot unix dial containerd api service: permission denied" and
+      # per-container metrics never reach Grafana Cloud.
       if id -u alloy >/dev/null 2>&1; then
         usermod -aG docker alloy
+      fi
+      if ! grep -qE '^\[grpc\]' /etc/containerd/config.toml; then
+        DOCKER_GID="$(getent group docker | cut -d: -f3)"
+        log "configuring containerd grpc gid=$${DOCKER_GID} for cadvisor"
+        cat >> /etc/containerd/config.toml <<EOF
+
+[grpc]
+  gid = $${DOCKER_GID}
+EOF
+        systemctl restart containerd
       fi
 
       # ─── Data disk ─────────────────────────────────────────────────────
