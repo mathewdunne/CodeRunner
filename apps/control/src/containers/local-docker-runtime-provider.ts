@@ -511,6 +511,9 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
 			`type=bind,src=${workspace.project_path},dst=/workspace/project`,
 			"--mount",
 			`type=bind,src=${homePath},dst=/config`,
+		];
+
+		args.push(
 			"-p",
 			`127.0.0.1:${vscodePort}:${VSCODE_CONTAINER_PORT}`,
 			"-p",
@@ -521,7 +524,7 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
 			this.storage.config.codeMemoryLimit,
 			"-e",
 			`VSCODE_BASE_PATH=/u/${workspace.slug}/vscode/`,
-		];
+		);
 
 		if (this.storage.config.containerUser) {
 			const [puid, pgid] = this.storage.config.containerUser.split(":");

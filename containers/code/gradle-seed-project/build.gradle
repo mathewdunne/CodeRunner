@@ -64,19 +64,10 @@ test {
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
 }
 
-// Headless sim: deliberately omit wpi.sim.addGui() and wpi.sim.addDriverstation().
-// See docs/archive/mvp-docs/decisions/001-sim-container.md for the original proof.
-
-// Enable HALSim WebSocket server so the web Driver Station UI can control
-// enable/disable, mode, and e-stop over the network.
-// See docs/decisions/015-halsim-control-protocol.md.
 wpi.sim.addWebsocketsServer().defaultEnabled = true
 
 jar {
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-    from('src') { into 'backup/src' }
-    from('vendordeps') { into 'backup/vendordeps' }
-    from('build.gradle') { into 'backup' }
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }

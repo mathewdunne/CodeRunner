@@ -104,9 +104,26 @@ RUN ./gradlew --no-daemon --console=plain build
 RUN ./gradlew --no-daemon --stop; \
     rm -rf /workspace/template/build /workspace/template/.gradle
 
+# Second build pass: resolve and transform all common vendor lib artifacts.
+# src/ and gradle wrapper are reused from the template; only build.gradle,
+# settings.gradle, and vendordeps/ differ.
+COPY --chown=abc:abc containers/code/gradle-seed-project/ /workspace/seed/
+RUN cp /workspace/template/gradlew /workspace/seed/gradlew \
+    && cp /workspace/template/gradlew.bat /workspace/seed/gradlew.bat \
+    && cp -r /workspace/template/gradle /workspace/seed/gradle \
+    && cp -r /workspace/template/src /workspace/seed/src \
+    && chown -R abc:abc /workspace/seed
+
+WORKDIR /workspace/seed
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew
+RUN ./gradlew --no-daemon --console=plain build
+RUN ./gradlew --no-daemon --stop; \
+    rm -rf /workspace/seed/build /workspace/seed/.gradle
+
 USER root
 RUN mkdir -p /opt/frc-gradle-cache \
     && cp -a /config/.gradle/. /opt/frc-gradle-cache/ \
+    && ln -s wrapper /opt/frc-gradle-cache/permwrapper \
     && rm -rf /config/.gradle
 
 # ── Runtime defaults ──────────────────────────────────────────────────
