@@ -229,7 +229,8 @@ Optional. When configured, Cloudflare Pages serves the React frontend from the C
                                 │
                          ┌──────┴──────────────────────────────────┐
                          │ backend path?                           │
-                         │ /api/* /u/* /admin/*                    │
+                         │ /api/* /admin/*                         │
+                         │ /u/:slug/{api,ws,vscode,sim,assets}/*   │
                          │ /healthz /metrics /scope/*              │
                          └──────┬──────────────────────────────────┘
                                 │ yes                    no (static asset)
@@ -239,7 +240,7 @@ Optional. When configured, Cloudflare Pages serves the React frontend from the C
                   localhost:4000 (bun)
 ```
 
-A Pages Function catch-all (`deploy/cloudflare/functions/[[path]].ts`) handles all requests. Backend paths are proxied to `origin.YOUR_DOMAIN`; everything else is served from CF's edge via the `ASSETS` binding. Your domain does **not** need to be on Cloudflare nameservers — you add it as a CF Pages custom domain and CNAME at your registrar.
+A Pages Function catch-all (`deploy/cloudflare/functions/[[path]].ts`) handles all requests. Backend paths are proxied to `origin.YOUR_DOMAIN`; shell routes such as `/`, `/login`, and `/u/:slug` plus static assets are served from CF's edge via the `ASSETS` binding. Your domain does **not** need to be on Cloudflare nameservers — you add it as a CF Pages custom domain and CNAME at your registrar.
 
 When the VM is off, the function returns `503 {"error":"service_unavailable"}` and the React app shows the offline screen. Students never see a raw browser error.
 
@@ -273,17 +274,17 @@ sudo systemctl reload caddy'
 
 New VMs provisioned from `cloud-init/user-data.yaml` get both vhosts automatically.
 
-#### 3. First deploy (creates the CF Pages project)
+#### 3. Bootstrap deploy (creates the CF Pages project)
 
 Build the web dist and deploy:
 
 ```bash
 bun run build:web
 cd deploy/cloudflare
-wrangler pages deploy --commit-dirty=true
+wrangler pages deploy --commit-dirty=true --branch main --project-name=coderunner
 ```
 
-This creates the `coderunner` Pages project in your CF account if it doesn't exist.
+This creates the `coderunner` Pages project in your CF account if it doesn't exist. Do not attach the custom domain yet; this bootstrap deployment still uses the placeholder origin until the secret below is set and a second deployment is created.
 
 #### 4. Set BACKEND_ORIGIN as a Pages secret
 
@@ -296,6 +297,12 @@ wrangler pages secret put BACKEND_ORIGIN --project-name=coderunner
 ```
 
 The secret overrides the `YOUR_DOMAIN` placeholder in `wrangler.toml`. The repo stays domain-agnostic.
+
+Redeploy so the production deployment picks up the new secret:
+
+```bash
+wrangler pages deploy --commit-dirty=true --branch main --project-name=coderunner
+```
 
 #### 5. Add the custom domain
 

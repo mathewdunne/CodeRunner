@@ -208,7 +208,7 @@ jobs:
           accountId: ${{ vars.CF_ACCOUNT_ID }}
           workingDirectory: deploy/cloudflare
           packageManager: bun
-          command: pages deploy --commit-dirty=true
+          command: pages deploy --commit-dirty=true --branch main --project-name=coderunner
 
   deploy:
     needs: [validate, publish]

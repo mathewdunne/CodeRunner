@@ -3,6 +3,11 @@ interface Env {
 	ASSETS: { fetch(request: Request): Promise<Response> };
 }
 
+interface PagesFunctionContext {
+	request: Request;
+	env: Env;
+}
+
 // Top-level paths that go directly to the origin.
 const TOP_LEVEL_PROXIED = [
 	"/api/",
@@ -26,41 +31,42 @@ function isProxiedPath(pathname: string): boolean {
 	);
 }
 
-export default {
-	async fetch(request: Request, env: Env): Promise<Response> {
-		const url = new URL(request.url);
+export async function onRequest({
+	request,
+	env,
+}: PagesFunctionContext): Promise<Response> {
+	const url = new URL(request.url);
 
-		if (!isProxiedPath(url.pathname)) {
-			return env.ASSETS.fetch(request);
+	if (!isProxiedPath(url.pathname)) {
+		return env.ASSETS.fetch(request);
+	}
+
+	const backendUrl = new URL(url.pathname + url.search, env.BACKEND_ORIGIN);
+	const isWebSocket =
+		request.headers.get("Upgrade")?.toLowerCase() === "websocket";
+
+	const headers = new Headers(request.headers);
+	// Tell the control plane what hostname the browser used so better-auth
+	// constructs correct OAuth callback URLs and cookie domains.
+	headers.set("X-Forwarded-Host", url.host);
+
+	try {
+		const backendRequest = new Request(backendUrl, {
+			method: request.method,
+			headers,
+			body: request.body,
+			redirect: "manual",
+		});
+		return await fetch(backendRequest);
+	} catch {
+		if (isWebSocket) {
+			// Browser WebSocket API maps a non-101 response to onclose/onerror,
+			// which triggers the existing reconnect backoff in the hooks.
+			return new Response("Service Unavailable", { status: 503 });
 		}
-
-		const backendUrl = new URL(url.pathname + url.search, env.BACKEND_ORIGIN);
-		const isWebSocket =
-			request.headers.get("Upgrade")?.toLowerCase() === "websocket";
-
-		const headers = new Headers(request.headers);
-		// Tell the control plane what hostname the browser used so better-auth
-		// constructs correct OAuth callback URLs and cookie domains.
-		headers.set("X-Forwarded-Host", url.host);
-
-		try {
-			const backendRequest = new Request(backendUrl, {
-				method: request.method,
-				headers,
-				body: request.body,
-				redirect: "manual",
-			});
-			return await fetch(backendRequest);
-		} catch {
-			if (isWebSocket) {
-				// Browser WebSocket API maps a non-101 response to onclose/onerror,
-				// which triggers the existing reconnect backoff in the hooks.
-				return new Response("Service Unavailable", { status: 503 });
-			}
-			return new Response(JSON.stringify({ error: "service_unavailable" }), {
-				status: 503,
-				headers: { "Content-Type": "application/json" },
-			});
-		}
-	},
-};
+		return new Response(JSON.stringify({ error: "service_unavailable" }), {
+			status: 503,
+			headers: { "Content-Type": "application/json" },
+		});
+	}
+}

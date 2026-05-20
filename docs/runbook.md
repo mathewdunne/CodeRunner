@@ -860,7 +860,7 @@ bun run audit:prune -- --dry-run
 
 By default the VM serves everything. Enabling Cloudflare Pages mode moves the React frontend to Cloudflare's CDN so students see a styled "CodeRunner is Offline" screen when the VM is powered off, instead of Chrome's connection-refused error.
 
-The control plane, Docker containers, SQLite database, and all GCE infrastructure remain unchanged. A CF Pages project is deployed on every release via a Pages Function catch-all that proxies backend paths (`/api/*`, `/u/*`, etc.) to the VM via an `origin.` subdomain while serving static files directly from CF's edge. No Cloudflare nameservers required — a CNAME at your registrar is enough.
+The control plane, Docker containers, SQLite database, and all GCE infrastructure remain unchanged. A CF Pages project is deployed on every release via a Pages Function catch-all that proxies backend paths (`/api/*`, `/u/:slug/ws/*`, `/u/:slug/vscode/*`, etc.) to the VM via an `origin.` subdomain while serving the React shell directly from CF's edge. No Cloudflare nameservers required — a CNAME at your registrar is enough.
 
 **Full setup instructions**: [`deploy/README.md` → Cloudflare Pages mode](../deploy/README.md).
 
@@ -868,9 +868,9 @@ The control plane, Docker containers, SQLite database, and all GCE infrastructur
 
 | What | Change |
 | --- | --- |
-| DNS | Move zone to Cloudflare nameservers. Add `origin.YOUR_DOMAIN` A record (DNS-only). |
+| DNS | Keep your existing DNS provider. Add `origin.YOUR_DOMAIN` A record and the Pages custom-domain CNAME. |
 | Caddyfile | Add `origin.YOUR_DOMAIN` vhost (automatic on new VMs; one-liner on existing ones). |
-| Wrangler | Replace `YOUR_DOMAIN` placeholders in `deploy/cloudflare/wrangler.toml`. |
+| Wrangler | Set `BACKEND_ORIGIN` as a Pages secret, then redeploy so the production deployment picks it up. |
 | GitHub Actions | Add `CF_ACCOUNT_ID` (var) and `CF_API_TOKEN` (secret) to the repo. |
 | Releases | No change — same `gh workflow run "Deploy to GCE"` command deploys both. |
 
