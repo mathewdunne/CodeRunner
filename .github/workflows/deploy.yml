@@ -203,6 +203,7 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ vars.CF_ACCOUNT_ID }}
           workingDirectory: deploy/cloudflare
+          packageManager: bun
           command: pages deploy --commit-dirty=true
 
   deploy:
