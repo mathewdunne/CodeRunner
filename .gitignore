@@ -60,3 +60,6 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+
+# CloudFlare Worker
+_worker.bundle

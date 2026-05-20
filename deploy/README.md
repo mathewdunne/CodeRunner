@@ -284,7 +284,7 @@ cd deploy/cloudflare
 wrangler pages deploy --commit-dirty=true --branch main --project-name=coderunner
 ```
 
-This creates the `coderunner` Pages project in your CF account if it doesn't exist. Do not attach the custom domain yet; this bootstrap deployment still uses the placeholder origin until the secret below is set and a second deployment is created.
+This creates the `coderunner` Pages project in your CF account if it doesn't exist. Do not attach the custom domain yet; the backend proxy will not work until the secret below is set and a second deployment is created.
 
 #### 4. Set BACKEND_ORIGIN as a Pages secret
 
@@ -296,7 +296,7 @@ wrangler pages secret put BACKEND_ORIGIN --project-name=coderunner
 # Enter: https://origin.YOUR_DOMAIN
 ```
 
-The secret overrides the `YOUR_DOMAIN` placeholder in `wrangler.toml`. The repo stays domain-agnostic.
+`BACKEND_ORIGIN` must be a Pages secret, not a checked-in `[vars]` entry in `wrangler.toml`. Cloudflare rejects deployments when a var and a secret use the same binding name.
 
 Redeploy so the production deployment picks up the new secret:
 
@@ -347,7 +347,7 @@ Same as GCE — redeploy an older tag. Both jobs run from the same tag.
 deploy/
 ├── README.md                    # This file
 ├── cloudflare/
-│   ├── wrangler.toml            # CF Pages config (set BACKEND_ORIGIN)
+│   ├── wrangler.toml            # CF Pages config;
 │   └── functions/
 │       └── [[path]].ts          # Pages Function catch-all: proxies backend paths, serves static via ASSETS
 ├── terraform/                   # Infrastructure as code
