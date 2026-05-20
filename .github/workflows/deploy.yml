@@ -173,6 +173,38 @@ jobs:
           fi
           gh release upload "$TAG" web-dist.tar.gz ascope-dist.tar.gz --clobber
 
+  deploy-cloudflare:
+    needs: [validate, publish, deploy]
+    # Only runs when CF_ACCOUNT_ID is set as a repo variable.
+    # Depends on deploy (GCE) so the backend is always updated before the
+    # frontend goes live — prevents the client from running ahead of the server.
+    # Leave CF_ACCOUNT_ID unset to skip this job and use single-machine mode only.
+    if: vars.CF_ACCOUNT_ID != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      TAG: ${{ needs.validate.outputs.tag }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate.outputs.tag }}
+
+      - name: Download web-dist from release
+        run: gh release download "$TAG" --pattern web-dist.tar.gz
+
+      - name: Unpack web-dist
+        run: mkdir -p apps/web/dist && tar -xzf web-dist.tar.gz -C apps/web/dist
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ vars.CF_ACCOUNT_ID }}
+          workingDirectory: deploy/cloudflare
+          command: pages deploy --commit-dirty=true
+
   deploy:
     needs: [validate, publish]
     runs-on: ubuntu-latest

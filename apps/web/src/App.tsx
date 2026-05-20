@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { AdminApp } from "@/admin/AdminApp";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LoginPage } from "@/routes/LoginPage";
+import { ServiceOfflinePage } from "@/routes/ServiceOfflinePage";
 import { WorkspaceLayout } from "@/routes/WorkspaceLayout";
 import { WorkspacePage } from "@/routes/WorkspacePage";
 
@@ -42,6 +44,32 @@ function FallbackRedirect() {
 }
 
 export default function App() {
+	const [health, setHealth] = useState<"checking" | "online" | "offline">(
+		"checking",
+	);
+
+	useEffect(() => {
+		if (health !== "checking") return;
+		const controller = new AbortController();
+		fetch("/healthz", { signal: controller.signal })
+			.then((res) => setHealth(res.ok ? "online" : "offline"))
+			.catch((err) => {
+				if (err instanceof DOMException && err.name === "AbortError") return;
+				setHealth("offline");
+			});
+		return () => controller.abort();
+	}, [health]);
+
+	if (health === "checking") return null;
+
+	if (health === "offline") {
+		return (
+			<ThemeProvider defaultTheme="dark">
+				<ServiceOfflinePage onRetry={() => setHealth("checking")} />
+			</ThemeProvider>
+		);
+	}
+
 	return (
 		<ThemeProvider defaultTheme="dark">
 			<TooltipProvider>

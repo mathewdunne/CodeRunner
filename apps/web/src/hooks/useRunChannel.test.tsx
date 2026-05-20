@@ -158,4 +158,30 @@ describe("useRunChannel", () => {
 		});
 		expect(FakeSocket.instances.length).toBe(1);
 	});
+
+	test("idle ping is sent every 30s and does not change runStatus", () => {
+		const { result } = renderHook(() => useRunChannel("alice"));
+		const sock = FakeSocket.instances[0]!;
+		act(() => sock.open());
+		expect(result.current.runStatus).toBe("idle");
+
+		act(() => {
+			vi.advanceTimersByTime(30_000);
+		});
+		expect(sock.sent.some((s) => s.includes('"ping"'))).toBe(true);
+		expect(result.current.runStatus).toBe("idle");
+	});
+
+	test("idle ping is not sent while a run is active", () => {
+		const { result } = renderHook(() => useRunChannel("alice"));
+		const sock = FakeSocket.instances[0]!;
+		act(() => sock.open());
+		act(() => sock.message({ type: "status", status: "running" }));
+		expect(result.current.runStatus).toBe("running");
+
+		act(() => {
+			vi.advanceTimersByTime(30_000);
+		});
+		expect(sock.sent.some((s) => s.includes('"ping"'))).toBe(false);
+	});
 });

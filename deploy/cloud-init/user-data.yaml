@@ -377,8 +377,17 @@ write_files:
       sudo -u "$${APP_USER}" bash -lc "cd $${APP_DIR} && bun install --frozen-lockfile"
 
       # ─── Caddyfile ─────────────────────────────────────────────────────
+      # The main domain handles direct (single-machine) access.
+      # origin.${DOMAIN} is the backend target for the Cloudflare Worker proxy;
+      # it must be a DNS-only (grey-cloud) record pointing at this VM's IP.
+      # Caddy auto-provisions Let's Encrypt certs for both names.
       cat > /etc/caddy/Caddyfile <<EOF
       $${DOMAIN} {
+        reverse_proxy localhost:4000
+        encode gzip
+      }
+
+      origin.$${DOMAIN} {
         reverse_proxy localhost:4000
         encode gzip
       }

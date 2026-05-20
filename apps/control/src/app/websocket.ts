@@ -278,12 +278,13 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 						runId,
 					});
 					ws.send(JSON.stringify({ type: "hello", runId }));
-				} else {
+				} else if (parsed.type === "stop") {
 					log.info("run stop requested", { workspaceId: ws.data.workspace.id });
 					halsim.disconnect(ws.data.workspace.id);
 					nt4Auto.disconnect(ws.data.workspace.id);
 					runs.stopWorkspace(ws.data.workspace.id);
 				}
+				// ping: no-op keepalive, no state change
 			} catch (error) {
 				const detail =
 					error instanceof Error ? error.message : "Invalid run message.";

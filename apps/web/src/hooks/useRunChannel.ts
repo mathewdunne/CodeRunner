@@ -131,6 +131,18 @@ export function useRunChannel(
 		};
 	}, [workspaceSlug, logLine]);
 
+	// Keep the WS alive through Cloudflare's 100-second idle timeout.
+	useEffect(() => {
+		if (connection !== "connected" || runStatus !== "idle") return;
+		const interval = setInterval(() => {
+			const socket = socketRef.current;
+			if (socket?.readyState === WebSocket.OPEN) {
+				socket.send(JSON.stringify({ type: "ping" }));
+			}
+		}, 30_000);
+		return () => clearInterval(interval);
+	}, [connection, runStatus]);
+
 	const startRun = useCallback(() => {
 		clearConsole("Starting run...");
 		const socket = socketRef.current;

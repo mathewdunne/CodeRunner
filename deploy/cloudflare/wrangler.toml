@@ -1,0 +1,10 @@
+name = "coderunner"
+main = "worker/index.ts"
+pages_build_output_dir = "../../apps/web/dist"
+compatibility_date = "2024-09-23"
+
+# BACKEND_ORIGIN: URL of the origin subdomain Caddy serves.
+# Set this to https://origin.YOUR_DOMAIN before deploying, or override with:
+#   wrangler pages secret put BACKEND_ORIGIN
+[vars]
+BACKEND_ORIGIN = "https://origin.YOUR_DOMAIN"

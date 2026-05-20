@@ -19,6 +19,7 @@ This runbook covers deploying and operating CodeRunner V2 on a classroom machine
 11. [Project Import](#11-project-import)
 12. [Container Concurrency Cap](#12-container-concurrency-cap)
 13. [Audit Log](#13-audit-log)
+14. [Cloudflare Pages (optional offline screen)](#14-cloudflare-pages-optional-offline-screen)
 
 ---
 
@@ -852,6 +853,28 @@ bun run audit:prune -- --dry-run
 ```
 
 **Recommended:** Run `bun run audit:prune` monthly or add it to your maintenance routine.
+
+---
+
+## 14. Cloudflare Pages (optional offline screen)
+
+By default the VM serves everything. Enabling Cloudflare Pages mode moves the React frontend to Cloudflare's CDN so students see a styled "CodeRunner is Offline" screen when the VM is powered off, instead of Chrome's connection-refused error.
+
+The control plane, Docker containers, SQLite database, and all GCE infrastructure remain unchanged. The frontend is deployed to CF Pages on every release; a CF Worker proxies backend paths (`/api/*`, `/u/*`, etc.) to the VM via an `origin.` subdomain that bypasses the CF proxy.
+
+**Full setup instructions**: [`deploy/README.md` → Cloudflare Pages mode](../deploy/README.md).
+
+**Summary of what changes at a glance:**
+
+| What | Change |
+| --- | --- |
+| DNS | Move zone to Cloudflare nameservers. Add `origin.YOUR_DOMAIN` A record (DNS-only). |
+| Caddyfile | Add `origin.YOUR_DOMAIN` vhost (automatic on new VMs; one-liner on existing ones). |
+| Wrangler | Replace `YOUR_DOMAIN` placeholders in `deploy/cloudflare/wrangler.toml`. |
+| GitHub Actions | Add `CF_ACCOUNT_ID` (var) and `CF_API_TOKEN` (secret) to the repo. |
+| Releases | No change — same `gh workflow run "Deploy to GCE"` command deploys both. |
+
+**To disable**: remove `CF_ACCOUNT_ID` from GitHub repo variables. The `deploy-cloudflare` job is skipped and the VM serves everything as before.
 
 ---
 

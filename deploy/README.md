@@ -218,11 +218,123 @@ From [.env.example](../.env.example): each active student uses ~2.5 GB at the no
 - Existing persistent disks cannot be shrunk in place. Reducing `boot_disk_size_gb` or `data_disk_size_gb` is not a safe cost cleanup for a live deployment; create a smaller replacement disk from backup/snapshot if you later decide the current 50 GB sizes are too large.
 - Daily snapshots are incremental and stored regionally. Keeping 7-day retention is a good value tradeoff for student data; lower it only if billing reports show snapshot storage becoming meaningful.
 
+## Cloudflare Pages mode
+
+Optional. When configured, Cloudflare serves the React frontend from the CDN so students see a styled "CodeRunner is Offline" screen if the VM is powered down, instead of Chrome's connection-refused error. The VM and all its existing infrastructure remain unchanged.
+
+### How it works
+
+```
+  student browser ──443──> Cloudflare Pages (Advanced Mode)
+                                │
+                         ┌──────┴──────────────────────────────────┐
+                         │ backend path?                           │
+                         │ /api/* /u/* /admin/*                    │
+                         │ /healthz /metrics /scope/*              │
+                         └──────┬──────────────────────────────────┘
+                                │ yes                    no (static asset)
+                                ▼                              ▼
+                  origin.YOUR_DOMAIN (Caddy)          ASSETS binding
+                         │                          (served from CF CDN)
+                  localhost:4000 (bun)
+```
+
+CF Pages runs in **Advanced Mode** — a single Worker entry point (`deploy/cloudflare/worker/index.ts`) handles all requests. Backend paths are proxied to `origin.YOUR_DOMAIN`; everything else is served from CF's static asset store via the `ASSETS` binding. Your domain does **not** need to be on Cloudflare nameservers — you add it as a CF Pages custom domain and point a CNAME at your registrar.
+
+When the VM is off, the Worker returns `503 {"error":"service_unavailable"}` and the React app shows the offline screen. Students never see a raw browser error.
+
+### One-time setup
+
+#### 1. Add A record and CNAME at your registrar
+
+No Cloudflare nameservers required. At your existing DNS provider add:
+
+| Name | Type | Value |
+|------|------|-------|
+| `origin.YOUR_DOMAIN` | **A** | VM static IP (`terraform output -raw static_ip`) |
+
+You'll add the CNAME for `YOUR_DOMAIN` itself in step 4, once CF gives you the target.
+
+#### 2. Update Caddyfile on the existing VM
+
+The Caddyfile is written once on first boot. If your VM already exists, add the origin vhost manually:
+
+```bash
+gcloud compute ssh coderunner --zone=us-central1-a --tunnel-through-iap --command='
+sudo tee -a /etc/caddy/Caddyfile <<EOF
+
+origin.YOUR_DOMAIN {
+  reverse_proxy localhost:4000
+  encode gzip
+}
+EOF
+sudo systemctl reload caddy'
+```
+
+New VMs provisioned from `cloud-init/user-data.yaml` get both vhosts automatically.
+
+#### 3. Create the CF Pages project
+
+Cloudflare dashboard → *Workers & Pages → Create → Pages → Direct Upload*. Name the project **`coderunner`** (must match `name` in `wrangler.toml`). You can upload a placeholder file — the workflow will overwrite it on first deploy.
+
+#### 4. Add the custom domain to CF Pages
+
+In the CF Pages project → *Custom Domains → Add custom domain* → enter `YOUR_DOMAIN`. Cloudflare will give you a CNAME target (something like `coderunner.pages.dev`). Add that CNAME at your registrar:
+
+| Name | Type | Value |
+|------|------|-------|
+| `YOUR_DOMAIN` | **CNAME** | `coderunner.pages.dev` (or whatever CF shows) |
+
+CF validates the domain and issues a TLS cert automatically.
+
+#### 5. Set BACKEND_ORIGIN as a Pages secret
+
+```bash
+cd deploy/cloudflare
+wrangler pages secret put BACKEND_ORIGIN --project-name=coderunner
+# Enter: https://origin.YOUR_DOMAIN
+```
+
+#### 6. Update wrangler.toml
+
+Replace the `YOUR_DOMAIN` placeholder in `BACKEND_ORIGIN` in [`deploy/cloudflare/wrangler.toml`](./cloudflare/wrangler.toml) with your actual origin subdomain, then commit.
+
+#### 7. Configure GitHub Actions
+
+Under *Settings → Secrets and variables → Actions*:
+
+| Name | Kind | Value |
+|------|------|-------|
+| `CF_ACCOUNT_ID` | **Variable** | Your Cloudflare account ID (shown in the CF dashboard sidebar) |
+| `CF_API_TOKEN` | **Secret** | CF API token — use the *Edit Cloudflare Workers* template and add *Cloudflare Pages: Edit* permission |
+
+Leave both unset to skip the CF deploy step entirely (single-machine mode continues to work).
+
+### Ongoing releases
+
+No change to the deploy command. The `deploy-cloudflare` job in `deploy.yml` runs automatically after `publish` whenever `CF_ACCOUNT_ID` is set:
+
+```bash
+gh workflow run "Deploy to GCE" --ref main -f tag=v2.5.0
+```
+
+Both the GCE VM and CF Pages/Worker are updated in the same workflow run.
+
+### Rollback
+
+Same as GCE — redeploy an older tag. Both jobs run from the same tag.
+
+---
+
 ## Files
 
 ```
 deploy/
 ├── README.md                    # This file
+├── cloudflare/
+│   ├── wrangler.toml            # CF Pages Advanced Mode config (set BACKEND_ORIGIN)
+│   └── worker/
+│       └── index.ts             # Pages Function: proxies backend paths, serves static via ASSETS
 ├── terraform/                   # Infrastructure as code
 │   ├── main.tf
 │   ├── variables.tf
@@ -242,4 +354,6 @@ deploy/
 └── deploy.yml                   # Manual main-branch release path: validates,
                                  # verifies, publishes image/artifacts, rebuilds
                                  # managed workspace containers, and rolls the VM.
+                                 # Also deploys to CF Pages/Worker when CF_ACCOUNT_ID
+                                 # is set as a repo variable.
 ```

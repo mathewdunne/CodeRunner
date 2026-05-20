@@ -88,6 +88,7 @@ export const containersStatusResponseSchema = z.object({
 export const runClientMessageSchema = z.discriminatedUnion("type", [
 	z.object({ type: z.literal("start") }),
 	z.object({ type: z.literal("stop") }),
+	z.object({ type: z.literal("ping") }),
 ]);
 
 export const runServerMessageSchema = z.discriminatedUnion("type", [
