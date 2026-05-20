@@ -7,6 +7,10 @@ resource "google_compute_disk" "data" {
   # Survives VM recreation. cloud-init detects existing ext4 and skips mkfs.
   lifecycle {
     prevent_destroy = true
+    # The disk was originally seeded from a snapshot during the pd-balanced→hyperdisk-balanced
+    # migration. The provider treats `snapshot` as ForceNew, so we ignore drift on it to keep
+    # the resource stable after the source snapshot is deleted.
+    ignore_changes = [snapshot]
   }
 }
 

@@ -304,14 +304,13 @@ write_files:
       if id -u alloy >/dev/null 2>&1; then
         usermod -aG docker alloy
       fi
-      if ! grep -qE '^\[grpc\]' /etc/containerd/config.toml; then
+      if ! grep -q '\[grpc\]' /etc/containerd/config.toml; then
         DOCKER_GID="$(getent group docker | cut -d: -f3)"
         log "configuring containerd grpc gid=$${DOCKER_GID} for cadvisor"
-        cat >> /etc/containerd/config.toml <<EOF
-
-[grpc]
-  gid = $${DOCKER_GID}
-EOF
+        # Avoid heredoc here: cloud-init's YAML block scalar requires every line to
+        # carry the block's indentation, but bash `<<EOF` needs the closing token at
+        # column 1. printf keeps everything inside the YAML block.
+        printf '\n[grpc]\n  gid = %s\n' "$${DOCKER_GID}" >> /etc/containerd/config.toml
         systemctl restart containerd
       fi
 
