@@ -47,9 +47,9 @@ variable "ssh_break_glass_cidr" {
 }
 
 variable "machine_type" {
-  description = "GCE machine type. e2-standard-2 is the low-cost 2 vCPU / 8 GiB profile."
+  description = "GCE machine type. c4-standard-4 is the 4 vCPU / 15 GiB profile. C4 requires Hyperdisk volumes."
   type        = string
-  default     = "e2-standard-2"
+  default     = "c4-standard-4"
 }
 
 variable "network_tier" {
@@ -64,24 +64,24 @@ variable "network_tier" {
 }
 
 variable "boot_disk_type" {
-  description = "Boot disk class. Keep pd-balanced for Docker image/layer IO unless cost pressure is more important than responsiveness."
+  description = "Boot disk class. C4 machines require Hyperdisk; hyperdisk-balanced is the general-purpose default for Docker image/layer IO."
   type        = string
-  default     = "pd-balanced"
+  default     = "hyperdisk-balanced"
 
   validation {
-    condition     = contains(["pd-standard", "pd-balanced", "pd-ssd"], var.boot_disk_type)
-    error_message = "boot_disk_type must be one of: pd-standard, pd-balanced, pd-ssd."
+    condition     = contains(["hyperdisk-balanced", "hyperdisk-extreme", "hyperdisk-throughput"], var.boot_disk_type)
+    error_message = "boot_disk_type must be one of: hyperdisk-balanced, hyperdisk-extreme, hyperdisk-throughput."
   }
 }
 
 variable "data_disk_type" {
-  description = "Persistent data disk class for SQLite, student projects, and editor homes. pd-balanced preserves IDE responsiveness; pd-standard is cheaper but slower."
+  description = "Persistent data disk class for SQLite, student projects, and editor homes. hyperdisk-balanced preserves IDE responsiveness on C4 hosts."
   type        = string
-  default     = "pd-balanced"
+  default     = "hyperdisk-balanced"
 
   validation {
-    condition     = contains(["pd-standard", "pd-balanced", "pd-ssd"], var.data_disk_type)
-    error_message = "data_disk_type must be one of: pd-standard, pd-balanced, pd-ssd."
+    condition     = contains(["hyperdisk-balanced", "hyperdisk-extreme", "hyperdisk-throughput"], var.data_disk_type)
+    error_message = "data_disk_type must be one of: hyperdisk-balanced, hyperdisk-extreme, hyperdisk-throughput."
   }
 }
 

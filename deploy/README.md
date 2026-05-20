@@ -6,7 +6,7 @@ One-VM deployment of the CodeRunner control plane to Google Compute Engine. Zero
 
 ## What this provisions
 
-- One `e2-standard-2` VM (2 vCPU, 8 GB) in `us-central1-a`
+- One `c4-standard-4` VM (4 vCPU, 15 GB) in `us-central1-a`
 - A 50 GB persistent disk mounted at `/var/lib/coderunner/data` for SQLite + student projects (survives VM recreation, daily snapshots, 7-day retention)
 - Standard Network Tier for the VM's public IPv4 by default, which is cheaper for this single-region classroom deployment than Premium Tier
 - Caddy in front of the control plane terminating TLS via Let's Encrypt
@@ -209,12 +209,12 @@ Or via the GitHub Actions UI: *Deploy to GCE* → *Run workflow* → enter the p
 
 ## Sizing reference
 
-From [.env.example](../.env.example): each active student uses ~2.5 GB at the normal memory cap. The low-cost default is now `e2-standard-2` (2 vCPU, 8 GB), with production bootstrap setting `CODE_MEMORY_LIMIT=2048m` to reduce per-container memory pressure. To bump back toward a classroom profile, set `machine_type = "e2-standard-4"` or larger in `terraform.tfvars`, then verify real capacity with Grafana or `docker stats`.
+From [.env.example](../.env.example): each active student uses ~2.5 GB at the normal memory cap. The default is now `c4-standard-4` (4 vCPU, 15 GB), with production bootstrap setting `CODE_MEMORY_LIMIT=2048m` to reduce per-container memory pressure. To scale up, set `machine_type = "c4-standard-8"` or larger in `terraform.tfvars`, then verify real capacity with Grafana or `docker stats`. C4 hosts require Hyperdisk volumes — `pd-*` disk types are not compatible.
 
 ## Cost notes
 
 - `network_tier = "STANDARD"` is the default because this app serves one regional classroom-style audience. It reduces outbound bandwidth cost compared with Premium Tier. Switching an existing reserved static IPv4 between tiers can allocate a new IP, so plan for a DNS update if Terraform shows the address being replaced.
-- Boot and data disks stay on `pd-balanced` by default. `pd-standard` is cheaper and can use the Compute Engine 30 GB-month standard persistent disk free tier in eligible regions/accounts, but it is HDD-backed and noticeably worse for Docker layers, openvscode-server homes, Java language-server caches, SQLite, and Gradle project IO.
+- Boot and data disks stay on `hyperdisk-balanced` by default — required by C4 machines, which do not support `pd-*` volumes. `hyperdisk-throughput` is cheaper for sustained sequential IO but worse for the small-block latency profile of Docker layers, openvscode-server homes, Java language-server caches, SQLite, and Gradle project IO; `hyperdisk-extreme` is faster but materially more expensive.
 - Existing persistent disks cannot be shrunk in place. Reducing `boot_disk_size_gb` or `data_disk_size_gb` is not a safe cost cleanup for a live deployment; create a smaller replacement disk from backup/snapshot if you later decide the current 50 GB sizes are too large.
 - Daily snapshots are incremental and stored regionally. Keeping 7-day retention is a good value tradeoff for student data; lower it only if billing reports show snapshot storage becoming meaningful.
 

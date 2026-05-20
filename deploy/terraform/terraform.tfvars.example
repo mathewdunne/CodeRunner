@@ -5,5 +5,5 @@ domain               = "coderunner.example.com" # Hostname users hit. Set up an 
 github_repo          = "yourname/CodeRunner"    # owner/repo of YOUR fork — must match the repo you push tags from.
 git_ref              = "main"                   # Initial ref the VM checks out on first boot.
 ssh_break_glass_cidr = "203.0.113.42/32"        # YOUR home IP, /32. Used only for emergency SSH; routine deploys use IAP.
-machine_type         = "e2-standard-2"          # 2 vCPU / 8 GiB low-cost profile.
+machine_type         = "c4-standard-4"          # 4 vCPU / 15 GiB profile.
 network_tier         = "STANDARD"               # Lower outbound bandwidth cost than PREMIUM for a regional classroom app.
