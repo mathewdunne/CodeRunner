@@ -860,7 +860,7 @@ bun run audit:prune -- --dry-run
 
 By default the VM serves everything. Enabling Cloudflare Pages mode moves the React frontend to Cloudflare's CDN so students see a styled "CodeRunner is Offline" screen when the VM is powered off, instead of Chrome's connection-refused error.
 
-The control plane, Docker containers, SQLite database, and all GCE infrastructure remain unchanged. The frontend is deployed to CF Pages on every release; a CF Worker proxies backend paths (`/api/*`, `/u/*`, etc.) to the VM via an `origin.` subdomain that bypasses the CF proxy.
+The control plane, Docker containers, SQLite database, and all GCE infrastructure remain unchanged. A CF Pages project is deployed on every release via a Pages Function catch-all that proxies backend paths (`/api/*`, `/u/*`, etc.) to the VM via an `origin.` subdomain while serving static files directly from CF's edge. No Cloudflare nameservers required — a CNAME at your registrar is enough.
 
 **Full setup instructions**: [`deploy/README.md` → Cloudflare Pages mode](../deploy/README.md).
 

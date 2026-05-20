@@ -220,12 +220,12 @@ From [.env.example](../.env.example): each active student uses ~2.5 GB at the no
 
 ## Cloudflare Pages mode
 
-Optional. When configured, Cloudflare serves the React frontend from the CDN so students see a styled "CodeRunner is Offline" screen if the VM is powered down, instead of Chrome's connection-refused error. The VM and all its existing infrastructure remain unchanged.
+Optional. When configured, Cloudflare Pages serves the React frontend from the CDN so students see a styled "CodeRunner is Offline" screen if the VM is powered down, instead of Chrome's connection-refused error. The VM and all its existing infrastructure remain unchanged.
 
 ### How it works
 
 ```
-  student browser ──443──> Cloudflare Pages (Advanced Mode)
+  student browser ──443──> Cloudflare Pages (coderunner)
                                 │
                          ┌──────┴──────────────────────────────────┐
                          │ backend path?                           │
@@ -239,13 +239,13 @@ Optional. When configured, Cloudflare serves the React frontend from the CDN so 
                   localhost:4000 (bun)
 ```
 
-CF Pages runs in **Advanced Mode** — a single Worker entry point (`deploy/cloudflare/worker/index.ts`) handles all requests. Backend paths are proxied to `origin.YOUR_DOMAIN`; everything else is served from CF's static asset store via the `ASSETS` binding. Your domain does **not** need to be on Cloudflare nameservers — you add it as a CF Pages custom domain and point a CNAME at your registrar.
+A Pages Function catch-all (`deploy/cloudflare/functions/[[path]].ts`) handles all requests. Backend paths are proxied to `origin.YOUR_DOMAIN`; everything else is served from CF's edge via the `ASSETS` binding. Your domain does **not** need to be on Cloudflare nameservers — you add it as a CF Pages custom domain and CNAME at your registrar.
 
-When the VM is off, the Worker returns `503 {"error":"service_unavailable"}` and the React app shows the offline screen. Students never see a raw browser error.
+When the VM is off, the function returns `503 {"error":"service_unavailable"}` and the React app shows the offline screen. Students never see a raw browser error.
 
 ### One-time setup
 
-#### 1. Add A record and CNAME at your registrar
+#### 1. Add an A record at your registrar
 
 No Cloudflare nameservers required. At your existing DNS provider add:
 
@@ -253,7 +253,7 @@ No Cloudflare nameservers required. At your existing DNS provider add:
 |------|------|-------|
 | `origin.YOUR_DOMAIN` | **A** | VM static IP (`terraform output -raw static_ip`) |
 
-You'll add the CNAME for `YOUR_DOMAIN` itself in step 4, once CF gives you the target.
+You'll add the CNAME for `YOUR_DOMAIN` itself in step 3, once CF gives you the target.
 
 #### 2. Update Caddyfile on the existing VM
 
@@ -273,21 +273,21 @@ sudo systemctl reload caddy'
 
 New VMs provisioned from `cloud-init/user-data.yaml` get both vhosts automatically.
 
-#### 3. Create the CF Pages project
+#### 3. First deploy (creates the CF Pages project)
 
-Cloudflare dashboard → *Workers & Pages → Create → Pages → Direct Upload*. Name the project **`coderunner`** (must match `name` in `wrangler.toml`). You can upload a placeholder file — the workflow will overwrite it on first deploy.
+Build the web dist and deploy:
 
-#### 4. Add the custom domain to CF Pages
+```bash
+bun run build:web
+cd deploy/cloudflare
+wrangler pages deploy --commit-dirty=true
+```
 
-In the CF Pages project → *Custom Domains → Add custom domain* → enter `YOUR_DOMAIN`. Cloudflare will give you a CNAME target (something like `coderunner.pages.dev`). Add that CNAME at your registrar:
+This creates the `coderunner` Pages project in your CF account if it doesn't exist.
 
-| Name | Type | Value |
-|------|------|-------|
-| `YOUR_DOMAIN` | **CNAME** | `coderunner.pages.dev` (or whatever CF shows) |
+#### 4. Set BACKEND_ORIGIN as a Pages secret
 
-CF validates the domain and issues a TLS cert automatically.
-
-#### 5. Set BACKEND_ORIGIN as a Pages secret
+Now that the project exists, set the real origin URL:
 
 ```bash
 cd deploy/cloudflare
@@ -295,11 +295,19 @@ wrangler pages secret put BACKEND_ORIGIN --project-name=coderunner
 # Enter: https://origin.YOUR_DOMAIN
 ```
 
-#### 6. Update wrangler.toml
+The secret overrides the `YOUR_DOMAIN` placeholder in `wrangler.toml`. The repo stays domain-agnostic.
 
-Replace the `YOUR_DOMAIN` placeholder in `BACKEND_ORIGIN` in [`deploy/cloudflare/wrangler.toml`](./cloudflare/wrangler.toml) with your actual origin subdomain, then commit.
+#### 5. Add the custom domain
 
-#### 7. Configure GitHub Actions
+Cloudflare dashboard → *Workers & Pages → coderunner → Custom Domains → Set up a custom domain* → enter `YOUR_DOMAIN`. CF will show a CNAME target like `coderunner.pages.dev`. Add that at your registrar:
+
+| Name | Type | Value |
+|------|------|-------|
+| `YOUR_DOMAIN` | **CNAME** | `coderunner.pages.dev` (or whatever CF shows) |
+
+CF validates the CNAME and issues a TLS cert automatically. No nameserver change required.
+
+#### 6. Configure GitHub Actions
 
 Under *Settings → Secrets and variables → Actions*:
 
@@ -312,13 +320,13 @@ Leave both unset to skip the CF deploy step entirely (single-machine mode contin
 
 ### Ongoing releases
 
-No change to the deploy command. The `deploy-cloudflare` job in `deploy.yml` runs automatically after `publish` whenever `CF_ACCOUNT_ID` is set:
+No change to the deploy command. The `deploy-cloudflare` job in `deploy.yml` runs automatically after the GCE deploy whenever `CF_ACCOUNT_ID` is set:
 
 ```bash
 gh workflow run "Deploy to GCE" --ref main -f tag=v2.5.0
 ```
 
-Both the GCE VM and CF Pages/Worker are updated in the same workflow run.
+Both the GCE VM and CF Pages are updated in the same workflow run.
 
 ### Rollback
 
@@ -332,9 +340,9 @@ Same as GCE — redeploy an older tag. Both jobs run from the same tag.
 deploy/
 ├── README.md                    # This file
 ├── cloudflare/
-│   ├── wrangler.toml            # CF Pages Advanced Mode config (set BACKEND_ORIGIN)
-│   └── worker/
-│       └── index.ts             # Pages Function: proxies backend paths, serves static via ASSETS
+│   ├── wrangler.toml            # CF Pages config (set BACKEND_ORIGIN)
+│   └── functions/
+│       └── [[path]].ts          # Pages Function catch-all: proxies backend paths, serves static via ASSETS
 ├── terraform/                   # Infrastructure as code
 │   ├── main.tf
 │   ├── variables.tf
@@ -354,6 +362,6 @@ deploy/
 └── deploy.yml                   # Manual main-branch release path: validates,
                                  # verifies, publishes image/artifacts, rebuilds
                                  # managed workspace containers, and rolls the VM.
-                                 # Also deploys to CF Pages/Worker when CF_ACCOUNT_ID
+                                 # Also deploys to CF Pages when CF_ACCOUNT_ID
                                  # is set as a repo variable.
 ```
