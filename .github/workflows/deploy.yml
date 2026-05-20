@@ -197,6 +197,10 @@ jobs:
       - name: Unpack web-dist
         run: mkdir -p apps/web/dist && tar -xzf web-dist.tar.gz -C apps/web/dist
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
