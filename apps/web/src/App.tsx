@@ -4,12 +4,17 @@ import { AdminApp } from "@/admin/AdminApp";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { authClient } from "@/lib/auth-client";
 import { LoginPage } from "@/routes/LoginPage";
 import { ServiceOfflinePage } from "@/routes/ServiceOfflinePage";
 import { WorkspaceLayout } from "@/routes/WorkspaceLayout";
 import { WorkspacePage } from "@/routes/WorkspacePage";
 
 const router = createBrowserRouter([
+	{
+		path: "/",
+		element: <RootIndex />,
+	},
 	{
 		path: "/login",
 		element: <LoginPage />,
@@ -33,6 +38,17 @@ const router = createBrowserRouter([
 		element: <FallbackRedirect />,
 	},
 ]);
+
+function RootIndex() {
+	// When served from CF Pages static assets, bun never sees a request for `/`,
+	// so the server-side "redirect logged-in users to their workspace" path in
+	// apps/control/src/app.ts can't run. Replicate it here.
+	const { data, isPending } = authClient.useSession();
+	if (isPending) return null;
+	const slug = (data?.user as { slug?: string } | undefined)?.slug;
+	if (slug) return <Navigate to={`/u/${slug}/`} replace />;
+	return <Navigate to="/login" replace />;
+}
 
 function FallbackRedirect() {
 	const parts = window.location.pathname.split("/").filter(Boolean);
