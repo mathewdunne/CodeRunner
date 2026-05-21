@@ -67,16 +67,24 @@ export default function App() {
 	useEffect(() => {
 		if (health !== "checking") return;
 		const controller = new AbortController();
+		const timeoutId = window.setTimeout(() => controller.abort(), 5000);
 		fetch("/healthz", { signal: controller.signal })
 			.then((res) => setHealth(res.ok ? "online" : "offline"))
-			.catch((err) => {
-				if (err instanceof DOMException && err.name === "AbortError") return;
-				setHealth("offline");
-			});
-		return () => controller.abort();
+			.catch(() => setHealth("offline"))
+			.finally(() => window.clearTimeout(timeoutId));
+		return () => {
+			window.clearTimeout(timeoutId);
+			controller.abort();
+		};
 	}, [health]);
 
-	if (health === "checking") return null;
+	if (health === "checking") {
+		return (
+			<ThemeProvider defaultTheme="dark">
+				<ServiceOfflinePage loading />
+			</ThemeProvider>
+		);
+	}
 
 	if (health === "offline") {
 		return (

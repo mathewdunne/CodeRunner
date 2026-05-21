@@ -1,10 +1,16 @@
+import { Loader2 } from "lucide-react";
 import coderunnerMascotImg from "@/assets/coderunner-mascot.png";
 
 interface ServiceOfflinePageProps {
-	onRetry: () => void;
+	/** When true, the right panel shows a spinner instead of the offline content. */
+	loading?: boolean;
+	onRetry?: () => void;
 }
 
-export function ServiceOfflinePage({ onRetry }: ServiceOfflinePageProps) {
+export function ServiceOfflinePage({
+	loading = false,
+	onRetry,
+}: ServiceOfflinePageProps) {
 	return (
 		<div className="flex h-screen w-full overflow-hidden bg-background">
 			{/* Left panel — mascot */}
@@ -33,27 +39,35 @@ export function ServiceOfflinePage({ onRetry }: ServiceOfflinePageProps) {
 			{/* Right panel */}
 			<div className="flex flex-1 flex-col items-center justify-center px-8">
 				<div className="w-full max-w-[320px]">
-					<p className="mb-6 text-[9.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-						Service status
-					</p>
+					{loading ? (
+						<div className="flex h-32 items-center justify-center">
+							<Loader2 className="size-6 animate-spin text-muted-foreground" />
+						</div>
+					) : (
+						<>
+							<p className="mb-6 text-[9.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+								Service status
+							</p>
 
-					<p className="text-[22px] font-semibold text-foreground">
-						CodeRunner is Offline
-					</p>
-					<p className="mt-2 text-[12px] text-muted-foreground">
-						This service is currently unavailable. Check back soon or contact an
-						administrator.
-					</p>
+							<p className="text-[22px] font-semibold text-foreground">
+								CodeRunner is Offline
+							</p>
+							<p className="mt-2 text-[12px] text-muted-foreground">
+								This service is currently unavailable. Check back soon or
+								contact an administrator.
+							</p>
 
-					<div className="mt-6 rounded-lg border border-border bg-card p-2">
-						<button
-							type="button"
-							onClick={onRetry}
-							className="flex h-11 w-full items-center justify-center gap-3 rounded-md border border-border bg-white/[0.06] px-4 text-[13px] font-semibold tracking-wide text-foreground transition-all hover:bg-white/[0.11]"
-						>
-							Retry
-						</button>
-					</div>
+							<div className="mt-6 rounded-lg border border-border bg-card p-2">
+								<button
+									type="button"
+									onClick={onRetry}
+									className="flex h-11 w-full items-center justify-center gap-3 rounded-md border border-border bg-white/[0.06] px-4 text-[13px] font-semibold tracking-wide text-foreground transition-all hover:bg-white/[0.11]"
+								>
+									Retry
+								</button>
+							</div>
+						</>
+					)}
 				</div>
 			</div>
 		</div>
