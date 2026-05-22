@@ -14,6 +14,8 @@ locals {
     "coderunner-grafana-cloud-url",
     "coderunner-grafana-cloud-user",
     "coderunner-grafana-cloud-token",
+    "coderunner-grafana-cloud-loki-url",
+    "coderunner-grafana-cloud-loki-user",
   ]
 }
 

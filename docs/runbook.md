@@ -524,6 +524,71 @@ Load `METRICS_TOKEN` and `GRAFANA_CLOUD_API_KEY` from GCP Secret Manager via sys
 2. **Runs:** start rate, `run_build_duration_seconds` quantiles, `run_active_duration_seconds` by `terminal_status`, failure ratio.
 3. **Containers:** `container_cpu_percent` and `container_memory_percent` per workspace, `container_start_duration_seconds` histogram, `active_workspaces` over time.
 
+### Shipping logs to Grafana Cloud Loki (via Alloy)
+
+The control plane writes one JSON object per log line to stdout/stderr when `LOG_FORMAT=json` (the prod default — see [`deploy/cloud-init/user-data.yaml`](../deploy/cloud-init/user-data.yaml)). Systemd captures these into journald, and Alloy tails the `coderunner.service` unit and ships to Grafana Cloud Loki. The Loki free tier (50 GB/14 days) is plenty for classroom-scale traffic.
+
+JSON shape (every line is single-line NDJSON):
+
+```json
+{"timestamp":"2026-05-21T14:23:01.482Z","level":"info","category":"control.runs","message":"run started","workspaceId":"alice-1","runId":"run_abc"}
+```
+
+Alloy snippet (the prod template lives in [`deploy/cloud-init/user-data.yaml`](../deploy/cloud-init/user-data.yaml) under `config.alloy.tmpl`):
+
+```alloy
+loki.source.journal "coderunner" {
+  forward_to = [loki.process.coderunner.receiver]
+  matches    = "_SYSTEMD_UNIT=coderunner.service"
+  labels     = {
+    job  = "coderunner",
+    unit = "coderunner.service",
+  }
+}
+
+loki.process "coderunner" {
+  forward_to = [loki.write.grafana_cloud_logs.receiver]
+  stage.json   { expressions = { level = "level", category = "category" } }
+  stage.labels { values      = { level = "",      category = "" } }
+}
+
+loki.write "grafana_cloud_logs" {
+  endpoint {
+    url = "https://logs-prod-XXX.grafana.net/loki/api/v1/push"
+    basic_auth {
+      username = "<grafana-cloud-loki-user-id>"
+      password = sys.env("GRAFANA_CLOUD_API_KEY")
+    }
+  }
+  external_labels = {
+    instance   = "coderunner",
+    deployment = "gce",
+  }
+}
+```
+
+**Label cardinality.** Only `job`, `unit`, `level`, `category`, `instance`, `deployment` end up as Loki labels (matches the discipline from [decision 023](./decisions/023-metrics-and-observability.md)). High-cardinality fields like `workspaceId` / `runId` stay in the JSON body and are queried via `| json` at read time — they don't multiply active streams.
+
+The `alloy` user must be in the `systemd-journal` group to read the journal; the bootstrap script (`cloud-init/user-data.yaml`) adds it. Without that, `loki.source.journal` silently produces zero entries.
+
+**LogQL starter queries:**
+
+```logql
+# Everything from one student
+{unit="coderunner.service"} | json | workspaceId="alice-1"
+
+# Errors across the fleet
+{unit="coderunner.service", level="error"}
+
+# All run lifecycle events with their duration
+{unit="coderunner.service", category="control.runs"} | json | line_format "{{.message}} {{.workspaceId}} {{.durationMs}}ms"
+
+# Container start failures
+{unit="coderunner.service", category="control.containers"} |= "failed"
+```
+
+Find them under **Explore → Loki datasource** in Grafana Cloud.
+
 ---
 
 ## 9. Common Failures and Recovery

@@ -64,11 +64,13 @@ write_files:
       GC_URL="$(fetch coderunner-grafana-cloud-url)"
       GC_USER="$(fetch coderunner-grafana-cloud-user)"
       GC_TOKEN="$(fetch coderunner-grafana-cloud-token)"
+      GC_LOKI_URL="$(fetch coderunner-grafana-cloud-loki-url)"
+      GC_LOKI_USER="$(fetch coderunner-grafana-cloud-loki-user)"
 
       required=(
         BETTER_AUTH_SECRET GH_CLIENT_ID GH_CLIENT_SECRET
         GOOG_CLIENT_ID GOOG_CLIENT_SECRET ADMIN_TOKEN_VAL METRICS_TOKEN_VAL
-        GC_URL GC_USER GC_TOKEN
+        GC_URL GC_USER GC_TOKEN GC_LOKI_URL GC_LOKI_USER
       )
       missing=()
       for n in "$${required[@]}"; do
@@ -109,6 +111,9 @@ write_files:
         echo "IDLE_STOP_MINUTES=10"
         echo "PORT=4000"
         echo "LOG_LEVEL=info"
+        # JSON logs flow stdout → journald → Alloy → Grafana Cloud Loki.
+        # Don't change without updating the loki.source.journal pipeline below.
+        echo "LOG_FORMAT=json"
         # Add new control-plane env vars above this line.
       } > "$tmp"
       install -o "$${APP_USER}" -g "$${APP_USER}" -m 600 "$tmp" /opt/coderunner/.env
@@ -122,6 +127,8 @@ write_files:
       GC_URL="$GC_URL" \
       GC_USER="$GC_USER" \
       GC_TOKEN="$GC_TOKEN" \
+      GC_LOKI_URL="$GC_LOKI_URL" \
+      GC_LOKI_USER="$GC_LOKI_USER" \
         envsubst < /etc/alloy/config.alloy.tmpl > "$alloy_tmp"
       install -o alloy -g alloy -m 640 "$alloy_tmp" /etc/alloy/config.alloy
       rm -f "$alloy_tmp"
@@ -226,6 +233,53 @@ write_files:
         }
       }
 
+      // ─── Logs: tail journald for the coderunner unit ─────────────────
+      // The control plane logs NDJSON to stdout (LOG_FORMAT=json in .env),
+      // which systemd captures into journald. We extract `level` and
+      // `category` as labels so LogQL can filter on them cheaply.
+      // Everything else (workspaceId, runId, durationMs, …) stays in the
+      // JSON body and is accessed via `| json` at query time — keeps the
+      // active-series count bounded.
+      //
+      // `unit` is set statically (not relabel-derived) since `matches`
+      // already pins us to one unit; no need for a loki.relabel block.
+      loki.source.journal "coderunner" {
+        forward_to = [loki.process.coderunner.receiver]
+        matches    = "_SYSTEMD_UNIT=coderunner.service"
+        labels     = {
+          job  = "coderunner",
+          unit = "coderunner.service",
+        }
+      }
+
+      loki.process "coderunner" {
+        forward_to = [loki.write.grafana_cloud_logs.receiver]
+        stage.json {
+          expressions = { level = "level", category = "category" }
+        }
+        stage.labels {
+          values = { level = "", category = "" }
+        }
+      }
+
+      loki.write "grafana_cloud_logs" {
+        endpoint {
+          url = "$GC_LOKI_URL"
+          basic_auth {
+            // Loki's user ID is distinct from Prometheus's (each datasource
+            // has its own instance ID in Grafana Cloud) but the access
+            // policy token is shared if it carries both metrics:write
+            // and logs:write scopes.
+            username = "$GC_LOKI_USER"
+            password = "$GC_TOKEN"
+          }
+        }
+        external_labels = {
+          instance   = "${instance_label}",
+          deployment = "gce",
+        }
+      }
+
   - path: /opt/coderunner/bootstrap.sh
     permissions: "0750"
     owner: root:root
@@ -303,6 +357,9 @@ write_files:
       # per-container metrics never reach Grafana Cloud.
       if id -u alloy >/dev/null 2>&1; then
         usermod -aG docker alloy
+        # systemd-journal group is what gates read access to /var/log/journal.
+        # Without this, loki.source.journal silently produces zero entries.
+        usermod -aG systemd-journal alloy
       fi
       if ! grep -q '\[grpc\]' /etc/containerd/config.toml; then
         DOCKER_GID="$(getent group docker | cut -d: -f3)"
@@ -378,7 +435,7 @@ write_files:
 
       # ─── Caddyfile ─────────────────────────────────────────────────────
       # The main domain handles direct (single-machine) access.
-      # origin.${DOMAIN} is the backend target for the Cloudflare Worker proxy;
+      # origin.$${DOMAIN} is the backend target for the Cloudflare Worker proxy;
       # it must be a DNS-only (grey-cloud) record pointing at this VM's IP.
       # Caddy auto-provisions Let's Encrypt certs for both names.
       cat > /etc/caddy/Caddyfile <<EOF

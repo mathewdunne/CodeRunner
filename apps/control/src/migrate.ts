@@ -2,10 +2,15 @@ import { Database } from "bun:sqlite";
 import { mkdir } from "node:fs/promises";
 import { dirname } from "node:path";
 import { loadControlConfig } from "./config";
-import { configureLogging, defaultLogLevel, getLogger } from "./logging";
+import {
+	configureLogging,
+	defaultLogFormat,
+	defaultLogLevel,
+	getLogger,
+} from "./logging";
 import { applyMigrations, migrationStatus } from "./migrations";
 
-await configureLogging(defaultLogLevel());
+await configureLogging(defaultLogLevel(), defaultLogFormat());
 const log = getLogger("migrate");
 
 const command = Bun.argv[2] ?? "apply";

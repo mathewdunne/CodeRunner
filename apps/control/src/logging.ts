@@ -10,6 +10,8 @@ import {
 
 export type { Logger, LogLevel };
 
+export type LogFormat = "text" | "json";
+
 const VALID_LEVELS = [
 	"trace",
 	"debug",
@@ -18,6 +20,8 @@ const VALID_LEVELS = [
 	"error",
 	"fatal",
 ] as const;
+
+const VALID_FORMATS = ["text", "json"] as const;
 
 const ROOT_CATEGORY = "control";
 
@@ -73,6 +77,20 @@ export function defaultLogLevel(): LogLevel {
 		"";
 	if (nodeEnv === "test" || process.env.E2E_TEST === "1") return "warning";
 	return "debug";
+}
+
+export function parseLogFormatEnv(value: string | undefined): LogFormat | null {
+	if (!value) return null;
+	const normalized = value.trim().toLowerCase();
+	if (normalized === "text" || normalized === "json") return normalized;
+	return null;
+}
+
+export function defaultLogFormat(): LogFormat {
+	const fromEnv = parseLogFormatEnv(
+		typeof Bun !== "undefined" ? Bun.env.LOG_FORMAT : process.env.LOG_FORMAT,
+	);
+	return fromEnv ?? "text";
 }
 
 function pad(str: string, width: number): string {
@@ -214,13 +232,80 @@ function createSink(): Sink {
 	};
 }
 
+const JSON_RESERVED_KEYS = new Set([
+	"timestamp",
+	"level",
+	"category",
+	"message",
+]);
+
+function serializeJsonProperty(value: unknown): unknown {
+	if (value instanceof Error) {
+		const obj: { message: string; stack?: string } = { message: value.message };
+		if (value.stack) obj.stack = value.stack;
+		return obj;
+	}
+	return value;
+}
+
+export function formatRecordJson(record: LogRecord): string {
+	const out: Record<string, unknown> = {
+		timestamp: new Date(record.timestamp).toISOString(),
+		level: record.level,
+		category: record.category.join("."),
+		message: renderMessage(record.message),
+	};
+	for (const [k, v] of Object.entries(record.properties)) {
+		// Reserved fields (timestamp/level/category/message) win — keep the
+		// shape predictable for LogQL queries even if a caller picks a
+		// colliding property name.
+		if (JSON_RESERVED_KEYS.has(k)) continue;
+		out[k] = serializeJsonProperty(v);
+	}
+	try {
+		return JSON.stringify(out);
+	} catch {
+		// Cycle or non-serializable value slipped in; coerce all properties to
+		// strings so the line still ships.
+		const safe: Record<string, unknown> = {
+			timestamp: out.timestamp,
+			level: out.level,
+			category: out.category,
+			message: out.message,
+		};
+		for (const [k, v] of Object.entries(record.properties)) {
+			if (JSON_RESERVED_KEYS.has(k)) continue;
+			safe[k] = String(v);
+		}
+		return JSON.stringify(safe);
+	}
+}
+
+function createJsonSink(): Sink {
+	return (record: LogRecord) => {
+		const line = `${formatRecordJson(record)}\n`;
+		if (record.level === "error" || record.level === "fatal") {
+			process.stderr.write(line);
+		} else {
+			process.stdout.write(line);
+		}
+	};
+}
+
 let configured = false;
 
-export async function configureLogging(level: LogLevel): Promise<void> {
-	useColor = Boolean(process.stdout.isTTY) && process.env.NO_COLOR !== "1";
+export async function configureLogging(
+	level: LogLevel,
+	format: LogFormat = "text",
+): Promise<void> {
+	useColor =
+		format === "text" &&
+		Boolean(process.stdout.isTTY) &&
+		process.env.NO_COLOR !== "1";
+	const sink = format === "json" ? createJsonSink() : createSink();
 	await configure({
 		reset: true,
-		sinks: { console: createSink() },
+		sinks: { console: sink },
 		loggers: [
 			{ category: ROOT_CATEGORY, sinks: ["console"], lowestLevel: level },
 			{
@@ -242,3 +327,4 @@ export function getLogger(...subcategory: string[]): Logger {
 }
 
 export const VALID_LOG_LEVELS = VALID_LEVELS;
+export const VALID_LOG_FORMATS = VALID_FORMATS;

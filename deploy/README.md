@@ -86,16 +86,22 @@ echo -n '<your google client id>'     | gcloud secrets versions add coderunner-g
 echo -n '<your google client secret>' | gcloud secrets versions add coderunner-google-client-secret --data-file=-
 
 # Grafana Cloud (create a free stack at grafana.com, then under Connections
-# → Access Policies create a token with metrics:write scope)
+# → Access Policies create a token with metrics:write AND logs:write scopes —
+# the same token is reused as the basic-auth password for both Prometheus
+# remote_write and Loki ingest).
 echo -n 'https://prometheus-prod-XX-prod-us-east-0.grafana.net/api/prom/push' \
   | gcloud secrets versions add coderunner-grafana-cloud-url --data-file=-
 echo -n '<numeric instance/user id>' \
   | gcloud secrets versions add coderunner-grafana-cloud-user --data-file=-
 echo -n '<glc_eyJ... token>' \
   | gcloud secrets versions add coderunner-grafana-cloud-token --data-file=-
+echo -n 'https://logs-prod-XXX.grafana.net/loki/api/v1/push' \
+  | gcloud secrets versions add coderunner-grafana-cloud-loki-url --data-file=-
+echo -n '<numeric loki instance/user id>' \
+  | gcloud secrets versions add coderunner-grafana-cloud-loki-user --data-file=-
 ```
 
-Find the Grafana values in the Grafana Cloud portal, not inside the dashboard-only view. Open your stack, then open the Prometheus/Metrics card's **Details** page. Use the **Remote Write Endpoint** ending in `/api/prom/push` for `coderunner-grafana-cloud-url`, and the **Username / Instance ID** from that same page for `coderunner-grafana-cloud-user`. For `coderunner-grafana-cloud-token`, create a Cloud **Access Policy Token** with the `metrics:write` scope and use the token value as the password.
+Find the Grafana values in the Grafana Cloud portal, not inside the dashboard-only view. Open your stack, then open the Prometheus/Metrics card's **Details** page. Use the **Remote Write Endpoint** ending in `/api/prom/push` for `coderunner-grafana-cloud-url`, and the **Username / Instance ID** from that same page for `coderunner-grafana-cloud-user`. Open the **Loki / Logs** card's Details page for `coderunner-grafana-cloud-loki-url` (push URL ending in `/loki/api/v1/push`) and `coderunner-grafana-cloud-loki-user` (the Loki instance ID — distinct from the Prometheus one). For `coderunner-grafana-cloud-token`, create a Cloud **Access Policy Token** with the `metrics:write` **and** `logs:write` scopes and use the token value as the password — one token is reused for both pipelines since the scopes can live on the same policy.
 
 OAuth callback URLs to register with each provider:
 - GitHub: `https://<your domain>/api/auth/callback/github`
@@ -146,12 +152,12 @@ The control plane reads `/opt/coderunner/.env`, but that file is regenerated on 
 
 Three buckets, depending on what you're changing:
 
-**A. Secrets (already wired to Secret Manager).** `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_*`, `GOOGLE_CLIENT_*`, `ADMIN_TOKEN`, `METRICS_TOKEN`, and the three `coderunner-grafana-cloud-*`. Update the secret and re-render:
+**A. Secrets (already wired to Secret Manager).** `BETTER_AUTH_SECRET`, `GITHUB_CLIENT_*`, `GOOGLE_CLIENT_*`, `ADMIN_TOKEN`, `METRICS_TOKEN`, and the `coderunner-grafana-cloud-*` family (Prometheus URL/user, shared token, Loki URL/user). Update the secret and re-render:
 
 ```bash
 printf '<new value>' | gcloud secrets versions add coderunner-<name> --data-file=-
 gcloud compute ssh coderunner --zone=<zone> --tunnel-through-iap \
-  --command="sudo /opt/coderunner/render-env.sh && sudo systemctl restart coderunner"
+  --command="sudo /opt/coderunner/render-env.sh && sudo systemctl restart coderunner alloy"
 ```
 
 **B. Non-secret defaults already in the template.** `PORT`, `LOG_LEVEL`, `CODE_IMAGE`, `FRC_DATA_DIR`, `FRC_DB_PATH`, `CODE_MEMORY_LIMIT`, `IDLE_STOP_MINUTES` — edit the literal in the `echo` block inside `cloud-init/user-data.yaml` (look for the "Control plane env vars" comment), commit, then on the VM:
