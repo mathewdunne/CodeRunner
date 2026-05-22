@@ -200,23 +200,6 @@ write_files:
         forward_to = [prometheus.remote_write.grafana_cloud.receiver]
       }
 
-      // ─── Per-container metrics (workspace containers) ────────────────
-      // disabled_metrics = ["disk"] turns off cadvisor's filesystem-usage /
-      // inode collector. That collector stat()s files under /var/lib/docker
-      // which is root-only, so on this VM it logs a "permission denied"
-      // every scrape. diskIO (block-device I/O) is a separate category and
-      // stays on — that's the useful per-container disk signal.
-      prometheus.exporter.cadvisor "containers" {
-        docker_host = "unix:///var/run/docker.sock"
-        disabled_metrics = ["disk"]
-      }
-
-      prometheus.scrape "containers" {
-        targets    = prometheus.exporter.cadvisor.containers.targets
-        job_name   = "cadvisor"
-        scrape_interval = "30s"
-        forward_to = [prometheus.remote_write.grafana_cloud.receiver]
-      }
 
       // ─── Ship to Grafana Cloud ───────────────────────────────────────
       prometheus.remote_write "grafana_cloud" {
