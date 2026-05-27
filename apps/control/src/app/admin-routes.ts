@@ -33,7 +33,7 @@ export async function handleAdminRoute(
 	request: Request,
 ): Promise<Response> {
 	const { storage, runs, runtimeProvider } = ctx;
-	const adminResult = await requireAdmin(storage.auth, storage, request);
+	const adminResult = await requireAdmin(storage, request);
 	if (adminResult instanceof Response) {
 		return adminResult;
 	}

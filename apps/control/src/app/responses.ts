@@ -29,7 +29,10 @@ export function notFound(): Response {
 	return new Response("Not found", { status: 404 });
 }
 
-export function sessionResponse(auth: AuthContext): SessionResponse {
+export function sessionResponse(
+	auth: AuthContext,
+	options: { demo?: boolean } = {},
+): SessionResponse {
 	return {
 		user: {
 			id: auth.user.id,
@@ -43,6 +46,7 @@ export function sessionResponse(auth: AuthContext): SessionResponse {
 			id: auth.workspace.id,
 			slug: auth.workspace.slug,
 		},
+		...(options.demo ? { demo: true } : {}),
 	};
 }
 

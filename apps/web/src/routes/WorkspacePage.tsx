@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router";
+import { DemoBanner } from "@/components/DemoBanner";
 import { DriverStation } from "@/components/DriverStation";
 import { EditorPane } from "@/components/EditorPane";
 import { IDELayout } from "@/components/IDELayout";
@@ -151,6 +152,8 @@ export function WorkspacePage() {
 	const isAdmin =
 		sessionState.status === "ready" &&
 		sessionState.session.user.role === "admin";
+	const isDemo =
+		sessionState.status === "ready" && sessionState.session.demo === true;
 
 	const sessionReady = sessionState.status === "ready";
 	const errorMessage =
@@ -158,6 +161,7 @@ export function WorkspacePage() {
 
 	return (
 		<div className="flex h-screen flex-col bg-background">
+			{isDemo && <DemoBanner />}
 			<Topbar
 				displayName={displayName}
 				email={email}

@@ -275,7 +275,7 @@ export async function handleUploadAsset(
 	storage: AppStorage,
 	request: Request,
 ): Promise<Response> {
-	const session = await requireSession(storage.auth, request);
+	const session = await requireSession(storage, request);
 	if (session instanceof Response) return session;
 
 	const workspace = storage.findWorkspaceByUserId(session.user.id);
