@@ -16,10 +16,7 @@
 		{
 			"name": "control-demo",
 			"runtimeExecutable": "bun",
-			"runtimeArgs": [
-				"apps/control/src/main.ts",
-				"--demo"
-			],
+			"runtimeArgs": ["apps/control/src/main.ts", "--demo"],
 			"port": 4000
 		}
 	]
