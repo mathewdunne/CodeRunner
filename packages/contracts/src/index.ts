@@ -46,6 +46,7 @@ export const sessionResponseSchema = z.object({
 		id: workspaceIdSchema,
 		slug: workspaceSlugSchema,
 	}),
+	demo: z.boolean().optional(),
 });
 
 export const authProviderSchema = z.enum(["github", "google"]);

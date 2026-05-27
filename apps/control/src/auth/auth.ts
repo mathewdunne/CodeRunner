@@ -43,7 +43,7 @@ export function createAuth(
 	config: ControlConfig,
 	callbacks: AuthCallbacks,
 ) {
-	const socialProviders = buildSocialProviders(config);
+	const socialProviders = config.demo ? {} : buildSocialProviders(config);
 
 	const options: BetterAuthOptions = {
 		database: db,

@@ -8,13 +8,13 @@
 import type { WorkspaceSlug } from "@frc-coderunner/contracts";
 import { getLogger } from "../logging";
 import type { AppStorage, AuthContext } from "../storage";
-import type { Auth } from "./auth";
+import { getDemoSession } from "./demo";
 
 const log = getLogger("auth");
 
 /** Resolve a Better Auth session from the incoming request. Returns null if no valid session. */
 export async function getSessionFromRequest(
-	auth: Auth,
+	storage: AppStorage,
 	request: Request,
 ): Promise<{
 	user: {
@@ -27,8 +27,13 @@ export async function getSessionFromRequest(
 	};
 	session: { token: string };
 } | null> {
+	if (storage.config.demo) {
+		return getDemoSession();
+	}
 	try {
-		const session = await auth.api.getSession({ headers: request.headers });
+		const session = await storage.auth.api.getSession({
+			headers: request.headers,
+		});
 		if (!session) {
 			log.trace("getSession: no session");
 			return null;
@@ -64,7 +69,7 @@ export async function getSessionFromRequest(
 
 /** Require a valid session. Returns the session or a 401 Response. */
 export async function requireSession(
-	auth: Auth,
+	storage: AppStorage,
 	request: Request,
 ): Promise<
 	| {
@@ -80,7 +85,7 @@ export async function requireSession(
 	  }
 	| Response
 > {
-	const session = await getSessionFromRequest(auth, request);
+	const session = await getSessionFromRequest(storage, request);
 	if (!session) {
 		return new Response("Unauthorized", { status: 401 });
 	}
@@ -89,12 +94,11 @@ export async function requireSession(
 
 /** Require session + workspace ownership. Returns AuthContext or error Response. */
 export async function requireWorkspaceOwnership(
-	auth: Auth,
 	storage: AppStorage,
 	request: Request,
 	slug: string,
 ): Promise<AuthContext | Response> {
-	const session = await getSessionFromRequest(auth, request);
+	const session = await getSessionFromRequest(storage, request);
 	if (!session) {
 		return new Response("Unauthorized", { status: 401 });
 	}
@@ -121,7 +125,6 @@ export async function requireWorkspaceOwnership(
 
 /** Require admin role. Returns session or error Response. Honors ADMIN_TOKEN as break-glass. */
 export async function requireAdmin(
-	auth: Auth,
 	storage: AppStorage,
 	request: Request,
 ): Promise<
@@ -156,7 +159,7 @@ export async function requireAdmin(
 		}
 	}
 
-	const session = await getSessionFromRequest(auth, request);
+	const session = await getSessionFromRequest(storage, request);
 	if (session && session.user.role === "admin") {
 		log.debug("admin auth via session", { userId: session.user.id });
 		return session;

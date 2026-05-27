@@ -17,6 +17,7 @@ import type {
 } from "./app/types";
 import { createWebSocketHandlers } from "./app/websocket";
 import { handleWorkspaceRoute } from "./app/workspace-routes";
+import { getDemoSessionResponseBody, seedDemoUser } from "./auth/demo";
 import { getSessionFromRequest, requireAdmin } from "./auth/middleware";
 import { getEnabledAuthProviders } from "./auth/providers";
 import { LocalDockerRuntimeProvider } from "./containers";
@@ -71,7 +72,7 @@ async function authorizeMetrics(
 		}
 		return new Response("Unauthorized", { status: 401 });
 	}
-	const adminResult = await requireAdmin(storage.auth, storage, request);
+	const adminResult = await requireAdmin(storage, request);
 	if (adminResult instanceof Response) {
 		return adminResult;
 	}
@@ -101,6 +102,10 @@ export async function createApp(
 	} = configInput;
 	const upstreamFetch = configuredUpstreamFetch ?? globalThis.fetch;
 	const storage = await createStorage(storageConfig);
+	if (storage.config.demo) {
+		await seedDemoUser(storage);
+		bootLog.info("demo user seeded", { slug: "demo" });
+	}
 	const runtimeProvider =
 		configuredRuntimeProvider ??
 		new LocalDockerRuntimeProvider(storage, { dockerRunner, portAvailable });
@@ -252,7 +257,7 @@ export async function createApp(
 		) {
 			// Resolve user assets dir from session (best-effort; unauthenticated users get bundled only)
 			let scopeUserAssetsDir: string | undefined;
-			const session = await getSessionFromRequest(storage.auth, request);
+			const session = await getSessionFromRequest(storage, request);
 			if (session) {
 				const workspace = storage.findWorkspaceByUserId(session.user.id);
 				if (workspace) {
@@ -270,11 +275,14 @@ export async function createApp(
 
 		// --- Better Auth API routes ---
 		if (url.pathname.startsWith("/api/auth/")) {
+			if (storage.config.demo && url.pathname === "/api/auth/get-session") {
+				return jsonResponse(getDemoSessionResponseBody());
+			}
 			return storage.auth.handler(request);
 		}
 
 		if (url.pathname === "/" && request.method === "GET") {
-			const session = await getSessionFromRequest(storage.auth, request);
+			const session = await getSessionFromRequest(storage, request);
 			if (session) {
 				const workspace = storage.findWorkspaceByUserId(session.user.id);
 				if (workspace) {
@@ -310,7 +318,7 @@ export async function createApp(
 
 		// --- Admin / operator routes ---
 		if (url.pathname === "/admin") {
-			const adminResult = await requireAdmin(storage.auth, storage, request);
+			const adminResult = await requireAdmin(storage, request);
 			if (adminResult instanceof Response) {
 				return adminResult;
 			}
@@ -318,7 +326,7 @@ export async function createApp(
 		}
 
 		if (url.pathname === "/admin/") {
-			const adminResult = await requireAdmin(storage.auth, storage, request);
+			const adminResult = await requireAdmin(storage, request);
 			if (adminResult instanceof Response) {
 				return adminResult;
 			}

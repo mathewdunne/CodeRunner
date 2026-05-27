@@ -6,6 +6,21 @@ Status: **V2 complete.** Each student gets a per-student container running openv
 
 See [`docs/runbook.md`](docs/runbook.md) for operator setup, [`docs/manual-tests.md`](docs/manual-tests.md) for acceptance test procedures, and [`V2-Design.md`](V2-Design.md) for architecture. Historical V1 and MVP documents are preserved in [`V1-Design.md`](V1-Design.md) and [`docs/archive/mvp-docs/`](docs/archive/mvp-docs/).
 
+## Try it locally (demo mode)
+
+Want to poke at CodeRunner without configuring OAuth, an allowlist, or anything else? Run with `--demo`:
+
+```powershell
+git submodule update --init --recursive
+bun install
+bun run build
+bun run start -- --demo
+```
+
+Then open `http://localhost:4000/` — you land directly in the IDE as a single seeded admin user with workspace slug `demo`. Docker must be running (the workspace image is pulled by `bun run build`).
+
+> **Warning**: demo mode bypasses authentication entirely. Every visitor resolves to the same admin user and shares one workspace. Do not expose a demo instance to the public internet. The env var `CODERUNNER_DEMO_MODE=1` works as an alias for the flag.
+
 ## Prerequisites
 
 - Bun 1.3.13 or newer

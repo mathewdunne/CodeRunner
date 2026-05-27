@@ -146,23 +146,25 @@ export class AppStorage {
 		const { runMigrations } = await getMigrations(this.auth.options);
 		await runMigrations();
 
-		// 4. Warn if no auth providers are configured.
-		const hasGitHub = Boolean(
-			this.config.githubClientId && this.config.githubClientSecret,
-		);
-		const hasGoogle = Boolean(
-			this.config.googleClientId && this.config.googleClientSecret,
-		);
-		if (!hasGitHub && !hasGoogle) {
-			log.warn("no OAuth providers configured — login will not work", {
-				baseUrl: this.config.baseUrl,
-				hint: "Set GITHUB_CLIENT_ID/SECRET or GOOGLE_CLIENT_ID/SECRET in your .env",
-			});
-		} else {
-			log.debug("oauth providers configured", {
-				github: hasGitHub,
-				google: hasGoogle,
-			});
+		// 4. Warn if no auth providers are configured (skipped in demo mode).
+		if (!this.config.demo) {
+			const hasGitHub = Boolean(
+				this.config.githubClientId && this.config.githubClientSecret,
+			);
+			const hasGoogle = Boolean(
+				this.config.googleClientId && this.config.googleClientSecret,
+			);
+			if (!hasGitHub && !hasGoogle) {
+				log.warn("no OAuth providers configured — login will not work", {
+					baseUrl: this.config.baseUrl,
+					hint: "Set GITHUB_CLIENT_ID/SECRET or GOOGLE_CLIENT_ID/SECRET in your .env",
+				});
+			} else {
+				log.debug("oauth providers configured", {
+					github: hasGitHub,
+					google: hasGoogle,
+				});
+			}
 		}
 	}
 

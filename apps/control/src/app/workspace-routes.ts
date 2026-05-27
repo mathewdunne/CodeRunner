@@ -102,12 +102,7 @@ export async function handleWorkspaceRoute(
 	}
 
 	const isApiRequest = suffix.startsWith("/api/");
-	const auth = await requireWorkspaceOwnership(
-		storage.auth,
-		storage,
-		request,
-		slug,
-	);
+	const auth = await requireWorkspaceOwnership(storage, request, slug);
 	if (auth instanceof Response) {
 		if (!isApiRequest && auth.status === 401) return redirect("/login");
 		return auth;
@@ -271,7 +266,7 @@ export async function handleWorkspaceRoute(
 	}
 
 	if (suffix === "/api/session" && request.method === "GET") {
-		return jsonResponse(sessionResponse(auth));
+		return jsonResponse(sessionResponse(auth, { demo: storage.config.demo }));
 	}
 
 	if (suffix === "/api/containers/status" && request.method === "GET") {

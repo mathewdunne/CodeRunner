@@ -35,6 +35,7 @@ export type ControlConfig = {
 	idleCheckIntervalMs: number;
 	adminToken: string | null;
 	maxActiveContainers: number;
+	demo: boolean;
 };
 
 export type ControlConfigInput = Partial<
@@ -51,6 +52,7 @@ export type ControlConfigInput = Partial<
 	maxActiveContainers?: number | string;
 	port?: number | string;
 	logLevel?: LogLevel | string;
+	demo?: boolean | string;
 };
 
 function parseLogLevelOrThrow(value: string | LogLevel | undefined): LogLevel {
@@ -254,5 +256,6 @@ export function loadControlConfig(
 			10,
 			"MAX_ACTIVE_CONTAINERS",
 		),
+		demo: parseBoolean(input.demo ?? Bun.env.CODERUNNER_DEMO_MODE, false),
 	};
 }

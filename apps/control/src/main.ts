@@ -13,9 +13,22 @@ const log = getLogger("boot");
 
 const { createApp } = await import("./app");
 
+const demoFlag = Bun.argv.includes("--demo");
+
 const port = Number(Bun.env.PORT ?? 4000);
-const app = await createApp();
+const app = await createApp(demoFlag ? { demo: true } : {});
 const c = app.storage.config;
+
+if (c.demo) {
+	const banner = [
+		"================================================================",
+		"  DEMO MODE ENABLED — authentication is bypassed.",
+		"  Every visitor logs in as the same admin user and shares one",
+		"  workspace. DO NOT deploy this instance publicly.",
+		"================================================================",
+	];
+	for (const line of banner) log.warn(line);
+}
 
 const simRange = `${c.simPortRange.start}-${c.simPortRange.end}`;
 const vscodeRange = `${c.vscodePortRange.start}-${c.vscodePortRange.end}`;
@@ -37,9 +50,11 @@ log.info("control plane configuration", {
 	idleCheckSec: c.idleCheckIntervalMs / 1000,
 	containerUser: c.containerUser ?? "(auto)",
 	containerAutoStart: c.containerAutoStart,
-	adminAuth: c.adminToken
-		? "better-auth + bearer break-glass"
-		: "better-auth admin role",
+	adminAuth: c.demo
+		? "demo mode (auth bypassed)"
+		: c.adminToken
+			? "better-auth + bearer break-glass"
+			: "better-auth admin role",
 	maxStudents,
 });
 
