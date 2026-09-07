@@ -38,9 +38,18 @@ Arch audit findings that shaped the design:
 - `ci.yml` — `bun run verify` on PRs and pushes to `main` (tests now run
   before release time).
 - `release.yml` — triggered by pushing a `v*` tag: validates semver format and
-  `main` ancestry (same guarantees the old dispatch flow enforced), runs
+  checks `main` ancestry to classify the release, runs
   verify, publishes multi-arch images, and uploads the
   `web-dist`/`ascope-dist` tarballs to the GitHub release.
+  Tags outside `main` automatically become GitHub prereleases, even without a
+  version suffix, so fixes can be tested before merging. Tags with prerelease
+  suffixes (for example `v0.6.1-selinux-fix`) remain prereleases on any branch.
+  Classification uses commit ancestry at workflow execution time because tags
+  do not store a source branch. Prereleases publish versioned images and a
+  GitHub prerelease with `--latest=false`; only stable tags update image `latest`.
+  Release creation uses `--verify-tag` with the existing pushed tag and omits
+  `--target`: explicitly targeting a commit that changes workflows relative to
+  `main` can require workflow-write permission unavailable to `GITHUB_TOKEN`.
 - `deploy.yml` — stays a manual `workflow_dispatch` with a tag input, but only
   *consumes* a published release: a preflight job checks the release and both
   multi-arch manifests exist, then the unchanged GCE + Cloudflare jobs roll it
@@ -51,7 +60,7 @@ Arch audit findings that shaped the design:
 native runner (`ubuntu-latest` / `ubuntu-24.04-arm`) and pushes by digest
 (`push-by-digest=true`, no tags); a merge job stitches the digests into one
 manifest list per image with `docker buildx imagetools create`, applying the
-`:vX.Y.Z` and `:latest` tags there. Consumers are untouched — the amd64 GCE VM
+the version tag and, for stable releases, `:latest` there. Consumers are untouched — the amd64 GCE VM
 and arm64 laptops pull the same tag and get their own arch. GHA build caches
 are scoped per image × arch (`workspace-arm64`, `control-amd64`, …).
 

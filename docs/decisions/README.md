@@ -4,7 +4,7 @@ Record active architecture decisions here.
 
 ## Active (V2 and post-V2)
 
-011–039 are the current decision logs (see files in this directory). The latest:
+011–040 are the current decision logs (see files in this directory). The latest:
 
 - [`032-canonical-image-naming.md`](032-canonical-image-naming.md) — one canonical name per image, derived from `CODERUNNER_IMAGE_NS` + `CODERUNNER_TAG`.
 - [`033-workspace-disk-read-limit.md`](033-workspace-disk-read-limit.md) — workspace containers get a per-device `--device-read-bps` cap (`CODE_DISK_READ_LIMIT`) so one memory-thrashing container cannot saturate host disk throughput and freeze the VM; `CODE_MEMORY_LIMIT` default raised to `4096m`.
@@ -14,6 +14,8 @@ Record active architecture decisions here.
 - [`037-gradle-wrapper-alias-and-extension-pins.md`](037-gradle-wrapper-alias-and-extension-pins.md) — shares the primed Gradle distribution across wrapper layouts, enforces the pinned extension manifest, and disables workspace trust in the hosted workbench.
 - [`038-java-tooling-compatibility-and-smoke.md`](038-java-tooling-compatibility-and-smoke.md) — runs JDT LS on Java 21 while preserving the Java 17 WPILib path, reconciles managed extension pins, and adds a real-container Java smoke.
 - [`039-pathplanner-integration.md`](039-pathplanner-integration.md) — serves the PathPlanner web app in a tab beside AdvantageScope and syncs its project files through an ownership-checked deploy-files API.
+
+- [`040-selinux-container-mounts.md`](040-selinux-container-mounts.md) — exempts the control plane from SELinux labeling and relabels student bind mounts for shared access while preserving demo named volumes.
 
 ## Archive
 

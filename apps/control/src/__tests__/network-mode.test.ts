@@ -154,10 +154,10 @@ describe("network mode container orchestration", () => {
 				const runCall = fakeDocker.calls.find((call) => call[0] === "run");
 				expect(runCall).toBeTruthy();
 				expect(runCall).toContain(
-					`type=bind,src=${hostDataDir}/users/${workspace.id}/project,dst=/workspace/project`,
+					`${hostDataDir}/users/${workspace.id}/project:/workspace/project:z`,
 				);
 				expect(runCall).toContain(
-					`type=bind,src=${hostDataDir}/users/${workspace.id}/home,dst=/config`,
+					`${hostDataDir}/users/${workspace.id}/home:/config:z`,
 				);
 			},
 			{

@@ -2,7 +2,8 @@ name: Build & Release
 
 # Publishes multi-arch (linux/amd64 + linux/arm64) images to GHCR and attaches
 # the web/ascope dist tarballs to a GitHub release. Triggered by pushing a
-# semver tag that points into main's history. Deploying a published tag is a
+# semver tag. Tags outside main's history or with a prerelease suffix are
+# published as prereleases and do not update latest. Deploying a published tag is a
 # separate manual step (deploy.yml).
 #
 # Build strategy: one native runner per architecture (no QEMU — the workspace
@@ -38,12 +39,13 @@ jobs:
     outputs:
       tag: ${{ steps.validate.outputs.tag }}
       tag_sha: ${{ steps.validate.outputs.tag_sha }}
+      prerelease: ${{ steps.validate.outputs.prerelease }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Validate release tag and main ancestry
+      - name: Validate release tag and classify prerelease
         id: validate
         env:
           TAG: ${{ github.ref_name }}
@@ -55,16 +57,25 @@ jobs:
             exit 1
           fi
 
-          git fetch --force origin "+refs/heads/main:refs/remotes/origin/main"
-
           TAG_SHA="$(git rev-parse "refs/tags/$TAG^{commit}")"
-          if ! git merge-base --is-ancestor "$TAG_SHA" origin/main; then
-            echo "Tag $TAG ($TAG_SHA) is not reachable from origin/main."
-            exit 1
+          git fetch --force origin "+refs/heads/main:refs/remotes/origin/main"
+          PRERELEASE=false
+          if git merge-base --is-ancestor "$TAG_SHA" origin/main; then
+            if [[ "$TAG" == *-* ]]; then
+              PRERELEASE=true
+            fi
+          else
+            ancestry_status=$?
+            # Exit 1 means not an ancestor; other failures must stop the release.
+            if [[ "$ancestry_status" != 1 ]]; then
+              exit "$ancestry_status"
+            fi
+            PRERELEASE=true
           fi
 
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "tag_sha=$TAG_SHA" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
 
   verify:
     needs: validate
@@ -299,6 +310,7 @@ jobs:
       packages: write
     env:
       TAG: ${{ needs.validate.outputs.tag }}
+      PRERELEASE: ${{ needs.validate.outputs.prerelease }}
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -324,16 +336,21 @@ jobs:
         run: |
           set -euo pipefail
 
+          workspace_tags=(-t "$WORKSPACE_IMAGE:$TAG")
+          control_tags=(-t "$CONTROL_IMAGE:$TAG")
+          if [[ "$PRERELEASE" == false ]]; then
+            workspace_tags+=(-t "$WORKSPACE_IMAGE:latest")
+            control_tags+=(-t "$CONTROL_IMAGE:latest")
+          fi
+
           cd "${{ runner.temp }}/digests/workspace"
           docker buildx imagetools create \
-            -t "$WORKSPACE_IMAGE:$TAG" \
-            -t "$WORKSPACE_IMAGE:latest" \
+            "${workspace_tags[@]}" \
             $(printf "$WORKSPACE_IMAGE@sha256:%s " *)
 
           cd "${{ runner.temp }}/digests/control"
           docker buildx imagetools create \
-            -t "$CONTROL_IMAGE:$TAG" \
-            -t "$CONTROL_IMAGE:latest" \
+            "${control_tags[@]}" \
             $(printf "$CONTROL_IMAGE@sha256:%s " *)
 
       - name: Inspect manifests
@@ -357,7 +374,7 @@ jobs:
       contents: write
     env:
       TAG: ${{ needs.validate.outputs.tag }}
-      TAG_SHA: ${{ needs.validate.outputs.tag_sha }}
+      PRERELEASE: ${{ needs.validate.outputs.prerelease }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
@@ -369,9 +386,17 @@ jobs:
       - name: Upload release artifacts
         run: |
           set -euo pipefail
+          release_flags=()
+          if [[ "$PRERELEASE" == true ]]; then
+            release_flags+=(--prerelease --latest=false)
+          fi
           if ! gh release view "$TAG" >/dev/null 2>&1; then
+            # This is a tag-push workflow: require the existing tag. Passing
+            # --target for a branch commit that changes workflows can require
+            # workflow-write permission, which GITHUB_TOKEN cannot receive.
             gh release create "$TAG" \
-              --target "$TAG_SHA" \
+              "${release_flags[@]}" \
+              --verify-tag \
               --title "$TAG" \
               --notes "CodeRunner release $TAG"
           fi

@@ -47,6 +47,11 @@ services:
     user: "${CODERUNNER_UID:-1000}:${CODERUNNER_GID:-1000}"
     group_add:
       - "${CODERUNNER_DOCKER_GID:-0}"
+    # The control plane needs host Docker socket and data access on SELinux
+    # hosts. Exempt only this trusted orchestrator; student containers retain
+    # SELinux confinement and relabel their own bind mounts for shared access.
+    security_opt:
+      - label=disable
     ports:
       # Loopback only: Caddy (prod) or the local browser reaches it here.
       - "127.0.0.1:4000:4000"
@@ -54,6 +59,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       # Compose resolves ./ against the project directory. Set
       # CODERUNNER_HOST_DATA_DIR to relocate the data dir (e.g. a mounted disk).
+      # Do not relabel the whole tree: it includes student container mounts.
       - ${CODERUNNER_HOST_DATA_DIR:-./data}:/data
     environment:
       CODE_IMAGE: ${CODERUNNER_IMAGE_NS:-ghcr.io/mathewdunne}/coderunner-workspace:${CODERUNNER_TAG:-latest}

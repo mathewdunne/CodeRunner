@@ -640,13 +640,14 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
 			`frc-sim.workspace=${workspace.id}`,
 			// Mount sources are resolved by the Docker daemon against the HOST
 			// filesystem, so they go through toHostPath (a no-op outside the
-			// containerized deployment).
-			"--mount",
-			`type=bind,src=${toHostPath(config, workspace.project_path)},dst=/workspace/project`,
-			"--mount",
+			// containerized deployment). Docker requires -v for SELinux relabeling;
+			// :z permits access by both the workspace and the control plane.
+			"-v",
+			`${toHostPath(config, workspace.project_path)}:/workspace/project:z`,
+			configVolume ? "--mount" : "-v",
 			configVolume
 				? `type=volume,src=${configVolume},dst=/config`
-				: `type=bind,src=${toHostPath(config, homePath)},dst=/config`,
+				: `${toHostPath(config, homePath)}:/config:z`,
 		];
 
 		// Nest workspace containers under the control plane's compose project in
