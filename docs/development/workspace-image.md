@@ -59,11 +59,14 @@ This pulls the same canonical name. The same pull runs as part of
 `latest` tag, so it replaces any locally built image of the same name.
 
 Publishing images to GHCR is done exclusively by CI (the release workflow in
-`.github/workflows/release.yml`), not from a developer machine. Push a stable
-`vMAJOR.MINOR.PATCH` tag on a commit in `main`, or a prerelease tag such as
-`v0.6.1-selinux-fix` on a branch commit. The tagged commit must include the
-release workflow changes. Both run verification and publish both architectures;
-prereleases leave `latest` unchanged. To test one, set `CODERUNNER_TAG` in `.env`
+`.github/workflows/release.yml`), not from a developer machine. Push a
+`vMAJOR.MINOR.PATCH` tag, optionally with a suffix such as `-selinux-fix`.
+Tags whose commits are outside `main` are automatically published as GitHub
+prereleases, as are tags with prerelease suffixes on any branch. Only tags
+without a suffix whose commits are in `main` update `latest`. Classification
+uses `main` ancestry when the workflow runs; Git tags do not record a source
+branch. All releases run verification and publish both architectures.
+To test one, set `CODERUNNER_TAG` in `.env`
 to the full tag and follow the [update steps](../deploying/local.md#updating-coderunner-to-a-new-release).
 
 ## When to rebuild

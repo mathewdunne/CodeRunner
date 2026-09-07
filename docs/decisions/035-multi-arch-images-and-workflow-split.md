@@ -38,11 +38,14 @@ Arch audit findings that shaped the design:
 - `ci.yml` — `bun run verify` on PRs and pushes to `main` (tests now run
   before release time).
 - `release.yml` — triggered by pushing a `v*` tag: validates semver format and
-  `main` ancestry for stable tags, runs
+  checks `main` ancestry to classify the release, runs
   verify, publishes multi-arch images, and uploads the
   `web-dist`/`ascope-dist` tarballs to the GitHub release.
-  Prerelease tags (for example `v0.6.1-selinux-fix`) may point outside `main`
-  so fixes can be tested before merging. They publish versioned images and a
+  Tags outside `main` automatically become GitHub prereleases, even without a
+  version suffix, so fixes can be tested before merging. Tags with prerelease
+  suffixes (for example `v0.6.1-selinux-fix`) remain prereleases on any branch.
+  Classification uses commit ancestry at workflow execution time because tags
+  do not store a source branch. Prereleases publish versioned images and a
   GitHub prerelease with `--latest=false`; only stable tags update image `latest`.
 - `deploy.yml` — stays a manual `workflow_dispatch` with a tag input, but only
   *consumes* a published release: a preflight job checks the release and both

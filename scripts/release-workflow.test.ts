@@ -46,28 +46,39 @@ describe("release workflow", () => {
 }`;
 
 	test.each([
-		["v0.6.1-selinux-fix", "1", 0],
-		["v0.6.1", "1", 1],
-		["v0.6.1", "0", 0],
-		["v0.6.1+metadata", "0", 1],
-		["not-a-version", "0", 1],
-	])("validates %s with ancestry status %s", async (tag, ancestry, code) => {
-		const result = await run(
-			script("validate", "validate"),
-			{ TAG: tag, ANCESTOR_STATUS: ancestry, GITHUB_OUTPUT: "/dev/null" },
-			git,
-		);
-		expect(result.code).toBe(code);
-		expect(result.stderr).toBe("");
-		if (tag === "v0.6.1-selinux-fix") {
-			expect(result.stdout).not.toContain("fetched-main");
+		["v0.6.1-selinux-fix", "1", 0, "true"],
+		["v0.6.1-selinux-fix", "0", 0, "true"],
+		["v0.6.1", "1", 0, "true"],
+		["v0.6.1", "0", 0, "false"],
+		["v0.6.1", "128", 128, ""],
+		["v0.6.1+metadata", "0", 1, ""],
+		["not-a-version", "0", 1, ""],
+	])("validates %s with ancestry status %s", async (tag, ancestry, code, prerelease) => {
+		const temp = await mkdtemp(join(tmpdir(), "coderunner-tag-test-"));
+		try {
+			const output = join(temp, "output");
+			const result = await run(
+				script("validate", "validate"),
+				{ TAG: tag, ANCESTOR_STATUS: ancestry, GITHUB_OUTPUT: output },
+				git,
+			);
+			expect(result.code).toBe(code);
+			expect(result.stderr).toBe("");
+			if (code === 0) {
+				expect(await Bun.file(output).text()).toBe(
+					`tag=${tag}\ntag_sha=test-sha\nprerelease=${prerelease}\n`,
+				);
+			}
+		} finally {
+			await rm(temp, { recursive: true, force: true });
 		}
 	});
 
 	test.each([
-		"v0.6.1",
-		"v0.6.1-selinux-fix",
-	])("publishes appropriate image and release tags for %s", async (tag) => {
+		["v0.6.1", "false"],
+		["v0.6.1", "true"],
+		["v0.6.1-selinux-fix", "true"],
+	])("publishes appropriate image and release tags for %s (prerelease=%s)", async (tag, prerelease) => {
 		const temp = await mkdtemp(join(tmpdir(), "coderunner-release-test-"));
 		try {
 			for (const image of ["workspace", "control"]) {
@@ -82,6 +93,7 @@ describe("release workflow", () => {
 				),
 				{
 					TAG: tag,
+					PRERELEASE: prerelease,
 					WORKSPACE_IMAGE: "test/workspace",
 					CONTROL_IMAGE: "test/control",
 				},
@@ -91,18 +103,18 @@ describe("release workflow", () => {
 			for (const image of ["workspace", "control"]) {
 				expect(result.stdout).toContain(`-t test/${image}:${tag}`);
 				expect(result.stdout.includes(`-t test/${image}:latest`)).toBe(
-					!tag.includes("-"),
+					prerelease === "false",
 				);
 			}
 			const release = await run(
 				script("release", "Upload release artifacts"),
-				{ TAG: tag, TAG_SHA: "test-sha" },
+				{ TAG: tag, TAG_SHA: "test-sha", PRERELEASE: prerelease },
 				'gh() { if [[ "$2" == view ]]; then return 1; fi; printf "%s\\n" "$*"; }',
 			);
 			expect(release.code).toBe(0);
 			expect(release.stdout).toContain(`release create ${tag}`);
 			expect(release.stdout.includes("--prerelease --latest=false")).toBe(
-				tag.includes("-"),
+				prerelease === "true",
 			);
 			expect(release.stdout).toContain(`release upload ${tag}`);
 		} finally {
