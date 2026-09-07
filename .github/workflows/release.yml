@@ -2,7 +2,8 @@ name: Build & Release
 
 # Publishes multi-arch (linux/amd64 + linux/arm64) images to GHCR and attaches
 # the web/ascope dist tarballs to a GitHub release. Triggered by pushing a
-# semver tag that points into main's history. Deploying a published tag is a
+# semver tag. Stable tags must point into main's history; prerelease tags may
+# point to any branch and do not update latest. Deploying a published tag is a
 # separate manual step (deploy.yml).
 #
 # Build strategy: one native runner per architecture (no QEMU — the workspace
@@ -43,7 +44,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Validate release tag and main ancestry
+      - name: Validate release tag and stable release ancestry
         id: validate
         env:
           TAG: ${{ github.ref_name }}
@@ -55,12 +56,13 @@ jobs:
             exit 1
           fi
 
-          git fetch --force origin "+refs/heads/main:refs/remotes/origin/main"
-
           TAG_SHA="$(git rev-parse "refs/tags/$TAG^{commit}")"
-          if ! git merge-base --is-ancestor "$TAG_SHA" origin/main; then
-            echo "Tag $TAG ($TAG_SHA) is not reachable from origin/main."
-            exit 1
+          if [[ "$TAG" != *-* ]]; then
+            git fetch --force origin "+refs/heads/main:refs/remotes/origin/main"
+            if ! git merge-base --is-ancestor "$TAG_SHA" origin/main; then
+              echo "Stable tag $TAG ($TAG_SHA) is not reachable from origin/main. Use a prerelease suffix for branch builds."
+              exit 1
+            fi
           fi
 
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
@@ -324,16 +326,21 @@ jobs:
         run: |
           set -euo pipefail
 
+          workspace_tags=(-t "$WORKSPACE_IMAGE:$TAG")
+          control_tags=(-t "$CONTROL_IMAGE:$TAG")
+          if [[ "$TAG" != *-* ]]; then
+            workspace_tags+=(-t "$WORKSPACE_IMAGE:latest")
+            control_tags+=(-t "$CONTROL_IMAGE:latest")
+          fi
+
           cd "${{ runner.temp }}/digests/workspace"
           docker buildx imagetools create \
-            -t "$WORKSPACE_IMAGE:$TAG" \
-            -t "$WORKSPACE_IMAGE:latest" \
+            "${workspace_tags[@]}" \
             $(printf "$WORKSPACE_IMAGE@sha256:%s " *)
 
           cd "${{ runner.temp }}/digests/control"
           docker buildx imagetools create \
-            -t "$CONTROL_IMAGE:$TAG" \
-            -t "$CONTROL_IMAGE:latest" \
+            "${control_tags[@]}" \
             $(printf "$CONTROL_IMAGE@sha256:%s " *)
 
       - name: Inspect manifests
@@ -369,8 +376,13 @@ jobs:
       - name: Upload release artifacts
         run: |
           set -euo pipefail
+          release_flags=()
+          if [[ "$TAG" == *-* ]]; then
+            release_flags+=(--prerelease --latest=false)
+          fi
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             gh release create "$TAG" \
+              "${release_flags[@]}" \
               --target "$TAG_SHA" \
               --title "$TAG" \
               --notes "CodeRunner release $TAG"
