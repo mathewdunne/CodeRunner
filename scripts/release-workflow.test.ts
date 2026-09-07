@@ -108,11 +108,13 @@ describe("release workflow", () => {
 			}
 			const release = await run(
 				script("release", "Upload release artifacts"),
-				{ TAG: tag, TAG_SHA: "test-sha", PRERELEASE: prerelease },
+				{ TAG: tag, PRERELEASE: prerelease },
 				'gh() { if [[ "$2" == view ]]; then return 1; fi; printf "%s\\n" "$*"; }',
 			);
 			expect(release.code).toBe(0);
 			expect(release.stdout).toContain(`release create ${tag}`);
+			expect(release.stdout).toContain("--verify-tag");
+			expect(release.stdout).not.toContain("--target");
 			expect(release.stdout.includes("--prerelease --latest=false")).toBe(
 				prerelease === "true",
 			);

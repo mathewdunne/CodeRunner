@@ -47,6 +47,9 @@ Arch audit findings that shaped the design:
   Classification uses commit ancestry at workflow execution time because tags
   do not store a source branch. Prereleases publish versioned images and a
   GitHub prerelease with `--latest=false`; only stable tags update image `latest`.
+  Release creation uses `--verify-tag` with the existing pushed tag and omits
+  `--target`: explicitly targeting a commit that changes workflows relative to
+  `main` can require workflow-write permission unavailable to `GITHUB_TOKEN`.
 - `deploy.yml` — stays a manual `workflow_dispatch` with a tag input, but only
   *consumes* a published release: a preflight job checks the release and both
   multi-arch manifests exist, then the unchanged GCE + Cloudflare jobs roll it

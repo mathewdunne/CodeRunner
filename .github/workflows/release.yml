@@ -374,7 +374,6 @@ jobs:
       contents: write
     env:
       TAG: ${{ needs.validate.outputs.tag }}
-      TAG_SHA: ${{ needs.validate.outputs.tag_sha }}
       PRERELEASE: ${{ needs.validate.outputs.prerelease }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -392,9 +391,12 @@ jobs:
             release_flags+=(--prerelease --latest=false)
           fi
           if ! gh release view "$TAG" >/dev/null 2>&1; then
+            # This is a tag-push workflow: require the existing tag. Passing
+            # --target for a branch commit that changes workflows can require
+            # workflow-write permission, which GITHUB_TOKEN cannot receive.
             gh release create "$TAG" \
               "${release_flags[@]}" \
-              --target "$TAG_SHA" \
+              --verify-tag \
               --title "$TAG" \
               --notes "CodeRunner release $TAG"
           fi
