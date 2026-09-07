@@ -11,6 +11,9 @@ export class DriverStationPage {
 	modeButton(mode: "auto" | "teleop" | "test") {
 		return this.page.getByTestId(`ds-mode-${mode}`);
 	}
+	allianceButton(side: "blue" | "red") {
+		return this.page.getByTestId(`ds-alliance-${side}`);
+	}
 	controllerSelect() {
 		return this.page.getByTestId("ds-controller-select");
 	}

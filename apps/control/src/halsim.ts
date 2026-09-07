@@ -69,7 +69,7 @@ const DEFAULT_DRIVER_STATION: DriverStationState = {
 	enabled: false,
 	mode: "teleop",
 	eStopped: false,
-	alliance: "red1",
+	alliance: "blue1",
 };
 
 function upstreamUrlFor(value: string | number): string {
@@ -89,7 +89,9 @@ function parseStation(value: unknown): AllianceStation {
 	if (typeof value === "string" && value in STATION_VALUES) {
 		return value as AllianceStation;
 	}
-	return "red1";
+	// HALSim reports "unknown" until an alliance is set. Fall back to blue to
+	// match WPILib's own getAlliance().orElse(Alliance.Blue) convention.
+	return "blue1";
 }
 
 function parseDsMode(

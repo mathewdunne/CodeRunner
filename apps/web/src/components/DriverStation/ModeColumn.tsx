@@ -26,7 +26,7 @@ interface ModeColumnProps {
 
 export function ModeColumn({ mode, onSelect }: ModeColumnProps) {
 	return (
-		<div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden rounded-lg border border-border bg-card p-1.5">
+		<div className="flex min-h-0 flex-[2.3] flex-col gap-1 overflow-hidden">
 			<span className="px-1 pt-0.5 text-[9.5px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
 				Mode
 			</span>

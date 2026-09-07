@@ -5,6 +5,7 @@ import type {
 	SimStatusResponse,
 } from "@/lib/contracts";
 import type { InputMode } from "@/state/store";
+import { AllianceToggle } from "./AllianceToggle";
 import { EnableDisableRow } from "./EnableDisableRow";
 import { ModeColumn } from "./ModeColumn";
 import { SimControlsBlock } from "./SimControlsBlock";
@@ -39,7 +40,7 @@ export function WorkbenchPanel({
 		enabled: false,
 		mode: "teleop" as const,
 		eStopped: false,
-		alliance: "red1" as const,
+		alliance: "blue1" as const,
 	};
 	const halConnection = simulationStatus?.halsim.connection ?? "disconnected";
 	const canEnable = Boolean(simulationStatus?.comms.canEnable && sessionReady);
@@ -64,8 +65,8 @@ export function WorkbenchPanel({
 				/>
 			</div>
 
-			{/* Right column spans rows 1+2: Mode */}
-			<div className="row-span-2 min-h-0">
+			{/* Right column spans all rows: Mode + Alliance */}
+			<div className="row-span-3 flex min-h-0 flex-col gap-1.5 overflow-hidden rounded-lg border border-border bg-card p-1.5">
 				<ModeColumn
 					mode={driverStation.mode}
 					onSelect={(mode) =>
@@ -73,6 +74,11 @@ export function WorkbenchPanel({
 							driverStation.enabled ? { enabled: false, mode } : { mode },
 						)
 					}
+				/>
+				<AllianceToggle
+					alliance={driverStation.alliance}
+					enabled={driverStation.enabled}
+					onSelect={(alliance) => onSetDriverStation({ alliance })}
 				/>
 			</div>
 
@@ -88,8 +94,8 @@ export function WorkbenchPanel({
 				/>
 			</div>
 
-			{/* Row 3 spans both columns: Enable / Disable */}
-			<div className="col-span-2 min-h-0">
+			{/* Row 3, col 1: Enable / Disable */}
+			<div className="min-h-0">
 				<EnableDisableRow
 					enabled={driverStation.enabled}
 					canEnable={canEnable}

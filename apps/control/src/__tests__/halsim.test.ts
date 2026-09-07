@@ -106,6 +106,75 @@ describe("HalSimBridge", () => {
 		});
 	});
 
+	test("reports blue before HALSim announces a station", () => {
+		const bridge = new HalSimBridge({
+			webSocketFactory: () => new FakeWebSocket() as unknown as WebSocket,
+		});
+
+		expect(
+			bridge.getSnapshot("ws_0123456789abcdef0123456789abcdef").driverStation
+				.alliance,
+		).toBe("blue1");
+	});
+
+	test('falls back to blue when HALSim reports station "unknown"', () => {
+		const sockets: FakeWebSocket[] = [];
+		const workspaceId = "ws_0123456789abcdef0123456789abcdef";
+		const bridge = new HalSimBridge({
+			webSocketFactory: () => {
+				const socket = new FakeWebSocket();
+				sockets.push(socket);
+				return socket as unknown as WebSocket;
+			},
+		});
+
+		bridge.ensureConnected(workspaceId, 34000);
+		const socket = sockets[0]!;
+		socket.open();
+		socket.message({
+			type: "DriverStation",
+			device: "",
+			data: { ">station": "red3" },
+		});
+		expect(bridge.getSnapshot(workspaceId).driverStation.alliance).toBe("red3");
+
+		socket.message({
+			type: "DriverStation",
+			device: "",
+			data: { ">station": "unknown" },
+		});
+		expect(bridge.getSnapshot(workspaceId).driverStation.alliance).toBe(
+			"blue1",
+		);
+	});
+
+	test("alliance patch forwards the station to HALSim", () => {
+		const sockets: FakeWebSocket[] = [];
+		const workspaceId = "ws_0123456789abcdef0123456789abcdef";
+		const bridge = new HalSimBridge({
+			webSocketFactory: () => {
+				const socket = new FakeWebSocket();
+				sockets.push(socket);
+				return socket as unknown as WebSocket;
+			},
+		});
+
+		bridge.ensureConnected(workspaceId, 34000);
+		const socket = sockets[0]!;
+		socket.open();
+
+		bridge.applyDriverStationPatch(workspaceId, 34000, { alliance: "red1" });
+
+		const messages = socket.sent.map(
+			(raw) => JSON.parse(raw) as { data: Record<string, unknown> },
+		);
+		expect(messages.at(-1)?.data).toMatchObject({
+			">station": "red1",
+			">new_data": true,
+		});
+		expect(bridge.getSnapshot(workspaceId).driverStation.alliance).toBe("red1");
+	});
+
 	test("enable sends current mode flags so HALSim respects mode after restart", () => {
 		const sockets: FakeWebSocket[] = [];
 		const workspaceId = "ws_0123456789abcdef0123456789abcdef";
