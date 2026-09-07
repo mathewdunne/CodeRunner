@@ -269,10 +269,20 @@ export function dockerInspect(container: FakeContainer): unknown {
 	};
 }
 
-/** Parse `--mount type=…,src=…,dst=…` flags out of a `docker run` argv. */
+/** Parse long mounts and short Linux volume flags out of a `docker run` argv. */
 function parseMountFlags(args: string[]): FakeContainerMount[] {
 	const mounts: FakeContainerMount[] = [];
 	for (let index = 0; index < args.length; index += 1) {
+		if (args[index] === "-v") {
+			const [source, destination] = (args[index + 1] ?? "").split(":");
+			if (source && destination) {
+				mounts.push({
+					Type: source.startsWith("/") ? "bind" : "volume",
+					Destination: destination,
+				});
+			}
+			continue;
+		}
 		if (args[index] !== "--mount") continue;
 		const fields = new Map(
 			(args[index + 1] ?? "")

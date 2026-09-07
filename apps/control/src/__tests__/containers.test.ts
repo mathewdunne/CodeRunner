@@ -66,10 +66,10 @@ describe("code container orchestration", () => {
 				expect(runCall).toContain(`frc-sim.version=v2`);
 				expect(runCall).toContain(`frc-sim.role=code`);
 				expect(runCall).toContain(
-					`type=bind,src=${workspace.project_path},dst=/workspace/project`,
+					`${workspace.project_path}:/workspace/project:z`,
 				);
 				expect(runCall).toContain(
-					`type=bind,src=${join(app.storage.config.dataDir, "users", workspace.id, "home")},dst=/config`,
+					`${join(app.storage.config.dataDir, "users", workspace.id, "home")}:/config:z`,
 				);
 				expect(runCall).toContain("127.0.0.1:45910:5810");
 				expect(runCall).toContain("127.0.0.1:46000:3000");
@@ -170,9 +170,12 @@ describe("code container orchestration", () => {
 				const runCall = fakeDocker.calls.find((call) => call[0] === "run");
 				expect(runCall).toBeTruthy();
 				const volume = codeVolumeName(workspace.id);
+				expect(runCall).toContain(
+					`${workspace.project_path}:/workspace/project:z`,
+				);
 				expect(runCall).toContain(`type=volume,src=${volume},dst=/config`);
 				expect(runCall).not.toContain(
-					`type=bind,src=${join(app.storage.config.dataDir, "users", workspace.id, "home")},dst=/config`,
+					`${join(app.storage.config.dataDir, "users", workspace.id, "home")}:/config:z`,
 				);
 
 				// Created explicitly so cleanup can reap it by label.
