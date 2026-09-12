@@ -34,7 +34,7 @@ work needs to be saved in version control.
 4. A progress panel streams the clone and validation steps. When it finishes,
    the editor reopens on the imported project.
 
-![Importing a team project: the clone-and-validate progress panel](/img/screenshots/team-import-progress.png)
+![Importing a team project: the clone-and-validate progress panel](../../website/static/img/screenshots/team-import-progress.png)
 
 ## What URL formats are accepted
 

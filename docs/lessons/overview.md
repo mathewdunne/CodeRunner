@@ -89,7 +89,7 @@ The bundled catalog ships with two modules that exercise the main workflows:
 - **Robot Starter**: a minimal WPILib command-based robot project. The student
   can edit code, run a simulation, inspect telemetry, and open PathPlanner.
 
-![The bundled lesson catalog: Hello, World and Robot Starter modules](/img/screenshots/lesson-catalog-modules.png)
+![The bundled lesson catalog: Hello, World and Robot Starter modules](../../website/static/img/screenshots/lesson-catalog-modules.png)
 
 These two also illustrate the two lesson **kinds** (`plain-java` and `robot`)
 that you will use when authoring your own modules. See

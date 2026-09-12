@@ -171,7 +171,7 @@ make the document useful from its first heading. For example, the bundled
 `hello-world` README begins with the goal, lists numbered steps, and finishes
 with bonus challenges.
 
-![A lesson opened side by side with the README](/img/screenshots/lesson-readme-opened.png)
+![A lesson opened side by side with the README](../../website/static/img/screenshots/lesson-readme-opened.png)
 
 ## The `.vscode/` folder
 

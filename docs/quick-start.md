@@ -17,7 +17,7 @@ Demo mode bypasses authentication. Every visitor shares the same admin account, 
 :::
 
 {/* TODO(pathplanner-docs): Recapture this with the PathPlanner tab visible. */}
-![Landing in the editor in demo mode, ready to pick a lesson](/img/screenshots/demo-mode-landing.png)
+![Landing in the editor in demo mode, ready to pick a lesson](../website/static/img/screenshots/demo-mode-landing.png)
 
 ## Prerequisites
 

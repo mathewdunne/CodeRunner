@@ -123,7 +123,7 @@ A single pre-built dashboard, `coderunner-ops.json` ("CodeRunner — Ops"), live
 | Control plane | Request rate by route, 5xx counts, HTTP + editor-proxy p95, event-loop lag, RSS. |
 | Recent warnings & errors | Control-plane logs from Loki at `warning` and above. |
 
-![The CodeRunner "Ops at a Glance" Grafana dashboard](/img/screenshots/grafana-ops-dashboard.png)
+![The CodeRunner "Ops at a Glance" Grafana dashboard](../../website/static/img/screenshots/grafana-ops-dashboard.png)
 
 To import it, open Grafana Cloud, go to **Dashboards → Import**, and upload the JSON file, selecting your Prometheus and Loki datasources when prompted. The panels assume the metrics described in [Monitoring](./monitoring.md#what-is-exposed). (Earlier releases shipped six narrower dashboards; they were consolidated into this one and can be recovered from git history if needed.)
 

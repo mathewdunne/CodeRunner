@@ -30,12 +30,12 @@ telemetry.
 
 :::
 
-![The Driver Station before a run, with Start available and Enable waiting for robot code and communications](/img/screenshots/using-coderunner-start.png)
+![The Driver Station before a run, with Start available and Enable waiting for robot code and communications](../website/static/img/screenshots/using-coderunner-start.png)
 
 1. Click **Start** in the Driver Station.
 2. Wait for **Comms** and **Robot Code** to turn green.
 
-![The Driver Station ready to enable, with Comms and Robot Code green](/img/screenshots/using-coderunner-ready.png)
+![The Driver Station ready to enable, with Comms and Robot Code green](../website/static/img/screenshots/using-coderunner-ready.png)
 
 3. Select **Teleop**, **Auto**, or **Test**, then click **Enable**.
 4. Click **Stop** when you are finished, or **Restart** to stop the code and re-run with any changes you've made.
@@ -50,7 +50,7 @@ For robot lessons and imported projects, the **PathPlanner** tab opens the path
 editor. For path and auto editing basics, see the
 [official PathPlanner guide](https://pathplanner.dev/gui-editing-paths-and-autos.html).
 
-![Pathplanner open alongside the editor, with a path being edited](/img/screenshots/pathplanner-overview.png)
+![Pathplanner open alongside the editor, with a path being edited](../website/static/img/screenshots/pathplanner-overview.png)
 
 PathPlanner writes to `src/main/deploy/pathplanner/**` in the current project.
 Files under `src/main/deploy/choreo/**` are visible but read-only.
