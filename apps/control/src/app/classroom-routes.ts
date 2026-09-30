@@ -124,7 +124,16 @@ async function retirePreviousSession(
 		userId: previous.user.id,
 		workspaceId: workspace.id,
 	});
-	await ctx.stopWorkspace(workspace.id);
+	try {
+		await ctx.stopWorkspace(workspace.id);
+	} catch (error) {
+		// The new student is already signed in; the idle reaper is the backstop.
+		log.warn("stopping previous guest's workspace failed", {
+			userId: previous.user.id,
+			workspaceId: workspace.id,
+			error: error instanceof Error ? error.message : String(error),
+		});
+	}
 }
 
 export type AdminClassroomContext = {

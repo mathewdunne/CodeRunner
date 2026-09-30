@@ -122,6 +122,26 @@ describe("classroom join dispatcher", () => {
 		});
 	});
 
+	test("a failed stop of the previous guest's container still completes the join", async () => {
+		await withApp(async (app) => {
+			app.runtime.stopWorkspace = async () => {
+				throw new Error("docker stop failed");
+			};
+			const classroom = startClassroom(app);
+			const first = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex" }),
+			);
+			const second = await app.fetch(
+				classroomJoinRequest(
+					{ code: classroom.code, name: "Blake" },
+					{ cookie: sessionCookieFrom(first) },
+				),
+			);
+			expect(second.status).toBe(200);
+			expect(sessionCookieFrom(second)).toMatch(/^coderunner_session=.+/u);
+		});
+	});
+
 	test("a guest rejoining over their own session keeps their container", async () => {
 		await withApp(async (app) => {
 			const stopped = spyOnStops(app);
