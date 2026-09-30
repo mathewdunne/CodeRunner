@@ -148,6 +148,7 @@ const KNOWN_WORKSPACE_SUFFIXES: ReadonlySet<string> = new Set([
 	"/api/lessons/load",
 	"/api/project/import",
 	"/api/heartbeat",
+	"/api/leave",
 	"/coderunner-icon.png",
 	"/favicon.ico",
 ]);

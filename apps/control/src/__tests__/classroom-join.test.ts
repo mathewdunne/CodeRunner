@@ -1,11 +1,21 @@
 import { describe, expect, test } from "bun:test";
+import {
+	sessionResponseSchema,
+	type WorkspaceId,
+} from "@frc-coderunner/contracts";
 import type { ControlApp } from "../app";
 import {
 	CLASSROOM_GUEST_CAP,
 	createClassroom,
 	endClassroom,
 } from "../classrooms";
-import { classroomJoinRequest, sessionCookieFrom, withApp } from "./helpers";
+import {
+	classroomJoinRequest,
+	cookieFrom,
+	login,
+	sessionCookieFrom,
+	withApp,
+} from "./helpers";
 
 function startClassroom(app: ControlApp) {
 	return createClassroom(app.storage.db, {
@@ -274,6 +284,65 @@ describe("guest session lifetime", () => {
 				.query("UPDATE classrooms SET expires_at = ? WHERE id = ?")
 				.run(new Date(Date.now() - 1000).toISOString(), classroom.id);
 			expect(await sessionStatus(app, cookie)).toBe(401);
+		});
+	});
+});
+
+describe("guest workspace routes", () => {
+	test("/api/session reports when the guest's classroom ends", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const response = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/session", {
+					headers: { cookie: sessionCookieFrom(joined) },
+				}),
+			);
+			const body = sessionResponseSchema.parse(await response.json());
+			expect(body.user.guest).toEqual({
+				classroomEndsAt: classroom.expires_at,
+			});
+		});
+	});
+
+	test("/api/session has no guest field for OAuth users", async () => {
+		await withApp(async (app) => {
+			const cookie = cookieFrom(await login(app, "alice"));
+			const response = await app.fetch(
+				new Request("http://localhost/u/alice/api/session", {
+					headers: { cookie },
+				}),
+			);
+			const body = sessionResponseSchema.parse(await response.json());
+			expect(body.user.guest).toBeUndefined();
+		});
+	});
+
+	test("POST /api/leave stops the container and keeps the workspace", async () => {
+		await withApp(async (app) => {
+			const stopped: WorkspaceId[] = [];
+			app.runtime.stopWorkspace = async (workspaceId) => {
+				stopped.push(workspaceId);
+			};
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const { userId } = (await joined.clone().json()) as { userId: string };
+			const workspace = app.storage.findWorkspaceByUserId(userId)!;
+
+			const response = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/leave", {
+					method: "POST",
+					headers: { cookie: sessionCookieFrom(joined) },
+				}),
+			);
+			expect(response.status).toBe(200);
+			expect(await response.json()).toEqual({ ok: true });
+			expect(stopped).toEqual([workspace.id]);
+			expect(app.storage.findWorkspaceByUserId(userId)).not.toBeNull();
 		});
 	});
 });

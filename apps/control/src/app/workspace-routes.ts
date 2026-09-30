@@ -6,6 +6,7 @@ import {
 	lessonLoadRequestSchema,
 	type SimRunCommandResponse,
 	simRunCommandRequestSchema,
+	type WorkspaceId,
 	workspaceSlugSchema,
 } from "@frc-coderunner/contracts";
 import {
@@ -13,6 +14,7 @@ import {
 	requireWorkspaceOwnership,
 } from "../auth/middleware";
 import type { CatalogSource } from "../catalog";
+import { findGuestClassroom } from "../classrooms";
 import type { GamepadSessions } from "../gamepad";
 import type { HalSimBridge } from "../halsim";
 import { ImportError, parseGitHubUrl, RateLimitError } from "../imports";
@@ -99,6 +101,8 @@ export type WorkspaceRouteContext = {
 	nt4Auto: Nt4AutoChooserBridge;
 	catalogSource: CatalogSource;
 	upstreamFetch: HttpFetch;
+	/** Stops a workspace's run and container; files are kept. */
+	stopWorkspace: (workspaceId: WorkspaceId) => Promise<void>;
 };
 
 export async function handleWorkspaceRoute(
@@ -307,8 +311,15 @@ export async function handleWorkspaceRoute(
 			// Treat an unreadable/missing project dir as empty (first-login state).
 			projectEmpty = true;
 		}
+		const classroom = findGuestClassroom(storage.db, auth.user.id);
 		return jsonResponse(
-			sessionResponse(auth, { demo: storage.config.demo, projectEmpty }),
+			sessionResponse(auth, {
+				demo: storage.config.demo,
+				projectEmpty,
+				guest: classroom
+					? { classroomEndsAt: classroom.expires_at }
+					: undefined,
+			}),
 		);
 	}
 
@@ -583,6 +594,17 @@ export async function handleWorkspaceRoute(
 			workspace: auth.workspace,
 			userId: auth.user.id,
 		} satisfies ImportSocketData);
+	}
+
+	// Classroom guests click "Leave" so the next student at the station gets a
+	// container slot straight away instead of after the idle timeout.
+	if (suffix === "/api/leave" && request.method === "POST") {
+		await ctx.stopWorkspace(auth.workspace.id);
+		log.info("workspace left", {
+			slug,
+			workspaceId: auth.workspace.id,
+		});
+		return jsonResponse({ ok: true });
 	}
 
 	if (suffix === "/api/heartbeat" && request.method === "POST") {

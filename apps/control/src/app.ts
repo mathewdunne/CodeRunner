@@ -213,6 +213,7 @@ export async function createApp(
 		nt4Auto,
 		catalogSource,
 		upstreamFetch,
+		stopWorkspace,
 	};
 
 	async function fetch(

@@ -49,6 +49,8 @@ export const sessionResponseSchema = z.object({
 		avatarUrl: z.string().url().nullable(),
 		slug: workspaceSlugSchema,
 		role: z.enum(["student", "admin"]),
+		/** Present for classroom guests (decision 043). */
+		guest: z.object({ classroomEndsAt: z.string() }).optional(),
 	}),
 	workspace: z.object({
 		id: workspaceIdSchema,
