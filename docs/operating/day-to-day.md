@@ -150,7 +150,7 @@ instead of adding people to the allowlist:
 2. Show the code and join link (`https://<your-host>/join?code=…`) at the
    station. Students join with the code and their name.
 3. Ask students to click **Leave** in the user menu when they finish. That
-   stops their container right away. If a student forgets, the next student
+   signs them out and stops their container right away. If a student forgets, the next student
    joining on the same computer stops it for them, and the idle reaper
    (`IDLE_STOP_MINUTES`, default 30) is the backstop.
 4. Click **End now** when you're done, or let the classroom expire. Its

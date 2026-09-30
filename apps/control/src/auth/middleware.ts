@@ -61,6 +61,15 @@ export async function getSessionFromRequest(
 				});
 				return null;
 			}
+			// Leave and a join over this browser delete the guest's session row;
+			// without this check the 5-minute cookie cache keeps it signed in.
+			const row = storage.db
+				.query("SELECT 1 FROM session WHERE token = ?")
+				.get(session.session.token);
+			if (!row) {
+				log.debug("getSession: guest session ended", { userId: user.id });
+				return null;
+			}
 		}
 		log.trace("getSession: ok", { userId: user.id, role: user.role });
 		return {

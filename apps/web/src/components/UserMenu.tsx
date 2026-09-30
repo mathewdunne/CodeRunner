@@ -84,16 +84,22 @@ function formatEndsAt(iso: string): string {
 }
 
 async function leaveClassroom(workspaceSlug: string) {
+	// The server ends the session and clears its cookies along with the stop.
+	let left = false;
 	try {
-		await fetch(`/u/${workspaceSlug}/api/leave`, {
+		const response = await fetch(`/u/${workspaceSlug}/api/leave`, {
 			method: "POST",
 			credentials: "same-origin",
 		});
+		left = response.ok;
 	} catch {
+		// Handled below.
+	}
+	if (!left) {
 		// Signing out still hands the computer to the next student; the idle
 		// reaper stops the container later.
+		await authClient.signOut();
 	}
-	await authClient.signOut();
 	window.location.assign("/join");
 }
 

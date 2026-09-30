@@ -32,13 +32,18 @@ student-to-student privacy.
   `getSessionFromRequest` rejects guests of non-live classrooms. That check
   is needed because Better Auth's `updateAge` refresh would stretch a
   4-hour session to 14 days, and its 5-minute cookie cache would outlive
-  "End now".
+  "End now". For the same cache reason it also rejects a guest whose
+  session row is gone (Leave, or a new join in that browser).
 - **Cleanup:** a 60 s `ClassroomSweeper` (and "End now") deletes guests,
   workspaces and project files via `deleteUserAndWorkspace`, shared with
   the admin user-delete route.
 - **Capacity:** guests get a **Leave** button that stops their container
   immediately. With 20-minute rotations and a 30-minute idle reaper,
   containers would otherwise still be running when the next group signs in.
+  `POST /u/:slug/api/leave` signs the guest out (Better Auth `signOut`, whose
+  cookie-clearing headers ride on the response) *before* stopping the
+  container, because the IDE keeps polling until the page navigates and an
+  authenticated poll would start the container again.
 
 ## Alternatives rejected
 

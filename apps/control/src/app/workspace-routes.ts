@@ -597,14 +597,31 @@ export async function handleWorkspaceRoute(
 	}
 
 	// Classroom guests click "Leave" so the next student at the station gets a
-	// container slot straight away instead of after the idle timeout.
+	// container slot straight away instead of after the idle timeout. The
+	// session ends first: the IDE keeps polling until the page navigates, and
+	// a poll that still authenticates would start the container again.
 	if (suffix === "/api/leave" && request.method === "POST") {
-		await ctx.stopWorkspace(auth.workspace.id);
-		log.info("workspace left", {
-			slug,
-			workspaceId: auth.workspace.id,
-		});
-		return jsonResponse({ ok: true });
+		let clearedCookies: string[] = [];
+		let response: Response;
+		try {
+			const signedOut = await storage.auth.api.signOut({
+				headers: request.headers,
+				asResponse: true,
+			});
+			clearedCookies = signedOut.headers.getSetCookie();
+			await ctx.stopWorkspace(auth.workspace.id);
+			log.info("workspace left", {
+				slug,
+				workspaceId: auth.workspace.id,
+			});
+			response = jsonResponse({ ok: true });
+		} catch (error) {
+			response = apiErrorResponse(error, "Unable to leave the workspace.");
+		}
+		for (const cookie of clearedCookies) {
+			response.headers.append("set-cookie", cookie);
+		}
+		return response;
 	}
 
 	if (suffix === "/api/heartbeat" && request.method === "POST") {

@@ -10,6 +10,7 @@ import {
 	endClassroom,
 } from "../classrooms";
 import {
+	allCookiesFrom,
 	classroomJoinRequest,
 	cookieFrom,
 	login,
@@ -343,6 +344,69 @@ describe("guest workspace routes", () => {
 			expect(await response.json()).toEqual({ ok: true });
 			expect(stopped).toEqual([workspace.id]);
 			expect(app.storage.findWorkspaceByUserId(userId)).not.toBeNull();
+		});
+	});
+
+	test("POST /api/leave signs the browser out, cookie cache included", async () => {
+		await withApp(async (app) => {
+			app.runtime.stopWorkspace = async () => {};
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const { userId } = (await joined.clone().json()) as { userId: string };
+			// Every cookie the join set: the session token and the cache cookie.
+			const cookie = allCookiesFrom(joined);
+			expect(cookie).toContain("coderunner_session=");
+			expect(cookie).toContain("session_data=");
+
+			const response = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/leave", {
+					method: "POST",
+					headers: { cookie },
+				}),
+			);
+			expect(response.status).toBe(200);
+			expect(await response.json()).toEqual({ ok: true });
+			const cleared = response.headers.getSetCookie();
+			for (const name of ["coderunner_session=", "session_data="]) {
+				const header = cleared.find((value) => value.includes(name));
+				expect(header).toMatch(/Max-Age=0/iu);
+			}
+			const sessions = app.storage.db
+				.query("SELECT COUNT(*) AS count FROM session WHERE userId = ?")
+				.get(userId) as { count: number };
+			expect(sessions.count).toBe(0);
+
+			// A poll still carrying the old cookies must not revive the workspace.
+			for (const path of ["/api/sim/status", "/api/session"]) {
+				const after = await app.fetch(
+					new Request(`http://localhost/u/alex-d${path}`, {
+						headers: { cookie },
+					}),
+				);
+				expect(after.status).toBe(401);
+			}
+		});
+	});
+
+	test("POST /api/leave returns a structured error when the stop fails", async () => {
+		await withApp(async (app) => {
+			app.runtime.stopWorkspace = async () => {
+				throw new Error("docker stop failed");
+			};
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const response = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/leave", {
+					method: "POST",
+					headers: { cookie: allCookiesFrom(joined) },
+				}),
+			);
+			expect(response.status).toBe(500);
+			expect(await response.json()).toEqual({ error: "docker stop failed" });
 		});
 	});
 });

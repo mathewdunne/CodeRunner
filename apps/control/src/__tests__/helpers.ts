@@ -897,6 +897,14 @@ export function classroomJoinRequest(
 	});
 }
 
+/** Every `name=value` pair a response set, joined into one Cookie header. */
+export function allCookiesFrom(response: Response): string {
+	return response.headers
+		.getSetCookie()
+		.map((value) => value.split(";")[0])
+		.join("; ");
+}
+
 /** The `coderunner_session=…` pair from a Better Auth response (it also sets a cache cookie). */
 export function sessionCookieFrom(response: Response): string {
 	const cookie = response.headers
