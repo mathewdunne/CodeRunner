@@ -143,6 +143,26 @@ describe("POST /api/auth/classroom/join", () => {
 		});
 	});
 
+	test("many non-Latin names each get a distinct student slug", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			// More than the 16 numbered candidates (student, student-1 … student-15).
+			const names = Array.from({ length: 18 }, (_, i) =>
+				String.fromCodePoint(0x674e, 0x4e00 + i),
+			);
+			for (const name of names) {
+				const response = await app.fetch(
+					classroomJoinRequest({ code: classroom.code, name }),
+				);
+				expect(response.status).toBe(200);
+			}
+			const slugs = guestsOf(app, classroom.id).map((guest) => guest.slug);
+			expect(slugs.length).toBe(names.length);
+			for (const slug of slugs) expect(slug).toMatch(/^student(-\d+)?$/u);
+			expect(new Set(slugs).size).toBe(names.length);
+		});
+	}, 30_000);
+
 	test("unknown, expired, and ended codes are rejected the same way", async () => {
 		await withApp(async (app) => {
 			const unknown = await app.fetch(

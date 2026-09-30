@@ -119,7 +119,20 @@ export function classroomPlugin(options: ClassroomPluginOptions) {
 							message: "Couldn't find your guest account.",
 						});
 					}
-					await options.ensureWorkspace(guest.id, guest.slug ?? "student");
+					try {
+						await options.ensureWorkspace(guest.id, guest.slug ?? "student");
+					} catch (error) {
+						// The guest row stays; the classroom sweeper removes it at the end.
+						log.error("classroom guest workspace setup failed", {
+							classroomId: classroom.id,
+							userId: guest.id,
+							error: error instanceof Error ? error.message : String(error),
+						});
+						throw new APIError("INTERNAL_SERVER_ERROR", {
+							code: "JOIN_FAILED",
+							message: "Couldn't set up your workspace. Please try again.",
+						});
+					}
 
 					// overrideAll=true so the classroom's end time wins over the global
 					// 14-day session lifetime.
