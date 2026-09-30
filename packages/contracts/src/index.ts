@@ -66,6 +66,25 @@ export const authProvidersResponseSchema = z.object({
 	providers: z.array(authProviderSchema),
 });
 
+export const CLASSROOM_CODE_PATTERN = /^\d{6}$/u;
+
+export const classroomJoinRequestSchema = z.object({
+	code: z.string().regex(CLASSROOM_CODE_PATTERN),
+	// Full name rules live in the control plane (normalizeDisplayName); this is
+	// only a size guard.
+	name: z.string().max(200),
+	confirmExisting: z.boolean().optional(),
+});
+
+export const classroomJoinErrorSchema = z.object({
+	code: z.string(),
+	message: z.string(),
+	displayName: z.string().optional(),
+});
+
+export type ClassroomJoinRequest = z.infer<typeof classroomJoinRequestSchema>;
+export type ClassroomJoinError = z.infer<typeof classroomJoinErrorSchema>;
+
 export const heartbeatResponseSchema = z.object({
 	ok: z.literal(true),
 	closing: z.boolean(),

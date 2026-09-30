@@ -199,3 +199,74 @@ export class FailedAttemptLimiter {
 		}
 	}
 }
+
+// --- Guest users ---------------------------------------------------------
+// A guest is a Better Auth user with a non-null classroomId. The columns are
+// Better Auth additionalFields (see auth/auth.ts), so these queries only work
+// after AppStorage.initialize() has run Better Auth's migrations.
+
+export type GuestRow = {
+	id: string;
+	name: string;
+	slug: string | null;
+	createdAt: string;
+};
+
+export function findGuest(
+	db: Database,
+	classroomId: string,
+	nameKey: string,
+): GuestRow | null {
+	return (
+		(db
+			.query(
+				"SELECT id, name, slug, createdAt FROM user WHERE classroomId = ? AND guestNameKey = ?",
+			)
+			.get(classroomId, nameKey) as GuestRow | null) ?? null
+	);
+}
+
+export function countClassroomGuests(
+	db: Database,
+	classroomId: string,
+): number {
+	const row = db
+		.query("SELECT COUNT(*) AS count FROM user WHERE classroomId = ?")
+		.get(classroomId) as { count: number };
+	return row.count;
+}
+
+export function listGuestIds(db: Database, classroomId: string): string[] {
+	return (
+		db.query("SELECT id FROM user WHERE classroomId = ?").all(classroomId) as {
+			id: string;
+		}[]
+	).map((row) => row.id);
+}
+
+export function listClassroomGuests(
+	db: Database,
+	classroomId: string,
+): Array<GuestRow & { lastAccessedAt: string | null }> {
+	return db
+		.query(
+			`SELECT u.id, u.name, u.slug, u.createdAt, w.last_accessed_at AS lastAccessedAt
+       FROM user u LEFT JOIN workspaces w ON w.user_id = u.id
+       WHERE u.classroomId = ? ORDER BY u.createdAt`,
+		)
+		.all(classroomId) as Array<GuestRow & { lastAccessedAt: string | null }>;
+}
+
+/** The classroom a guest belongs to, or null for a regular (OAuth) user. */
+export function findGuestClassroom(
+	db: Database,
+	userId: string,
+): ClassroomRow | null {
+	return (
+		(db
+			.query(
+				"SELECT c.* FROM user u JOIN classrooms c ON c.id = u.classroomId WHERE u.id = ?",
+			)
+			.get(userId) as ClassroomRow | null) ?? null
+	);
+}

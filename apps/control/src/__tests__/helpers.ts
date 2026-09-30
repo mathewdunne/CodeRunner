@@ -879,3 +879,29 @@ export function workspaceBySlug(app: ControlApp, slug: string) {
 	expect(workspace).toBeTruthy();
 	return workspace!;
 }
+
+/** POST to the classroom join endpoint the way the browser does. */
+export function classroomJoinRequest(
+	body: unknown,
+	headers: Record<string, string> = {},
+): Request {
+	return new Request("http://localhost:4000/api/auth/classroom/join", {
+		method: "POST",
+		headers: {
+			"content-type": "application/json",
+			// Better Auth rejects cookie-bearing POSTs without a same-origin Origin.
+			origin: "http://localhost:4000",
+			...headers,
+		},
+		body: JSON.stringify(body),
+	});
+}
+
+/** The `coderunner_session=…` pair from a Better Auth response (it also sets a cache cookie). */
+export function sessionCookieFrom(response: Response): string {
+	const cookie = response.headers
+		.getSetCookie()
+		.find((value) => value.startsWith("coderunner_session="));
+	expect(cookie).toBeTruthy();
+	return cookie?.split(";")[0] ?? "";
+}

@@ -9,6 +9,7 @@ import type {
 	WorkspaceId,
 	WorkspaceSlug,
 } from "@frc-coderunner/contracts";
+import { recordAuditEvent } from "./audit";
 import {
 	addAllowlistEntry,
 	loadAllowlist,
@@ -158,10 +159,16 @@ export class AppStorage {
 			ensureWorkspace: async (userId, slug) => {
 				await this.ensureWorkspaceForUser(userId, slug);
 			},
+			audit: (event) => recordAuditEvent(this, event),
 		});
 		const { getMigrations } = await import("better-auth/db/migration");
 		const { runMigrations } = await getMigrations(this.auth.options);
 		await runMigrations();
+		// One guest per name per classroom. Lives here, not in a SQL migration,
+		// because Better Auth creates the user table and its classroom columns.
+		this.db.exec(
+			"CREATE UNIQUE INDEX IF NOT EXISTS idx_user_classroom_guest ON user(classroomId, guestNameKey) WHERE classroomId IS NOT NULL;",
+		);
 
 		// 5. Bootstrap admins from CODERUNNER_ADMIN_EMAIL. Runs after the allowlist
 		// is loaded and the better-auth `user` table exists, so it can both seed
