@@ -41,7 +41,7 @@ export function guestNameKey(displayName: string): string {
 	return displayName
 		.toLowerCase()
 		.normalize("NFKD")
-		.replace(/[̀-ͯ]/gu, "")
+		.replace(/[\u0300-\u036f]/gu, "")
 		.replace(/[^\p{L}\p{N}]+/gu, "");
 }
 
