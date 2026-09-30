@@ -26,6 +26,7 @@ import { getDemoSessionResponseBody, seedDemoUser } from "./auth/demo";
 import { getSessionFromRequest, requireAdmin } from "./auth/middleware";
 import { getEnabledAuthProviders } from "./auth/providers";
 import { createCatalogSource } from "./catalog";
+import { ClassroomSweeper } from "./classroom-sweeper";
 import { FailedAttemptLimiter } from "./classrooms";
 import { LocalDockerRuntimeProvider } from "./containers";
 import { GamepadSessions } from "./gamepad";
@@ -45,6 +46,7 @@ import { DockerStatsPoller } from "./metrics-collector";
 import { Nt4AutoChooserBridge } from "./nt4-auto";
 import { RunManager } from "./runs";
 import { createStorage } from "./storage";
+import { deleteUserAndWorkspace } from "./user-deletion";
 
 const bootLog = getLogger("boot");
 const httpLog = getLogger("http");
@@ -197,6 +199,11 @@ export async function createApp(
 	};
 
 	const adminCtx = { storage, runs, runtimeProvider };
+	const classroomSweeper = new ClassroomSweeper({
+		storage,
+		deleteUser: (userId) => deleteUserAndWorkspace(adminCtx, userId),
+	});
+	classroomSweeper.start();
 	const workspaceCtx = {
 		storage,
 		runs,
@@ -454,6 +461,7 @@ export async function createApp(
 		close() {
 			bootLog.info("shutting down");
 			idle.stop();
+			classroomSweeper.stop();
 			dockerStatsPoller.stop();
 			halsim.close();
 			nt4Auto.close();

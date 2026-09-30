@@ -7,8 +7,22 @@
  */
 
 import type { WorkspaceId } from "@frc-coderunner/contracts";
+import { type AuditActor, recordAuditEvent } from "../audit";
 import { getSessionFromRequest } from "../auth/middleware";
-import { type FailedAttemptLimiter, findGuestClassroom } from "../classrooms";
+import { cleanupClassroom } from "../classroom-sweeper";
+import {
+	CLASSROOM_DEFAULT_MINUTES,
+	CLASSROOM_MAX_MINUTES,
+	CLASSROOM_MIN_MINUTES,
+	type ClassroomRow,
+	createClassroom,
+	endClassroom,
+	type FailedAttemptLimiter,
+	findGuestClassroom,
+	getClassroom,
+	listClassroomGuests,
+	listLiveClassrooms,
+} from "../classrooms";
 import { getLogger } from "../logging";
 import type { AppStorage } from "../storage";
 import { jsonResponse } from "./responses";
@@ -111,4 +125,109 @@ async function retirePreviousSession(
 		workspaceId: workspace.id,
 	});
 	await ctx.stopWorkspace(workspace.id);
+}
+
+export type AdminClassroomContext = {
+	storage: AppStorage;
+	deleteUser: (userId: string) => Promise<void>;
+};
+
+function classroomView(storage: AppStorage, classroom: ClassroomRow) {
+	return {
+		id: classroom.id,
+		code: classroom.code,
+		createdAt: classroom.created_at,
+		expiresAt: classroom.expires_at,
+		joinUrl: new URL(
+			`/join?code=${classroom.code}`,
+			storage.config.baseUrl,
+		).toString(),
+		guests: listClassroomGuests(storage.db, classroom.id).map((guest) => ({
+			id: guest.id,
+			displayName: guest.name,
+			slug: guest.slug,
+			joinedAt: guest.createdAt,
+			lastAccessedAt: guest.lastAccessedAt,
+		})),
+	};
+}
+
+/** Admin classroom routes. Caller has already passed requireAdmin. */
+export async function handleAdminClassroomRoute(
+	ctx: AdminClassroomContext,
+	url: URL,
+	request: Request,
+	actor: AuditActor,
+): Promise<Response | null> {
+	const { storage } = ctx;
+
+	if (url.pathname === "/admin/classrooms" && request.method === "GET") {
+		return jsonResponse({
+			ok: true,
+			classrooms: listLiveClassrooms(storage.db).map((classroom) =>
+				classroomView(storage, classroom),
+			),
+		});
+	}
+
+	if (url.pathname === "/admin/classrooms" && request.method === "POST") {
+		const body = (await request.json().catch(() => ({}))) as {
+			durationMinutes?: unknown;
+		};
+		const durationMinutes = body.durationMinutes ?? CLASSROOM_DEFAULT_MINUTES;
+		if (
+			typeof durationMinutes !== "number" ||
+			!Number.isInteger(durationMinutes) ||
+			durationMinutes < CLASSROOM_MIN_MINUTES ||
+			durationMinutes > CLASSROOM_MAX_MINUTES
+		) {
+			return jsonResponse(
+				{
+					error: `durationMinutes must be a whole number from ${CLASSROOM_MIN_MINUTES} to ${CLASSROOM_MAX_MINUTES}.`,
+				},
+				{ status: 400 },
+			);
+		}
+		const classroom = createClassroom(storage.db, {
+			createdBy: actor.userId,
+			durationMinutes,
+		});
+		recordAuditEvent(storage, {
+			actor,
+			action: "classroom.create",
+			target: { kind: "classroom", id: classroom.id },
+			metadata: { expiresAt: classroom.expires_at },
+		});
+		log.info("classroom started", {
+			classroomId: classroom.id,
+			expiresAt: classroom.expires_at,
+		});
+		return jsonResponse(
+			{ ok: true, classroom: classroomView(storage, classroom) },
+			{ status: 201 },
+		);
+	}
+
+	const endMatch = /^\/admin\/classrooms\/([^/]+)\/end$/u.exec(url.pathname);
+	if (endMatch && request.method === "POST") {
+		const classroom = getClassroom(storage.db, endMatch[1] ?? "");
+		if (!classroom) {
+			return jsonResponse({ error: "Classroom not found." }, { status: 404 });
+		}
+		endClassroom(storage.db, classroom.id);
+		const guestCount = await cleanupClassroom(
+			storage.db,
+			classroom.id,
+			ctx.deleteUser,
+		);
+		recordAuditEvent(storage, {
+			actor,
+			action: "classroom.end",
+			target: { kind: "classroom", id: classroom.id },
+			metadata: { guestCount },
+		});
+		return jsonResponse({ ok: true, guestCount });
+	}
+
+	return null;
 }

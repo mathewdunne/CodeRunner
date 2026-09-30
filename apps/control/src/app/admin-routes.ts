@@ -1,4 +1,4 @@
-import { mkdir, rm, stat } from "node:fs/promises";
+import { mkdir, stat } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type {
 	AdminActionResponse,
@@ -10,12 +10,14 @@ import { getLogger } from "../logging";
 import type { RunManager } from "../runs";
 import type { WorkspaceRuntimeProvider } from "../runtime";
 import type { AppStorage } from "../storage";
+import { deleteUserAndWorkspace } from "../user-deletion";
 import {
 	createProjectArchive,
 	directorySizeBytes,
 	restoreProjectArchive,
 } from "./archive-utils";
 import { isInsideDirectory, webAssetResponse } from "./assets";
+import { handleAdminClassroomRoute } from "./classroom-routes";
 import { apiErrorResponse, jsonResponse, notFound } from "./responses";
 import { adminStatusResponse, auditActor } from "./status";
 
@@ -42,6 +44,19 @@ export async function handleAdminRoute(
 		path: url.pathname,
 		actor: adminResult.user.id,
 	});
+
+	const classroomResponse = await handleAdminClassroomRoute(
+		{
+			storage,
+			deleteUser: (userId) => deleteUserAndWorkspace(ctx, userId),
+		},
+		url,
+		request,
+		auditActor(adminResult),
+	);
+	if (classroomResponse) {
+		return classroomResponse;
+	}
 
 	// Serve static assets for the admin SPA
 	if (url.pathname.startsWith("/admin/assets/") && request.method === "GET") {
@@ -335,41 +350,7 @@ export async function handleAdminRoute(
 			}
 		}
 
-		const workspace = storage.findWorkspaceByUserId(userId);
-		if (workspace) {
-			runs.stopWorkspace(workspace.id);
-			await runtimeProvider.stopWorkspace(workspace.id);
-			await runtimeProvider.removeWorkspace(workspace.id);
-		}
-
-		storage.db.exec("BEGIN");
-		try {
-			if (workspace) {
-				storage.db
-					.query("DELETE FROM run_jobs WHERE workspace_id = ?")
-					.run(workspace.id);
-				storage.db
-					.query("DELETE FROM container_leases WHERE workspace_id = ?")
-					.run(workspace.id);
-				storage.db
-					.query("DELETE FROM workspaces WHERE id = ?")
-					.run(workspace.id);
-			}
-			storage.db.query("DELETE FROM session WHERE userId = ?").run(userId);
-			storage.db.query("DELETE FROM account WHERE userId = ?").run(userId);
-			storage.db.query("DELETE FROM user WHERE id = ?").run(userId);
-			storage.db.exec("COMMIT");
-		} catch (error) {
-			storage.db.exec("ROLLBACK");
-			throw error;
-		}
-
-		if (workspace) {
-			await rm(dirname(workspace.project_path), {
-				recursive: true,
-				force: true,
-			});
-		}
+		await deleteUserAndWorkspace(ctx, userId);
 
 		recordAuditEvent(storage, {
 			actor: auditActor(adminResult),

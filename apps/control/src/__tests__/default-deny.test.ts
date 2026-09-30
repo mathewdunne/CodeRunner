@@ -31,6 +31,9 @@ const GATED_PATHS: Array<{
 	expect: "deny";
 }> = [
 	{ path: "/admin", expect: "deny" },
+	{ path: "/admin/classrooms", expect: "deny" },
+	{ path: "/admin/classrooms", method: "POST", expect: "deny" },
+	{ path: "/admin/classrooms/cls_x/end", method: "POST", expect: "deny" },
 	{ path: "/admin/", expect: "deny" },
 	{ path: "/admin/status", expect: "deny" },
 	{ path: "/admin/users", expect: "deny" },
