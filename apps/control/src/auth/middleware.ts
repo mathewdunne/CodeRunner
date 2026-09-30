@@ -6,6 +6,7 @@
  */
 
 import type { WorkspaceSlug } from "@frc-coderunner/contracts";
+import { getClassroom, isClassroomLive } from "../classrooms";
 import { getLogger } from "../logging";
 import type { AppStorage, AuthContext } from "../storage";
 import { getDemoSession } from "./demo";
@@ -46,7 +47,21 @@ export async function getSessionFromRequest(
 			image?: string | null;
 			role?: string;
 			slug?: string;
+			classroomId?: string | null;
 		};
+		// Classroom guests are only signed in while their classroom is live.
+		// This is the authoritative check: Better Auth's updateAge refresh can
+		// extend a guest's session row, and its cookie cache can outlive "End now".
+		if (user.classroomId) {
+			const classroom = getClassroom(storage.db, user.classroomId);
+			if (!classroom || !isClassroomLive(classroom)) {
+				log.debug("getSession: classroom not live", {
+					userId: user.id,
+					classroomId: user.classroomId,
+				});
+				return null;
+			}
+		}
 		log.trace("getSession: ok", { userId: user.id, role: user.role });
 		return {
 			user: {

@@ -233,3 +233,47 @@ describe("POST /api/auth/classroom/join", () => {
 		// 60 joins each create a workspace on disk; Bun's default is 5 s.
 	}, 30_000);
 });
+
+describe("guest session lifetime", () => {
+	async function joinedGuest(app: ControlApp) {
+		const classroom = startClassroom(app);
+		const response = await app.fetch(
+			classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+		);
+		expect(response.status).toBe(200);
+		return { classroom, cookie: sessionCookieFrom(response) };
+	}
+
+	function sessionStatus(app: ControlApp, cookie: string) {
+		return app
+			.fetch(
+				new Request("http://localhost/u/alex-d/api/session", {
+					headers: { cookie },
+				}),
+			)
+			.then((response) => response.status);
+	}
+
+	test("ending the classroom signs the guest out immediately", async () => {
+		await withApp(async (app) => {
+			const { classroom, cookie } = await joinedGuest(app);
+			expect(await sessionStatus(app, cookie)).toBe(200);
+			endClassroom(app.storage.db, classroom.id);
+			expect(await sessionStatus(app, cookie)).toBe(401);
+		});
+	});
+
+	test("an expired classroom rejects the guest even if the session row was refreshed", async () => {
+		await withApp(async (app) => {
+			const { classroom, cookie } = await joinedGuest(app);
+			// Simulate Better Auth's updateAge refresh pushing the session out.
+			app.storage.db
+				.query("UPDATE session SET expiresAt = ?")
+				.run(new Date(Date.now() + 14 * 86_400_000).toISOString());
+			app.storage.db
+				.query("UPDATE classrooms SET expires_at = ? WHERE id = ?")
+				.run(new Date(Date.now() - 1000).toISOString(), classroom.id);
+			expect(await sessionStatus(app, cookie)).toBe(401);
+		});
+	});
+});
