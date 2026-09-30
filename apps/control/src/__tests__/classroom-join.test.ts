@@ -289,6 +289,64 @@ describe("guest session lifetime", () => {
 	});
 });
 
+describe("GET /api/auth/get-session for guests", () => {
+	function getSession(app: ControlApp, cookie: string) {
+		return app.fetch(
+			new Request("http://localhost:4000/api/auth/get-session", {
+				headers: { cookie },
+			}),
+		);
+	}
+
+	test("reports the slug the guest's workspace actually got", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "李雷" }),
+			);
+			// A second non-Latin name collides on "student" and gets "student-1".
+			const second = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "韩梅梅" }),
+			);
+			const { userId } = (await second.clone().json()) as { userId: string };
+			const workspace = app.storage.findWorkspaceByUserId(userId);
+			expect(workspace?.slug).toBe("student-1");
+
+			const response = await getSession(app, allCookiesFrom(second));
+			const body = (await response.json()) as { user: { slug: string } };
+			expect(body.user.slug).toBe("student-1");
+		});
+	});
+
+	test("reports no session once the classroom has ended", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const cookie = allCookiesFrom(joined);
+			const live = (await (await getSession(app, cookie)).json()) as {
+				user?: { id: string };
+			} | null;
+			expect(live?.user?.id).toBeTruthy();
+
+			endClassroom(app.storage.db, classroom.id);
+			const ended = await getSession(app, cookie);
+			expect(ended.status).toBe(200);
+			expect(await ended.json()).toBeNull();
+		});
+	});
+
+	test("OAuth users are unaffected", async () => {
+		await withApp(async (app) => {
+			const cookie = cookieFrom(await login(app, "alice"));
+			const response = await getSession(app, cookie);
+			const body = (await response.json()) as { user: { slug: string } };
+			expect(body.user.slug).toBe("alice");
+		});
+	});
+});
+
 describe("guest workspace routes", () => {
 	test("/api/session reports when the guest's classroom ends", async () => {
 		await withApp(async (app) => {

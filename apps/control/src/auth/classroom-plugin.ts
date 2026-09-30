@@ -112,13 +112,6 @@ export function classroomPlugin(options: ClassroomPluginOptions) {
 						});
 					}
 
-					const user = await ctx.context.internalAdapter.findUserById(guest.id);
-					if (!user) {
-						throw new APIError("INTERNAL_SERVER_ERROR", {
-							code: "JOIN_FAILED",
-							message: "Couldn't find your guest account.",
-						});
-					}
 					try {
 						await options.ensureWorkspace(guest.id, guest.slug ?? "student");
 					} catch (error) {
@@ -131,6 +124,16 @@ export function classroomPlugin(options: ClassroomPluginOptions) {
 						throw new APIError("INTERNAL_SERVER_ERROR", {
 							code: "JOIN_FAILED",
 							message: "Couldn't set up your workspace. Please try again.",
+						});
+					}
+
+					// Read the user after ensureWorkspace: it can move the slug (e.g.
+					// "student" → "student-1"), and the cookie cache must carry the final one.
+					const user = await ctx.context.internalAdapter.findUserById(guest.id);
+					if (!user) {
+						throw new APIError("INTERNAL_SERVER_ERROR", {
+							code: "JOIN_FAILED",
+							message: "Couldn't find your guest account.",
 						});
 					}
 

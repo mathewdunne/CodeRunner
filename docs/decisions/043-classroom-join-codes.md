@@ -33,7 +33,9 @@ student-to-student privacy.
   is needed because Better Auth's `updateAge` refresh would stretch a
   4-hour session to 14 days, and its 5-minute cookie cache would outlive
   "End now". For the same cache reason it also rejects a guest whose
-  session row is gone (Leave, or a new join in that browser).
+  session row is gone (Leave, or a new join in that browser). The
+  dispatcher answers Better Auth's own `GET /api/auth/get-session` with
+  `null` whenever that check fails, so the web shell agrees.
 - **Cleanup:** a 60 s `ClassroomSweeper` (and "End now") deletes guests,
   workspaces and project files via `deleteUserAndWorkspace`, shared with
   the admin user-delete route.

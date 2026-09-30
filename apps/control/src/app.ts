@@ -356,6 +356,15 @@ export async function createApp(
 			if (storage.config.demo && url.pathname === "/api/auth/get-session") {
 				return jsonResponse(getDemoSessionResponseBody());
 			}
+			// Better Auth alone would still report a guest of an ended classroom
+			// (or one who left) as signed in; answer the way it does for no session.
+			if (
+				url.pathname === "/api/auth/get-session" &&
+				request.method === "GET" &&
+				!(await getSessionFromRequest(storage, request))
+			) {
+				return jsonResponse(null);
+			}
 			return storage.auth.handler(request);
 		}
 
