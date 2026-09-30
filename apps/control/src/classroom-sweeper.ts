@@ -38,6 +38,7 @@ export class ClassroomSweeper {
 	private readonly storage: AppStorage;
 	private readonly deleteUser: (userId: string) => Promise<void>;
 	private readonly intervalMs: number;
+	private sweeping = false;
 
 	constructor(options: ClassroomSweeperOptions) {
 		this.storage = options.storage;
@@ -58,6 +59,17 @@ export class ClassroomSweeper {
 	}
 
 	async sweep(now = new Date()): Promise<string[]> {
+		// Deleting many guests can outlast the interval; don't start a second pass.
+		if (this.sweeping) return [];
+		this.sweeping = true;
+		try {
+			return await this.sweepOnce(now);
+		} finally {
+			this.sweeping = false;
+		}
+	}
+
+	private async sweepOnce(now: Date): Promise<string[]> {
 		const cleaned: string[] = [];
 		for (const classroom of listClassroomsNeedingCleanup(
 			this.storage.db,

@@ -228,4 +228,34 @@ describe("ClassroomSweeper", () => {
 			]);
 		});
 	});
+
+	test("skips a sweep while the previous one is still running", async () => {
+		await withApp(async (app) => {
+			const expired = createClassroom(app.storage.db, {
+				createdBy: "x",
+				durationMinutes: 60,
+			});
+			await joinGuest(app, expired.code, "Alex");
+			app.storage.db
+				.query("UPDATE classrooms SET expires_at = ? WHERE id = ?")
+				.run(new Date(Date.now() - 1000).toISOString(), expired.id);
+
+			let release = () => {};
+			const deletes: string[] = [];
+			const sweeper = new ClassroomSweeper({
+				storage: app.storage,
+				deleteUser: async (userId) => {
+					deletes.push(userId);
+					await new Promise<void>((resolve) => {
+						release = resolve;
+					});
+				},
+			});
+			const first = sweeper.sweep();
+			expect(await sweeper.sweep()).toEqual([]);
+			release();
+			expect(await first).toEqual([expired.id]);
+			expect(deletes.length).toBe(1);
+		});
+	});
 });
