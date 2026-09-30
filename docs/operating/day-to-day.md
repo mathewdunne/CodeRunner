@@ -162,6 +162,15 @@ for the number of computers in use at once, not the number of visitors.
 Bad codes are rate-limited (10 failures per IP and 100 overall per
 10 minutes); successful joins are never limited.
 
+:::note[Known limitation: per-IP limit behind Cloudflare Pages]
+The per-IP limit uses the address Caddy saw. Behind the Cloudflare Pages
+front that is a Cloudflare egress IP, so students from many schools can
+share one bucket and a burst of bad codes from one place can lock out
+others for up to 10 minutes. The follow-up is to have the Pages Function
+forward `CF-Connecting-IP` and configure Caddy `trusted_proxies` for
+Cloudflare's ranges.
+:::
+
 ## Container concurrency cap
 
 The system limits how many workspace containers can run simultaneously to
@@ -214,6 +223,10 @@ allowlist, changing the concurrency cap) are recorded in the audit log.
 | `allowlist.add` | Adding an email/domain to the allowlist |
 | `allowlist.remove` | Removing an email/domain from the allowlist |
 | `config.max-active-containers` | Changing the container concurrency cap |
+| `classroom.create` | Starting a classroom |
+| `classroom.end` | Ending a classroom early ("End now") |
+| `classroom.cleanup` | Deleting an ended or expired classroom's guests (system) |
+| `classroom.guest_join` | A guest joining or rejoining a classroom |
 
 Each entry records the timestamp, the acting user (ID and email), the action,
 the target (kind and ID), and optional metadata.

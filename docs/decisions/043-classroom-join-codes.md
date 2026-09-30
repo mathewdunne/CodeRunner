@@ -70,5 +70,11 @@ student-to-student privacy.
 - The per-IP bucket trusts the rightmost `X-Forwarded-For` hop (our
   Caddy). Without a proxy it is spoofable; the global bucket bounds
   guessing to ≈0.24 % per live code over 4 h.
+- **Known limitation:** behind the Cloudflare Pages front, Caddy's peer is
+  a Cloudflare egress IP, so that rightmost hop is Cloudflare's, not the
+  student's, and the per-IP bucket collapses into a few buckets shared by
+  unrelated schools. Follow-up: have the Pages Function forward
+  `CF-Connecting-IP` and configure Caddy `trusted_proxies` for Cloudflare
+  so the real client address reaches `clientIp`.
 - A determined attacker can trip the global bucket and block new joins
   for ~10 minutes. Already-joined guests are unaffected.
