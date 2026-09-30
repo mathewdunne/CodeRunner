@@ -140,6 +140,28 @@ The system prevents demoting the last remaining admin.
 
 ---
 
+## Running a classroom session
+
+For meetings where visitors rotate through a station, start a classroom
+instead of adding people to the allowlist:
+
+1. Open **Admin → Classrooms**, pick a duration (default 4 hours), and click
+   **Start classroom**.
+2. Show the code and join link (`https://<your-host>/join?code=…`) at the
+   station. Students join with the code and their name.
+3. Ask students to click **Leave** in the user menu when they finish. That
+   stops their container right away. If a student forgets, the next student
+   joining on the same computer stops it for them, and the idle reaper
+   (`IDLE_STOP_MINUTES`, default 30) is the backstop.
+4. Click **End now** when you're done, or let the classroom expire. Its
+   guests, workspaces, and projects are deleted automatically.
+
+Each classroom allows up to 60 guests. Only running containers count
+against `MAX_ACTIVE_CONTAINERS` (see [Capacity](./capacity.md)), so size it
+for the number of computers in use at once, not the number of visitors.
+Bad codes are rate-limited (10 failures per IP and 100 overall per
+10 minutes); successful joins are never limited.
+
 ## Container concurrency cap
 
 The system limits how many workspace containers can run simultaneously to

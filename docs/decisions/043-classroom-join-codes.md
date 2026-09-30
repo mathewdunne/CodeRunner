@@ -1,0 +1,67 @@
+# 043 — Classroom join codes
+
+Status: **Accepted** — 2026-09-30
+
+## Context
+
+At team meetings new members rotate through a CodeRunner station every ~20
+minutes on school computers. OAuth sign-in on those machines is impractical,
+and adding each visitor to the allowlist is not feasible. We still need
+something between "anyone on the internet" and "roster only" so bots cannot
+create workspaces and hold container slots.
+
+## Decision
+
+An admin starts a **classroom** (default 4 h, 1–12 h) from the admin panel
+and gets a random 6-digit code plus a join URL. At `/join` a student enters
+the code and their name and becomes a **guest**: a Better Auth user with a
+non-null `classroomId`, role `student`, a `guest-…@classroom.invalid`
+email, and a normal workspace. Entering the same name again (with a
+confirmation step) returns the student to the same workspace.
+Impersonation by name is accepted: the threat model is resource abuse, not
+student-to-student privacy.
+
+- **Custom Better Auth plugin** (`auth/classroom-plugin.ts`) creates the
+  guest and session with Better Auth's own internal APIs and cookie
+  handling, so every existing guard works unchanged.
+- **Dispatcher** (`app/classroom-routes.ts`) in front of it: disabled in
+  demo mode; rate limits *failed* attempts (10 per IP / 100 global per
+  10 min) because a whole school shares one IP; retires the browser's
+  previous session and stops a previous guest's container.
+- **Lifetime:** guest sessions expire with the classroom, and
+  `getSessionFromRequest` rejects guests of non-live classrooms. That check
+  is needed because Better Auth's `updateAge` refresh would stretch a
+  4-hour session to 14 days, and its 5-minute cookie cache would outlive
+  "End now".
+- **Cleanup:** a 60 s `ClassroomSweeper` (and "End now") deletes guests,
+  workspaces and project files via `deleteUserAndWorkspace`, shared with
+  the admin user-delete route.
+- **Capacity:** guests get a **Leave** button that stops their container
+  immediately. With 20-minute rotations and a 30-minute idle reaper,
+  containers would otherwise still be running when the next group signs in.
+
+## Alternatives rejected
+
+- **Better Auth `anonymous` plugin.** Always creates a new user (no
+  rejoin-by-name), has no way to carry the code/name through its endpoint
+  without splitting logic across three hooks, uses the global 14-day
+  session, and deletes the anonymous user when someone later signs in with
+  OAuth in the same browser. That would orphan our workspace rows,
+  container and files. It would save about 30 lines.
+- **Signing session cookies ourselves** (as `e2e/fixtures/auth.ts` does).
+  Duplicates Better Auth's cookie format and breaks silently on upgrade.
+- **Station links** (one pre-signed account per computer). Simpler, but
+  gives students no identity of their own, so they can't come back to
+  their work.
+
+## Constraints
+
+- Guest columns are Better Auth `additionalFields`; the unique
+  `(classroomId, guestNameKey)` index is created in
+  `AppStorage.initialize()` after Better Auth's migrations, because the
+  `user` table does not exist when our SQL migrations run.
+- The per-IP bucket trusts the rightmost `X-Forwarded-For` hop (our
+  Caddy). Without a proxy it is spoofable; the global bucket bounds
+  guessing to ≈0.24 % per live code over 4 h.
+- A determined attacker can trip the global bucket and block new joins
+  for ~10 minutes. Already-joined guests are unaffected.
