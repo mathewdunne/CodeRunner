@@ -21,6 +21,8 @@ interface TopbarProps {
 	onTogglePreview?: () => void;
 	layoutMenu?: ReactNode;
 	onRevealRightPane?: () => void;
+	/** Forwarded to the user menu for classroom guests. */
+	guest?: { endsAt: string; workspaceSlug: string };
 }
 
 export function Topbar({
@@ -33,6 +35,7 @@ export function Topbar({
 	previewOpen,
 	onTogglePreview,
 	layoutMenu,
+	guest,
 	onRevealRightPane,
 }: TopbarProps) {
 	return (
@@ -74,6 +77,7 @@ export function Topbar({
 					avatarUrl={avatarUrl}
 					isAdmin={isAdmin}
 					layoutMenu={layoutMenu}
+					guest={guest}
 				/>
 			</div>
 		</header>
