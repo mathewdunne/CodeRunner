@@ -19,7 +19,10 @@ non-null `classroomId`, role `student`, a `guest-…@classroom.invalid`
 email, and a normal workspace. Entering the same name again (with a
 confirmation step) returns the student to the same workspace.
 Impersonation by name is accepted: the threat model is resource abuse, not
-student-to-student privacy.
+student-to-student privacy. Because a guest identity is that loose, guests
+are **never admins**: the promote route refuses them, and
+`getSessionFromRequest` reports a guest's role as `student` whatever the
+row says.
 
 - **Custom Better Auth plugin** (`auth/classroom-plugin.ts`) creates the
   guest and session with Better Auth's own internal APIs and cookie
@@ -38,7 +41,10 @@ student-to-student privacy.
   `null` whenever that check fails, so the web shell agrees.
 - **Cleanup:** a 60 s `ClassroomSweeper` (and "End now") deletes guests,
   workspaces and project files via `deleteUserAndWorkspace`, shared with
-  the admin user-delete route.
+  the admin user-delete route. A join registers itself as in flight in the
+  same tick as its liveness check, and cleanup waits for a classroom's
+  in-flight joins before listing its guests; otherwise a guest created
+  just after the listing would outlive a classroom already marked cleaned.
 - **Capacity:** guests get a **Leave** button that stops their container
   immediately. With 20-minute rotations and a 30-minute idle reaper,
   containers would otherwise still be running when the next group signs in.

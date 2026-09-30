@@ -78,7 +78,10 @@ export async function getSessionFromRequest(
 				email: user.email,
 				name: user.name,
 				image: user.image ?? null,
-				role: (user.role as string) ?? "student",
+				// Guests are never admins, whatever their row says (decision 043).
+				role: user.classroomId
+					? "student"
+					: ((user.role as string) ?? "student"),
 				slug: (user.slug as string) ?? "",
 			},
 			session: { token: session.session.token },

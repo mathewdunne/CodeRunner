@@ -200,6 +200,46 @@ export class FailedAttemptLimiter {
 	}
 }
 
+// --- In-flight joins -----------------------------------------------------
+// A join checks the classroom is live, then awaits guest and workspace
+// creation. Cleanup waits for those joins before listing guests. A join
+// registers in the same tick as its liveness check and an ended classroom
+// takes no new joins, so the wait is bounded.
+
+const inFlightJoins = new Map<string, Set<Promise<unknown>>>();
+
+/** Run a join for a classroom that was just checked live. Call it in the same tick as that check. */
+export function trackClassroomJoin<T>(
+	classroomId: string,
+	join: () => Promise<T>,
+): Promise<T> {
+	let joins = inFlightJoins.get(classroomId);
+	if (!joins) {
+		joins = new Set();
+		inFlightJoins.set(classroomId, joins);
+	}
+	const registered = joins;
+	const tracked = join().finally(() => {
+		registered.delete(tracked);
+		if (registered.size === 0) inFlightJoins.delete(classroomId);
+	});
+	registered.add(tracked);
+	return tracked;
+}
+
+/** Resolves once no join for the classroom is in flight. */
+export async function classroomJoinsSettled(
+	classroomId: string,
+): Promise<void> {
+	for (
+		let joins = inFlightJoins.get(classroomId);
+		joins;
+		joins = inFlightJoins.get(classroomId)
+	) {
+		await Promise.allSettled(joins);
+	}
+}
+
 // --- Guest users ---------------------------------------------------------
 // A guest is a Better Auth user with a non-null classroomId. The columns are
 // Better Auth additionalFields (see auth/auth.ts), so these queries only work

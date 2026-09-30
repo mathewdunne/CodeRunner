@@ -1,6 +1,7 @@
 import type { Database } from "bun:sqlite";
 import { recordAuditEvent } from "./audit";
 import {
+	classroomJoinsSettled,
 	listClassroomsNeedingCleanup,
 	listGuestIds,
 	markClassroomCleaned,
@@ -11,13 +12,19 @@ import type { AppStorage } from "./storage";
 const log = getLogger("classroom");
 const SYSTEM_ACTOR = { userId: "<system>", email: "<system>" };
 
-/** Delete every guest of a classroom and mark it cleaned. Returns the guest count. */
+/**
+ * Delete every guest of a classroom and mark it cleaned. Returns the guest
+ * count. The classroom must already be ended or expired.
+ */
 export async function cleanupClassroom(
 	db: Database,
 	classroomId: string,
 	deleteUser: (userId: string) => Promise<void>,
 	now = new Date(),
 ): Promise<number> {
+	// A join that passed the liveness check may still be creating its guest;
+	// listing now would miss it, and a cleaned classroom is never swept again.
+	await classroomJoinsSettled(classroomId);
 	const guestIds = listGuestIds(db, classroomId);
 	for (const userId of guestIds) {
 		await deleteUser(userId);

@@ -262,7 +262,7 @@ export async function handleAdminRoute(
 			.query(
 				`
         SELECT
-          u.id, u.name, u.email, u.role, u.slug, u.createdAt, u.updatedAt,
+          u.id, u.name, u.email, u.role, u.slug, u.classroomId, u.createdAt, u.updatedAt,
           w.id AS workspaceId, w.last_accessed_at AS lastSeenAt
         FROM user u
         LEFT JOIN workspaces w ON w.user_id = u.id
@@ -275,6 +275,7 @@ export async function handleAdminRoute(
 			email: string;
 			role: string | null;
 			slug: string | null;
+			classroomId: string | null;
 			createdAt: string;
 			updatedAt: string;
 			workspaceId: string | null;
@@ -290,15 +291,24 @@ export async function handleAdminRoute(
 		const userId = userActionMatch[1] ?? "";
 		const action = userActionMatch[2] as "promote" | "demote";
 		const user = storage.db
-			.query("SELECT id, name, email, role FROM user WHERE id = ?")
+			.query("SELECT id, name, email, role, classroomId FROM user WHERE id = ?")
 			.get(userId) as {
 			id: string;
 			name: string;
 			email: string;
 			role: string | null;
+			classroomId: string | null;
 		} | null;
 		if (!user) {
 			return jsonResponse({ error: "User not found." }, { status: 404 });
+		}
+		// Anyone with the classroom code and a guest's name can sign in as that
+		// guest, so guests are never admins (decision 043).
+		if (action === "promote" && user.classroomId) {
+			return jsonResponse(
+				{ error: "Classroom guests cannot be admins." },
+				{ status: 409 },
+			);
 		}
 		const newRole = action === "promote" ? "admin" : "student";
 		if (action === "demote" && user.role === "admin") {

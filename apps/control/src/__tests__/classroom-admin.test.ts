@@ -5,6 +5,7 @@ import { ClassroomSweeper } from "../classroom-sweeper";
 import { createClassroom, getClassroom } from "../classrooms";
 import { deleteUserAndWorkspace } from "../user-deletion";
 import {
+	allCookiesFrom,
 	classroomJoinRequest,
 	cookieFrom,
 	exists,
@@ -187,6 +188,112 @@ describe("admin classroom routes", () => {
 			expect(
 				(await app.fetch(adminRequest(guest, "/admin/status"))).status,
 			).toBe(403);
+		});
+	});
+
+	test("classroom guests cannot be promoted to admin", async () => {
+		await withApp(async (app) => {
+			const cookie = await adminCookie(app);
+			const classroom = createClassroom(app.storage.db, {
+				createdBy: "x",
+				durationMinutes: 60,
+			});
+			const { userId } = await joinGuest(app, classroom.code, "Alex");
+			const response = await app.fetch(
+				adminRequest(cookie, `/admin/users/${userId}/promote`, {
+					method: "POST",
+				}),
+			);
+			expect(response.status).toBe(409);
+			const row = app.storage.db
+				.query("SELECT role FROM user WHERE id = ?")
+				.get(userId) as { role: string };
+			expect(row.role).toBe("student");
+		});
+	});
+
+	test("a guest whose row says admin still cannot use admin routes", async () => {
+		await withApp(async (app) => {
+			const classroom = createClassroom(app.storage.db, {
+				createdBy: "x",
+				durationMinutes: 60,
+			});
+			const { userId } = await joinGuest(app, classroom.code, "Alex");
+			app.storage.db
+				.query("UPDATE user SET role = 'admin' WHERE id = ?")
+				.run(userId);
+			// Rejoin so the session cookie cache is built from the admin row.
+			const rejoined = await app.fetch(
+				classroomJoinRequest({
+					code: classroom.code,
+					name: "Alex",
+					confirmExisting: true,
+				}),
+			);
+			expect(rejoined.status).toBe(200);
+			const guest = allCookiesFrom(rejoined);
+			expect(
+				(await app.fetch(adminRequest(guest, "/admin/classrooms"))).status,
+			).toBe(403);
+		});
+	});
+
+	test("End now during an in-flight join leaves no guest or workspace behind", async () => {
+		await withApp(async (app) => {
+			const cookie = await adminCookie(app);
+			const classroom = createClassroom(app.storage.db, {
+				createdBy: "x",
+				durationMinutes: 60,
+			});
+			const workspaceCount = () =>
+				(
+					app.storage.db
+						.query("SELECT COUNT(*) AS count FROM workspaces")
+						.get() as { count: number }
+				).count;
+			const workspacesBefore = workspaceCount();
+
+			// Pause the join inside createUser, after its liveness check.
+			const { internalAdapter } = await app.storage.auth.$context;
+			const createUser = internalAdapter.createUser;
+			let entered!: () => void;
+			const inCreateUser = new Promise<void>((resolve) => {
+				entered = resolve;
+			});
+			let release!: () => void;
+			const released = new Promise<void>((resolve) => {
+				release = resolve;
+			});
+			internalAdapter.createUser = (async (...args) => {
+				entered();
+				await released;
+				return createUser.apply(internalAdapter, args);
+			}) as typeof createUser;
+
+			const join = app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex" }),
+			);
+			await inCreateUser;
+			const end = app.fetch(
+				adminRequest(cookie, `/admin/classrooms/${classroom.id}/end`, {
+					method: "POST",
+				}),
+			);
+			await Bun.sleep(20);
+			release();
+			const [joined, ended] = await Promise.all([join, end]);
+
+			expect(joined.status).toBe(404);
+			expect(ended.status).toBe(200);
+			expect(
+				app.storage.db
+					.query("SELECT id FROM user WHERE classroomId = ?")
+					.all(classroom.id),
+			).toEqual([]);
+			expect(workspaceCount()).toBe(workspacesBefore);
+			expect(
+				getClassroom(app.storage.db, classroom.id)?.cleaned_at,
+			).not.toBeNull();
 		});
 	});
 });

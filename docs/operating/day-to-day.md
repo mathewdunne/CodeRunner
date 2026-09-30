@@ -136,7 +136,8 @@ bun run users:demote coach@frcteam.org
 ```
 
 Admins can also promote and demote users from the admin panel in the browser.
-The system prevents demoting the last remaining admin.
+The system prevents demoting the last remaining admin. Classroom guests can't
+be promoted: anyone with the classroom code and their name can sign in as them.
 
 ---
 
