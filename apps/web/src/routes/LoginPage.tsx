@@ -182,11 +182,19 @@ export function LoginPage() {
 						)}
 					</div>
 
+					{/* Classroom guests */}
+					<a
+						href="/join"
+						className="mt-3 flex h-11 w-full items-center justify-center rounded-md border border-border text-[13px] font-semibold tracking-wide text-foreground transition-all hover:bg-white/[0.06]"
+					>
+						Join a classroom
+					</a>
+
 					{/* Fine print */}
 					<p className="mt-6 text-[10.5px] leading-relaxed text-muted-foreground">
 						Not on the roster?{" "}
 						<span className="text-foreground/60">
-							Ask your coach to add you.
+							Ask your coach for a classroom code.
 						</span>
 					</p>
 				</div>

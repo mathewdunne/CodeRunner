@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { authClient } from "@/lib/auth-client";
+import { JoinPage } from "@/routes/JoinPage";
 import { LoginPage } from "@/routes/LoginPage";
 import { ServiceOfflinePage } from "@/routes/ServiceOfflinePage";
 import { WorkspaceLayout } from "@/routes/WorkspaceLayout";
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
 	{
 		path: "/login",
 		element: <LoginPage />,
+	},
+	{
+		path: "/join",
+		element: <JoinPage />,
 	},
 	{
 		path: "/admin/*",
