@@ -68,6 +68,8 @@ export function Classrooms() {
 				setActionError(body?.error ?? `Start failed (${res.status}).`);
 			}
 			refetch();
+		} catch {
+			setActionError("Couldn't reach the server.");
 		} finally {
 			setBusy(false);
 		}
@@ -87,6 +89,8 @@ export function Classrooms() {
 			});
 			if (!res.ok) setActionError(`End failed (${res.status}).`);
 			refetch();
+		} catch {
+			setActionError("Couldn't reach the server.");
 		} finally {
 			setBusy(false);
 		}
