@@ -22,6 +22,8 @@ export type BunUpgradeServer = {
 		request: Request,
 		options: { data: SocketData; headers?: HeadersInit },
 	): boolean;
+	/** Bun's socket address for the request; absent in tests. */
+	requestIP?(request: Request): { address: string } | null;
 };
 
 export type ControlApp = {

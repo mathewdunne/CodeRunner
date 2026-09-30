@@ -112,6 +112,7 @@ const WORKSPACE_PATH = /^\/u\/[^/]+(\/.*)?$/u;
 const KNOWN_TOP_LEVEL: ReadonlySet<string> = new Set([
 	"/",
 	"/login",
+	"/join",
 	"/healthz",
 	"/admin",
 	"/admin/",

@@ -13,6 +13,7 @@ import { withApp } from "./helpers";
 const PUBLIC_PATHS: Array<{ path: string; method?: "GET" | "POST" }> = [
 	{ path: "/" },
 	{ path: "/login" },
+	{ path: "/join" },
 	{ path: "/healthz" },
 	{ path: "/api/openapi.json" },
 	{ path: "/api/auth/providers" },

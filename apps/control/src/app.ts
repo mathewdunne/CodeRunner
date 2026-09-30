@@ -1,4 +1,7 @@
-import type { AuthProvidersResponse } from "@frc-coderunner/contracts";
+import type {
+	AuthProvidersResponse,
+	WorkspaceId,
+} from "@frc-coderunner/contracts";
 import { handleAdminRoute } from "./app/admin-routes";
 import {
 	handleUploadAsset,
@@ -8,6 +11,7 @@ import {
 	webAssetResponse,
 	webShellResponse,
 } from "./app/assets";
+import { handleClassroomJoin } from "./app/classroom-routes";
 import { jsonResponse, notFound, redirect } from "./app/responses";
 import { openApiResponse } from "./app/status";
 import type {
@@ -22,6 +26,7 @@ import { getDemoSessionResponseBody, seedDemoUser } from "./auth/demo";
 import { getSessionFromRequest, requireAdmin } from "./auth/middleware";
 import { getEnabledAuthProviders } from "./auth/providers";
 import { createCatalogSource } from "./catalog";
+import { FailedAttemptLimiter } from "./classrooms";
 import { LocalDockerRuntimeProvider } from "./containers";
 import { GamepadSessions } from "./gamepad";
 import { HalSimBridge } from "./halsim";
@@ -177,6 +182,20 @@ export async function createApp(
 	const dockerStatsPoller = new DockerStatsPoller({ containers });
 	dockerStatsPoller.start();
 
+	/** Stop a workspace's run and container and drop its live bridges. Files are kept. */
+	async function stopWorkspace(workspaceId: WorkspaceId): Promise<void> {
+		runs.stopWorkspace(workspaceId);
+		await runtimeProvider.stopWorkspace(workspaceId);
+		halsim.disconnect(workspaceId);
+		nt4Auto.disconnect(workspaceId);
+		gamepad.reset(workspaceId);
+	}
+	const classroomJoinCtx = {
+		storage,
+		limiter: new FailedAttemptLimiter(),
+		stopWorkspace,
+	};
+
 	const adminCtx = { storage, runs, runtimeProvider };
 	const workspaceCtx = {
 		storage,
@@ -317,6 +336,13 @@ export async function createApp(
 			} satisfies AuthProvidersResponse);
 		}
 
+		if (
+			url.pathname === "/api/auth/classroom/join" &&
+			request.method === "POST"
+		) {
+			return handleClassroomJoin(classroomJoinCtx, request, server);
+		}
+
 		// --- Better Auth API routes ---
 		if (url.pathname.startsWith("/api/auth/")) {
 			if (storage.config.demo && url.pathname === "/api/auth/get-session") {
@@ -336,7 +362,10 @@ export async function createApp(
 			return webShellResponse(storage);
 		}
 
-		if (url.pathname === "/login" && request.method === "GET") {
+		if (
+			(url.pathname === "/login" || url.pathname === "/join") &&
+			request.method === "GET"
+		) {
 			return webShellResponse(storage);
 		}
 
@@ -356,7 +385,7 @@ export async function createApp(
 		}
 
 		// --- Default-deny: everything below requires a session (or admin token). ---
-		// Public routes (healthz, scope, /pathplanner, /api/auth/providers, other api/auth routes, /, /login,
+		// Public routes (healthz, scope, /pathplanner, /api/auth/providers, other api/auth routes, /, /login, /join,
 		// /coderunner-icon.png, /assets/*) are handled above.
 		// If we reach here without matching a gated route, we return 404.
 
