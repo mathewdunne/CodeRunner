@@ -31,6 +31,14 @@ user's identity, CodeRunner checks whether the returned email address is on the
 user creation and again on every OAuth callback), so a removed entry takes
 effect at the next login attempt.
 
+**Auth0 sign-ins skip the allowlist.** When Auth0 is configured, the operator's
+Auth0 tenant is trusted to decide who gets in: CodeRunner reads a roles claim
+from the Auth0 ID token at every Auth0 sign-in and admits the user only if it
+holds the configured user or admin role (the admin role grants CodeRunner
+admin). A user whose roles are removed in Auth0 is denied at their next sign-in,
+before any session is issued; sessions they already hold run until they expire.
+See [Set up Auth0](../deploying/oauth-credentials.md#set-up-auth0).
+
 The allowlist accepts individual addresses and whole domains. A team using
 `@frcteam1234.org` Google Workspace accounts can add that domain once rather
 than listing every member. The file format is:

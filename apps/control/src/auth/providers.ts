@@ -1,9 +1,11 @@
 /**
  * OAuth provider configuration for Better Auth.
  *
- * Reads GitHub and Google credentials from ControlConfig and builds
- * the socialProviders object that betterAuth() expects.
+ * Reads GitHub, Google, and Auth0 credentials from ControlConfig. GitHub and
+ * Google are Better Auth social providers; Auth0 goes through the genericOAuth
+ * plugin (decision 044).
  */
+import { auth0, genericOAuth } from "better-auth/plugins/generic-oauth";
 import type { ControlConfig } from "../config";
 
 export type SocialProviders = {
@@ -19,7 +21,7 @@ export type SocialProviders = {
 	};
 };
 
-export type OAuthProvider = "github" | "google";
+export type OAuthProvider = "github" | "google" | "auth0";
 
 export function getEnabledAuthProviders(
 	config: ControlConfig,
@@ -32,6 +34,10 @@ export function getEnabledAuthProviders(
 
 	if (config.googleClientId && config.googleClientSecret) {
 		providers.push("google");
+	}
+
+	if (config.auth0Domain && config.auth0ClientId && config.auth0ClientSecret) {
+		providers.push("auth0");
 	}
 
 	return providers;
@@ -59,4 +65,55 @@ export function buildSocialProviders(config: ControlConfig): SocialProviders {
 	}
 
 	return providers;
+}
+
+/** The genericOAuth plugin carrying Auth0, or null when Auth0 isn't configured. */
+export function buildAuth0Plugin(config: ControlConfig) {
+	if (!getEnabledAuthProviders(config).includes("auth0")) {
+		return null;
+	}
+	return genericOAuth({
+		config: [
+			{
+				...auth0({
+					domain: config.auth0Domain!,
+					clientId: config.auth0ClientId!,
+					clientSecret: config.auth0ClientSecret!,
+				}),
+				overrideUserInfo: true,
+				// Write the role on every sign-in so the user row (and the session
+				// cookie cache built from it) carries the current Auth0 role. Users
+				// with no role are denied in auth.ts before a session exists.
+				// `role` is our additional field; the type only lists core fields.
+				mapProfileToUser: (profile) => {
+					const role = resolveAuth0Role(profile, profile.email ?? "", config);
+					return (role ? { role } : {}) as Record<string, never>;
+				},
+			},
+		],
+	});
+}
+
+/**
+ * Map an Auth0 user's ID-token claims to a CodeRunner role. Admin emails
+ * (CODERUNNER_ADMIN_EMAIL) are always admin; otherwise the roles claim must
+ * hold the configured admin or user role name. Null means "no access".
+ */
+export function resolveAuth0Role(
+	claims: Record<string, unknown>,
+	email: string,
+	config: ControlConfig,
+): "admin" | "student" | null {
+	if (config.adminEmails.includes(email.toLowerCase())) {
+		return "admin";
+	}
+	const raw = claims[config.auth0RolesClaim];
+	const roles = Array.isArray(raw) ? raw : typeof raw === "string" ? [raw] : [];
+	if (roles.includes(config.auth0AdminRoleName)) {
+		return "admin";
+	}
+	if (roles.includes(config.auth0UserRoleName)) {
+		return "student";
+	}
+	return null;
 }

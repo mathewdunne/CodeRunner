@@ -381,8 +381,44 @@ describe("auth provider discovery", () => {
 				githubClientSecret: "github-client-secret",
 				googleClientId: "",
 				googleClientSecret: "",
+				auth0Domain: "",
+				auth0ClientId: "",
+				auth0ClientSecret: "",
 			},
 		);
+	});
+
+	test("lists auth0 only when its domain, client ID, and secret are all set", async () => {
+		const others = {
+			githubClientId: "",
+			githubClientSecret: "",
+			googleClientId: "",
+			googleClientSecret: "",
+		};
+		const providersFor = (options: Record<string, string>) =>
+			withApp(async (app) => {
+				const response = await app.fetch(
+					new Request("http://localhost/api/auth/providers"),
+				);
+				return ((await response.json()) as { providers: string[] }).providers;
+			}, options);
+
+		expect(
+			await providersFor({
+				...others,
+				auth0Domain: "tenant.auth0.test",
+				auth0ClientId: "id",
+				auth0ClientSecret: "secret",
+			}),
+		).toEqual(["auth0"]);
+		expect(
+			await providersFor({
+				...others,
+				auth0Domain: "tenant.auth0.test",
+				auth0ClientId: "id",
+				auth0ClientSecret: "",
+			}),
+		).toEqual([]);
 	});
 
 	test("returns an empty list when no OAuth providers are configured", async () => {
@@ -399,6 +435,9 @@ describe("auth provider discovery", () => {
 				githubClientSecret: "",
 				googleClientId: "",
 				googleClientSecret: "",
+				auth0Domain: "",
+				auth0ClientId: "",
+				auth0ClientSecret: "",
 			},
 		);
 	});

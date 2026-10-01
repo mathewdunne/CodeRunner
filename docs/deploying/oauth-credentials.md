@@ -6,12 +6,14 @@ title: OAuth Credentials
 # OAuth Credentials
 
 CodeRunner does not store passwords. Sign-in is handled by
-[Better Auth](https://www.better-auth.com/) using GitHub and/or Google as OAuth
-providers. **At least one provider must be configured** for any non-demo
-deployment; without one, the login page has no working sign-in button.
+[Better Auth](https://www.better-auth.com/) using GitHub, Google, and/or
+Auth0 as OAuth providers. **At least one provider must be configured** for any
+non-demo deployment; without one, the login page has no working sign-in button.
 
-You only need both if you want students to choose between GitHub and Google;
-configuring one is fine.
+Configure as many as you like; each configured provider gets its own button.
+Auth0 is for teams that already manage their members in an Auth0 tenant: Auth0
+users skip the allowlist and get their CodeRunner role from Auth0 (see
+[Set up Auth0](#set-up-auth0)).
 
 This page covers registering the OAuth apps and wiring the resulting
 credentials into CodeRunner. The values you produce here are used the same way
@@ -33,6 +35,7 @@ Every OAuth app registration asks for a homepage/origin URL and a redirect
   | --- | --- |
   | GitHub | `<BETTER_AUTH_URL>/api/auth/callback/github` |
   | Google | `<BETTER_AUTH_URL>/api/auth/callback/google` |
+  | Auth0 | `<BETTER_AUTH_URL>/api/auth/oauth2/callback/auth0` |
 
 For local development that is `http://localhost:4000/api/auth/callback/github`
 and `.../google`. For the cloud VM it is
@@ -63,6 +66,54 @@ In the Google Cloud console:
 
 You now have a **Client ID** and a **Client Secret**.
 
+## Set up Auth0
+
+Auth0 sign-in works differently from GitHub and Google: Auth0 has already
+vetted your members, so **Auth0 users skip the allowlist**. Instead, CodeRunner
+reads the user's Auth0 roles at every sign-in:
+
+| Auth0 roles | CodeRunner result |
+| --- | --- |
+| Has the admin role (`AUTH0_ADMIN_ROLE_NAME`, default `admin`) | Signs in as an admin |
+| Has the user role (`AUTH0_USER_ROLE_NAME`, default `user`) | Signs in as a student |
+| Neither | Denied |
+
+An email listed in `CODERUNNER_ADMIN_EMAIL` always signs in as an admin, with or
+without Auth0 roles. Because roles are re-read at every Auth0 sign-in, changing a
+user's roles in Auth0 takes effect the next time they sign in. Promoting or
+demoting an Auth0 user in the CodeRunner admin panel is overwritten at that
+user's next sign-in, so manage Auth0 users' roles in Auth0.
+
+In the Auth0 dashboard:
+
+1. **Applications → Applications → Create Application**, type **Regular Web
+   Application**. In its **Settings**, set **Allowed Callback URLs** to
+   `<BETTER_AUTH_URL>/api/auth/oauth2/callback/auth0`. Note the **Domain**,
+   **Client ID**, and **Client Secret**.
+2. **User Management → Roles**: create the two roles (e.g. `user` and `admin`)
+   and assign them to your members. If your tenant already has roles with other
+   names (e.g. `teacher`), set `AUTH0_USER_ROLE_NAME` / `AUTH0_ADMIN_ROLE_NAME`
+   to match instead.
+3. Auth0 does not put roles in the ID token by default. **Actions → Library →
+   Create Action → Build from scratch**, trigger **Login / Post Login**, with:
+
+   ```js
+   exports.onExecutePostLogin = async (event, api) => {
+     api.idToken.setCustomClaim(
+       "https://coderunner/roles",
+       event.authorization?.roles ?? [],
+     );
+   };
+   ```
+
+   **Deploy** it, then add it to the flow under **Actions → Triggers →
+   post-login**. The claim name is only a label inside the token (Auth0's
+   convention is a URL-shaped namespace; nothing fetches it). If you use a
+   different name, set `AUTH0_ROLES_CLAIM` to match.
+
+Then set `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, and `AUTH0_CLIENT_SECRET` (below).
+The login page shows **Sign in with Auth0** once all three are set.
+
 ## Wire the credentials into CodeRunner
 
 CodeRunner reads these from environment variables (see
@@ -76,9 +127,15 @@ CodeRunner reads these from environment variables (see
 | `GITHUB_CLIENT_SECRET` | GitHub OAuth app client secret |
 | `GOOGLE_CLIENT_ID` | Google OAuth client ID |
 | `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `AUTH0_DOMAIN` | Auth0 tenant domain, e.g. `myteam.us.auth0.com` |
+| `AUTH0_CLIENT_ID` | Auth0 application client ID |
+| `AUTH0_CLIENT_SECRET` | Auth0 application client secret |
+| `AUTH0_ROLES_CLAIM` | ID-token claim with the role names (default `https://coderunner/roles`) |
+| `AUTH0_USER_ROLE_NAME` | Auth0 role that signs in as a student (default `user`) |
+| `AUTH0_ADMIN_ROLE_NAME` | Auth0 role that signs in as an admin (default `admin`) |
 
 A provider only appears on the login page when **both** its ID and secret are
-set. Where these values live depends on the deployment:
+set (for Auth0, the domain too). Where these values live depends on the deployment:
 
 - **Local:** in your `.env` file. See [Local Deployment](./local.md).
 - **Cloud VM:** in Google Secret Manager, materialized into the VM's `.env` by
@@ -88,6 +145,9 @@ set. Where these values live depends on the deployment:
 
 OAuth establishes *who* a person is; CodeRunner separately controls *whether*
 they may sign in (the allowlist) and *whether* they are an admin (the role).
+This section applies to GitHub and Google sign-ins; Auth0 users get both from
+their Auth0 roles instead (see [Set up Auth0](#set-up-auth0)), though
+`CODERUNNER_ADMIN_EMAIL` still makes them an admin.
 
 ### The easy path: `CODERUNNER_ADMIN_EMAIL`
 

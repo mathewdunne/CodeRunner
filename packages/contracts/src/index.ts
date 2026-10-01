@@ -60,7 +60,7 @@ export const sessionResponseSchema = z.object({
 	demo: z.boolean().optional(),
 });
 
-export const authProviderSchema = z.enum(["github", "google"]);
+export const authProviderSchema = z.enum(["github", "google", "auth0"]);
 
 export const authProvidersResponseSchema = z.object({
 	providers: z.array(authProviderSchema),

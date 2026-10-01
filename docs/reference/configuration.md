@@ -54,7 +54,7 @@ See [Lessons overview](../lessons/overview.md) and [Authoring modules](../lesson
 
 ## Auth and OAuth
 
-OAuth credentials are required for multi-user production deployments. At least one provider (GitHub or Google) must be configured for login to work. Register your OAuth app at the provider and set the callback URL to `$BETTER_AUTH_URL/api/auth/callback/github` or `$BETTER_AUTH_URL/api/auth/callback/google`.
+OAuth credentials are required for multi-user production deployments. At least one provider (GitHub, Google, or Auth0) must be configured for login to work. Register your OAuth app at the provider and set the callback URL to `$BETTER_AUTH_URL/api/auth/callback/github`, `$BETTER_AUTH_URL/api/auth/callback/google`, or `$BETTER_AUTH_URL/api/auth/oauth2/callback/auth0`.
 
 See [OAuth credentials](../deploying/oauth-credentials.md) for step-by-step registration instructions.
 
@@ -66,6 +66,12 @@ See [OAuth credentials](../deploying/oauth-credentials.md) for step-by-step regi
 | `GITHUB_CLIENT_SECRET` | none | GitHub OAuth app client secret. |
 | `GOOGLE_CLIENT_ID` | none | Google OAuth client ID. |
 | `GOOGLE_CLIENT_SECRET` | none | Google OAuth client secret. |
+| `AUTH0_DOMAIN` | none | Auth0 tenant domain (e.g. `myteam.us.auth0.com`). Auth0 sign-in is enabled when this, `AUTH0_CLIENT_ID`, and `AUTH0_CLIENT_SECRET` are all set. |
+| `AUTH0_CLIENT_ID` | none | Auth0 application client ID. |
+| `AUTH0_CLIENT_SECRET` | none | Auth0 application client secret. |
+| `AUTH0_ROLES_CLAIM` | `https://coderunner/roles` | ID-token claim that holds the user's Auth0 role names. Auth0 users skip the allowlist; this claim decides whether they get in. See [Set up Auth0](../deploying/oauth-credentials.md#set-up-auth0). |
+| `AUTH0_USER_ROLE_NAME` | `user` | Auth0 role name that signs in as a CodeRunner student. |
+| `AUTH0_ADMIN_ROLE_NAME` | `admin` | Auth0 role name that signs in as a CodeRunner admin. |
 | `CODERUNNER_DEMO_MODE` | `false` | When `1` or `true`, bypasses authentication entirely. All visitors share one admin session. Never expose a demo instance publicly. Also enabled with the `--demo` CLI flag on startup. |
 | `CODERUNNER_ADMIN_EMAIL` | none | Comma-separated email addresses to bootstrap as admins with zero exec steps. Each is added to the allowlist at startup and granted the admin role on first OAuth sign-in; an existing account with that email is promoted to admin at the next startup. See [OAuth credentials](../deploying/oauth-credentials.md#the-easy-path-coderunner_admin_email). |
 

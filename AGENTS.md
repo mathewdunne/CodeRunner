@@ -77,6 +77,19 @@ from `showDriverStation` to make that possible. See
 `docs/decisions/041-project-preview.md` and
 [`docs/using-coderunner.md`](./docs/using-coderunner.md).
 
+**Auth0 SSO (post-V2):** a third login provider beside GitHub and Google,
+enabled by `AUTH0_DOMAIN`/`AUTH0_CLIENT_ID`/`AUTH0_CLIENT_SECRET` and wired
+through Better Auth's `genericOAuth` plugin (callback
+`/api/auth/oauth2/callback/auth0`). Auth0 users skip the allowlist; a roles
+claim in the ID token (`AUTH0_ROLES_CLAIM`, set by a Post-Login Action) maps
+`AUTH0_ADMIN_ROLE_NAME` → admin and `AUTH0_USER_ROLE_NAME` → student, and is
+re-read at every sign-in. No role means denied, enforced in
+`user.create.before` (new) and `session.create.before` (returning) — not the
+after hook, whose throws Better Auth loses behind the callback redirect.
+`CODERUNNER_ADMIN_EMAIL` still grants admin. See
+`docs/decisions/044-auth0-sso.md` and
+[`docs/deploying/oauth-credentials.md`](./docs/deploying/oauth-credentials.md).
+
 **Containerized control plane (post-V2):** the control plane ships as a Docker
 image (`containers/control/Dockerfile` → `ghcr.io/mathewdunne/coderunner-control`)
 and is deployed with docker compose (`docker-compose.yml` base +
@@ -134,7 +147,7 @@ arch-independent). See `docs/decisions/035-multi-arch-images-and-workflow-split.
 ## Key References
 
 - `docs/` + `website/` — docs site content and Docusaurus config; published at `https://mathewdunne.github.io/CodeRunner/`; run `bun run docs:dev` to browse locally, `bun run docs:build` to build.
-- `docs/decisions/` — all architecture decision logs (011–041 active; 001–010 archived under `docs/decisions/archive/`).
+- `docs/decisions/` — all architecture decision logs (011–044 active; 001–010 archived under `docs/decisions/archive/`).
 - Pinned AdvantageScope submodule: `vendor/AdvantageScope` at tag `v26.0.2`.
 
 ## Commands
