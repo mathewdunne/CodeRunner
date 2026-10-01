@@ -136,41 +136,23 @@ bun run users:demote coach@frcteam.org
 ```
 
 Admins can also promote and demote users from the admin panel in the browser.
-The system prevents demoting the last remaining admin. Classroom guests can't
-be promoted: anyone with the classroom code and their name can sign in as them.
+The system prevents demoting the last remaining admin.
 
 ---
 
 ## Running a classroom session
 
-For meetings where visitors rotate through a station, start a classroom
-instead of adding people to the allowlist:
+For a meeting, open **Admin → Classrooms**, choose how long the session will
+run, and click **Start classroom**. Share the code or join link with students.
+They can join with their name, without being added to the allowlist.
 
-1. Open **Admin → Classrooms**, pick a duration (default 4 hours), and click
-   **Start classroom**.
-2. Show the code and join link (`https://<your-host>/join?code=…`) at the
-   station. Students join with the code and their name.
-3. Ask students to click **Leave** in the user menu when they finish. That
-   signs them out and stops their container right away. If a student forgets, the next student
-   joining on the same computer stops it for them, and the idle reaper
-   (`IDLE_STOP_MINUTES`, default 30) is the backstop.
-4. Click **End now** when you're done, or let the classroom expire. Its
-   guests, workspaces, and projects are deleted automatically.
+Ask students to choose **Leave** before handing a computer to someone else.
+This signs them out and frees a container slot. When the meeting is over, click
+**End now**. The classroom also ends when its time runs out; either way, its
+guest accounts and projects are deleted.
 
-Each classroom allows up to 60 guests. Only running containers count
-against `MAX_ACTIVE_CONTAINERS` (see [Capacity](./capacity.md)), so size it
-for the number of computers in use at once, not the number of visitors.
-Bad codes are rate-limited (10 failures per IP and 100 overall per
-10 minutes); successful joins are never limited.
-
-:::note[Known limitation: per-IP limit behind Cloudflare Pages]
-The per-IP limit uses the address Caddy saw. Behind the Cloudflare Pages
-front that is a Cloudflare egress IP, so students from many schools can
-share one bucket and a burst of bad codes from one place can lock out
-others for up to 10 minutes. The follow-up is to have the Pages Function
-forward `CF-Connecting-IP` and configure Caddy `trusted_proxies` for
-Cloudflare's ranges.
-:::
+A classroom can have up to 60 guests. The container limit applies to running
+workspaces; see [Capacity](./capacity.md) when planning for simultaneous use.
 
 ## Container concurrency cap
 

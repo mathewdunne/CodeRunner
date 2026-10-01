@@ -7,7 +7,7 @@ title: Using CodeRunner
 
 ## Get started
 
-1. Sign in.
+1. Sign in, or if your team is using Classroom mode, ask your mentor for a code.
 2. Click **Switch project**, then load a lesson or import a public GitHub project.
 3. For a lesson, select **Preview** to read its README and follow the
    instructions. For an imported project, open the files you want to work on.
@@ -18,22 +18,6 @@ Switching or resetting replaces your current files. For an imported project,
 commit and push any work you want to keep.
 
 :::
-
-## Joining a classroom
-
-If your coach gives you a classroom code, you don't need an account:
-
-1. Go to the join link your coach shares (or click **Join a classroom** on
-   the sign-in page).
-2. Enter the 6-digit code and your first name plus last initial (for
-   example `Alex D`), then click **Join**.
-3. When you're done, open the menu in the top right and click **Leave** so
-   the next student can use the computer.
-
-To come back to your work later in the session, join again with the same
-code and name and confirm **Yes, that's me**. Your project is deleted when
-the classroom ends. If you want to keep it, ask your coach about getting a
-full account.
 
 ## Robot lessons and imported projects
 

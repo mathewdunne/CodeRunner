@@ -5,7 +5,7 @@ title: Privacy Policy
 
 # Privacy Policy
 
-**Last updated: August 12, 2026**
+**Last updated: September 30, 2026**
 
 CodeRunner is a self-hosted, browser-based IDE for teaching FRC robot programming. This
 policy explains what personal information CodeRunner handles, why, and what is done with it.
@@ -42,6 +42,10 @@ These fields refresh from the provider each time you sign in.
 CodeRunner requests **no** access to Gmail, Drive, Calendar, Contacts, your repositories, or
 any other Google or GitHub data. It cannot read your mail, files, or private code.
 
+**Classroom guests.** If you join with a classroom code, CodeRunner stores the
+name you enter and links your guest account to that classroom. You do not need
+a Google or GitHub account.
+
 **Work you create.** The Java code, project files, and lesson progress in your workspace are
 stored on the operator's server.
 
@@ -51,11 +55,11 @@ target), and standard application logs.
 
 ## How the information is used
 
-Your account information is used only to run the service:
+The information you provide is used only to run the service:
 
 - to identify you across sessions and keep you signed in
-- to check your email address against the allowlist the operator maintains, which is how
-  access to the instance is controlled
+- to check your email against the operator's allowlist, or your code against
+  an active classroom
 - to derive your workspace name and provision your personal container
 - to display your name and picture in the interface
 - to let administrators of that instance see who has an account and what administrative
@@ -85,9 +89,11 @@ make.
 
 ## How long it is kept
 
-Sign-in sessions last up to 14 days and refresh as you use the app. Account records,
-workspace contents, and audit entries persist until an administrator deletes them or removes
-the instance.
+Google and GitHub sign-in sessions last up to 14 days and refresh as you use
+the app. Those account records and workspaces persist until an administrator
+deletes them or removes the instance. Classroom guest sessions end with the
+classroom. Guest accounts and workspace files are then deleted from the live
+server. Audit entries and any operator backups may remain.
 
 Note that some ordinary actions **intentionally discard** your workspace contents: switching
 or resetting a lesson module, or importing a repository, replaces what was there. Use Git for
@@ -95,8 +101,9 @@ work you need to keep. See the [Terms of Service](./terms.md).
 
 ## Your choices
 
-- **Stop sharing.** You can revoke CodeRunner's access at any time from your
-  [Google Account permissions page](https://myaccount.google.com/permissions) or your GitHub
+- **Stop sharing.** If you signed in with Google or GitHub, you can revoke
+  CodeRunner's access from your
+  [Google Account permissions page](https://myaccount.google.com/permissions) or GitHub
   application settings. Doing so prevents future sign-ins.
 - **Access or delete your data.** Contact your instance's administrator. They can delete your
   account and workspace from the server.
@@ -104,10 +111,10 @@ work you need to keep. See the [Terms of Service](./terms.md).
 ## Children's privacy
 
 CodeRunner is built for FRC teams, so many users are minors. It is deployed by schools and
-robotics programs, and students use it under the supervision of that program. Sign-in
-accounts are created by the student's own Google or GitHub account, and access is limited to
-an operator-maintained allowlist. If you are a parent or guardian with questions about a
-particular instance, contact the operating school or team.
+robotics programs, and students use it under the supervision of that program. Students can
+sign in with an allowed Google or GitHub account, or join a time-limited classroom with a
+code and a name. If you are a parent or guardian with questions about a particular instance,
+contact the operating school or team.
 
 ## Changes to this policy
 

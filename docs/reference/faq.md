@@ -53,7 +53,10 @@ communications are ready, choose a mode and click **Enable**.
 
 ### Do students need accounts? What if I just want to try it?
 
-For a real team deployment, students sign in with GitHub or Google, whichever OAuth provider you configure. You control who is allowed in via an email/domain allowlist. No accounts are created in advance; students sign in with their existing provider accounts, and their workspace is created automatically on first login.
+Students can sign in with GitHub or Google if their email is on the operator's
+allowlist. For a short classroom session, an admin can share a code so students
+can join with just a name. Guest accounts and projects are deleted when the
+classroom ends.
 
 For a solo evaluation or demo, start the demo stack (`CODERUNNER_DEMO_MODE=1 docker compose up`, or `bun run demo:docker`). Demo mode bypasses all authentication. See [Quick Start (Installation)](../quick-start.md).
 
