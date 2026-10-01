@@ -90,8 +90,35 @@ row says.
 - **Known limitation:** behind the Cloudflare Pages front, Caddy's peer is
   a Cloudflare egress IP, so that rightmost hop is Cloudflare's, not the
   student's, and the per-IP bucket collapses into a few buckets shared by
-  unrelated schools. Follow-up: have the Pages Function forward
-  `CF-Connecting-IP` and configure Caddy `trusted_proxies` for Cloudflare
-  so the real client address reaches `clientIp`.
+  unrelated schools. A blocked bucket rejects valid codes too, so ten typos
+  (or a stranger's guesses) on the same Cloudflare egress lock out new
+  joins there for up to 10 minutes. Direct access to the main domain is
+  unaffected. Deferred until it bites in practice. Follow-up:
+  - `origin.<domain>` is DNS-only, which Cloudflare treats as a
+    non-Cloudflare destination, so `CF-Connecting-IP` should already carry
+    the student's IP on the Pages Function's subrequest (per Cloudflare's
+    docs; confirm on the live deployment). The Function likely needs no
+    change.
+  - `trusted_proxies` alone is not enough: Caddy would keep the incoming
+    `X-Forwarded-For` but still append Cloudflare's peer address, and
+    `clientIp` reads the rightmost hop. Rewrite the header instead:
+    ```caddy
+    {
+      servers {
+        trusted_proxies static <Cloudflare IP ranges>
+        client_ip_headers CF-Connecting-IP
+      }
+    }
+    origin.{domain} {
+      reverse_proxy control:4000 {
+        header_up X-Forwarded-For {client_ip}
+      }
+    }
+    ```
+    `clientIp` then needs no change.
+  - `origin.<domain>` is publicly reachable, so `trusted_proxies` must be
+    limited to Cloudflare's published ranges or anyone can spoof
+    `CF-Connecting-IP`. Confirm Pages Function subrequests egress from
+    those ranges first.
 - A determined attacker can trip the global bucket and block new joins
   for ~10 minutes. Already-joined guests are unaffected.
