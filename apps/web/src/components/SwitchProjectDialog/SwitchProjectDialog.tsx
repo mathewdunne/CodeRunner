@@ -22,6 +22,8 @@ interface SwitchProjectDialogProps {
 	onOpenChange: (open: boolean) => void;
 	workspaceSlug: string | null;
 	currentModule: string | null;
+	/** An empty workspace has nothing to discard, so loads skip the confirm step. */
+	projectEmpty: boolean;
 	/** Called after a project swap finishes successfully. */
 	onSwapComplete: () => void;
 }
@@ -49,6 +51,7 @@ export function SwitchProjectDialog({
 	onOpenChange,
 	workspaceSlug,
 	currentModule,
+	projectEmpty,
 	onSwapComplete,
 }: SwitchProjectDialogProps) {
 	const { modules, error, loading } = useLessons(open ? workspaceSlug : null);
@@ -105,14 +108,24 @@ export function SwitchProjectDialog({
 		return true;
 	}, []);
 
-	const confirmAndRun = useCallback(() => {
-		if (!pending) return;
-		const target: ProjectSwapKind =
-			pending.kind === "import"
-				? { kind: "import", url: pending.url }
-				: { kind: "lesson", moduleId: pending.module.id };
-		startSwap(target);
-	}, [pending, startSwap]);
+	const run = useCallback(
+		(next: Pending) => {
+			const target: ProjectSwapKind =
+				next.kind === "import"
+					? { kind: "import", url: next.url }
+					: { kind: "lesson", moduleId: next.module.id };
+			startSwap(target);
+		},
+		[startSwap],
+	);
+
+	const choose = useCallback(
+		(next: Pending) => {
+			if (projectEmpty) run(next);
+			else setPending(next);
+		},
+		[projectEmpty, run],
+	);
 
 	const repoName = useMemo(() => {
 		if (!pending || pending.kind !== "import") return "";
@@ -221,9 +234,7 @@ export function SwitchProjectDialog({
 															type="button"
 															size="sm"
 															className="h-7 px-3 text-[12px]"
-															onClick={() =>
-																setPending({ kind: "lesson", module })
-															}
+															onClick={() => choose({ kind: "lesson", module })}
 														>
 															Load
 														</Button>
@@ -260,7 +271,7 @@ export function SwitchProjectDialog({
 												onKeyDown={(e) => {
 													if (e.key === "Enter") {
 														if (validateUrl(url))
-															setPending({ kind: "import", url: url.trim() });
+															choose({ kind: "import", url: url.trim() });
 													}
 												}}
 											/>
@@ -277,7 +288,7 @@ export function SwitchProjectDialog({
 											className="h-8 shrink-0 px-3 text-[12.5px]"
 											onClick={() => {
 												if (validateUrl(url))
-													setPending({ kind: "import", url: url.trim() });
+													choose({ kind: "import", url: url.trim() });
 											}}
 										>
 											Import
@@ -332,7 +343,7 @@ export function SwitchProjectDialog({
 							>
 								Back
 							</Button>
-							<Button type="button" onClick={confirmAndRun}>
+							<Button type="button" onClick={() => run(pending)}>
 								{pending.kind === "reset" ? "Reset" : "Continue"}
 							</Button>
 						</DialogFooter>

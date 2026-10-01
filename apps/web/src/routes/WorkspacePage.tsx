@@ -344,6 +344,7 @@ export function WorkspacePage() {
 				onOpenChange={setSwitchOpen}
 				workspaceSlug={workspaceSlug}
 				currentModule={currentModule}
+				projectEmpty={projectEmpty}
 				onSwapComplete={onSwapComplete}
 			/>
 		</SimPaneTabs>
