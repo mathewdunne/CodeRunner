@@ -17,18 +17,12 @@ import type { ControlConfig } from "../config";
 import { getLogger } from "../logging";
 import { isEmailAllowed, reloadAllowlist } from "./allowlist";
 import { classroomPlugin } from "./classroom-plugin";
-import {
-	buildAuth0Plugin,
-	buildSocialProviders,
-	resolveAuth0Role,
-} from "./providers";
+import { buildAuth0Plugin, buildSocialProviders } from "./providers";
 
 const log = getLogger("auth");
 
 const ROSTER_MESSAGE =
 	"Your email is not on the roster. Ask your coach to add you.";
-const AUTH0_NO_ROLE_MESSAGE =
-	"Your Auth0 account has no CodeRunner role. Ask your coach for access.";
 
 /** True for the genericOAuth callback of the Auth0 provider. */
 function isAuth0Callback(
@@ -44,47 +38,6 @@ function isAuth0Callback(
 		ctx?.path === "/oauth2/callback/:providerId" &&
 		ctx.params?.providerId === "auth0"
 	);
-}
-
-/**
- * Read an ID token's payload. No signature check: Better Auth received the
- * token directly from Auth0's token endpoint and trusts it the same way.
- */
-function decodeIdTokenClaims(idToken: string): Record<string, unknown> {
-	try {
-		const payload = idToken.split(".")[1] ?? "";
-		const claims = JSON.parse(Buffer.from(payload, "base64url").toString());
-		return claims && typeof claims === "object" ? claims : {};
-	} catch {
-		return {};
-	}
-}
-
-type Auth0Adapter = {
-	findUserById(userId: string): Promise<{ email: string } | null>;
-	findAccounts(
-		userId: string,
-	): Promise<{ providerId: string; idToken?: string | null | undefined }[]>;
-};
-
-/**
- * The role carried by the ID token Better Auth stored for the user's Auth0
- * account on this sign-in (tokens are refreshed before the session is made).
- */
-async function currentAuth0Role(
-	adapter: Auth0Adapter,
-	userId: string,
-	config: ControlConfig,
-): Promise<"admin" | "student" | null> {
-	const [user, accounts] = await Promise.all([
-		adapter.findUserById(userId),
-		adapter.findAccounts(userId),
-	]);
-	const idToken = accounts.find((a) => a.providerId === "auth0")?.idToken;
-	if (!user || !idToken) {
-		return null;
-	}
-	return resolveAuth0Role(decodeIdTokenClaims(idToken), user.email, config);
 }
 
 /**
@@ -207,16 +160,9 @@ export function createAuth(
 						const slug = slugFromEmail(user.email);
 						if (isAuth0Callback(ctx)) {
 							// Auth0 vets the user; the role claim replaces the allowlist.
-							// genericOAuth spreads the ID-token claims onto `user`.
-							const role = resolveAuth0Role(user, user.email, config);
-							if (!role) {
-								log.warn("new auth0 user rejected: no role", {
-									email: user.email,
-								});
-								throw new APIError("FORBIDDEN", {
-									message: AUTH0_NO_ROLE_MESSAGE,
-								});
-							}
+							// The Auth0 profile mapper already denied users with no role
+							// and put the role on `user`.
+							const role = (user as { role?: string }).role;
 							log.info("creating new auth0 user", {
 								email: user.email,
 								slug,
@@ -245,31 +191,6 @@ export function createAuth(
 								role,
 							},
 						};
-					},
-				},
-			},
-			session: {
-				create: {
-					before: async (session, ctx) => {
-						if (!ctx || !isAuth0Callback(ctx)) {
-							return;
-						}
-						// Every Auth0 sign-in re-checks the role claim. Deny here, before
-						// any session or cookie exists: Better Auth doesn't catch errors
-						// from session creation, and an after-hook throw would be lost
-						// behind the callback's redirect.
-						const role = await currentAuth0Role(
-							ctx.context.internalAdapter,
-							session.userId,
-							config,
-						);
-						if (!role) {
-							log.warn("auth0 sign-in rejected: no role", {
-								userId: session.userId,
-							});
-							const error = AUTH0_NO_ROLE_MESSAGE.replaceAll(" ", "_");
-							throw ctx.redirect(`/login?error=${encodeURIComponent(error)}`);
-						}
 					},
 				},
 			},

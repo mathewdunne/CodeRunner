@@ -178,8 +178,23 @@ describe("resolveAuth0Role", () => {
 		).toBeNull();
 	});
 
-	test("admin emails are admin regardless of roles", () => {
-		expect(resolveAuth0Role({}, "Coach@Test.local", config)).toBe("admin");
+	test("verified admin emails are admin regardless of roles", () => {
+		expect(
+			resolveAuth0Role({ email_verified: true }, "Coach@Test.local", config),
+		).toBe("admin");
+	});
+
+	test("unverified admin emails fall back to the roles claim", () => {
+		expect(
+			resolveAuth0Role({ email_verified: false }, "coach@test.local", config),
+		).toBeNull();
+		expect(
+			resolveAuth0Role(
+				{ email_verified: false, [ROLES_CLAIM]: ["user"] },
+				"coach@test.local",
+				config,
+			),
+		).toBe("student");
 	});
 
 	test("honours custom claim and role names", () => {
@@ -285,6 +300,23 @@ describe("Auth0 sign-in", () => {
 				"/login?error=Your_Auth0_account_has_no_CodeRunner_role._Ask_your_coach_for_access.",
 			);
 			expect(sessionCount(app, userId)).toBe(sessionsBefore);
+			expect(await sessionRole(app, denied)).toBeNull();
+		}, auth0Options);
+	});
+
+	test("each linked Auth0 identity is checked on its own roles", async () => {
+		await withApp(async (app) => {
+			const email = "dual@team.test";
+			expectSignedIn(
+				await auth0Login(app, auth0User("auth0|dual", email, ["admin"])),
+			);
+			// Same verified email, different Auth0 identity, no role: denied,
+			// not waved through on the first identity's admin role.
+			const denied = await auth0Login(
+				app,
+				auth0User("google-oauth2|dual", email),
+			);
+			expect(denied.headers.get("location")).toContain("/login?error=");
 			expect(await sessionRole(app, denied)).toBeNull();
 		}, auth0Options);
 	});

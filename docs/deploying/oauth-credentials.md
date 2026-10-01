@@ -78,8 +78,9 @@ reads the user's Auth0 roles at every sign-in:
 | Has the user role (`AUTH0_USER_ROLE_NAME`, default `user`) | Signs in as a student |
 | Neither | Denied |
 
-An email listed in `CODERUNNER_ADMIN_EMAIL` always signs in as an admin, with or
-without Auth0 roles. Because roles are re-read at every Auth0 sign-in, changing a
+An email listed in `CODERUNNER_ADMIN_EMAIL` signs in as an admin, with or without
+Auth0 roles, once Auth0 has verified that address (`email_verified`). An
+unverified address gets no special treatment and needs a role like anyone else. Because roles are re-read at every Auth0 sign-in, changing a
 user's roles in Auth0 takes effect the next time they sign in. Promoting or
 demoting an Auth0 user in the CodeRunner admin panel is overwritten at that
 user's next sign-in, so manage Auth0 users' roles in Auth0.
@@ -147,7 +148,8 @@ OAuth establishes *who* a person is; CodeRunner separately controls *whether*
 they may sign in (the allowlist) and *whether* they are an admin (the role).
 This section applies to GitHub and Google sign-ins; Auth0 users get both from
 their Auth0 roles instead (see [Set up Auth0](#set-up-auth0)), though
-`CODERUNNER_ADMIN_EMAIL` still makes them an admin.
+`CODERUNNER_ADMIN_EMAIL` still makes them an admin if Auth0 has verified the
+address.
 
 ### The easy path: `CODERUNNER_ADMIN_EMAIL`
 
