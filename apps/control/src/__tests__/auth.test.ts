@@ -278,7 +278,7 @@ describe("bootstrap admin (CODERUNNER_ADMIN_EMAIL)", () => {
 		);
 	});
 
-	test("startup seeding is idempotent, promotes existing students, leaves admins", async () => {
+	test("startup seeding is idempotent, promotes existing students, leaves admins and Auth0 users", async () => {
 		const root = await mkdtemp(join(tmpdir(), "frc-bootstrap-"));
 		try {
 			const catalogDir = await createCatalogDir(root);
@@ -294,7 +294,7 @@ describe("bootstrap admin (CODERUNNER_ADMIN_EMAIL)", () => {
 				sessionSecret: "test-session-secret",
 				baseUrl: "http://localhost:4000",
 				containerAutoStart: false,
-				adminEmails: ["coach@team.org", "boss@team.org"],
+				adminEmails: ["coach@team.org", "boss@team.org", "lead@team.org"],
 			};
 
 			// First startup: both admin emails are seeded into the allowlist.
@@ -302,7 +302,11 @@ describe("bootstrap admin (CODERUNNER_ADMIN_EMAIL)", () => {
 			const afterFirst = JSON.parse(await readFile(allowlistPath, "utf8")) as {
 				emails: string[];
 			};
-			expect(afterFirst.emails).toEqual(["boss@team.org", "coach@team.org"]);
+			expect(afterFirst.emails).toEqual([
+				"boss@team.org",
+				"coach@team.org",
+				"lead@team.org",
+			]);
 
 			// Simulate accounts that already exist: a coach who signed in as a
 			// student before the env was set (with the mixed-case email the OAuth
@@ -334,6 +338,32 @@ describe("bootstrap admin (CODERUNNER_ADMIN_EMAIL)", () => {
 				"admin",
 				"boss",
 			);
+			// An Auth0 student holding an admin address. Auth0 sets the role at
+			// every sign-in (admin only for a verified address), so startup must
+			// not promote it: the address may be an unverified self-sign-up.
+			insertUser.run(
+				"userLeadCCCCCCCCCCCC",
+				"Lead",
+				"lead@team.org",
+				0,
+				null,
+				staleAdminTimestamp,
+				staleAdminTimestamp,
+				"student",
+				"lead",
+			);
+			first.storage.db
+				.query(
+					"INSERT INTO account (id, accountId, providerId, userId, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)",
+				)
+				.run(
+					"acctLeadCCCCCCCCCCCC",
+					"auth0|lead",
+					"auth0",
+					"userLeadCCCCCCCCCCCC",
+					staleAdminTimestamp,
+					staleAdminTimestamp,
+				);
 			first.close();
 
 			// Second startup on the same data dir: idempotent allowlist, promotes the
@@ -343,7 +373,11 @@ describe("bootstrap admin (CODERUNNER_ADMIN_EMAIL)", () => {
 				const afterSecond = JSON.parse(
 					await readFile(allowlistPath, "utf8"),
 				) as { emails: string[] };
-				expect(afterSecond.emails).toEqual(["boss@team.org", "coach@team.org"]);
+				expect(afterSecond.emails).toEqual([
+					"boss@team.org",
+					"coach@team.org",
+					"lead@team.org",
+				]);
 
 				const coach = second.storage.db
 					.query("SELECT role, updatedAt FROM user WHERE id = ?")
@@ -357,6 +391,11 @@ describe("bootstrap admin (CODERUNNER_ADMIN_EMAIL)", () => {
 				expect(boss.role).toBe("admin");
 				// The already-admin row is not rewritten.
 				expect(boss.updatedAt).toBe(staleAdminTimestamp);
+
+				const lead = second.storage.db
+					.query("SELECT role FROM user WHERE email = ?")
+					.get("lead@team.org") as { role: string };
+				expect(lead.role).toBe("student");
 			} finally {
 				second.close();
 			}
@@ -381,8 +420,44 @@ describe("auth provider discovery", () => {
 				githubClientSecret: "github-client-secret",
 				googleClientId: "",
 				googleClientSecret: "",
+				auth0Domain: "",
+				auth0ClientId: "",
+				auth0ClientSecret: "",
 			},
 		);
+	});
+
+	test("lists auth0 only when its domain, client ID, and secret are all set", async () => {
+		const others = {
+			githubClientId: "",
+			githubClientSecret: "",
+			googleClientId: "",
+			googleClientSecret: "",
+		};
+		const providersFor = (options: Record<string, string>) =>
+			withApp(async (app) => {
+				const response = await app.fetch(
+					new Request("http://localhost/api/auth/providers"),
+				);
+				return ((await response.json()) as { providers: string[] }).providers;
+			}, options);
+
+		expect(
+			await providersFor({
+				...others,
+				auth0Domain: "tenant.auth0.test",
+				auth0ClientId: "id",
+				auth0ClientSecret: "secret",
+			}),
+		).toEqual(["auth0"]);
+		expect(
+			await providersFor({
+				...others,
+				auth0Domain: "tenant.auth0.test",
+				auth0ClientId: "id",
+				auth0ClientSecret: "",
+			}),
+		).toEqual([]);
 	});
 
 	test("returns an empty list when no OAuth providers are configured", async () => {
@@ -399,6 +474,9 @@ describe("auth provider discovery", () => {
 				githubClientSecret: "",
 				googleClientId: "",
 				googleClientSecret: "",
+				auth0Domain: "",
+				auth0ClientId: "",
+				auth0ClientSecret: "",
 			},
 		);
 	});

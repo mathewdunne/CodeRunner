@@ -88,6 +88,12 @@ session. Guest sessions die with the classroom (checked in
 container, and `ClassroomSweeper` deletes guests of ended/expired
 classrooms. See `docs/decisions/043-classroom-join-codes.md`.
 
+**Auth0 SSO (post-V2):** optional third login provider (`AUTH0_*` env) via
+Better Auth's `genericOAuth`. Auth0 users skip the allowlist; their role comes
+from an ID-token roles claim, re-read at every sign-in. Users with no role are
+rejected in `mapProfileToUser` (after-hook throws are lost behind the callback
+redirect). See `docs/decisions/044-auth0-sso.md`.
+
 **Containerized control plane (post-V2):** the control plane ships as a Docker
 image (`containers/control/Dockerfile` → `ghcr.io/mathewdunne/coderunner-control`)
 and is deployed with docker compose (`docker-compose.yml` base +
@@ -145,7 +151,7 @@ arch-independent). See `docs/decisions/035-multi-arch-images-and-workflow-split.
 ## Key References
 
 - `docs/` + `website/` — docs site content and Docusaurus config; published at `https://mathewdunne.github.io/CodeRunner/`; run `bun run docs:dev` to browse locally, `bun run docs:build` to build.
-- `docs/decisions/` — all architecture decision logs (011–043 active; 001–010 archived under `docs/decisions/archive/`).
+- `docs/decisions/` — all architecture decision logs (011–044 active; 001–010 archived under `docs/decisions/archive/`).
 - Pinned AdvantageScope submodule: `vendor/AdvantageScope` at tag `v26.0.2`.
 
 ## Commands

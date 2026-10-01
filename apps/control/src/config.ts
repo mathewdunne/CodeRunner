@@ -24,6 +24,15 @@ export type ControlConfig = {
 	githubClientSecret: string | null;
 	googleClientId: string | null;
 	googleClientSecret: string | null;
+	auth0Domain: string | null;
+	auth0ClientId: string | null;
+	auth0ClientSecret: string | null;
+	/** ID-token claim holding the user's Auth0 role names. */
+	auth0RolesClaim: string;
+	/** Auth0 role name that maps to CodeRunner `student`. */
+	auth0UserRoleName: string;
+	/** Auth0 role name that maps to CodeRunner `admin`. */
+	auth0AdminRoleName: string;
 	dockerPath: string;
 	codeImage: string;
 	codeMemoryLimit: string;
@@ -334,6 +343,18 @@ export function loadControlConfig(
 		googleClientId: input.googleClientId ?? Bun.env.GOOGLE_CLIENT_ID ?? null,
 		googleClientSecret:
 			input.googleClientSecret ?? Bun.env.GOOGLE_CLIENT_SECRET ?? null,
+		auth0Domain: input.auth0Domain ?? Bun.env.AUTH0_DOMAIN ?? null,
+		auth0ClientId: input.auth0ClientId ?? Bun.env.AUTH0_CLIENT_ID ?? null,
+		auth0ClientSecret:
+			input.auth0ClientSecret ?? Bun.env.AUTH0_CLIENT_SECRET ?? null,
+		auth0RolesClaim:
+			input.auth0RolesClaim ??
+			Bun.env.AUTH0_ROLES_CLAIM ??
+			"https://coderunner/roles",
+		auth0UserRoleName:
+			input.auth0UserRoleName ?? Bun.env.AUTH0_USER_ROLE_NAME ?? "user",
+		auth0AdminRoleName:
+			input.auth0AdminRoleName ?? Bun.env.AUTH0_ADMIN_ROLE_NAME ?? "admin",
 		dockerPath: input.dockerPath ?? Bun.env.FRC_DOCKER_PATH ?? "docker",
 		codeImage:
 			input.codeImage ??

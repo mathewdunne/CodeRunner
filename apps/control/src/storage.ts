@@ -184,15 +184,21 @@ export class AppStorage {
 			const hasGoogle = Boolean(
 				this.config.googleClientId && this.config.googleClientSecret,
 			);
-			if (!hasGitHub && !hasGoogle) {
+			const hasAuth0 = Boolean(
+				this.config.auth0Domain &&
+					this.config.auth0ClientId &&
+					this.config.auth0ClientSecret,
+			);
+			if (!hasGitHub && !hasGoogle && !hasAuth0) {
 				log.warn("no OAuth providers configured — login will not work", {
 					baseUrl: this.config.baseUrl,
-					hint: "Set GITHUB_CLIENT_ID/SECRET or GOOGLE_CLIENT_ID/SECRET in your .env",
+					hint: "Set GITHUB_CLIENT_ID/SECRET, GOOGLE_CLIENT_ID/SECRET, or AUTH0_DOMAIN/CLIENT_ID/CLIENT_SECRET in your .env",
 				});
 			} else {
 				log.debug("oauth providers configured", {
 					github: hasGitHub,
 					google: hasGoogle,
+					auth0: hasAuth0,
 				});
 			}
 		}
@@ -205,7 +211,8 @@ export class AppStorage {
 	/**
 	 * Seed the accounts named in CODERUNNER_ADMIN_EMAIL so a fresh deployment
 	 * needs zero exec steps: each email is added to the allowlist (idempotent),
-	 * and any existing non-admin account with that email is promoted. Accounts
+	 * and any existing non-admin account with that email is promoted (except
+	 * Auth0 users, whose role comes from Auth0 at sign-in). Accounts
 	 * that have not signed in yet get the admin role from the user.create hook.
 	 */
 	private async seedBootstrapAdmins(): Promise<void> {
@@ -215,8 +222,14 @@ export class AppStorage {
 
 			// config.adminEmails is lowercased; the stored email keeps whatever
 			// case the OAuth provider returned, so match case-insensitively.
+			// Rows with an Auth0 account are skipped: Auth0 sets the role at every
+			// sign-in and only makes an admin email admin once it is verified,
+			// while a row here may hold an unverified Auth0 self-sign-up (and any
+			// GitHub/Google identity later linked onto it).
 			const user = this.db
-				.query("SELECT id, role FROM user WHERE lower(email) = ?")
+				.query(
+					"SELECT id, role FROM user WHERE lower(email) = ? AND NOT EXISTS (SELECT 1 FROM account WHERE account.userId = user.id AND account.providerId = 'auth0')",
+				)
 				.get(email) as { id: string; role: string | null } | null;
 			if (user && user.role !== "admin") {
 				this.db
