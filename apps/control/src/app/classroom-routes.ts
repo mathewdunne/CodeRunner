@@ -6,7 +6,10 @@
  * failed-attempt rate limit, and retiring the browser's previous session.
  */
 
-import type { WorkspaceId } from "@frc-coderunner/contracts";
+import {
+	classroomJoinRequestSchema,
+	type WorkspaceId,
+} from "@frc-coderunner/contracts";
 import { type AuditActor, recordAuditEvent } from "../audit";
 import { getSessionFromRequest } from "../auth/middleware";
 import { cleanupClassroom } from "../classroom-sweeper";
@@ -19,6 +22,7 @@ import {
 	endClassroom,
 	type FailedAttemptLimiter,
 	findGuestClassroom,
+	findLiveClassroomByCode,
 	getClassroom,
 	listClassroomGuests,
 	listLiveClassrooms,
@@ -74,6 +78,14 @@ export async function handleClassroomJoin(
 	}
 
 	const ip = clientIp(request, server);
+	const body = classroomJoinRequestSchema.safeParse(
+		await request
+			.clone()
+			.json()
+			.catch(() => null),
+	);
+	// Check, test the code, and record the failure in one tick: deciding after
+	// the awaited auth handler would let a parallel burst all pass the check.
 	if (limiter.isBlocked(ip)) {
 		log.warn("classroom join rate limited", { ip });
 		return jsonResponse(
@@ -84,14 +96,13 @@ export async function handleClassroomJoin(
 			{ status: 429 },
 		);
 	}
+	if (body.success && !findLiveClassroomByCode(storage.db, body.data.code)) {
+		limiter.recordFailure(ip);
+	}
 
 	const previous = await getSessionFromRequest(storage, request);
 	const response = await storage.auth.handler(request);
 
-	if (response.status === 404) {
-		limiter.recordFailure(ip);
-		return response;
-	}
 	if (response.ok && previous) {
 		const body = (await response
 			.clone()

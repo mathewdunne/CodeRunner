@@ -30,7 +30,11 @@ row says.
 - **Dispatcher** (`app/classroom-routes.ts`) in front of it: disabled in
   demo mode; rate limits *failed* attempts (10 per IP / 100 global per
   10 min) because a whole school shares one IP; retires the browser's
-  previous session and stops a previous guest's container.
+  previous session and stops a previous guest's container. It checks the
+  limit, looks up the code, and records a miss in one tick before calling
+  the plugin, so a parallel burst can't all pass the check; reserving
+  every in-flight attempt instead would 429 a class joining at once from
+  one school IP.
 - **Lifetime:** guest sessions expire with the classroom, and
   `getSessionFromRequest` rejects guests of non-live classrooms. That check
   is needed because Better Auth's `updateAge` refresh would stretch a
@@ -45,13 +49,20 @@ row says.
   same tick as its liveness check, and cleanup waits for a classroom's
   in-flight joins before listing its guests; otherwise a guest created
   just after the listing would outlive a classroom already marked cleaned.
+  The 60-guest cap is enforced by reserving a slot in memory in the same
+  tick as the count, because concurrent joins with different names would
+  each see a free slot before any guest row commits.
 - **Capacity:** guests get a **Leave** button that stops their container
   immediately. With 20-minute rotations and a 30-minute idle reaper,
   containers would otherwise still be running when the next group signs in.
   `POST /u/:slug/api/leave` signs the guest out (Better Auth `signOut`, whose
   cookie-clearing headers ride on the response) *before* stopping the
   container, because the IDE keeps polling until the page navigates and an
-  authenticated poll would start the container again.
+  authenticated poll would start the container again. Stopping the
+  workspace (Leave, a replaced guest session) and deleting a user (End now,
+  the sweeper) also close its open run/import/lesson-load/gamepad sockets:
+  they keep the workspace they authenticated with, so an open `/ws/run`
+  could otherwise still start a run after sign-out.
 
 ## Alternatives rejected
 

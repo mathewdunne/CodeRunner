@@ -53,6 +53,22 @@ describe("classroom join dispatcher", () => {
 		});
 	});
 
+	test("a parallel burst of bad codes is limited like a sequential one", async () => {
+		await withApp(async (app) => {
+			const attacker = { "x-forwarded-for": "203.0.113.7" };
+			const responses = await Promise.all(
+				Array.from({ length: 30 }, () =>
+					app.fetch(
+						classroomJoinRequest({ code: "000000", name: "Bot" }, attacker),
+					),
+				),
+			);
+			const statuses = responses.map((response) => response.status);
+			expect(statuses.filter((status) => status === 404)).toHaveLength(10);
+			expect(statuses.filter((status) => status === 429)).toHaveLength(20);
+		});
+	});
+
 	test("uses the rightmost X-Forwarded-For hop (the one our proxy appended)", async () => {
 		await withApp(async (app) => {
 			for (let i = 0; i < 10; i += 1) {

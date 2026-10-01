@@ -10,6 +10,7 @@ import {
 	cookieFrom,
 	exists,
 	login,
+	openRunSocket,
 	sessionCookieFrom,
 	withApp,
 } from "./helpers";
@@ -49,7 +50,12 @@ function sweeperFor(app: ControlApp): ClassroomSweeper {
 		storage: app.storage,
 		deleteUser: (userId) =>
 			deleteUserAndWorkspace(
-				{ storage: app.storage, runs: app.runs, runtimeProvider: app.runtime },
+				{
+					storage: app.storage,
+					runs: app.runs,
+					runtimeProvider: app.runtime,
+					closeWorkspaceSockets: app.websocket.closeWorkspaceSockets,
+				},
 				userId,
 			),
 	});
@@ -129,6 +135,7 @@ describe("admin classroom routes", () => {
 			const { userId } = await joinGuest(app, classroom.code, "Alex D");
 			const workspace = app.storage.findWorkspaceByUserId(userId)!;
 			expect(await exists(dirname(workspace.project_path))).toBe(true);
+			const run = openRunSocket(app, workspace);
 
 			const response = await app.fetch(
 				adminRequest(cookie, `/admin/classrooms/${classroom.id}/end`, {
@@ -137,6 +144,7 @@ describe("admin classroom routes", () => {
 			);
 			expect(response.status).toBe(200);
 			expect(await response.json()).toMatchObject({ ok: true, guestCount: 1 });
+			expect(run.closes).toHaveLength(1);
 
 			const user = app.storage.db
 				.query("SELECT id FROM user WHERE id = ?")

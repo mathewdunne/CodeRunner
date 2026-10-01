@@ -27,6 +27,7 @@ export type AdminRouteContext = {
 	storage: AppStorage;
 	runs: RunManager;
 	runtimeProvider: WorkspaceRuntimeProvider;
+	closeWorkspaceSockets: (workspaceId: WorkspaceId) => void;
 };
 
 export async function handleAdminRoute(

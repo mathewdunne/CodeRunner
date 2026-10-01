@@ -14,6 +14,7 @@ import {
 	classroomJoinRequest,
 	cookieFrom,
 	login,
+	openRunSocket,
 	sessionCookieFrom,
 	withApp,
 } from "./helpers";
@@ -243,6 +244,28 @@ describe("POST /api/auth/classroom/join", () => {
 		});
 		// 60 joins each create a workspace on disk; Bun's default is 5 s.
 	}, 30_000);
+
+	test("a parallel burst of new names cannot overfill the classroom", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			const responses = await Promise.all(
+				Array.from({ length: CLASSROOM_GUEST_CAP + 5 }, (_, i) =>
+					app.fetch(
+						classroomJoinRequest({
+							code: classroom.code,
+							name: `Student ${i}`,
+						}),
+					),
+				),
+			);
+			const statuses = responses.map((response) => response.status);
+			expect(statuses.filter((status) => status === 200)).toHaveLength(
+				CLASSROOM_GUEST_CAP,
+			);
+			expect(statuses.filter((status) => status === 403)).toHaveLength(5);
+			expect(guestsOf(app, classroom.id)).toHaveLength(CLASSROOM_GUEST_CAP);
+		});
+	}, 30_000);
 });
 
 describe("guest session lifetime", () => {
@@ -402,6 +425,30 @@ describe("guest workspace routes", () => {
 			expect(await response.json()).toEqual({ ok: true });
 			expect(stopped).toEqual([workspace.id]);
 			expect(app.storage.findWorkspaceByUserId(userId)).not.toBeNull();
+		});
+	});
+
+	test("POST /api/leave closes the guest's open run socket", async () => {
+		await withApp(async (app) => {
+			app.runtime.stopWorkspace = async () => {};
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const { userId } = (await joined.clone().json()) as { userId: string };
+			const run = openRunSocket(
+				app,
+				app.storage.findWorkspaceByUserId(userId)!,
+			);
+
+			const response = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/leave", {
+					method: "POST",
+					headers: { cookie: sessionCookieFrom(joined) },
+				}),
+			);
+			expect(response.status).toBe(200);
+			expect(run.closes).toHaveLength(1);
 		});
 	});
 

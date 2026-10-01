@@ -184,8 +184,22 @@ export async function createApp(
 	const dockerStatsPoller = new DockerStatsPoller({ containers });
 	dockerStatsPoller.start();
 
-	/** Stop a workspace's run and container and drop its live bridges. Files are kept. */
+	const websocket = createWebSocketHandlers({
+		storage,
+		runs,
+		halsim,
+		nt4Auto,
+		gamepad,
+		imports,
+		catalogSource,
+	});
+
+	/**
+	 * Stop a workspace's run and container, close its sockets, and drop its
+	 * live bridges. Files are kept. Callers end the session first.
+	 */
 	async function stopWorkspace(workspaceId: WorkspaceId): Promise<void> {
+		websocket.closeWorkspaceSockets(workspaceId);
 		runs.stopWorkspace(workspaceId);
 		await runtimeProvider.stopWorkspace(workspaceId);
 		halsim.disconnect(workspaceId);
@@ -198,7 +212,12 @@ export async function createApp(
 		stopWorkspace,
 	};
 
-	const adminCtx = { storage, runs, runtimeProvider };
+	const adminCtx = {
+		storage,
+		runs,
+		runtimeProvider,
+		closeWorkspaceSockets: websocket.closeWorkspaceSockets,
+	};
 	const classroomSweeper = new ClassroomSweeper({
 		storage,
 		deleteUser: (userId) => deleteUserAndWorkspace(adminCtx, userId),
@@ -442,19 +461,10 @@ export async function createApp(
 		return notFound();
 	}
 
-	const websocket = createWebSocketHandlers({
-		storage,
-		runs,
-		halsim,
-		nt4Auto,
-		gamepad,
-		imports,
-		catalogSource,
-	});
-
 	return {
 		fetch,
 		websocket: websocket as {
+			closeWorkspaceSockets(workspaceId: WorkspaceId): void;
 			open(ws: AppSocket): void;
 			message(ws: AppSocket, message: string | ArrayBuffer | Uint8Array): void;
 			close(ws: AppSocket): void;

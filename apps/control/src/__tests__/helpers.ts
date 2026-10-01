@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { WorkspaceId } from "@frc-coderunner/contracts";
 import { type ControlApp, type ControlAppOptions, createApp } from "../app";
+import type { AppSocket } from "../app/types";
 import type { DockerCommandResult, DockerRunner } from "../containers";
 import type { RunCommandFactory } from "../runs";
 import type {
@@ -912,4 +913,23 @@ export function sessionCookieFrom(response: Response): string {
 		.find((value) => value.startsWith("coderunner_session="));
 	expect(cookie).toBeTruthy();
 	return cookie?.split(";")[0] ?? "";
+}
+
+/** Open a run socket on the app's handlers and record server-side closes. */
+export function openRunSocket(app: ControlApp, workspace: WorkspaceRow) {
+	const closes: Array<{
+		code?: number | undefined;
+		reason?: string | undefined;
+	}> = [];
+	const ws: AppSocket = {
+		data: { kind: "run", workspace },
+		send: () => undefined,
+		close(code?: number, reason?: string) {
+			closes.push({ code, reason });
+			app.websocket.close(ws);
+			return undefined;
+		},
+	};
+	app.websocket.open(ws);
+	return { ws, closes };
 }

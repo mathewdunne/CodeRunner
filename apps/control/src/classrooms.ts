@@ -276,6 +276,30 @@ export function countClassroomGuests(
 	return row.count;
 }
 
+// Guests being created but not yet committed. Counting and reserving in one
+// tick keeps a burst of concurrent joins from all seeing a free slot.
+const pendingGuests = new Map<string, number>();
+
+/**
+ * Reserve a guest slot under CLASSROOM_GUEST_CAP. Returns a release to call
+ * once the guest is created (or creation failed), or null when full.
+ */
+export function reserveGuestSlot(
+	db: Database,
+	classroomId: string,
+): (() => void) | null {
+	const pending = pendingGuests.get(classroomId) ?? 0;
+	if (countClassroomGuests(db, classroomId) + pending >= CLASSROOM_GUEST_CAP) {
+		return null;
+	}
+	pendingGuests.set(classroomId, pending + 1);
+	return () => {
+		const left = (pendingGuests.get(classroomId) ?? 1) - 1;
+		if (left > 0) pendingGuests.set(classroomId, left);
+		else pendingGuests.delete(classroomId);
+	};
+}
+
 export function listGuestIds(db: Database, classroomId: string): string[] {
 	return (
 		db.query("SELECT id FROM user WHERE classroomId = ?").all(classroomId) as {

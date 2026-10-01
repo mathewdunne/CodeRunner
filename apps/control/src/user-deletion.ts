@@ -1,5 +1,6 @@
 import { rm } from "node:fs/promises";
 import { dirname } from "node:path";
+import type { WorkspaceId } from "@frc-coderunner/contracts";
 import type { RunManager } from "./runs";
 import type { WorkspaceRuntimeProvider } from "./runtime";
 import type { AppStorage } from "./storage";
@@ -8,10 +9,11 @@ export type UserDeletionContext = {
 	storage: AppStorage;
 	runs: RunManager;
 	runtimeProvider: WorkspaceRuntimeProvider;
+	closeWorkspaceSockets: (workspaceId: WorkspaceId) => void;
 };
 
 /**
- * Stop and remove a user's container, delete the user with their sessions,
+ * Close a user's sockets, stop and remove their container, delete the user with their sessions,
  * accounts and workspace rows, then remove their data directory. Callers own
  * authorization, guards (e.g. last admin), and audit events.
  */
@@ -22,6 +24,7 @@ export async function deleteUserAndWorkspace(
 	const { storage, runs, runtimeProvider } = ctx;
 	const workspace = storage.findWorkspaceByUserId(userId);
 	if (workspace) {
+		ctx.closeWorkspaceSockets(workspace.id);
 		runs.stopWorkspace(workspace.id);
 		await runtimeProvider.stopWorkspace(workspace.id);
 		await runtimeProvider.removeWorkspace(workspace.id);

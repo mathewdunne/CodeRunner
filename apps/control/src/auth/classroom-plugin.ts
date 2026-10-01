@@ -17,8 +17,6 @@ import { APIError, createAuthEndpoint } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import type { AuditEventInput } from "../audit";
 import {
-	CLASSROOM_GUEST_CAP,
-	countClassroomGuests,
 	findGuest,
 	findLiveClassroomByCode,
 	GUEST_EMAIL_DOMAIN,
@@ -26,6 +24,7 @@ import {
 	guestNameKey,
 	isClassroomLive,
 	normalizeDisplayName,
+	reserveGuestSlot,
 	trackClassroomJoin,
 } from "../classrooms";
 import { getLogger } from "../logging";
@@ -78,9 +77,8 @@ export function classroomPlugin(options: ClassroomPluginOptions) {
 						let guest = findGuest(db, classroom.id, nameKey);
 						const rejoin = guest !== null;
 						if (!guest) {
-							if (
-								countClassroomGuests(db, classroom.id) >= CLASSROOM_GUEST_CAP
-							) {
+							const releaseSlot = reserveGuestSlot(db, classroom.id);
+							if (!releaseSlot) {
 								throw new APIError("FORBIDDEN", {
 									code: "CLASSROOM_FULL",
 									message: "This classroom is full. Ask your coach for help.",
@@ -104,6 +102,8 @@ export function classroomPlugin(options: ClassroomPluginOptions) {
 									message: `${winner?.name ?? displayName} already joined this classroom.`,
 									displayName: winner?.name ?? displayName,
 								});
+							} finally {
+								releaseSlot();
 							}
 							guest = findGuest(db, classroom.id, nameKey);
 							if (!guest) {
