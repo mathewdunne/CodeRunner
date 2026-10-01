@@ -25,7 +25,7 @@ export default defineConfig({
 			"/pathplanner": controlPlane,
 			"/coderunner-icon.png": controlPlane,
 			"/favicon.ico": controlPlane,
-			"^/admin/(assets|allowlist|audit-log|users|containers|workspaces|config|status)(/.*)?$":
+			"^/admin/(assets|allowlist|audit-log|users|containers|workspaces|config|status|classrooms)(/.*)?$":
 				proxyOpts,
 			"^/u/[^/]+/(api|ws|sim|vscode|assets|coderunner-icon\\.png|favicon\\.ico)(/.*)?$":
 				proxyOpts,

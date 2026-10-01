@@ -1,5 +1,5 @@
 import { Database } from "bun:sqlite";
-import { randomBytes } from "node:crypto";
+import { randomBytes, randomInt } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { chmod, mkdir } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
@@ -9,6 +9,7 @@ import type {
 	WorkspaceId,
 	WorkspaceSlug,
 } from "@frc-coderunner/contracts";
+import { recordAuditEvent } from "./audit";
 import {
 	addAllowlistEntry,
 	loadAllowlist,
@@ -158,10 +159,16 @@ export class AppStorage {
 			ensureWorkspace: async (userId, slug) => {
 				await this.ensureWorkspaceForUser(userId, slug);
 			},
+			audit: (event) => recordAuditEvent(this, event),
 		});
 		const { getMigrations } = await import("better-auth/db/migration");
 		const { runMigrations } = await getMigrations(this.auth.options);
 		await runMigrations();
+		// One guest per name per classroom. Lives here, not in a SQL migration,
+		// because Better Auth creates the user table and its classroom columns.
+		this.db.exec(
+			"CREATE UNIQUE INDEX IF NOT EXISTS idx_user_classroom_guest ON user(classroomId, guestNameKey) WHERE classroomId IS NOT NULL;",
+		);
 
 		// 5. Bootstrap admins from CODERUNNER_ADMIN_EMAIL. Runs after the allowlist
 		// is loaded and the better-auth `user` table exists, so it can both seed
@@ -293,12 +300,22 @@ export class AppStorage {
 		const placeholderProjectPath = projectPathFor(this.config, workspaceId);
 
 		let finalSlug: WorkspaceSlug | null = null;
-		const MAX_ATTEMPTS = 16;
-		for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+		// Numbered suffixes first (alice, alice-1 … alice-15), then random ones:
+		// a crowded base — every non-Latin guest name slugifies to "student" —
+		// would otherwise run out.
+		const NUMBERED_ATTEMPTS = 16;
+		const RANDOM_ATTEMPTS = 8;
+		for (
+			let attempt = 0;
+			attempt < NUMBERED_ATTEMPTS + RANDOM_ATTEMPTS;
+			attempt++
+		) {
+			const suffix =
+				attempt < NUMBERED_ATTEMPTS ? attempt : randomInt(1000, 1_000_000);
 			const candidate =
 				attempt === 0
 					? (baseSlug as WorkspaceSlug)
-					: (`${baseSlug.slice(0, 40 - `-${attempt}`.length)}-${attempt}` as WorkspaceSlug);
+					: (`${baseSlug.slice(0, 40 - `-${suffix}`.length)}-${suffix}` as WorkspaceSlug);
 
 			if (this.findWorkspaceBySlug(candidate)) continue;
 

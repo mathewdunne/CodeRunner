@@ -1,0 +1,517 @@
+import { describe, expect, test } from "bun:test";
+import {
+	sessionResponseSchema,
+	type WorkspaceId,
+} from "@frc-coderunner/contracts";
+import type { ControlApp } from "../app";
+import {
+	CLASSROOM_GUEST_CAP,
+	createClassroom,
+	endClassroom,
+} from "../classrooms";
+import {
+	allCookiesFrom,
+	classroomJoinRequest,
+	cookieFrom,
+	login,
+	openRunSocket,
+	sessionCookieFrom,
+	withApp,
+} from "./helpers";
+
+function startClassroom(app: ControlApp) {
+	return createClassroom(app.storage.db, {
+		createdBy: "test-admin",
+		durationMinutes: 240,
+	});
+}
+
+type GuestUser = {
+	id: string;
+	name: string;
+	email: string;
+	role: string;
+	slug: string;
+	classroomId: string;
+	guestNameKey: string;
+};
+
+function guestsOf(app: ControlApp, classroomId: string): GuestUser[] {
+	return app.storage.db
+		.query(
+			"SELECT id, name, email, role, slug, classroomId, guestNameKey FROM user WHERE classroomId = ?",
+		)
+		.all(classroomId) as GuestUser[];
+}
+
+describe("POST /api/auth/classroom/join", () => {
+	test("creates a guest user, workspace, and a session that ends with the classroom", async () => {
+		await withApp(async (app) => {
+			// withApp starts with an empty allowlist, which blocks every OAuth
+			// sign-in — a successful join proves guests bypass it.
+			const classroom = startClassroom(app);
+			const response = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "  Alex   D " }),
+			);
+			expect(response.status).toBe(200);
+			const body = (await response.json()) as { ok: boolean; userId: string };
+			expect(body.ok).toBe(true);
+
+			const [guest, ...rest] = guestsOf(app, classroom.id);
+			expect(rest).toEqual([]);
+			expect(guest?.id).toBe(body.userId);
+			expect(guest?.name).toBe("Alex D");
+			expect(guest?.email).toEndWith("@classroom.invalid");
+			expect(guest?.role).toBe("student");
+			expect(guest?.slug).toBe("alex-d");
+			expect(guest?.guestNameKey).toBe("alexd");
+
+			expect(app.storage.findWorkspaceByUserId(body.userId)?.slug).toBe(
+				"alex-d",
+			);
+
+			const session = app.storage.db
+				.query("SELECT expiresAt FROM session WHERE userId = ?")
+				.get(body.userId) as { expiresAt: string };
+			expect(
+				Math.abs(
+					new Date(session.expiresAt).getTime() -
+						new Date(classroom.expires_at).getTime(),
+				),
+			).toBeLessThan(1000);
+
+			const cookie = sessionCookieFrom(response);
+			const sessionResponse = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/session", {
+					headers: { cookie },
+				}),
+			);
+			expect(sessionResponse.status).toBe(200);
+
+			const audit = app.storage.db
+				.query("SELECT action FROM audit_log WHERE action = ?")
+				.all("classroom.guest_join");
+			expect(audit.length).toBe(1);
+		});
+	});
+
+	test("same name asks for confirmation, then reuses the same guest", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			const first = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			expect(first.status).toBe(200);
+
+			const second = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "alex d." }),
+			);
+			expect(second.status).toBe(409);
+			expect(await second.json()).toMatchObject({
+				code: "NAME_TAKEN",
+				displayName: "Alex D",
+			});
+
+			const third = await app.fetch(
+				classroomJoinRequest({
+					code: classroom.code,
+					name: "alex d.",
+					confirmExisting: true,
+				}),
+			);
+			expect(third.status).toBe(200);
+
+			const guests = guestsOf(app, classroom.id);
+			expect(guests.length).toBe(1);
+			const sessions = app.storage.db
+				.query("SELECT COUNT(*) AS count FROM session WHERE userId = ?")
+				.get(guests[0]?.id ?? "") as { count: number };
+			expect(sessions.count).toBe(2);
+		});
+	});
+
+	test("two simultaneous joins with the same name create exactly one guest", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			const responses = await Promise.all([
+				app.fetch(classroomJoinRequest({ code: classroom.code, name: "Sam" })),
+				app.fetch(classroomJoinRequest({ code: classroom.code, name: "Sam" })),
+			]);
+			expect(responses.map((r) => r.status).sort()).toEqual([200, 409]);
+			expect(guestsOf(app, classroom.id).length).toBe(1);
+		});
+	});
+
+	test("a name with no Latin letters still gets a valid workspace slug", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			const response = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "李雷" }),
+			);
+			expect(response.status).toBe(200);
+			const [guest] = guestsOf(app, classroom.id);
+			expect(guest?.guestNameKey).toBe("李雷");
+			expect(guest?.slug).toMatch(/^student(-\d+)?$/u);
+		});
+	});
+
+	test("many non-Latin names each get a distinct student slug", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			// More than the 16 numbered candidates (student, student-1 … student-15).
+			const names = Array.from({ length: 18 }, (_, i) =>
+				String.fromCodePoint(0x674e, 0x4e00 + i),
+			);
+			for (const name of names) {
+				const response = await app.fetch(
+					classroomJoinRequest({ code: classroom.code, name }),
+				);
+				expect(response.status).toBe(200);
+			}
+			const slugs = guestsOf(app, classroom.id).map((guest) => guest.slug);
+			expect(slugs.length).toBe(names.length);
+			for (const slug of slugs) expect(slug).toMatch(/^student(-\d+)?$/u);
+			expect(new Set(slugs).size).toBe(names.length);
+		});
+	}, 30_000);
+
+	test("unknown, expired, and ended codes are rejected the same way", async () => {
+		await withApp(async (app) => {
+			const unknown = await app.fetch(
+				classroomJoinRequest({ code: "000000", name: "Alex" }),
+			);
+			expect(unknown.status).toBe(404);
+			expect(await unknown.json()).toMatchObject({ code: "INVALID_CODE" });
+
+			const expired = startClassroom(app);
+			app.storage.db
+				.query("UPDATE classrooms SET expires_at = ? WHERE id = ?")
+				.run(new Date(Date.now() - 1000).toISOString(), expired.id);
+			const expiredResponse = await app.fetch(
+				classroomJoinRequest({ code: expired.code, name: "Alex" }),
+			);
+			expect(expiredResponse.status).toBe(404);
+
+			const ended = startClassroom(app);
+			endClassroom(app.storage.db, ended.id);
+			const endedResponse = await app.fetch(
+				classroomJoinRequest({ code: ended.code, name: "Alex" }),
+			);
+			expect(endedResponse.status).toBe(404);
+		});
+	});
+
+	test("malformed input is a 400 with INVALID_INPUT", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			for (const body of [
+				{ code: "12345", name: "Alex" },
+				{ code: classroom.code, name: "" },
+				{ code: classroom.code, name: "<script>" },
+				{ code: classroom.code, name: "..." },
+				{ name: "Alex" },
+			]) {
+				const response = await app.fetch(classroomJoinRequest(body));
+				expect(response.status).toBe(400);
+				expect(await response.json()).toMatchObject({ code: "INVALID_INPUT" });
+			}
+		});
+	});
+
+	test("a full classroom rejects new names but still lets existing guests rejoin", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			for (let i = 0; i < CLASSROOM_GUEST_CAP; i += 1) {
+				const response = await app.fetch(
+					classroomJoinRequest({ code: classroom.code, name: `Student ${i}` }),
+				);
+				expect(response.status).toBe(200);
+			}
+			const full = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "One More" }),
+			);
+			expect(full.status).toBe(403);
+			expect(await full.json()).toMatchObject({ code: "CLASSROOM_FULL" });
+
+			const rejoin = await app.fetch(
+				classroomJoinRequest({
+					code: classroom.code,
+					name: "Student 0",
+					confirmExisting: true,
+				}),
+			);
+			expect(rejoin.status).toBe(200);
+		});
+		// 60 joins each create a workspace on disk; Bun's default is 5 s.
+	}, 30_000);
+
+	test("a parallel burst of new names cannot overfill the classroom", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			const responses = await Promise.all(
+				Array.from({ length: CLASSROOM_GUEST_CAP + 5 }, (_, i) =>
+					app.fetch(
+						classroomJoinRequest({
+							code: classroom.code,
+							name: `Student ${i}`,
+						}),
+					),
+				),
+			);
+			const statuses = responses.map((response) => response.status);
+			expect(statuses.filter((status) => status === 200)).toHaveLength(
+				CLASSROOM_GUEST_CAP,
+			);
+			expect(statuses.filter((status) => status === 403)).toHaveLength(5);
+			expect(guestsOf(app, classroom.id)).toHaveLength(CLASSROOM_GUEST_CAP);
+		});
+	}, 30_000);
+});
+
+describe("guest session lifetime", () => {
+	async function joinedGuest(app: ControlApp) {
+		const classroom = startClassroom(app);
+		const response = await app.fetch(
+			classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+		);
+		expect(response.status).toBe(200);
+		return { classroom, cookie: sessionCookieFrom(response) };
+	}
+
+	function sessionStatus(app: ControlApp, cookie: string) {
+		return app
+			.fetch(
+				new Request("http://localhost/u/alex-d/api/session", {
+					headers: { cookie },
+				}),
+			)
+			.then((response) => response.status);
+	}
+
+	test("ending the classroom signs the guest out immediately", async () => {
+		await withApp(async (app) => {
+			const { classroom, cookie } = await joinedGuest(app);
+			expect(await sessionStatus(app, cookie)).toBe(200);
+			endClassroom(app.storage.db, classroom.id);
+			expect(await sessionStatus(app, cookie)).toBe(401);
+		});
+	});
+
+	test("an expired classroom rejects the guest even if the session row was refreshed", async () => {
+		await withApp(async (app) => {
+			const { classroom, cookie } = await joinedGuest(app);
+			// Simulate Better Auth's updateAge refresh pushing the session out.
+			app.storage.db
+				.query("UPDATE session SET expiresAt = ?")
+				.run(new Date(Date.now() + 14 * 86_400_000).toISOString());
+			app.storage.db
+				.query("UPDATE classrooms SET expires_at = ? WHERE id = ?")
+				.run(new Date(Date.now() - 1000).toISOString(), classroom.id);
+			expect(await sessionStatus(app, cookie)).toBe(401);
+		});
+	});
+});
+
+describe("GET /api/auth/get-session for guests", () => {
+	function getSession(app: ControlApp, cookie: string) {
+		return app.fetch(
+			new Request("http://localhost:4000/api/auth/get-session", {
+				headers: { cookie },
+			}),
+		);
+	}
+
+	test("reports the slug the guest's workspace actually got", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "李雷" }),
+			);
+			// A second non-Latin name collides on "student" and gets "student-1".
+			const second = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "韩梅梅" }),
+			);
+			const { userId } = (await second.clone().json()) as { userId: string };
+			const workspace = app.storage.findWorkspaceByUserId(userId);
+			expect(workspace?.slug).toBe("student-1");
+
+			const response = await getSession(app, allCookiesFrom(second));
+			const body = (await response.json()) as { user: { slug: string } };
+			expect(body.user.slug).toBe("student-1");
+		});
+	});
+
+	test("reports no session once the classroom has ended", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const cookie = allCookiesFrom(joined);
+			const live = (await (await getSession(app, cookie)).json()) as {
+				user?: { id: string };
+			} | null;
+			expect(live?.user?.id).toBeTruthy();
+
+			endClassroom(app.storage.db, classroom.id);
+			const ended = await getSession(app, cookie);
+			expect(ended.status).toBe(200);
+			expect(await ended.json()).toBeNull();
+		});
+	});
+
+	test("OAuth users are unaffected", async () => {
+		await withApp(async (app) => {
+			const cookie = cookieFrom(await login(app, "alice"));
+			const response = await getSession(app, cookie);
+			const body = (await response.json()) as { user: { slug: string } };
+			expect(body.user.slug).toBe("alice");
+		});
+	});
+});
+
+describe("guest workspace routes", () => {
+	test("/api/session reports when the guest's classroom ends", async () => {
+		await withApp(async (app) => {
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const response = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/session", {
+					headers: { cookie: sessionCookieFrom(joined) },
+				}),
+			);
+			const body = sessionResponseSchema.parse(await response.json());
+			expect(body.user.guest).toEqual({
+				classroomEndsAt: classroom.expires_at,
+			});
+		});
+	});
+
+	test("/api/session has no guest field for OAuth users", async () => {
+		await withApp(async (app) => {
+			const cookie = cookieFrom(await login(app, "alice"));
+			const response = await app.fetch(
+				new Request("http://localhost/u/alice/api/session", {
+					headers: { cookie },
+				}),
+			);
+			const body = sessionResponseSchema.parse(await response.json());
+			expect(body.user.guest).toBeUndefined();
+		});
+	});
+
+	test("POST /api/leave stops the container and keeps the workspace", async () => {
+		await withApp(async (app) => {
+			const stopped: WorkspaceId[] = [];
+			app.runtime.stopWorkspace = async (workspaceId) => {
+				stopped.push(workspaceId);
+			};
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const { userId } = (await joined.clone().json()) as { userId: string };
+			const workspace = app.storage.findWorkspaceByUserId(userId)!;
+
+			const response = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/leave", {
+					method: "POST",
+					headers: { cookie: sessionCookieFrom(joined) },
+				}),
+			);
+			expect(response.status).toBe(200);
+			expect(await response.json()).toEqual({ ok: true });
+			expect(stopped).toEqual([workspace.id]);
+			expect(app.storage.findWorkspaceByUserId(userId)).not.toBeNull();
+		});
+	});
+
+	test("POST /api/leave closes the guest's open run socket", async () => {
+		await withApp(async (app) => {
+			app.runtime.stopWorkspace = async () => {};
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const { userId } = (await joined.clone().json()) as { userId: string };
+			const run = openRunSocket(
+				app,
+				app.storage.findWorkspaceByUserId(userId)!,
+			);
+
+			const response = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/leave", {
+					method: "POST",
+					headers: { cookie: sessionCookieFrom(joined) },
+				}),
+			);
+			expect(response.status).toBe(200);
+			expect(run.closes).toHaveLength(1);
+		});
+	});
+
+	test("POST /api/leave signs the browser out, cookie cache included", async () => {
+		await withApp(async (app) => {
+			app.runtime.stopWorkspace = async () => {};
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const { userId } = (await joined.clone().json()) as { userId: string };
+			// Every cookie the join set: the session token and the cache cookie.
+			const cookie = allCookiesFrom(joined);
+			expect(cookie).toContain("coderunner_session=");
+			expect(cookie).toContain("session_data=");
+
+			const response = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/leave", {
+					method: "POST",
+					headers: { cookie },
+				}),
+			);
+			expect(response.status).toBe(200);
+			expect(await response.json()).toEqual({ ok: true });
+			const cleared = response.headers.getSetCookie();
+			for (const name of ["coderunner_session=", "session_data="]) {
+				const header = cleared.find((value) => value.includes(name));
+				expect(header).toMatch(/Max-Age=0/iu);
+			}
+			const sessions = app.storage.db
+				.query("SELECT COUNT(*) AS count FROM session WHERE userId = ?")
+				.get(userId) as { count: number };
+			expect(sessions.count).toBe(0);
+
+			// A poll still carrying the old cookies must not revive the workspace.
+			for (const path of ["/api/sim/status", "/api/session"]) {
+				const after = await app.fetch(
+					new Request(`http://localhost/u/alex-d${path}`, {
+						headers: { cookie },
+					}),
+				);
+				expect(after.status).toBe(401);
+			}
+		});
+	});
+
+	test("POST /api/leave returns a structured error when the stop fails", async () => {
+		await withApp(async (app) => {
+			app.runtime.stopWorkspace = async () => {
+				throw new Error("docker stop failed");
+			};
+			const classroom = startClassroom(app);
+			const joined = await app.fetch(
+				classroomJoinRequest({ code: classroom.code, name: "Alex D" }),
+			);
+			const response = await app.fetch(
+				new Request("http://localhost/u/alex-d/api/leave", {
+					method: "POST",
+					headers: { cookie: allCookiesFrom(joined) },
+				}),
+			);
+			expect(response.status).toBe(500);
+			expect(await response.json()).toEqual({ error: "docker stop failed" });
+		});
+	});
+});

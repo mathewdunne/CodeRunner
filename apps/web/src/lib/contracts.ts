@@ -6,6 +6,7 @@ export type {
 	AutoChooserPatch,
 	AutoChoosersResponse,
 	BridgeConnection,
+	ClassroomJoinError,
 	ContainersStatusResponse,
 	DriverStationPatch,
 	DsMode,
@@ -27,6 +28,7 @@ export type {
 export {
 	authProvidersResponseSchema,
 	autoChoosersResponseSchema,
+	classroomJoinErrorSchema,
 	gamepadClientMessageSchema,
 	gamepadServerMessageSchema,
 	gamepadStateSchema,

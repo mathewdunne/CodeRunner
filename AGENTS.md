@@ -77,6 +77,17 @@ from `showDriverStation` to make that possible. See
 `docs/decisions/041-project-preview.md` and
 [`docs/using-coderunner.md`](./docs/using-coderunner.md).
 
+**Classroom join codes (post-V2):** admins start a short-lived classroom
+(Admin → Classrooms) with a 6-digit code; students join at `/join` with the
+code and their name and become guest users (`user.classroomId` set, role
+`student`, no allowlist). A custom Better Auth plugin
+(`auth/classroom-plugin.ts`) mints the session; `app/classroom-routes.ts`
+rate-limits failed attempts and retires the browser's previous guest
+session. Guest sessions die with the classroom (checked in
+`getSessionFromRequest`), guests have a **Leave** button that stops their
+container, and `ClassroomSweeper` deletes guests of ended/expired
+classrooms. See `docs/decisions/043-classroom-join-codes.md`.
+
 **Auth0 SSO (post-V2):** a third login provider beside GitHub and Google,
 enabled by `AUTH0_DOMAIN`/`AUTH0_CLIENT_ID`/`AUTH0_CLIENT_SECRET` and wired
 through Better Auth's `genericOAuth` plugin (callback

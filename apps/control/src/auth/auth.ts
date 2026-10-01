@@ -12,9 +12,11 @@
 import type { Database } from "bun:sqlite";
 import { type BetterAuthOptions, betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
+import type { AuditEventInput } from "../audit";
 import type { ControlConfig } from "../config";
 import { getLogger } from "../logging";
 import { isEmailAllowed, reloadAllowlist } from "./allowlist";
+import { classroomPlugin } from "./classroom-plugin";
 import {
 	buildAuth0Plugin,
 	buildSocialProviders,
@@ -102,10 +104,9 @@ async function refreshAllowlistBeforeCheck(): Promise<void> {
 	}
 }
 
-export function slugFromEmail(email: string): string {
-	const local = email.split("@")[0] ?? "student";
+export function slugify(value: string): string {
 	return (
-		local
+		value
 			.toLowerCase()
 			.normalize("NFKD")
 			.replace(/[\u0300-\u036f]/gu, "")
@@ -116,9 +117,15 @@ export function slugFromEmail(email: string): string {
 	);
 }
 
+export function slugFromEmail(email: string): string {
+	return slugify(email.split("@")[0] ?? "student");
+}
+
 export type AuthCallbacks = {
 	/** Called after OAuth callback for new users to create their workspace. */
 	ensureWorkspace: (userId: string, slug: string) => Promise<void>;
+	/** Records an audit event (classroom guest joins). */
+	audit: (event: AuditEventInput) => void;
 };
 
 export function createAuth(
@@ -135,7 +142,14 @@ export function createAuth(
 		basePath: "/api/auth",
 		secret: config.sessionSecret,
 		socialProviders,
-		plugins: auth0Plugin ? [auth0Plugin] : [],
+		plugins: [
+			classroomPlugin({
+				db,
+				ensureWorkspace: callbacks.ensureWorkspace,
+				audit: callbacks.audit,
+			}),
+			...(auth0Plugin ? [auth0Plugin] : []),
+		],
 		session: {
 			expiresIn: 14 * 24 * 60 * 60, // 14 days in seconds
 			updateAge: 24 * 60 * 60, // refresh session expiry daily
@@ -157,6 +171,17 @@ export function createAuth(
 					required: false,
 					input: false,
 				},
+				// Classroom guests (decision 043). Better Auth adds these columns.
+				classroomId: {
+					type: "string",
+					required: false,
+					input: false,
+				},
+				guestNameKey: {
+					type: "string",
+					required: false,
+					input: false,
+				},
 			},
 		},
 		advanced: {
@@ -171,6 +196,14 @@ export function createAuth(
 			user: {
 				create: {
 					before: async (user, ctx) => {
+						const classroomId = (user as { classroomId?: string | null })
+							.classroomId;
+						if (classroomId) {
+							// Classroom guests: no allowlist, never admin, slug from name.
+							const slug = slugify(user.name);
+							log.info("creating classroom guest", { classroomId, slug });
+							return { data: { ...user, slug, role: "student" } };
+						}
 						const slug = slugFromEmail(user.email);
 						if (isAuth0Callback(ctx)) {
 							// Auth0 vets the user; the role claim replaces the allowlist.

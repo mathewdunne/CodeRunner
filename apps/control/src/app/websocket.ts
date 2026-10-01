@@ -55,6 +55,22 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 		gamepad.reset(workspaceId);
 	};
 
+	// Workspace-scoped sockets trust the workspace they were authenticated
+	// with, so ending the session (Leave, classroom end, user deletion) must
+	// close them or a later message could start a run without a session.
+	const workspaceSockets = new Map<WorkspaceId, Set<AppSocket>>();
+
+	const closeWorkspaceSockets = (workspaceId: WorkspaceId): void => {
+		const sockets = workspaceSockets.get(workspaceId);
+		if (!sockets) return;
+		workspaceSockets.delete(workspaceId);
+		for (const ws of sockets) {
+			try {
+				ws.close(1008, "Session ended.");
+			} catch {}
+		}
+	};
+
 	const resolveGamepadLease = (
 		workspaceId: WorkspaceId,
 	): GamepadLease | null => {
@@ -150,11 +166,21 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 	}
 
 	return {
+		closeWorkspaceSockets,
 		open(ws: AppSocket): void {
 			log.debug("ws open", {
 				kind: ws.data.kind,
 				workspaceId: "workspace" in ws.data ? ws.data.workspace.id : null,
 			});
+			if ("workspace" in ws.data) {
+				const workspaceId = ws.data.workspace.id;
+				let sockets = workspaceSockets.get(workspaceId);
+				if (!sockets) {
+					sockets = new Set();
+					workspaceSockets.set(workspaceId, sockets);
+				}
+				sockets.add(ws);
+			}
 			if (ws.data.kind === "nt4") {
 				openProxyUpstream(ws, "NT4", ws.data.protocols);
 				return;
@@ -377,6 +403,12 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 				kind: ws.data.kind,
 				workspaceId: "workspace" in ws.data ? ws.data.workspace.id : null,
 			});
+			if ("workspace" in ws.data) {
+				const workspaceId = ws.data.workspace.id;
+				const sockets = workspaceSockets.get(workspaceId);
+				sockets?.delete(ws);
+				if (sockets?.size === 0) workspaceSockets.delete(workspaceId);
+			}
 			if (
 				ws.data.kind === "nt4" ||
 				ws.data.kind === "vscode" ||

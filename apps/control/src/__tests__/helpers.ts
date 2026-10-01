@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { WorkspaceId } from "@frc-coderunner/contracts";
 import { type ControlApp, type ControlAppOptions, createApp } from "../app";
+import type { AppSocket } from "../app/types";
 import type { DockerCommandResult, DockerRunner } from "../containers";
 import type { RunCommandFactory } from "../runs";
 import type {
@@ -878,4 +879,57 @@ export function workspaceBySlug(app: ControlApp, slug: string) {
 		.get(slug) as WorkspaceRow | null;
 	expect(workspace).toBeTruthy();
 	return workspace!;
+}
+
+/** POST to the classroom join endpoint the way the browser does. */
+export function classroomJoinRequest(
+	body: unknown,
+	headers: Record<string, string> = {},
+): Request {
+	return new Request("http://localhost:4000/api/auth/classroom/join", {
+		method: "POST",
+		headers: {
+			"content-type": "application/json",
+			// Better Auth rejects cookie-bearing POSTs without a same-origin Origin.
+			origin: "http://localhost:4000",
+			...headers,
+		},
+		body: JSON.stringify(body),
+	});
+}
+
+/** Every `name=value` pair a response set, joined into one Cookie header. */
+export function allCookiesFrom(response: Response): string {
+	return response.headers
+		.getSetCookie()
+		.map((value) => value.split(";")[0])
+		.join("; ");
+}
+
+/** The `coderunner_session=…` pair from a Better Auth response (it also sets a cache cookie). */
+export function sessionCookieFrom(response: Response): string {
+	const cookie = response.headers
+		.getSetCookie()
+		.find((value) => value.startsWith("coderunner_session="));
+	expect(cookie).toBeTruthy();
+	return cookie?.split(";")[0] ?? "";
+}
+
+/** Open a run socket on the app's handlers and record server-side closes. */
+export function openRunSocket(app: ControlApp, workspace: WorkspaceRow) {
+	const closes: Array<{
+		code?: number | undefined;
+		reason?: string | undefined;
+	}> = [];
+	const ws: AppSocket = {
+		data: { kind: "run", workspace },
+		send: () => undefined,
+		close(code?: number, reason?: string) {
+			closes.push({ code, reason });
+			app.websocket.close(ws);
+			return undefined;
+		},
+	};
+	app.websocket.open(ws);
+	return { ws, closes };
 }

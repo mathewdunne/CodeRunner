@@ -6,6 +6,7 @@
  */
 
 import type { WorkspaceSlug } from "@frc-coderunner/contracts";
+import { getClassroom, isClassroomLive } from "../classrooms";
 import { getLogger } from "../logging";
 import type { AppStorage, AuthContext } from "../storage";
 import { getDemoSession } from "./demo";
@@ -46,7 +47,30 @@ export async function getSessionFromRequest(
 			image?: string | null;
 			role?: string;
 			slug?: string;
+			classroomId?: string | null;
 		};
+		// Classroom guests are only signed in while their classroom is live.
+		// This is the authoritative check: Better Auth's updateAge refresh can
+		// extend a guest's session row, and its cookie cache can outlive "End now".
+		if (user.classroomId) {
+			const classroom = getClassroom(storage.db, user.classroomId);
+			if (!classroom || !isClassroomLive(classroom)) {
+				log.debug("getSession: classroom not live", {
+					userId: user.id,
+					classroomId: user.classroomId,
+				});
+				return null;
+			}
+			// Leave and a join over this browser delete the guest's session row;
+			// without this check the 5-minute cookie cache keeps it signed in.
+			const row = storage.db
+				.query("SELECT 1 FROM session WHERE token = ?")
+				.get(session.session.token);
+			if (!row) {
+				log.debug("getSession: guest session ended", { userId: user.id });
+				return null;
+			}
+		}
 		log.trace("getSession: ok", { userId: user.id, role: user.role });
 		return {
 			user: {
@@ -54,7 +78,10 @@ export async function getSessionFromRequest(
 				email: user.email,
 				name: user.name,
 				image: user.image ?? null,
-				role: (user.role as string) ?? "student",
+				// Guests are never admins, whatever their row says (decision 043).
+				role: user.classroomId
+					? "student"
+					: ((user.role as string) ?? "student"),
 				slug: (user.slug as string) ?? "",
 			},
 			session: { token: session.session.token },

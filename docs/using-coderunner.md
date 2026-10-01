@@ -7,7 +7,7 @@ title: Using CodeRunner
 
 ## Get started
 
-1. Sign in.
+1. Sign in, or if your team is using Classroom mode, ask your mentor for a code.
 2. Click **Switch project**, then load a lesson or import a public GitHub project.
 3. For a lesson, select **Preview** to read its README and follow the
    instructions. For an imported project, open the files you want to work on.

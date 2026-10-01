@@ -1,3 +1,4 @@
+import type { WorkspaceId } from "@frc-coderunner/contracts";
 import type { ControlConfigInput } from "../config";
 import type { DockerRunner, LocalDockerRuntimeProvider } from "../containers";
 import type { GamepadSessions } from "../gamepad";
@@ -22,11 +23,14 @@ export type BunUpgradeServer = {
 		request: Request,
 		options: { data: SocketData; headers?: HeadersInit },
 	): boolean;
+	/** Bun's socket address for the request; absent in tests. */
+	requestIP?(request: Request): { address: string } | null;
 };
 
 export type ControlApp = {
 	fetch(request: Request, server?: BunUpgradeServer): Promise<Response>;
 	websocket: {
+		closeWorkspaceSockets(workspaceId: WorkspaceId): void;
 		open(ws: AppSocket): void;
 		message(ws: AppSocket, message: string | ArrayBuffer | Uint8Array): void;
 		close(ws: AppSocket): void;

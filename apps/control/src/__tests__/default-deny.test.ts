@@ -13,6 +13,7 @@ import { withApp } from "./helpers";
 const PUBLIC_PATHS: Array<{ path: string; method?: "GET" | "POST" }> = [
 	{ path: "/" },
 	{ path: "/login" },
+	{ path: "/join" },
 	{ path: "/healthz" },
 	{ path: "/api/openapi.json" },
 	{ path: "/api/auth/providers" },
@@ -30,6 +31,10 @@ const GATED_PATHS: Array<{
 	expect: "deny";
 }> = [
 	{ path: "/admin", expect: "deny" },
+	{ path: "/u/alice/api/leave", method: "POST", expect: "deny" },
+	{ path: "/admin/classrooms", expect: "deny" },
+	{ path: "/admin/classrooms", method: "POST", expect: "deny" },
+	{ path: "/admin/classrooms/cls_x/end", method: "POST", expect: "deny" },
 	{ path: "/admin/", expect: "deny" },
 	{ path: "/admin/status", expect: "deny" },
 	{ path: "/admin/users", expect: "deny" },

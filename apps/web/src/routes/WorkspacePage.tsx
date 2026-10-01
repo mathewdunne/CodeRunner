@@ -206,6 +206,13 @@ export function WorkspacePage() {
 	const isAdmin =
 		sessionState.status === "ready" &&
 		sessionState.session.user.role === "admin";
+	const guest =
+		sessionState.status === "ready" && sessionState.session.user.guest
+			? {
+					endsAt: sessionState.session.user.guest.classroomEndsAt,
+					workspaceSlug: sessionState.session.workspace.slug,
+				}
+			: undefined;
 	const isDemo =
 		sessionState.status === "ready" && sessionState.session.demo === true;
 
@@ -234,6 +241,7 @@ export function WorkspacePage() {
 				email={email}
 				avatarUrl={avatarUrl}
 				isAdmin={isAdmin}
+				guest={guest}
 				onSwitchProject={() => setSwitchOpen(true)}
 				showSimPaneTabs={!isConsoleModule}
 				previewOpen={layout.rightVisible}
@@ -336,6 +344,7 @@ export function WorkspacePage() {
 				onOpenChange={setSwitchOpen}
 				workspaceSlug={workspaceSlug}
 				currentModule={currentModule}
+				projectEmpty={projectEmpty}
 				onSwapComplete={onSwapComplete}
 			/>
 		</SimPaneTabs>
