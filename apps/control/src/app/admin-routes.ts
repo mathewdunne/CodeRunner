@@ -1,4 +1,4 @@
-import { mkdir, rm, stat } from "node:fs/promises";
+import { mkdir, stat } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type {
 	AdminActionResponse,
@@ -10,12 +10,14 @@ import { getLogger } from "../logging";
 import type { RunManager } from "../runs";
 import type { WorkspaceRuntimeProvider } from "../runtime";
 import type { AppStorage } from "../storage";
+import { deleteUserAndWorkspace } from "../user-deletion";
 import {
 	createProjectArchive,
 	directorySizeBytes,
 	restoreProjectArchive,
 } from "./archive-utils";
 import { isInsideDirectory, webAssetResponse } from "./assets";
+import { handleAdminClassroomRoute } from "./classroom-routes";
 import { apiErrorResponse, jsonResponse, notFound } from "./responses";
 import { adminStatusResponse, auditActor } from "./status";
 
@@ -25,6 +27,7 @@ export type AdminRouteContext = {
 	storage: AppStorage;
 	runs: RunManager;
 	runtimeProvider: WorkspaceRuntimeProvider;
+	closeWorkspaceSockets: (workspaceId: WorkspaceId) => void;
 };
 
 export async function handleAdminRoute(
@@ -42,6 +45,19 @@ export async function handleAdminRoute(
 		path: url.pathname,
 		actor: adminResult.user.id,
 	});
+
+	const classroomResponse = await handleAdminClassroomRoute(
+		{
+			storage,
+			deleteUser: (userId) => deleteUserAndWorkspace(ctx, userId),
+		},
+		url,
+		request,
+		auditActor(adminResult),
+	);
+	if (classroomResponse) {
+		return classroomResponse;
+	}
 
 	// Serve static assets for the admin SPA
 	if (url.pathname.startsWith("/admin/assets/") && request.method === "GET") {
@@ -247,7 +263,7 @@ export async function handleAdminRoute(
 			.query(
 				`
         SELECT
-          u.id, u.name, u.email, u.role, u.slug, u.createdAt, u.updatedAt,
+          u.id, u.name, u.email, u.role, u.slug, u.classroomId, u.createdAt, u.updatedAt,
           w.id AS workspaceId, w.last_accessed_at AS lastSeenAt
         FROM user u
         LEFT JOIN workspaces w ON w.user_id = u.id
@@ -260,6 +276,7 @@ export async function handleAdminRoute(
 			email: string;
 			role: string | null;
 			slug: string | null;
+			classroomId: string | null;
 			createdAt: string;
 			updatedAt: string;
 			workspaceId: string | null;
@@ -275,15 +292,24 @@ export async function handleAdminRoute(
 		const userId = userActionMatch[1] ?? "";
 		const action = userActionMatch[2] as "promote" | "demote";
 		const user = storage.db
-			.query("SELECT id, name, email, role FROM user WHERE id = ?")
+			.query("SELECT id, name, email, role, classroomId FROM user WHERE id = ?")
 			.get(userId) as {
 			id: string;
 			name: string;
 			email: string;
 			role: string | null;
+			classroomId: string | null;
 		} | null;
 		if (!user) {
 			return jsonResponse({ error: "User not found." }, { status: 404 });
+		}
+		// Anyone with the classroom code and a guest's name can sign in as that
+		// guest, so guests are never admins (decision 043).
+		if (action === "promote" && user.classroomId) {
+			return jsonResponse(
+				{ error: "Classroom guests cannot be admins." },
+				{ status: 409 },
+			);
 		}
 		const newRole = action === "promote" ? "admin" : "student";
 		if (action === "demote" && user.role === "admin") {
@@ -335,41 +361,7 @@ export async function handleAdminRoute(
 			}
 		}
 
-		const workspace = storage.findWorkspaceByUserId(userId);
-		if (workspace) {
-			runs.stopWorkspace(workspace.id);
-			await runtimeProvider.stopWorkspace(workspace.id);
-			await runtimeProvider.removeWorkspace(workspace.id);
-		}
-
-		storage.db.exec("BEGIN");
-		try {
-			if (workspace) {
-				storage.db
-					.query("DELETE FROM run_jobs WHERE workspace_id = ?")
-					.run(workspace.id);
-				storage.db
-					.query("DELETE FROM container_leases WHERE workspace_id = ?")
-					.run(workspace.id);
-				storage.db
-					.query("DELETE FROM workspaces WHERE id = ?")
-					.run(workspace.id);
-			}
-			storage.db.query("DELETE FROM session WHERE userId = ?").run(userId);
-			storage.db.query("DELETE FROM account WHERE userId = ?").run(userId);
-			storage.db.query("DELETE FROM user WHERE id = ?").run(userId);
-			storage.db.exec("COMMIT");
-		} catch (error) {
-			storage.db.exec("ROLLBACK");
-			throw error;
-		}
-
-		if (workspace) {
-			await rm(dirname(workspace.project_path), {
-				recursive: true,
-				force: true,
-			});
-		}
+		await deleteUserAndWorkspace(ctx, userId);
 
 		recordAuditEvent(storage, {
 			actor: auditActor(adminResult),

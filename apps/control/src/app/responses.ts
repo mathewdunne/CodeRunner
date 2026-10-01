@@ -31,7 +31,11 @@ export function notFound(): Response {
 
 export function sessionResponse(
 	auth: AuthContext,
-	options: { demo?: boolean; projectEmpty: boolean },
+	options: {
+		demo?: boolean;
+		projectEmpty: boolean;
+		guest?: { classroomEndsAt: string } | undefined;
+	},
 ): SessionResponse {
 	return {
 		user: {
@@ -41,6 +45,7 @@ export function sessionResponse(
 			avatarUrl: auth.user.image,
 			slug: auth.workspace.slug,
 			role: auth.user.role as "student" | "admin",
+			...(options.guest ? { guest: options.guest } : {}),
 		},
 		workspace: {
 			id: auth.workspace.id,

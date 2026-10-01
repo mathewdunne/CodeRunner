@@ -1,4 +1,7 @@
-import type { AuthProvidersResponse } from "@frc-coderunner/contracts";
+import type {
+	AuthProvidersResponse,
+	WorkspaceId,
+} from "@frc-coderunner/contracts";
 import { handleAdminRoute } from "./app/admin-routes";
 import {
 	handleUploadAsset,
@@ -8,6 +11,7 @@ import {
 	webAssetResponse,
 	webShellResponse,
 } from "./app/assets";
+import { handleClassroomJoin } from "./app/classroom-routes";
 import { jsonResponse, notFound, redirect } from "./app/responses";
 import { openApiResponse } from "./app/status";
 import type {
@@ -22,6 +26,8 @@ import { getDemoSessionResponseBody, seedDemoUser } from "./auth/demo";
 import { getSessionFromRequest, requireAdmin } from "./auth/middleware";
 import { getEnabledAuthProviders } from "./auth/providers";
 import { createCatalogSource } from "./catalog";
+import { ClassroomSweeper } from "./classroom-sweeper";
+import { FailedAttemptLimiter } from "./classrooms";
 import { LocalDockerRuntimeProvider } from "./containers";
 import { GamepadSessions } from "./gamepad";
 import { HalSimBridge } from "./halsim";
@@ -40,6 +46,7 @@ import { DockerStatsPoller } from "./metrics-collector";
 import { Nt4AutoChooserBridge } from "./nt4-auto";
 import { RunManager } from "./runs";
 import { createStorage } from "./storage";
+import { deleteUserAndWorkspace } from "./user-deletion";
 
 const bootLog = getLogger("boot");
 const httpLog = getLogger("http");
@@ -177,7 +184,45 @@ export async function createApp(
 	const dockerStatsPoller = new DockerStatsPoller({ containers });
 	dockerStatsPoller.start();
 
-	const adminCtx = { storage, runs, runtimeProvider };
+	const websocket = createWebSocketHandlers({
+		storage,
+		runs,
+		halsim,
+		nt4Auto,
+		gamepad,
+		imports,
+		catalogSource,
+	});
+
+	/**
+	 * Stop a workspace's run and container, close its sockets, and drop its
+	 * live bridges. Files are kept. Callers end the session first.
+	 */
+	async function stopWorkspace(workspaceId: WorkspaceId): Promise<void> {
+		websocket.closeWorkspaceSockets(workspaceId);
+		runs.stopWorkspace(workspaceId);
+		await runtimeProvider.stopWorkspace(workspaceId);
+		halsim.disconnect(workspaceId);
+		nt4Auto.disconnect(workspaceId);
+		gamepad.reset(workspaceId);
+	}
+	const classroomJoinCtx = {
+		storage,
+		limiter: new FailedAttemptLimiter(),
+		stopWorkspace,
+	};
+
+	const adminCtx = {
+		storage,
+		runs,
+		runtimeProvider,
+		closeWorkspaceSockets: websocket.closeWorkspaceSockets,
+	};
+	const classroomSweeper = new ClassroomSweeper({
+		storage,
+		deleteUser: (userId) => deleteUserAndWorkspace(adminCtx, userId),
+	});
+	classroomSweeper.start();
 	const workspaceCtx = {
 		storage,
 		runs,
@@ -187,6 +232,7 @@ export async function createApp(
 		nt4Auto,
 		catalogSource,
 		upstreamFetch,
+		stopWorkspace,
 	};
 
 	async function fetch(
@@ -317,10 +363,26 @@ export async function createApp(
 			} satisfies AuthProvidersResponse);
 		}
 
+		if (
+			url.pathname === "/api/auth/classroom/join" &&
+			request.method === "POST"
+		) {
+			return handleClassroomJoin(classroomJoinCtx, request, server);
+		}
+
 		// --- Better Auth API routes ---
 		if (url.pathname.startsWith("/api/auth/")) {
 			if (storage.config.demo && url.pathname === "/api/auth/get-session") {
 				return jsonResponse(getDemoSessionResponseBody());
+			}
+			// Better Auth alone would still report a guest of an ended classroom
+			// (or one who left) as signed in; answer the way it does for no session.
+			if (
+				url.pathname === "/api/auth/get-session" &&
+				request.method === "GET" &&
+				!(await getSessionFromRequest(storage, request))
+			) {
+				return jsonResponse(null);
 			}
 			return storage.auth.handler(request);
 		}
@@ -336,7 +398,10 @@ export async function createApp(
 			return webShellResponse(storage);
 		}
 
-		if (url.pathname === "/login" && request.method === "GET") {
+		if (
+			(url.pathname === "/login" || url.pathname === "/join") &&
+			request.method === "GET"
+		) {
 			return webShellResponse(storage);
 		}
 
@@ -356,7 +421,7 @@ export async function createApp(
 		}
 
 		// --- Default-deny: everything below requires a session (or admin token). ---
-		// Public routes (healthz, scope, /pathplanner, /api/auth/providers, other api/auth routes, /, /login,
+		// Public routes (healthz, scope, /pathplanner, /api/auth/providers, other api/auth routes, /, /login, /join,
 		// /coderunner-icon.png, /assets/*) are handled above.
 		// If we reach here without matching a gated route, we return 404.
 
@@ -396,19 +461,10 @@ export async function createApp(
 		return notFound();
 	}
 
-	const websocket = createWebSocketHandlers({
-		storage,
-		runs,
-		halsim,
-		nt4Auto,
-		gamepad,
-		imports,
-		catalogSource,
-	});
-
 	return {
 		fetch,
 		websocket: websocket as {
+			closeWorkspaceSockets(workspaceId: WorkspaceId): void;
 			open(ws: AppSocket): void;
 			message(ws: AppSocket, message: string | ArrayBuffer | Uint8Array): void;
 			close(ws: AppSocket): void;
@@ -425,6 +481,7 @@ export async function createApp(
 		close() {
 			bootLog.info("shutting down");
 			idle.stop();
+			classroomSweeper.stop();
 			dockerStatsPoller.stop();
 			halsim.close();
 			nt4Auto.close();

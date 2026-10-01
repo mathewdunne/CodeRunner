@@ -140,6 +140,20 @@ The system prevents demoting the last remaining admin.
 
 ---
 
+## Running a classroom session
+
+For a meeting, open **Admin → Classrooms**, choose how long the session will
+run, and click **Start classroom**. Share the code or join link with students.
+They can join with their name, without being added to the allowlist.
+
+Ask students to choose **Leave** before handing a computer to someone else.
+This signs them out and frees a container slot. When the meeting is over, click
+**End now**. The classroom also ends when its time runs out; either way, its
+guest accounts and projects are deleted.
+
+A classroom can have up to 60 guests. The container limit applies to running
+workspaces; see [Capacity](./capacity.md) when planning for simultaneous use.
+
 ## Container concurrency cap
 
 The system limits how many workspace containers can run simultaneously to
@@ -192,6 +206,10 @@ allowlist, changing the concurrency cap) are recorded in the audit log.
 | `allowlist.add` | Adding an email/domain to the allowlist |
 | `allowlist.remove` | Removing an email/domain from the allowlist |
 | `config.max-active-containers` | Changing the container concurrency cap |
+| `classroom.create` | Starting a classroom |
+| `classroom.end` | Ending a classroom early ("End now") |
+| `classroom.cleanup` | Deleting an ended or expired classroom's guests (system) |
+| `classroom.guest_join` | A guest joining or rejoining a classroom |
 
 Each entry records the timestamp, the acting user (ID and email), the action,
 the target (kind and ID), and optional metadata.

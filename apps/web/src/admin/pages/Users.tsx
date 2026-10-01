@@ -9,6 +9,7 @@ type UserRow = {
 	email: string;
 	role: string | null;
 	slug: string | null;
+	classroomId: string | null;
 	createdAt: string;
 	lastSeenAt: string | null;
 };
@@ -118,7 +119,8 @@ export function Users() {
 												>
 													Demote
 												</Button>
-											) : (
+											) : u.classroomId ? null : (
+												// Classroom guests can't be admins (decision 043).
 												<Button
 													variant="outline"
 													size="sm"

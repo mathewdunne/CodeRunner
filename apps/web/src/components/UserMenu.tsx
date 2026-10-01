@@ -17,6 +17,8 @@ interface UserMenuProps {
 	avatarUrl: string | null;
 	isAdmin: boolean;
 	layoutMenu?: ReactNode;
+	/** Classroom guests (decision 043): show the end time and a Leave action. */
+	guest?: { endsAt: string; workspaceSlug: string };
 }
 
 function initialsOf(name: string) {
@@ -74,6 +76,33 @@ async function signOut() {
 	window.location.assign("/login");
 }
 
+function formatEndsAt(iso: string): string {
+	return new Date(iso).toLocaleTimeString([], {
+		hour: "numeric",
+		minute: "2-digit",
+	});
+}
+
+async function leaveClassroom(workspaceSlug: string) {
+	// The server ends the session and clears its cookies along with the stop.
+	let left = false;
+	try {
+		const response = await fetch(`/u/${workspaceSlug}/api/leave`, {
+			method: "POST",
+			credentials: "same-origin",
+		});
+		left = response.ok;
+	} catch {
+		// Handled below.
+	}
+	if (!left) {
+		// Signing out still hands the computer to the next student; the idle
+		// reaper stops the container later.
+		await authClient.signOut();
+	}
+	window.location.assign("/join");
+}
+
 function navigateToAdmin() {
 	window.location.assign("/admin");
 }
@@ -84,6 +113,7 @@ export function UserMenu({
 	avatarUrl,
 	isAdmin,
 	layoutMenu,
+	guest,
 }: UserMenuProps) {
 	return (
 		<DropdownMenu>
@@ -111,7 +141,7 @@ export function UserMenu({
 							{displayName}
 						</div>
 						<div className="truncate text-[11.5px] text-muted-foreground">
-							{email}
+							{guest ? `Guest · ends ${formatEndsAt(guest.endsAt)}` : email}
 						</div>
 					</div>
 				</div>
@@ -130,11 +160,13 @@ export function UserMenu({
 					) : null}
 					{layoutMenu}
 					<DropdownMenuItem
-						onClick={() => void signOut()}
+						onClick={() =>
+							void (guest ? leaveClassroom(guest.workspaceSlug) : signOut())
+						}
 						className="gap-2.5 px-2.5 py-2 text-[12.5px]"
 					>
 						<LogOut className="size-[15px] text-muted-foreground" />
-						Logout
+						{guest ? "Leave" : "Logout"}
 					</DropdownMenuItem>
 				</div>
 			</DropdownMenuContent>
