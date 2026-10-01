@@ -159,7 +159,9 @@ automatically — **no exec commands needed**. At startup the control plane adds
 each listed email to the allowlist, and on first OAuth sign-in the account is
 created with the admin role. An account that already exists with that email is
 promoted to admin at the next startup, so it also rescues a coach who signed in
-before the env var was set.
+before the env var was set. (Auth0 accounts are not promoted at startup; they
+pick up the admin role at their next Auth0 sign-in once Auth0 has verified the
+address.)
 
 ```bash
 CODERUNNER_ADMIN_EMAIL=coach@frcteam.org,assistant@frcteam.org

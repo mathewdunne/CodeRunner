@@ -211,7 +211,8 @@ export class AppStorage {
 	/**
 	 * Seed the accounts named in CODERUNNER_ADMIN_EMAIL so a fresh deployment
 	 * needs zero exec steps: each email is added to the allowlist (idempotent),
-	 * and any existing non-admin account with that email is promoted. Accounts
+	 * and any existing non-admin account with that email is promoted (except
+	 * Auth0 users, whose role comes from Auth0 at sign-in). Accounts
 	 * that have not signed in yet get the admin role from the user.create hook.
 	 */
 	private async seedBootstrapAdmins(): Promise<void> {
@@ -221,8 +222,14 @@ export class AppStorage {
 
 			// config.adminEmails is lowercased; the stored email keeps whatever
 			// case the OAuth provider returned, so match case-insensitively.
+			// Rows with an Auth0 account are skipped: Auth0 sets the role at every
+			// sign-in and only makes an admin email admin once it is verified,
+			// while a row here may hold an unverified Auth0 self-sign-up (and any
+			// GitHub/Google identity later linked onto it).
 			const user = this.db
-				.query("SELECT id, role FROM user WHERE lower(email) = ?")
+				.query(
+					"SELECT id, role FROM user WHERE lower(email) = ? AND NOT EXISTS (SELECT 1 FROM account WHERE account.userId = user.id AND account.providerId = 'auth0')",
+				)
 				.get(email) as { id: string; role: string | null } | null;
 			if (user && user.role !== "admin") {
 				this.db

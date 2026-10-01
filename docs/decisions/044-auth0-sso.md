@@ -27,7 +27,11 @@ names (e.g. `teacher`) only has to match them.
   requirement, so the operator's bootstrap admin works whatever the tenant does
   — but only when the ID token says `email_verified: true`. A tenant that
   allows sign-up lets anyone register an address and sign in before verifying
-  it, so an unverified admin email falls back to the roles claim.
+  it, so an unverified admin email falls back to the roles claim. For the
+  same reason the startup bootstrap promotion skips any user with an `auth0`
+  account: that row may be an unverified self-sign-up (Better Auth would even
+  link the real admin's later GitHub sign-in onto it), and Auth0 users get
+  their role at sign-in anyway.
 - Roles are re-read at every Auth0 sign-in. `mapProfileToUser` returns the role
   and `overrideUserInfo` writes it to the user row before the session is made,
   so the session cookie cache carries the current role. An admin-panel role

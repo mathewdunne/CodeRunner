@@ -64,6 +64,10 @@ write_files:
       GH_CLIENT_SECRET="$(fetch coderunner-github-client-secret)"
       GOOG_CLIENT_ID="$(fetch coderunner-google-client-id)"
       GOOG_CLIENT_SECRET="$(fetch coderunner-google-client-secret)"
+      # Optional: Auth0 is enabled only when all three are populated.
+      AUTH0_DOMAIN_VAL="$(fetch coderunner-auth0-domain)"
+      AUTH0_CLIENT_ID_VAL="$(fetch coderunner-auth0-client-id)"
+      AUTH0_CLIENT_SECRET_VAL="$(fetch coderunner-auth0-client-secret)"
       ADMIN_TOKEN_VAL="$(fetch coderunner-admin-token)"
       METRICS_TOKEN_VAL="$(fetch coderunner-metrics-token)"
       GC_URL="$(fetch coderunner-grafana-cloud-url)"
@@ -123,6 +127,11 @@ write_files:
         echo "GITHUB_CLIENT_SECRET=$GH_CLIENT_SECRET"
         echo "GOOGLE_CLIENT_ID=$GOOG_CLIENT_ID"
         echo "GOOGLE_CLIENT_SECRET=$GOOG_CLIENT_SECRET"
+        if [ -n "$AUTH0_DOMAIN_VAL" ] && [ -n "$AUTH0_CLIENT_ID_VAL" ] && [ -n "$AUTH0_CLIENT_SECRET_VAL" ]; then
+          echo "AUTH0_DOMAIN=$AUTH0_DOMAIN_VAL"
+          echo "AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID_VAL"
+          echo "AUTH0_CLIENT_SECRET=$AUTH0_CLIENT_SECRET_VAL"
+        fi
         echo "ADMIN_TOKEN=$ADMIN_TOKEN_VAL"
         echo "METRICS_TOKEN=$METRICS_TOKEN_VAL"
         echo "CODE_MEMORY_LIMIT=4096m"
