@@ -12,6 +12,7 @@
 			"!templates",
 			"!patches",
 			"!graphify-out",
+			"!.impeccable",
 			"!website",
 			"!**/*.min.js",
 			"!**/*.min.css"
