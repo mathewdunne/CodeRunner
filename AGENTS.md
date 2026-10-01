@@ -88,19 +88,11 @@ session. Guest sessions die with the classroom (checked in
 container, and `ClassroomSweeper` deletes guests of ended/expired
 classrooms. See `docs/decisions/043-classroom-join-codes.md`.
 
-**Auth0 SSO (post-V2):** a third login provider beside GitHub and Google,
-enabled by `AUTH0_DOMAIN`/`AUTH0_CLIENT_ID`/`AUTH0_CLIENT_SECRET` and wired
-through Better Auth's `genericOAuth` plugin (callback
-`/api/auth/oauth2/callback/auth0`). Auth0 users skip the allowlist; a roles
-claim in the ID token (`AUTH0_ROLES_CLAIM`, set by a Post-Login Action) maps
-`AUTH0_ADMIN_ROLE_NAME` → admin and `AUTH0_USER_ROLE_NAME` → student, and is
-re-read at every sign-in. No role means denied, enforced in the Auth0
-`mapProfileToUser` (it sees exactly the identity signing in, before Better Auth
-creates, links, or updates anything) by throwing a redirect — not the after
-hook, whose throws Better Auth loses behind the callback redirect.
-`CODERUNNER_ADMIN_EMAIL` still grants admin, but only with `email_verified`. See
-`docs/decisions/044-auth0-sso.md` and
-[`docs/deploying/oauth-credentials.md`](./docs/deploying/oauth-credentials.md).
+**Auth0 SSO (post-V2):** optional third login provider (`AUTH0_*` env) via
+Better Auth's `genericOAuth`. Auth0 users skip the allowlist; their role comes
+from an ID-token roles claim, re-read at every sign-in. Users with no role are
+rejected in `mapProfileToUser` (after-hook throws are lost behind the callback
+redirect). See `docs/decisions/044-auth0-sso.md`.
 
 **Containerized control plane (post-V2):** the control plane ships as a Docker
 image (`containers/control/Dockerfile` → `ghcr.io/mathewdunne/coderunner-control`)
