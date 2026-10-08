@@ -183,7 +183,12 @@ write_files:
       }
 
       origin.${domain} {
-        reverse_proxy control:4000
+        # Requests here come from the Cloudflare proxy for the public domain. Pin the
+        # forwarded host to it so the editor builds its WebSocket URL for the domain
+        # that holds the session cookie, not origin.*.
+        reverse_proxy control:4000 {
+          header_up X-Forwarded-Host ${domain}
+        }
         encode gzip
       }
 

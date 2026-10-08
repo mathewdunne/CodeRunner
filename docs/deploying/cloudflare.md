@@ -70,7 +70,9 @@ gcloud compute ssh coderunner --zone=us-central1-a --tunnel-through-iap --comman
 sudo tee -a /opt/coderunner/caddy/Caddyfile <<EOF
 
 origin.YOUR_DOMAIN {
-  reverse_proxy control:4000
+  reverse_proxy control:4000 {
+    header_up X-Forwarded-Host YOUR_DOMAIN
+  }
   encode gzip
 }
 EOF
@@ -78,6 +80,12 @@ cd /opt/coderunner && sudo docker compose restart caddy'
 ```
 
 New VMs get both vhosts automatically from cloud-init.
+
+The `header_up X-Forwarded-Host` line is required. Without it Caddy forwards
+`origin.YOUR_DOMAIN` as the host, the editor builds its WebSocket URL for that
+hostname, the browser sends no session cookie to it, and VS Code fails with
+"WebSocket close with status code 1006". VMs provisioned before this line was
+added need it patched into `/opt/coderunner/caddy/Caddyfile` by hand.
 
 ### 3. Bootstrap the Cloudflare Pages project
 
