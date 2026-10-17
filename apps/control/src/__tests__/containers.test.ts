@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setSystemTime, test } from "bun:test";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -412,23 +412,152 @@ describe("code container orchestration", () => {
 				expect(firstStatus.status).toBe(200);
 				const firstBody = await firstStatus.json();
 				fakeDocker.containers.delete(firstBody.code.containerName);
+				// Past the running-status cache, so the removal is noticed.
+				setSystemTime(new Date(Date.now() + 3_000));
 
-				const secondStatus = await app.fetch(
-					new Request("http://localhost/u/alice/api/containers/status", {
-						headers: { cookie },
-					}),
-				);
-				expect(secondStatus.status).toBe(200);
-				expect(await secondStatus.json()).toMatchObject({
-					code: { state: "running" },
-				});
-				expect(await readFile(robotPath, "utf8")).toContain("sentinel");
+				try {
+					const secondStatus = await app.fetch(
+						new Request("http://localhost/u/alice/api/containers/status", {
+							headers: { cookie },
+						}),
+					);
+					expect(secondStatus.status).toBe(200);
+					expect(await secondStatus.json()).toMatchObject({
+						code: { state: "running" },
+					});
+					expect(fakeDocker.containers.has(firstBody.code.containerName)).toBe(
+						true,
+					);
+					expect(await readFile(robotPath, "utf8")).toContain("sentinel");
+				} finally {
+					setSystemTime();
+				}
 			},
 			{
 				dockerRunner: fakeDocker.runner,
 				codeImage: "coderunner-workspace:test",
 				simPortRange: { start: 25813, end: 25813 },
 				vscodePortRange: { start: 33003, end: 33003 },
+			},
+		);
+	});
+
+	test("repeated status polls reuse a recent running result instead of inspecting", async () => {
+		const fakeDocker = createFakeDocker();
+		const inspects = () =>
+			fakeDocker.calls.filter(
+				(call) => call[0] === "container" && call[1] === "inspect",
+			).length;
+
+		await withApp(
+			async (app) => {
+				const cookie = cookieFrom(await login(app, "alice"));
+				const status = () =>
+					app.fetch(
+						new Request("http://localhost/u/alice/api/containers/status", {
+							headers: { cookie },
+						}),
+					);
+
+				expect((await status()).status).toBe(200);
+				const afterCreate = inspects();
+				expect((await status()).status).toBe(200);
+				expect((await status()).status).toBe(200);
+				expect(inspects()).toBe(afterCreate);
+
+				setSystemTime(new Date(Date.now() + 3_000));
+				try {
+					expect((await status()).status).toBe(200);
+					expect(inspects()).toBe(afterCreate + 1);
+				} finally {
+					setSystemTime();
+				}
+			},
+			{
+				dockerRunner: fakeDocker.runner,
+				codeImage: "coderunner-workspace:test",
+				simPortRange: { start: 25816, end: 25816 },
+				vscodePortRange: { start: 33006, end: 33006 },
+			},
+		);
+	});
+
+	test("stopping a workspace drops its cached running status", async () => {
+		const fakeDocker = createFakeDocker();
+
+		await withApp(
+			async (app) => {
+				await login(app, "alice");
+				const workspace = workspaceBySlug(app, "alice");
+				const name = codeContainerName(workspace.id);
+
+				await app.containers.ensureCodeContainer(workspace);
+				await app.containers.stopWorkspace(workspace.id);
+				expect(fakeDocker.containers.get(name)?.running).toBe(false);
+
+				const status = await app.containers.ensureCodeContainer(workspace);
+				expect(status.state).toBe("running");
+				expect(fakeDocker.containers.get(name)?.running).toBe(true);
+			},
+			{
+				dockerRunner: fakeDocker.runner,
+				codeImage: "coderunner-workspace:test",
+				simPortRange: { start: 25817, end: 25817 },
+				vscodePortRange: { start: 33007, end: 33007 },
+			},
+		);
+	});
+
+	test("an ensure that finishes after a stop does not cache running", async () => {
+		const fakeDocker = createFakeDocker();
+		let holdInspect: Promise<void> | null = null;
+		let inspectHeld = () => {};
+		const runner: typeof fakeDocker.runner = async (args) => {
+			const result = await fakeDocker.runner(args);
+			if (holdInspect && args[0] === "container" && args[1] === "inspect") {
+				// A status poll inspects the still-running container, then stalls.
+				const held = holdInspect;
+				holdInspect = null;
+				inspectHeld();
+				await held;
+			}
+			return result;
+		};
+
+		await withApp(
+			async (app) => {
+				await login(app, "alice");
+				const workspace = workspaceBySlug(app, "alice");
+				const name = codeContainerName(workspace.id);
+				await app.containers.ensureCodeContainer(workspace);
+				setSystemTime(new Date(Date.now() + 3_000));
+
+				try {
+					let releaseInspect = () => {};
+					holdInspect = new Promise((resolveHold) => {
+						releaseInspect = resolveHold;
+					});
+					const reachedInspect = new Promise<void>((resolveReached) => {
+						inspectHeld = resolveReached;
+					});
+					const poll = app.containers.ensureCodeContainer(workspace);
+					await reachedInspect;
+
+					await app.containers.stopWorkspace(workspace.id);
+					releaseInspect();
+					await poll;
+
+					await app.containers.ensureCodeContainer(workspace);
+					expect(fakeDocker.containers.get(name)?.running).toBe(true);
+				} finally {
+					setSystemTime();
+				}
+			},
+			{
+				dockerRunner: runner,
+				codeImage: "coderunner-workspace:test",
+				simPortRange: { start: 25818, end: 25818 },
+				vscodePortRange: { start: 33008, end: 33008 },
 			},
 		);
 	});

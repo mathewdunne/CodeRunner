@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, setSystemTime, test } from "bun:test";
 import {
 	cookieFrom,
 	createFakeDocker,
@@ -20,7 +20,14 @@ function fakeContainerFor(
 	return undefined;
 }
 
+// Step past the provider's running-status cache, so a change made directly on
+// the fake (behind the provider's back) is seen by the next ensure.
+function expireRunningStatusCache() {
+	setSystemTime(new Date(Date.now() + 3_000));
+}
+
 // Simulate the idle sweep: stop (but do not remove) a workspace's container.
+// The real sweep stops through the provider, which drops its cached status.
 function stopFakeContainer(
 	fakeDocker: ReturnType<typeof createFakeDocker>,
 	workspaceId: string,
@@ -30,7 +37,12 @@ function stopFakeContainer(
 		throw new Error(`no fake container for workspace ${workspaceId}`);
 	}
 	container.running = false;
+	expireRunningStatusCache();
 }
+
+afterEach(() => {
+	setSystemTime();
+});
 
 describe("container concurrency cap", () => {
 	test("ensureCodeContainer throws CapacityExceededError when at cap", async () => {
@@ -311,6 +323,7 @@ describe("container concurrency cap", () => {
 				if (!aliceContainer) throw new Error("no container for alice");
 				aliceContainer.labels["frc-sim.image-id"] = "sha256:older";
 				aliceName = aliceContainer.name;
+				expireRunningStatusCache();
 				startCarol = () => {
 					carolEnsure = app.containers.ensureCodeContainer(carol);
 					carolEnsure.catch(() => {});
