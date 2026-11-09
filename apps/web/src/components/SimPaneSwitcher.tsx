@@ -125,6 +125,14 @@ interface SimPanePanelsProps {
  * iframes hold live state (an AdvantageScope session, PathPlanner's in-memory
  * working copy and save queue, Preview's selected document and scroll position)
  * that unmounting would discard.
+ *
+ * Preview is hidden differently. The default `hidden` attribute means
+ * `display: none`, which collapses the document iframe's viewport and resets its
+ * scroll to the top. The frame is cross-origin (sandboxed), so the shell cannot
+ * save and restore that scroll itself. Instead the inactive Preview stays laid
+ * out at full size, stacked out of flow and `invisible` (still `inert`).
+ * AdvantageScope and PathPlanner keep `display: none` so their hidden apps stay
+ * throttled.
  */
 export function SimPanePanels({
 	scope,
@@ -132,14 +140,19 @@ export function SimPanePanels({
 	preview,
 }: SimPanePanelsProps) {
 	return (
-		<div className="flex h-full min-h-0 flex-col">
+		<div className="relative flex h-full min-h-0 flex-col">
 			<TabsContent value="scope" keepMounted className="min-h-0 flex-1">
 				{scope}
 			</TabsContent>
 			<TabsContent value="pathplanner" keepMounted className="min-h-0 flex-1">
 				{pathplanner}
 			</TabsContent>
-			<TabsContent value="preview" keepMounted className="min-h-0 flex-1">
+			<TabsContent
+				value="preview"
+				keepMounted
+				hidden={false}
+				className="min-h-0 flex-1 data-hidden:invisible data-hidden:absolute data-hidden:inset-0"
+			>
 				{preview}
 			</TabsContent>
 		</div>

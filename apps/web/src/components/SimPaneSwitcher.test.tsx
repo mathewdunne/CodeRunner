@@ -99,6 +99,23 @@ describe("SimPaneSwitcher", () => {
 		expect(sessionStorage.getItem("coderunner:sim-pane-tab")).toBe("preview");
 	});
 
+	test("hides an inactive Preview without display:none so its scroll survives", () => {
+		renderSwitcher();
+
+		// `hidden` means display:none, which collapses the document iframe's
+		// viewport and resets its scroll to the top. Preview is hidden with
+		// visibility instead and stays laid out at full size.
+		const previewPanel = screen.getByText("preview-pane").parentElement;
+		expect(previewPanel).toHaveProperty("hidden", false);
+		expect(previewPanel).toHaveAttribute("data-hidden");
+		expect(previewPanel).toHaveAttribute("inert");
+		expect(previewPanel).toHaveClass("data-hidden:invisible");
+
+		fireEvent.click(screen.getByRole("tab", { name: "Preview" }));
+		expect(previewPanel).not.toHaveAttribute("data-hidden");
+		expect(previewPanel).not.toHaveAttribute("inert");
+	});
+
 	test("restores a persisted Preview tab", () => {
 		sessionStorage.setItem("coderunner:sim-pane-tab", "preview");
 		renderSwitcher();
