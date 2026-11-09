@@ -269,12 +269,21 @@ function documentCsp(resourcePrefix: string, allowScripts: boolean): string {
 	return directives.join("; ");
 }
 
+/**
+ * Behind a proxy (Cloudflare → Caddy in prod) the request URL carries the
+ * upstream host, not the origin the browser loads from, so the configured
+ * public origin is listed first. The request origin stays for direct access
+ * (dev, tests), where it is the browser's origin.
+ */
 function resourcePrefixFor(
+	publicBaseUrl: string,
 	requestUrl: URL,
 	slug: WorkspaceSlug,
 	token: string,
 ): string {
-	return `${requestUrl.origin}/u/${slug}${PREVIEW_FILES_PREFIX}${token}/`;
+	const path = `/u/${slug}${PREVIEW_FILES_PREFIX}${token}/`;
+	const origins = new Set([new URL(publicBaseUrl).origin, requestUrl.origin]);
+	return [...origins].map((origin) => `${origin}${path}`).join(" ");
 }
 
 function errorDocument(
@@ -408,6 +417,7 @@ async function readVerifiedProjectFile(
  */
 export async function previewFileResponse(
 	sessionSecret: string,
+	publicBaseUrl: string,
 	workspace: PreviewWorkspace,
 	requestUrl: URL,
 	encodedSuffix: string,
@@ -430,7 +440,12 @@ export async function previewFileResponse(
 
 	const projectRoot = resolve(workspace.project_path);
 	const kind = documentKindFor(parsed.path);
-	const prefix = resourcePrefixFor(requestUrl, workspace.slug, parsed.token);
+	const prefix = resourcePrefixFor(
+		publicBaseUrl,
+		requestUrl,
+		workspace.slug,
+		parsed.token,
+	);
 
 	if (kind === "markdown") {
 		const file = await readVerifiedProjectFile(

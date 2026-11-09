@@ -165,6 +165,7 @@ export async function handleWorkspaceRoute(
 		}
 		return previewFileResponse(
 			storage.config.sessionSecret,
+			storage.config.baseUrl,
 			workspace,
 			url,
 			suffix.slice(PREVIEW_FILES_PREFIX.length),

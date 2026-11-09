@@ -341,6 +341,26 @@ describe("GET /u/:slug/api/preview/files/<token>/<path>", () => {
 		);
 	});
 
+	test("pins resources to the public origin behind a proxy", async () => {
+		const docker = createFakeDocker();
+		await withApp(
+			async (app) => {
+				const cookie = cookieFrom(await login(app, "alice"));
+				await seedProject(workspaceProjectPath(app, "alice"));
+				const { token } = await documentsFor(app, "alice", cookie);
+
+				// The request reaches the control plane under the proxy's upstream
+				// host, but the browser loads images from the public origin.
+				const resp = await app.fetch(fileRequest("alice", token, "README.md"));
+				const csp = resp.headers.get("content-security-policy") ?? "";
+				expect(csp).toContain(
+					`img-src http://coderunner.example/u/alice/api/preview/files/${token}/`,
+				);
+			},
+			{ dockerRunner: docker.runner, baseUrl: "http://coderunner.example" },
+		);
+	});
+
 	test("serves HTML documents unmodified, under a scripted sandbox", async () => {
 		const docker = createFakeDocker();
 		await withApp(
