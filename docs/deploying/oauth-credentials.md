@@ -70,20 +70,24 @@ You now have a **Client ID** and a **Client Secret**.
 
 Auth0 sign-in works differently from GitHub and Google: Auth0 has already
 vetted your members, so **Auth0 users skip the allowlist**. Instead, CodeRunner
-reads the user's Auth0 roles at every sign-in:
+uses Auth0's role-based access control (RBAC): it asks Auth0 for an access
+token for a CodeRunner API and reads the user's permissions on that API at
+every sign-in. Because the permissions belong to that one API, they don't
+overlap with what the same users can do in your tenant's other apps.
 
-| Auth0 roles | CodeRunner result |
+| Permissions on the CodeRunner API | CodeRunner result |
 | --- | --- |
-| Has the admin role (`AUTH0_ADMIN_ROLE_NAME`, default `admin`) | Signs in as an admin |
-| Has the user role (`AUTH0_USER_ROLE_NAME`, default `user`) | Signs in as a student |
+| Has the admin permission (`AUTH0_ADMIN_PERMISSION`, default `coderunner:admin`) | Signs in as an admin |
+| Has the user permission (`AUTH0_USER_PERMISSION`, default `coderunner:user`) | Signs in as a student |
 | Neither | Denied |
 
 An email listed in `CODERUNNER_ADMIN_EMAIL` signs in as an admin, with or without
-Auth0 roles, once Auth0 has verified that address (`email_verified`). An
-unverified address gets no special treatment and needs a role like anyone else. Because roles are re-read at every Auth0 sign-in, changing a
-user's roles in Auth0 takes effect the next time they sign in. Promoting or
-demoting an Auth0 user in the CodeRunner admin panel is overwritten at that
-user's next sign-in, so manage Auth0 users' roles in Auth0.
+Auth0 permissions, once Auth0 has verified that address (`email_verified`). An
+unverified address gets no special treatment and needs a permission like anyone
+else. Because permissions are re-read at every Auth0 sign-in, changing a user's
+roles or permissions in Auth0 takes effect the next time they sign in. Promoting
+or demoting an Auth0 user in the CodeRunner admin panel is overwritten at that
+user's next sign-in, so manage Auth0 users' access in Auth0.
 
 In the Auth0 dashboard:
 
@@ -91,29 +95,26 @@ In the Auth0 dashboard:
    Application**. In its **Settings**, set **Allowed Callback URLs** to
    `<BETTER_AUTH_URL>/api/auth/oauth2/callback/auth0`. Note the **Domain**,
    **Client ID**, and **Client Secret**.
-2. **User Management → Roles**: create the two roles (e.g. `user` and `admin`)
-   and assign them to your members. If your tenant already has roles with other
-   names (e.g. `teacher`), set `AUTH0_USER_ROLE_NAME` / `AUTH0_ADMIN_ROLE_NAME`
-   to match instead.
-3. Auth0 does not put roles in the ID token by default. **Actions → Library →
-   Create Action → Build from scratch**, trigger **Login / Post Login**, with:
+2. **Applications → APIs → Create API**. Give it a name (e.g. `CodeRunner`)
+   and an **Identifier**, e.g. `https://coderunner.example.com/api`. The
+   identifier is the API's audience and becomes `AUTH0_AUDIENCE`; it is only a
+   label inside the token, nothing fetches it.
+3. In that API:
+   - **Settings → RBAC Settings**: turn on **Enable RBAC** and **Add
+     Permissions in the Access Token**, then save.
+   - **Permissions**: add `coderunner:user` and `coderunner:admin`. To use
+     other names, set `AUTH0_USER_PERMISSION` / `AUTH0_ADMIN_PERMISSION` to
+     match.
+   - If the API's **Application Access** settings restrict which applications
+     may request tokens for users, allow the application from step 1.
+4. **User Management → Roles**: create roles (e.g. `Student` and `Coach`), add
+   the matching permission from the CodeRunner API to each, and assign the
+   roles to your members. (Permissions can also be given to a user directly
+   under **User Management → Users → Permissions**.)
 
-   ```js
-   exports.onExecutePostLogin = async (event, api) => {
-     api.idToken.setCustomClaim(
-       "https://coderunner/roles",
-       event.authorization?.roles ?? [],
-     );
-   };
-   ```
-
-   **Deploy** it, then add it to the flow under **Actions → Triggers →
-   post-login**. The claim name is only a label inside the token (Auth0's
-   convention is a URL-shaped namespace; nothing fetches it). If you use a
-   different name, set `AUTH0_ROLES_CLAIM` to match.
-
-Then set `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, and `AUTH0_CLIENT_SECRET` (below).
-The login page shows **Sign in with Auth0** once all three are set.
+Then set `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, and
+`AUTH0_AUDIENCE` (below). The login page shows **Sign in with Auth0** once all
+four are set.
 
 ## Wire the credentials into CodeRunner
 
@@ -131,12 +132,12 @@ CodeRunner reads these from environment variables (see
 | `AUTH0_DOMAIN` | Auth0 tenant domain, e.g. `myteam.us.auth0.com` |
 | `AUTH0_CLIENT_ID` | Auth0 application client ID |
 | `AUTH0_CLIENT_SECRET` | Auth0 application client secret |
-| `AUTH0_ROLES_CLAIM` | ID-token claim with the role names (default `https://coderunner/roles`) |
-| `AUTH0_USER_ROLE_NAME` | Auth0 role that signs in as a student (default `user`) |
-| `AUTH0_ADMIN_ROLE_NAME` | Auth0 role that signs in as an admin (default `admin`) |
+| `AUTH0_AUDIENCE` | Identifier of the Auth0 API that holds CodeRunner's permissions |
+| `AUTH0_USER_PERMISSION` | API permission that signs in as a student (default `coderunner:user`) |
+| `AUTH0_ADMIN_PERMISSION` | API permission that signs in as an admin (default `coderunner:admin`) |
 
 A provider only appears on the login page when **both** its ID and secret are
-set (for Auth0, the domain too). Where these values live depends on the deployment:
+set (for Auth0, the domain and audience too). Where these values live depends on the deployment:
 
 - **Local:** in your `.env` file. See [Local Deployment](./local.md).
 - **Cloud VM:** in Google Secret Manager, materialized into the VM's `.env` by
@@ -147,7 +148,7 @@ set (for Auth0, the domain too). Where these values live depends on the deployme
 OAuth establishes *who* a person is; CodeRunner separately controls *whether*
 they may sign in (the allowlist) and *whether* they are an admin (the role).
 This section applies to GitHub and Google sign-ins; Auth0 users get both from
-their Auth0 roles instead (see [Set up Auth0](#set-up-auth0)), though
+their Auth0 permissions instead (see [Set up Auth0](#set-up-auth0)), though
 `CODERUNNER_ADMIN_EMAIL` still makes them an admin if Auth0 has verified the
 address.
 

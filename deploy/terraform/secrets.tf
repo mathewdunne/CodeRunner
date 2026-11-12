@@ -12,6 +12,7 @@ locals {
     "coderunner-auth0-domain",
     "coderunner-auth0-client-id",
     "coderunner-auth0-client-secret",
+    "coderunner-auth0-audience",
     "coderunner-admin-token",
     "coderunner-metrics-token",
     "coderunner-grafana-cloud-url",

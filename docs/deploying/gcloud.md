@@ -128,11 +128,12 @@ echo -n '<your-github-client-secret>' | gcloud secrets versions add coderunner-g
 echo -n '<your-google-client-id>'     | gcloud secrets versions add coderunner-google-client-id --data-file=-
 echo -n '<your-google-client-secret>' | gcloud secrets versions add coderunner-google-client-secret --data-file=-
 
-# Optional: Auth0 SSO. Skip these three to keep Auth0 off.
+# Optional: Auth0 SSO. Skip these four to keep Auth0 off.
 # Callback URL: https://<your-domain>/api/auth/oauth2/callback/auth0
 echo -n '<your-tenant>.us.auth0.com'  | gcloud secrets versions add coderunner-auth0-domain --data-file=-
 echo -n '<your-auth0-client-id>'      | gcloud secrets versions add coderunner-auth0-client-id --data-file=-
 echo -n '<your-auth0-client-secret>'  | gcloud secrets versions add coderunner-auth0-client-secret --data-file=-
+echo -n '<your-auth0-api-identifier>' | gcloud secrets versions add coderunner-auth0-audience --data-file=-
 
 # Grafana Cloud (create a free stack at grafana.com)
 echo -n 'https://prometheus-prod-XX-prod-us-central-0.grafana.net/api/prom/push' \
@@ -151,7 +152,7 @@ The exact secret names (all prefixed `coderunner-`) are defined in
 [`deploy/terraform/secrets.tf`](https://github.com/mathewdunne/CodeRunner/blob/main/deploy/terraform/secrets.tf).
 The `render-env.sh` script on the VM reads every one of them at boot; if any
 are missing the service will not start. The `coderunner-auth0-*` secrets are the
-exception: they are optional, and Auth0 is enabled only when all three are set.
+exception: they are optional, and Auth0 is enabled only when all four are set.
 
 See [Grafana Cloud](../operating/grafana.md) for where to find each value in the Grafana Cloud portal.
 
@@ -317,7 +318,7 @@ The VM's `.env` is regenerated on every boot from `render-env.sh`. Changes fall
 into three buckets:
 
 **A. Secrets already wired to Secret Manager** (`BETTER_AUTH_SECRET`,
-`GITHUB_CLIENT_*`, `GOOGLE_CLIENT_*`, `AUTH0_DOMAIN`, `AUTH0_CLIENT_*`,
+`GITHUB_CLIENT_*`, `GOOGLE_CLIENT_*`, `AUTH0_DOMAIN`, `AUTH0_CLIENT_*`, `AUTH0_AUDIENCE`,
 `ADMIN_TOKEN`, `METRICS_TOKEN`, Grafana Cloud values): update the secret version, then re-render:
 
 ```bash

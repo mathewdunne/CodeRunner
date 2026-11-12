@@ -27,12 +27,12 @@ export type ControlConfig = {
 	auth0Domain: string | null;
 	auth0ClientId: string | null;
 	auth0ClientSecret: string | null;
-	/** ID-token claim holding the user's Auth0 role names. */
-	auth0RolesClaim: string;
-	/** Auth0 role name that maps to CodeRunner `student`. */
-	auth0UserRoleName: string;
-	/** Auth0 role name that maps to CodeRunner `admin`. */
-	auth0AdminRoleName: string;
+	/** Identifier of the Auth0 API whose access token carries RBAC permissions. */
+	auth0Audience: string | null;
+	/** Auth0 API permission that maps to CodeRunner `student`. */
+	auth0UserPermission: string;
+	/** Auth0 API permission that maps to CodeRunner `admin`. */
+	auth0AdminPermission: string;
 	dockerPath: string;
 	codeImage: string;
 	codeMemoryLimit: string;
@@ -347,14 +347,15 @@ export function loadControlConfig(
 		auth0ClientId: input.auth0ClientId ?? Bun.env.AUTH0_CLIENT_ID ?? null,
 		auth0ClientSecret:
 			input.auth0ClientSecret ?? Bun.env.AUTH0_CLIENT_SECRET ?? null,
-		auth0RolesClaim:
-			input.auth0RolesClaim ??
-			Bun.env.AUTH0_ROLES_CLAIM ??
-			"https://coderunner/roles",
-		auth0UserRoleName:
-			input.auth0UserRoleName ?? Bun.env.AUTH0_USER_ROLE_NAME ?? "user",
-		auth0AdminRoleName:
-			input.auth0AdminRoleName ?? Bun.env.AUTH0_ADMIN_ROLE_NAME ?? "admin",
+		auth0Audience: input.auth0Audience ?? Bun.env.AUTH0_AUDIENCE ?? null,
+		auth0UserPermission:
+			input.auth0UserPermission ??
+			Bun.env.AUTH0_USER_PERMISSION ??
+			"coderunner:user",
+		auth0AdminPermission:
+			input.auth0AdminPermission ??
+			Bun.env.AUTH0_ADMIN_PERMISSION ??
+			"coderunner:admin",
 		dockerPath: input.dockerPath ?? Bun.env.FRC_DOCKER_PATH ?? "docker",
 		codeImage:
 			input.codeImage ??

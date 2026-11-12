@@ -90,9 +90,10 @@ classrooms. See `docs/decisions/043-classroom-join-codes.md`.
 
 **Auth0 SSO (post-V2):** optional third login provider (`AUTH0_*` env) via
 Better Auth's `genericOAuth`. Auth0 users skip the allowlist; their role comes
-from an ID-token roles claim, re-read at every sign-in. Users with no role are
-rejected in `mapProfileToUser` (after-hook throws are lost behind the callback
-redirect). See `docs/decisions/044-auth0-sso.md`.
+from RBAC `permissions` in an access token for the `AUTH0_AUDIENCE` API,
+re-read at every sign-in. Users with no permission are rejected in
+`mapProfileToUser` (after-hook throws are lost behind the callback redirect).
+See `docs/decisions/044-auth0-sso.md` and `048-auth0-rbac-permissions.md`.
 
 **Sim debugging (post-V2):** Start is a split button with **Debug** and
 **Build** run modes (`mode` on `POST /api/sim/run`, `SIM_MODE` into
@@ -159,7 +160,7 @@ arch-independent). See `docs/decisions/035-multi-arch-images-and-workflow-split.
 ## Key References
 
 - `docs/` + `website/` — docs site content and Docusaurus config; published at `https://mathewdunne.github.io/CodeRunner/`; run `bun run docs:dev` to browse locally, `bun run docs:build` to build.
-- `docs/decisions/` — all architecture decision logs (011–047 active; 001–010 archived under `docs/decisions/archive/`).
+- `docs/decisions/` — all architecture decision logs (011–048 active; 001–010 archived under `docs/decisions/archive/`).
 - Pinned AdvantageScope submodule: `vendor/AdvantageScope` at tag `v26.0.2`.
 
 ## Commands

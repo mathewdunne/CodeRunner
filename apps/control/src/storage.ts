@@ -184,15 +184,21 @@ export class AppStorage {
 			const hasGoogle = Boolean(
 				this.config.googleClientId && this.config.googleClientSecret,
 			);
-			const hasAuth0 = Boolean(
+			const hasAuth0Client = Boolean(
 				this.config.auth0Domain &&
 					this.config.auth0ClientId &&
 					this.config.auth0ClientSecret,
 			);
+			const hasAuth0 = hasAuth0Client && Boolean(this.config.auth0Audience);
+			if (hasAuth0Client && !hasAuth0) {
+				log.warn("AUTH0_AUDIENCE is not set — Auth0 sign-in is disabled", {
+					hint: "Set AUTH0_AUDIENCE to the identifier of the Auth0 API that holds CodeRunner's permissions",
+				});
+			}
 			if (!hasGitHub && !hasGoogle && !hasAuth0) {
 				log.warn("no OAuth providers configured — login will not work", {
 					baseUrl: this.config.baseUrl,
-					hint: "Set GITHUB_CLIENT_ID/SECRET, GOOGLE_CLIENT_ID/SECRET, or AUTH0_DOMAIN/CLIENT_ID/CLIENT_SECRET in your .env",
+					hint: "Set GITHUB_CLIENT_ID/SECRET, GOOGLE_CLIENT_ID/SECRET, or AUTH0_DOMAIN/CLIENT_ID/CLIENT_SECRET/AUDIENCE in your .env",
 				});
 			} else {
 				log.debug("oauth providers configured", {
