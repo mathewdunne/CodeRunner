@@ -427,7 +427,7 @@ describe("auth provider discovery", () => {
 		);
 	});
 
-	test("lists auth0 only when its domain, client ID, and secret are all set", async () => {
+	test("lists auth0 only when its domain, client ID, secret, and audience are all set", async () => {
 		const others = {
 			githubClientId: "",
 			githubClientSecret: "",
@@ -448,6 +448,7 @@ describe("auth provider discovery", () => {
 				auth0Domain: "tenant.auth0.test",
 				auth0ClientId: "id",
 				auth0ClientSecret: "secret",
+				auth0Audience: "https://coderunner.test/api",
 			}),
 		).toEqual(["auth0"]);
 		expect(
@@ -456,6 +457,16 @@ describe("auth provider discovery", () => {
 				auth0Domain: "tenant.auth0.test",
 				auth0ClientId: "id",
 				auth0ClientSecret: "",
+				auth0Audience: "https://coderunner.test/api",
+			}),
+		).toEqual([]);
+		expect(
+			await providersFor({
+				...others,
+				auth0Domain: "tenant.auth0.test",
+				auth0ClientId: "id",
+				auth0ClientSecret: "secret",
+				auth0Audience: "",
 			}),
 		).toEqual([]);
 	});

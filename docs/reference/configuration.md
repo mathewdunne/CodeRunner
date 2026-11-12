@@ -66,12 +66,12 @@ See [OAuth credentials](../deploying/oauth-credentials.md) for step-by-step regi
 | `GITHUB_CLIENT_SECRET` | none | GitHub OAuth app client secret. |
 | `GOOGLE_CLIENT_ID` | none | Google OAuth client ID. |
 | `GOOGLE_CLIENT_SECRET` | none | Google OAuth client secret. |
-| `AUTH0_DOMAIN` | none | Auth0 tenant domain (e.g. `myteam.us.auth0.com`). Auth0 sign-in is enabled when this, `AUTH0_CLIENT_ID`, and `AUTH0_CLIENT_SECRET` are all set. |
+| `AUTH0_DOMAIN` | none | Auth0 tenant domain (e.g. `myteam.us.auth0.com`). Auth0 sign-in is enabled when this, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, and `AUTH0_AUDIENCE` are all set. |
 | `AUTH0_CLIENT_ID` | none | Auth0 application client ID. |
 | `AUTH0_CLIENT_SECRET` | none | Auth0 application client secret. |
-| `AUTH0_ROLES_CLAIM` | `https://coderunner/roles` | ID-token claim that holds the user's Auth0 role names. Auth0 users skip the allowlist; this claim decides whether they get in. See [Set up Auth0](../deploying/oauth-credentials.md#set-up-auth0). |
-| `AUTH0_USER_ROLE_NAME` | `user` | Auth0 role name that signs in as a CodeRunner student. |
-| `AUTH0_ADMIN_ROLE_NAME` | `admin` | Auth0 role name that signs in as a CodeRunner admin. |
+| `AUTH0_AUDIENCE` | none | Identifier of the Auth0 API (with RBAC and "Add Permissions in the Access Token" on) whose access-token `permissions` decide whether an Auth0 user gets in. Auth0 users skip the allowlist. See [Set up Auth0](../deploying/oauth-credentials.md#set-up-auth0). |
+| `AUTH0_USER_PERMISSION` | `coderunner:user` | API permission that signs in as a CodeRunner student. |
+| `AUTH0_ADMIN_PERMISSION` | `coderunner:admin` | API permission that signs in as a CodeRunner admin. |
 | `CODERUNNER_DEMO_MODE` | `false` | When `1` or `true`, bypasses authentication entirely. All visitors share one admin session. Never expose a demo instance publicly. Also enabled with the `--demo` CLI flag on startup. |
 | `CODERUNNER_ADMIN_EMAIL` | none | Comma-separated email addresses to bootstrap as admins with zero exec steps. Each is added to the allowlist at startup and granted the admin role on first OAuth sign-in; an existing account with that email is promoted to admin at the next startup. See [OAuth credentials](../deploying/oauth-credentials.md#the-easy-path-coderunner_admin_email). |
 

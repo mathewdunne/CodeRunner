@@ -32,10 +32,12 @@ user creation and again on every OAuth callback), so a removed entry takes
 effect at the next login attempt.
 
 **Auth0 sign-ins skip the allowlist.** When Auth0 is configured, the operator's
-Auth0 tenant is trusted to decide who gets in: CodeRunner reads a roles claim
-from the Auth0 ID token at every Auth0 sign-in and admits the user only if it
-holds the configured user or admin role (the admin role grants CodeRunner
-admin). A user whose roles are removed in Auth0 is denied at their next sign-in,
+Auth0 tenant is trusted to decide who gets in: at every Auth0 sign-in
+CodeRunner requests an access token for its own Auth0 API (`AUTH0_AUDIENCE`)
+and admits the user only if the token's RBAC `permissions` hold the configured
+user or admin permission (the admin permission grants CodeRunner admin).
+Permissions on other APIs in the tenant count for nothing. A user whose
+permission is removed in Auth0 is denied at their next sign-in,
 before any session is issued; sessions they already hold run until they expire.
 See [Set up Auth0](../deploying/oauth-credentials.md#set-up-auth0).
 

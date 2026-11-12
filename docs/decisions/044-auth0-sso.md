@@ -1,5 +1,10 @@
 # 044 — Auth0 SSO
 
+> **Superseded in part by [048](./048-auth0-rbac-permissions.md):** the role
+> now comes from RBAC permissions in an access token for a CodeRunner API, not
+> from an ID-token roles claim. `AUTH0_ROLES_CLAIM`, `AUTH0_USER_ROLE_NAME`, and
+> `AUTH0_ADMIN_ROLE_NAME` are gone. Everything else here still holds.
+
 ## Decision
 
 Add Auth0 as a third sign-in provider (gh #24) for teams that already manage
