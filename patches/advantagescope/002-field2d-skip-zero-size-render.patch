@@ -1,0 +1,16 @@
+diff --git a/src/shared/renderers/Field2dRenderer.ts b/src/shared/renderers/Field2dRenderer.ts
+index 788d0d89..c0e5fc00 100644
+--- a/src/shared/renderers/Field2dRenderer.ts
++++ b/src/shared/renderers/Field2dRenderer.ts
+@@ -49,6 +49,11 @@ export default class Field2dRenderer implements TabRenderer {
+     let width = isVertical ? this.CONTAINER.clientHeight : this.CONTAINER.clientWidth;
+     let height = isVertical ? this.CONTAINER.clientWidth : this.CONTAINER.clientHeight;
+ 
++    // Skip while the container has no size (e.g. the embedding iframe is
++    // display:none). Rendering would shrink the heatmap canvas to 0x0, and
++    // drawImage() with a 0x0 canvas throws, killing the tab render loop.
++    if (width <= 0 || height <= 0) return;
++
+     // Exit if render state unchanged
+     let renderState: any[] = [width, height, window.devicePixelRatio, command, this.imageLoadCount];
+     let renderStateString = JSON.stringify(renderState);
