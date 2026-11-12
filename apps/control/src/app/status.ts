@@ -53,7 +53,7 @@ export async function simStatusSnapshot(
 	runs: RunManager,
 	halsim: HalSimBridge,
 	gamepad: GamepadSessions,
-	auth: AuthContext,
+	auth: Pick<AuthContext, "workspace">,
 ): Promise<SimStatusResponse> {
 	void storage;
 	const runtime = await runtimeProvider.ensureWorkspaceRunning(
@@ -109,7 +109,7 @@ export async function autoChoosersSnapshot(
 	runtimeProvider: WorkspaceRuntimeProvider,
 	runs: RunManager,
 	nt4Auto: Nt4AutoChooserBridge,
-	auth: AuthContext,
+	auth: Pick<AuthContext, "workspace">,
 ): Promise<AutoChoosersResponse> {
 	void storage;
 	const runtime = await runtimeProvider.ensureWorkspaceRunning(

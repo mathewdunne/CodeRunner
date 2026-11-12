@@ -175,6 +175,18 @@ tag:
 gh workflow run "Deploy" --ref main -f tag=v2.4.0
 ```
 
+## Request budget
+
+Every request through the Pages project runs the catch-all Function, static
+assets included. The Workers free plan allows 100,000 Function requests a
+day. A WebSocket counts once when it connects; messages on it are free.
+CodeRunner therefore pushes live sim status over its run WebSocket instead of
+polling it. An open workspace tab costs about one request a second while no
+robot is running (AdvantageScope's connection probe), and close to zero while
+one is. Opening the editor costs a few hundred requests. For bigger classes,
+or long sessions, the Workers Paid plan (10 million requests a month) removes
+the daily cap.
+
 ## Disabling Cloudflare mode
 
 Remove `CF_ACCOUNT_ID` from the repo's GitHub Actions variables. The

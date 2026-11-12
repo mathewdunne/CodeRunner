@@ -159,7 +159,7 @@ arch-independent). See `docs/decisions/035-multi-arch-images-and-workflow-split.
 ## Key References
 
 - `docs/` + `website/` — docs site content and Docusaurus config; published at `https://mathewdunne.github.io/CodeRunner/`; run `bun run docs:dev` to browse locally, `bun run docs:build` to build.
-- `docs/decisions/` — all architecture decision logs (011–046 active; 001–010 archived under `docs/decisions/archive/`).
+- `docs/decisions/` — all architecture decision logs (011–047 active; 001–010 archived under `docs/decisions/archive/`).
 - Pinned AdvantageScope submodule: `vendor/AdvantageScope` at tag `v26.0.2`.
 
 ## Commands

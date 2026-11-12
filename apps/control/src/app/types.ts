@@ -62,6 +62,11 @@ export type RunSocketData = {
 	kind: "run";
 	workspace: AuthContext["workspace"];
 	connection?: RunConnection | undefined;
+	/** Server-side timer pushing sim-status/auto-choosers snapshots. */
+	snapshotTimer?: ReturnType<typeof setInterval> | undefined;
+	snapshotInFlight?: boolean | undefined;
+	/** Last JSON sent per message type, so unchanged snapshots are skipped. */
+	lastSnapshots?: Map<string, string> | undefined;
 };
 
 // Defensive cap on per-socket message buffering while waiting for upstream

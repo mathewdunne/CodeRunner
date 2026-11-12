@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import type { AutoChoosersResponse } from "@/lib/contracts";
 import { useAutoChoosers } from "./useAutoChoosers";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
@@ -43,34 +44,26 @@ describe("useAutoChoosers", () => {
 	});
 
 	test("returns null when slug is null", () => {
-		const { result } = renderHook(() => useAutoChoosers(null));
+		const { result } = renderHook(() => useAutoChoosers(null, null));
 		expect(result.current.status).toBeNull();
 	});
 
-	test("fetches and parses on mount", async () => {
-		const { result } = renderHook(() => useAutoChoosers("my-slug"));
-		await act(async () => {
-			await vi.advanceTimersByTimeAsync(0);
-		});
-		expect(fetch).toHaveBeenCalledWith(
-			"/u/my-slug/api/sim/auto-choosers",
-			expect.objectContaining({ credentials: "same-origin" }),
+	test("adopts the choosers pushed over the run socket", () => {
+		const { result, rerender } = renderHook(
+			({ pushed }) => useAutoChoosers("my-slug", pushed),
+			{ initialProps: { pushed: null as AutoChoosersResponse | null } },
 		);
+		expect(result.current.status).toBeNull();
+		rerender({ pushed: VALID_RESPONSE as AutoChoosersResponse });
 		expect(result.current.status).toEqual(VALID_RESPONSE);
 	});
 
-	test("polls every 1s", async () => {
-		renderHook(() => useAutoChoosers("my-slug"));
+	test("does not poll the auto-choosers endpoint", async () => {
+		renderHook(() => useAutoChoosers("my-slug", null));
 		await act(async () => {
-			await vi.advanceTimersByTimeAsync(0);
+			await vi.advanceTimersByTimeAsync(5_000);
 		});
-		const callsBefore = (fetch as ReturnType<typeof vi.fn>).mock.calls.length;
-		await act(async () => {
-			await vi.advanceTimersByTimeAsync(1000);
-		});
-		expect(
-			(fetch as ReturnType<typeof vi.fn>).mock.calls.length,
-		).toBeGreaterThan(callsBefore);
+		expect(fetch).not.toHaveBeenCalled();
 	});
 
 	test("selectAuto sends PATCH, updates local status", async () => {
@@ -94,7 +87,7 @@ describe("useAutoChoosers", () => {
 			}),
 		);
 
-		const { result } = renderHook(() => useAutoChoosers("my-slug"));
+		const { result } = renderHook(() => useAutoChoosers("my-slug", null));
 		await act(async () => {
 			await vi.advanceTimersByTimeAsync(0);
 		});
@@ -133,7 +126,7 @@ describe("useAutoChoosers", () => {
 			}),
 		);
 
-		const { result } = renderHook(() => useAutoChoosers("my-slug"));
+		const { result } = renderHook(() => useAutoChoosers("my-slug", null));
 		await act(async () => {
 			await vi.advanceTimersByTimeAsync(0);
 		});

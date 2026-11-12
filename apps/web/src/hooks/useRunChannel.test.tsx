@@ -122,6 +122,61 @@ describe("useRunChannel", () => {
 		expect(result.current.runStatus).toBe("idle"); // didn't crash
 	});
 
+	test("exposes pushed sim snapshots and clears them on disconnect", () => {
+		const { result } = renderHook(() => useRunChannel("alice"));
+		const sock = FakeSocket.instances[0]!;
+		act(() => sock.open());
+		expect(result.current.simStatus).toBeNull();
+		expect(result.current.autoChoosers).toBeNull();
+
+		const simStatus = {
+			ok: true,
+			workspace: { id: `ws_${"a".repeat(32)}`, slug: "alice" },
+			container: { state: "running" },
+			run: { status: "idle", runId: null },
+			halsim: {
+				connection: "disconnected",
+				connected: false,
+				stale: false,
+				lastMessageAt: null,
+				error: null,
+			},
+			driverStation: {
+				enabled: false,
+				mode: "teleop",
+				eStopped: false,
+				alliance: "blue1",
+			},
+			comms: { canEnable: false },
+			joysticks: {
+				status: "disconnected",
+				port: null,
+				label: null,
+				lastInputAt: null,
+			},
+		};
+		const autoChoosers = {
+			ok: true,
+			nt4: {
+				connection: "disconnected",
+				connected: false,
+				stale: false,
+				lastMessageAt: null,
+				error: null,
+			},
+			choosers: [],
+		};
+		act(() => sock.message({ type: "sim-status", status: simStatus }));
+		act(() => sock.message({ type: "auto-choosers", status: autoChoosers }));
+		expect(result.current.simStatus).toEqual(simStatus);
+		expect(result.current.autoChoosers).toEqual(autoChoosers);
+		expect(result.current.runStatus).toBe("idle");
+
+		act(() => sock.close());
+		expect(result.current.simStatus).toBeNull();
+		expect(result.current.autoChoosers).toBeNull();
+	});
+
 	test("startRun sends {type:start}", () => {
 		const { result } = renderHook(() => useRunChannel("alice"));
 		const sock = FakeSocket.instances[0]!;

@@ -189,6 +189,7 @@ export async function createApp(
 
 	const websocket = createWebSocketHandlers({
 		storage,
+		runtimeProvider,
 		runs,
 		halsim,
 		nt4Auto,
@@ -483,6 +484,7 @@ export async function createApp(
 		idle,
 		close() {
 			bootLog.info("shutting down");
+			websocket.stopSnapshotPushes();
 			idle.stop();
 			classroomSweeper.stop();
 			dockerStatsPoller.stop();

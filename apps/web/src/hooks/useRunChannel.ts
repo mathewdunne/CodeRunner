@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { runServerMessageSchema } from "@/lib/contracts";
+import {
+	type AutoChoosersResponse,
+	runServerMessageSchema,
+	type SimStatusResponse,
+} from "@/lib/contracts";
 
 export type RunStatus =
 	| "connecting"
@@ -17,6 +21,9 @@ interface UseRunChannelReturn {
 	runStatus: RunStatus;
 	connection: RunConnection;
 	consoleLines: string[];
+	/** Pushed by the server on connect and on change; null while disconnected. */
+	simStatus: SimStatusResponse | null;
+	autoChoosers: AutoChoosersResponse | null;
 	startRun: () => void;
 	stopRun: () => void;
 }
@@ -29,6 +36,10 @@ export function useRunChannel(
 	const [runStatus, setRunStatus] = useState<RunStatus>("connecting");
 	const [connection, setConnection] = useState<RunConnection>("disconnected");
 	const [consoleLines, setConsoleLines] = useState<string[]>(["Connecting..."]);
+	const [simStatus, setSimStatus] = useState<SimStatusResponse | null>(null);
+	const [autoChoosers, setAutoChoosers] = useState<AutoChoosersResponse | null>(
+		null,
+	);
 	const socketRef = useRef<WebSocket | null>(null);
 	const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const backoffRef = useRef(500);
@@ -76,6 +87,14 @@ export function useRunChannel(
 						JSON.parse(String(event.data)),
 					);
 					if (message.type === "hello") return;
+					if (message.type === "sim-status") {
+						setSimStatus(message.status);
+						return;
+					}
+					if (message.type === "auto-choosers") {
+						setAutoChoosers(message.status);
+						return;
+					}
 					if (message.type === "status") {
 						setRunStatus(message.status);
 						return;
@@ -101,6 +120,8 @@ export function useRunChannel(
 				if (disposed || socketRef.current !== socket) return;
 				socketRef.current = null;
 				setConnection("reconnecting");
+				setSimStatus(null);
+				setAutoChoosers(null);
 				logLine("Run channel disconnected. Reconnecting...");
 
 				const delay = backoffRef.current;
@@ -119,6 +140,8 @@ export function useRunChannel(
 		connect();
 		return () => {
 			disposed = true;
+			setSimStatus(null);
+			setAutoChoosers(null);
 			if (reconnectTimerRef.current) {
 				clearTimeout(reconnectTimerRef.current);
 				reconnectTimerRef.current = null;
@@ -159,5 +182,13 @@ export function useRunChannel(
 		}
 	}, []);
 
-	return { runStatus, connection, consoleLines, startRun, stopRun };
+	return {
+		runStatus,
+		connection,
+		consoleLines,
+		simStatus,
+		autoChoosers,
+		startRun,
+		stopRun,
+	};
 }

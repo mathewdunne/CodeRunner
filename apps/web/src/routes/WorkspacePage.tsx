@@ -67,9 +67,14 @@ export function WorkspacePage() {
 		if (isConsoleModule && layout.rightVisible) setPreviewActivated(true);
 	}, [isConsoleModule, layout.rightVisible]);
 
-	const { connection: runConnection, consoleLines } = useRunChannel(simSlug);
-	const simulation = useSimulationState(simSlug);
-	const autoChoosers = useAutoChoosers(simSlug);
+	const {
+		connection: runConnection,
+		consoleLines,
+		simStatus: pushedSimStatus,
+		autoChoosers: pushedAutoChoosers,
+	} = useRunChannel(simSlug);
+	const simulation = useSimulationState(simSlug, pushedSimStatus);
+	const autoChoosers = useAutoChoosers(simSlug, pushedAutoChoosers);
 	const editorUrl = workspaceSlug
 		? `/u/${workspaceSlug}/vscode/?folder=/workspace/project`
 		: null;

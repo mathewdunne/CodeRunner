@@ -7,7 +7,9 @@ submodule before building AdvantageScope Lite.
   injection. `/scope/?frcEndpoint=postMessage` waits for the parent page to
   send `frc-sim:set-nt4-endpoint`, acknowledges with
   `frc-sim:nt4-endpoint-ready`, and starts the live NT4 connection with the
-  injected alive probe and WebSocket URL.
+  injected alive probe and WebSocket URL. The injected probe retries every
+  1 s instead of upstream's 350 ms, because each probe is a proxied request
+  (decision 047).
 - `002-field2d-skip-zero-size-render.patch` makes the 2D Field renderer skip
   frames while its container is 0×0, which is the case whenever the shell hides
   the AdvantageScope pane with `display: none`. Unpatched, the heatmap canvas

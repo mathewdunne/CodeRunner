@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import type { SimStatusResponse } from "@/lib/contracts";
 import { useSimulationState } from "./useSimulationState";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn() } }));
@@ -50,40 +51,39 @@ describe("useSimulationState", () => {
 	});
 
 	test("returns idle when slug is null", () => {
-		const { result } = renderHook(() => useSimulationState(null));
+		const { result } = renderHook(() => useSimulationState(null, null));
 		expect(result.current.status).toBeNull();
 		expect(result.current.runStatus).toBe("idle");
 	});
 
-	test("fetches status on mount", async () => {
-		const { result } = renderHook(() => useSimulationState("test-slug"));
-		await act(async () => {
-			await vi.advanceTimersByTimeAsync(0);
-		});
-		expect(fetch).toHaveBeenCalledWith(
-			"/u/test-slug/api/sim/status",
-			expect.objectContaining({ credentials: "same-origin" }),
+	test("adopts the status pushed over the run socket", () => {
+		const { result, rerender } = renderHook(
+			({ pushed }) => useSimulationState("test-slug", pushed),
+			{ initialProps: { pushed: null as SimStatusResponse | null } },
 		);
-		expect(result.current.status).not.toBeNull();
-		expect(result.current.runStatus).toBe("idle");
+		expect(result.current.status).toBeNull();
+
+		const running = {
+			...VALID_STATUS,
+			run: { status: "running", runId: "run_1" },
+		} as SimStatusResponse;
+		rerender({ pushed: running });
+		expect(result.current.runStatus).toBe("running");
+
+		rerender({ pushed: null });
+		expect(result.current.status).toBeNull();
 	});
 
-	test("polls every 1s", async () => {
-		renderHook(() => useSimulationState("test-slug"));
+	test("does not poll the status endpoint", async () => {
+		renderHook(() => useSimulationState("test-slug", null));
 		await act(async () => {
-			await vi.advanceTimersByTimeAsync(0);
+			await vi.advanceTimersByTimeAsync(5_000);
 		});
-		const callsBefore = (fetch as ReturnType<typeof vi.fn>).mock.calls.length;
-		await act(async () => {
-			await vi.advanceTimersByTimeAsync(1000);
-		});
-		expect(
-			(fetch as ReturnType<typeof vi.fn>).mock.calls.length,
-		).toBeGreaterThan(callsBefore);
+		expect(fetch).not.toHaveBeenCalled();
 	});
 
 	test("startRun sends POST with action:start, refreshes status after", async () => {
-		const { result } = renderHook(() => useSimulationState("test-slug"));
+		const { result } = renderHook(() => useSimulationState("test-slug", null));
 		await act(async () => {
 			await vi.advanceTimersByTimeAsync(0);
 		});
@@ -103,7 +103,7 @@ describe("useSimulationState", () => {
 	});
 
 	test("startRun sends the mode only when one is given; restartRun sends none", async () => {
-		const { result } = renderHook(() => useSimulationState("test-slug"));
+		const { result } = renderHook(() => useSimulationState("test-slug", null));
 		await act(async () => {
 			await vi.advanceTimersByTimeAsync(0);
 		});
@@ -142,7 +142,7 @@ describe("useSimulationState", () => {
 			}),
 		);
 
-		const { result } = renderHook(() => useSimulationState("test-slug"));
+		const { result } = renderHook(() => useSimulationState("test-slug", null));
 		await act(async () => {
 			await vi.advanceTimersByTimeAsync(0);
 		});
@@ -178,7 +178,7 @@ describe("useSimulationState", () => {
 			}),
 		);
 
-		const { result } = renderHook(() => useSimulationState("test-slug"));
+		const { result } = renderHook(() => useSimulationState("test-slug", null));
 		await act(async () => {
 			await vi.advanceTimersByTimeAsync(0);
 		});

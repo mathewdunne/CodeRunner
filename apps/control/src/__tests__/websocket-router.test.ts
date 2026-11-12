@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { AppSocket, SocketData } from "../app/types";
 import { PROXY_PENDING_LIMIT } from "../app/types";
+import { SIM_SNAPSHOT_PUSH_INTERVAL_MS } from "../app/websocket";
 import {
 	createFakeDocker,
 	login,
@@ -100,7 +101,57 @@ describe("websocket message router", () => {
 				expect(
 					ws.data.kind === "run" ? ws.data.connection : undefined,
 				).toBeDefined();
+				app.websocket.close(ws);
 			});
+		});
+
+		test("run open pushes sim snapshots and skips unchanged ones", async () => {
+			const fakeDocker = createFakeDocker();
+			await withApp(
+				async (app) => {
+					await login(app, "Alice");
+					const workspace = workspaceBySlug(app, "alice");
+					const ws = fakeSocket({ kind: "run", workspace });
+
+					app.websocket.open(ws);
+					// runs.connect sends its own hello first; the two pushes follow.
+					const pushes = () =>
+						ws.sent
+							.map((raw) => JSON.parse(raw as string) as { type: string })
+							.filter((m) => m.type !== "hello");
+					await waitFor(() => pushes().length >= 2);
+
+					expect(pushes()).toEqual([
+						expect.objectContaining({
+							type: "sim-status",
+							status: expect.objectContaining({
+								ok: true,
+								workspace: { id: workspace.id, slug: "alice" },
+							}),
+						}),
+						expect.objectContaining({
+							type: "auto-choosers",
+							status: expect.objectContaining({ ok: true }),
+						}),
+					]);
+
+					// Nothing changed, so the next tick sends nothing.
+					await Bun.sleep(SIM_SNAPSHOT_PUSH_INTERVAL_MS + 200);
+					expect(pushes()).toHaveLength(2);
+
+					app.websocket.close(ws);
+					expect(
+						ws.data.kind === "run" ? ws.data.snapshotTimer : "not-run",
+					).toBeUndefined();
+				},
+				{
+					dockerRunner: fakeDocker.runner,
+					codeImage: "coderunner-workspace:test",
+					simPortRange: { start: 26120, end: 26129 },
+					vscodePortRange: { start: 33420, end: 33429 },
+					halsimPortRange: { start: 34420, end: 34429 },
+				},
+			);
 		});
 	});
 

@@ -19,14 +19,26 @@ import {
 import { getLogger } from "../logging";
 import type { Nt4AutoChooserBridge } from "../nt4-auto";
 import type { RunManager } from "../runs";
+import type { WorkspaceRuntimeProvider } from "../runtime";
 import type { AppStorage } from "../storage";
 import { sendUpstreamWebSocketMessage } from "./proxy";
-import { type AppSocket, PROXY_PENDING_LIMIT } from "./types";
+import { autoChoosersSnapshot, simStatusSnapshot } from "./status";
+import {
+	type AppSocket,
+	PROXY_PENDING_LIMIT,
+	type RunSocketData,
+} from "./types";
 
 const log = getLogger("ws");
 
+// How often a run socket re-reads sim status and auto choosers. The browser
+// used to poll both over HTTP at this rate; pushing them over the run socket
+// keeps the same freshness without a proxied request per poll (decision 047).
+export const SIM_SNAPSHOT_PUSH_INTERVAL_MS = 1_000;
+
 export type WebSocketHandlerContext = {
 	storage: AppStorage;
+	runtimeProvider: WorkspaceRuntimeProvider;
 	runs: RunManager;
 	halsim: HalSimBridge;
 	nt4Auto: Nt4AutoChooserBridge;
@@ -43,8 +55,16 @@ function socketMessageText(message: string | ArrayBuffer | Uint8Array): string {
 }
 
 export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
-	const { storage, runs, halsim, nt4Auto, gamepad, imports, catalogSource } =
-		ctx;
+	const {
+		storage,
+		runtimeProvider,
+		runs,
+		halsim,
+		nt4Auto,
+		gamepad,
+		imports,
+		catalogSource,
+	} = ctx;
 
 	// Stop the active run and disconnect all sim state before a destructive
 	// project swap (D12).
@@ -86,6 +106,91 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 		);
 		if (!endpoints.halsim) return null;
 		return { halsimUrl: endpoints.halsim.wsUrl };
+	};
+
+	const sendSnapshotIfChanged = (
+		ws: AppSocket,
+		data: RunSocketData,
+		message: { type: "sim-status" | "auto-choosers"; status: unknown },
+	): void => {
+		const text = JSON.stringify(message);
+		if (data.lastSnapshots?.get(message.type) === text) return;
+		data.lastSnapshots?.set(message.type, text);
+		try {
+			ws.send(text);
+		} catch {}
+	};
+
+	// Each tick runs the same snapshot code as GET /api/sim/status and
+	// /api/sim/auto-choosers, including their bridge (re)connect side effects.
+	const pushSimSnapshots = async (
+		ws: AppSocket,
+		data: RunSocketData,
+	): Promise<void> => {
+		if (data.snapshotInFlight) return;
+		data.snapshotInFlight = true;
+		try {
+			const read = async <T>(
+				label: string,
+				snapshot: () => Promise<T>,
+			): Promise<T | null> => {
+				try {
+					return await snapshot();
+				} catch (error) {
+					log.debug("sim snapshot push failed", {
+						label,
+						workspaceId: data.workspace.id,
+						err: error instanceof Error ? error.message : String(error),
+					});
+					return null;
+				}
+			};
+			const simStatus = await read("sim-status", () =>
+				simStatusSnapshot(
+					storage,
+					runtimeProvider,
+					runs,
+					halsim,
+					gamepad,
+					data,
+				),
+			);
+			const autoChoosers = await read("auto-choosers", () =>
+				autoChoosersSnapshot(storage, runtimeProvider, runs, nt4Auto, data),
+			);
+			// The socket may have closed while the snapshots were being read.
+			if (data.snapshotTimer === undefined) return;
+			sendSnapshotIfChanged(ws, data, {
+				type: "sim-status",
+				status: simStatus,
+			});
+			sendSnapshotIfChanged(ws, data, {
+				type: "auto-choosers",
+				status: autoChoosers,
+			});
+		} finally {
+			data.snapshotInFlight = false;
+		}
+	};
+
+	const pushingSockets = new Set<RunSocketData>();
+
+	const startSnapshotPush = (ws: AppSocket, data: RunSocketData): void => {
+		pushingSockets.add(data);
+		data.lastSnapshots = new Map();
+		data.snapshotTimer = setInterval(
+			() => void pushSimSnapshots(ws, data),
+			SIM_SNAPSHOT_PUSH_INTERVAL_MS,
+		);
+		void pushSimSnapshots(ws, data);
+	};
+
+	const stopSnapshotPush = (data: RunSocketData): void => {
+		pushingSockets.delete(data);
+		if (data.snapshotTimer !== undefined) {
+			clearInterval(data.snapshotTimer);
+			data.snapshotTimer = undefined;
+		}
 	};
 
 	function openProxyUpstream(
@@ -167,6 +272,10 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 
 	return {
 		closeWorkspaceSockets,
+		/** Stop every run socket's snapshot timer (app shutdown). */
+		stopSnapshotPushes(): void {
+			for (const data of [...pushingSockets]) stopSnapshotPush(data);
+		},
 		open(ws: AppSocket): void {
 			log.debug("ws open", {
 				kind: ws.data.kind,
@@ -204,6 +313,7 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 			ws.data.connection = runs.connect(ws.data.workspace, (message) => {
 				ws.send(JSON.stringify(message));
 			});
+			startSnapshotPush(ws, ws.data);
 		},
 		message(ws: AppSocket, message: string | ArrayBuffer | Uint8Array): void {
 			if (
@@ -429,6 +539,7 @@ export function createWebSocketHandlers(ctx: WebSocketHandlerContext) {
 				return;
 			}
 
+			stopSnapshotPush(ws.data);
 			if (ws.data.connection) {
 				runs.disconnect(ws.data.connection);
 			}

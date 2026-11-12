@@ -20,8 +20,10 @@ async function readError(
 	return body.error ?? fallback;
 }
 
+/** `pushedStatus` comes from the run socket (useRunChannel). */
 export function useAutoChoosers(
 	workspaceSlug: string | null,
+	pushedStatus: AutoChoosersResponse | null,
 ): UseAutoChoosersReturn {
 	const [status, setStatus] = useState<AutoChoosersResponse | null>(null);
 
@@ -49,12 +51,8 @@ export function useAutoChoosers(
 	}, [workspaceSlug]);
 
 	useEffect(() => {
-		void refresh();
-		if (!workspaceSlug) return;
-
-		const interval = window.setInterval(() => void refresh(), 1_000);
-		return () => window.clearInterval(interval);
-	}, [refresh, workspaceSlug]);
+		setStatus(workspaceSlug ? pushedStatus : null);
+	}, [pushedStatus, workspaceSlug]);
 
 	const selectAuto = useCallback(
 		async (patch: AutoChooserPatch) => {

@@ -28,8 +28,14 @@ async function readError(
 	return body.error ?? fallback;
 }
 
+/**
+ * `pushedStatus` comes from the run socket (useRunChannel), which the server
+ * updates on change. Commands still refresh over HTTP so their result shows
+ * without waiting for the next push.
+ */
 export function useSimulationState(
 	workspaceSlug: string | null,
+	pushedStatus: SimStatusResponse | null,
 ): UseSimulationStateReturn {
 	const [status, setStatus] = useState<SimStatusResponse | null>(null);
 
@@ -54,21 +60,8 @@ export function useSimulationState(
 	}, [workspaceSlug]);
 
 	useEffect(() => {
-		void refresh();
-		if (!workspaceSlug) return;
-
-		const interval = window.setInterval(() => void refresh(), 1_000);
-		const handleVisibility = () => {
-			if (document.visibilityState === "visible") {
-				void refresh();
-			}
-		};
-		document.addEventListener("visibilitychange", handleVisibility);
-		return () => {
-			window.clearInterval(interval);
-			document.removeEventListener("visibilitychange", handleVisibility);
-		};
-	}, [refresh, workspaceSlug]);
+		setStatus(workspaceSlug ? pushedStatus : null);
+	}, [pushedStatus, workspaceSlug]);
 
 	const runCommand = useCallback(
 		async (action: SimRunAction, mode?: SimRunMode) => {

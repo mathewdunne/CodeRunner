@@ -124,31 +124,6 @@ export const runClientMessageSchema = z.discriminatedUnion("type", [
 	z.object({ type: z.literal("ping") }),
 ]);
 
-export const runServerMessageSchema = z.discriminatedUnion("type", [
-	z.object({
-		type: z.literal("hello"),
-		runId: z.string().min(1),
-	}),
-	z.object({
-		type: z.literal("status"),
-		status: z.enum(["stopping", "building", "running", "failed", "stopped"]),
-	}),
-	z.object({
-		type: z.literal("log"),
-		stream: z.enum(["stdout", "stderr", "sim"]),
-		line: z.string(),
-	}),
-	z.object({
-		type: z.literal("exit"),
-		code: z.number().int().nullable(),
-		signal: z.string().nullable(),
-	}),
-	z.object({
-		type: z.literal("error"),
-		message: z.string(),
-	}),
-]);
-
 export const simRunStatusSchema = z.enum([
 	"idle",
 	"building",
@@ -253,6 +228,43 @@ export const simStatusResponseSchema = z.object({
 		lastInputAt: z.string().nullable(),
 	}),
 });
+
+export const runServerMessageSchema = z.discriminatedUnion("type", [
+	z.object({
+		type: z.literal("hello"),
+		runId: z.string().min(1),
+	}),
+	z.object({
+		type: z.literal("status"),
+		status: z.enum(["stopping", "building", "running", "failed", "stopped"]),
+	}),
+	z.object({
+		type: z.literal("log"),
+		stream: z.enum(["stdout", "stderr", "sim"]),
+		line: z.string(),
+	}),
+	z.object({
+		type: z.literal("exit"),
+		code: z.number().int().nullable(),
+		signal: z.string().nullable(),
+	}),
+	z.object({
+		type: z.literal("error"),
+		message: z.string(),
+	}),
+	// Pushed on connect and whenever the snapshot changes, replacing the old
+	// 1 s HTTP polls of /api/sim/status and /api/sim/auto-choosers (each poll
+	// is a billed request through the Cloudflare proxy; WS frames are not).
+	// null means the snapshot could not be read.
+	z.object({
+		type: z.literal("sim-status"),
+		status: simStatusResponseSchema.nullable(),
+	}),
+	z.object({
+		type: z.literal("auto-choosers"),
+		status: autoChoosersResponseSchema.nullable(),
+	}),
+]);
 
 // --- Gamepad WebSocket messages ---
 

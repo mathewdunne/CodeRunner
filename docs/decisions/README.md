@@ -19,6 +19,7 @@ Record active architecture decisions here.
 
 - [`041-project-preview.md`](041-project-preview.md) — reads project Markdown and generated HTML reports in the right pane, isolating student HTML in an opaque-origin sandbox and authorising its resources with a signed path token instead of the session cookie.
 - [`042-collapsible-workspace-panes.md`](042-collapsible-workspace-panes.md) — editor, right pane, and Driver Station collapse by zeroing their panel size and hiding/inerting contents rather than unmounting, with visibility owned by the workspace page so boundary buttons, the Layout menu, and the tool selector share one state.
+- [`047-cut-proxied-polling.md`](047-cut-proxied-polling.md) — sim status and auto choosers are pushed over the run WebSocket instead of polled at 1 s, and the AS Lite alive probe retries at 1 s instead of 350 ms, to keep Cloudflare-proxied requests within the Workers free tier.
 
 ## Archive
 
