@@ -429,23 +429,159 @@ export const lessonModuleSubdirSchema = z
 		"Subdir must be a relative path made of safe path segments.",
 	);
 
-export const lessonModuleSchema = z.object({
-	id: z.string().min(1),
-	title: z.string().min(1),
-	description: z.string(),
-	subdir: lessonModuleSubdirSchema,
-	kind: lessonModuleKindSchema,
-	order: z.number().int(),
-});
+/**
+ * A module may be stored in the catalog repo (`subdir`) or be a standalone git
+ * repo whose root is the module (`repo`). The shorthand `owner/repo` form is
+ * accepted and normalized to an HTTPS clone URL at load time.
+ */
+export const lessonModuleRepoSchema = z
+	.string()
+	.min(1)
+	.max(300)
+	.regex(
+		/^(?:https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?|[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)$/,
+		"Repo must be an https://github.com/owner/repo URL or owner/repo shorthand.",
+	);
 
-export const lessonCatalogSchema = z.object({
-	schemaVersion: z.number().int(),
-	modules: z.array(lessonModuleSchema),
-});
+/** Display label for a folder in the Switch Project picker. */
+export const lessonFolderNameSchema = z
+	.string()
+	.trim()
+	.min(1)
+	.max(80)
+	.regex(/^[^/\\\p{Cc}]+$/u, "Folder must be a single path segment.");
+
+export const lessonModuleSchema = z
+	.object({
+		id: z.string().min(1),
+		title: z.string().min(1),
+		description: z.string(),
+		subdir: lessonModuleSubdirSchema.optional(),
+		repo: lessonModuleRepoSchema.optional(),
+		/** Keep the module repo's `.git` in the workspace (history and origin). */
+		preserveGit: z.boolean().default(false),
+		kind: lessonModuleKindSchema,
+		order: z.number().int(),
+	})
+	.strict()
+	.superRefine((module, ctx) => {
+		const hasSubdir = module.subdir !== undefined;
+		const hasRepo = module.repo !== undefined;
+		if (hasSubdir === hasRepo) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "A lesson module must define exactly one of subdir or repo.",
+				path: [hasSubdir ? "repo" : "subdir"],
+			});
+		}
+		if (module.preserveGit && !hasRepo) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: "preserveGit is only valid for repo modules.",
+				path: ["preserveGit"],
+			});
+		}
+	});
+
+/** A folder entry in the catalog tree. Folders may contain modules or folders. */
+export interface LessonFolder {
+	folder: string;
+	/** Optional one-line summary shown under the folder name in the picker. */
+	description?: string | undefined;
+	/** Display position among siblings, sharing one scale with modules. */
+	order: number;
+	modules: LessonCatalogEntry[];
+}
+
+export type LessonCatalogEntry = LessonModule | LessonFolder;
+
+export const lessonFolderSchema: z.ZodType<LessonFolder> = z.lazy(() =>
+	z
+		.object({
+			folder: lessonFolderNameSchema,
+			description: z.string().optional(),
+			order: z.number().int(),
+			modules: z.array(lessonCatalogEntrySchema),
+		})
+		.strict(),
+);
+
+export const lessonCatalogEntrySchema: z.ZodType<LessonCatalogEntry> = z.lazy(
+	() => z.union([lessonModuleSchema, lessonFolderSchema]),
+);
+
+export function isLessonFolder(
+	entry: LessonCatalogEntry,
+): entry is LessonFolder {
+	return "folder" in entry;
+}
+
+/** Depth-first module list in catalog order. Folder structure is discarded. */
+export function flattenLessonModules(
+	entries: LessonCatalogEntry[],
+): LessonModule[] {
+	const modules: LessonModule[] = [];
+	for (const entry of entries) {
+		if (isLessonFolder(entry)) {
+			modules.push(...flattenLessonModules(entry.modules));
+		} else {
+			modules.push(entry);
+		}
+	}
+	return modules;
+}
+
+function validateCatalogTree(
+	entries: LessonCatalogEntry[],
+	ctx: z.RefinementCtx,
+	path: (string | number)[],
+	moduleIds: Set<string>,
+): void {
+	const folders = new Set<string>();
+	for (const [index, entry] of entries.entries()) {
+		if (isLessonFolder(entry)) {
+			if (folders.has(entry.folder)) {
+				ctx.addIssue({
+					code: z.ZodIssueCode.custom,
+					message: `Duplicate folder "${entry.folder}" in the same folder.`,
+					path: [...path, index, "folder"],
+				});
+			} else {
+				folders.add(entry.folder);
+			}
+			validateCatalogTree(
+				entry.modules,
+				ctx,
+				[...path, index, "modules"],
+				moduleIds,
+			);
+			continue;
+		}
+
+		if (moduleIds.has(entry.id)) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				message: `Duplicate module id "${entry.id}".`,
+				path: [...path, index, "id"],
+			});
+		} else {
+			moduleIds.add(entry.id);
+		}
+	}
+}
+
+export const lessonCatalogSchema = z
+	.object({
+		schemaVersion: z.number().int(),
+		modules: z.array(lessonCatalogEntrySchema),
+	})
+	.superRefine((catalog, ctx) => {
+		validateCatalogTree(catalog.modules, ctx, ["modules"], new Set());
+	});
 
 export const lessonCatalogResponseSchema = z.object({
 	ok: z.literal(true),
-	modules: z.array(lessonModuleSchema),
+	modules: z.array(lessonCatalogEntrySchema),
 	error: z.string().nullable().optional(),
 });
 
@@ -455,6 +591,8 @@ export const lessonLoadRequestSchema = z.object({
 
 export type LessonModuleKind = z.infer<typeof lessonModuleKindSchema>;
 export type LessonModuleSubdir = z.infer<typeof lessonModuleSubdirSchema>;
+export type LessonModuleRepo = z.infer<typeof lessonModuleRepoSchema>;
+export type LessonFolderName = z.infer<typeof lessonFolderNameSchema>;
 export type LessonModule = z.infer<typeof lessonModuleSchema>;
 export type LessonCatalog = z.infer<typeof lessonCatalogSchema>;
 export type LessonCatalogResponse = z.infer<typeof lessonCatalogResponseSchema>;

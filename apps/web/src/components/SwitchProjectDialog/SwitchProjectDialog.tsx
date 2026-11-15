@@ -1,4 +1,12 @@
-import { BookOpen, Cpu, RotateCcw, Terminal } from "lucide-react";
+import {
+	BookOpen,
+	ChevronDown,
+	ChevronRight,
+	Cpu,
+	Folder,
+	RotateCcw,
+	Terminal,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SiGithub } from "react-icons/si";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +22,15 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useLessons } from "@/hooks/useLessons";
 import { type ProjectSwapKind, useProjectSwap } from "@/hooks/useProjectSwap";
-import type { LessonModule } from "@/lib/contracts";
+import type { LessonCatalogEntry, LessonModule } from "@/lib/contracts";
 import { cn } from "@/lib/utils";
+import {
+	catalogContainsModule,
+	countCatalogModules,
+	folderPathKey,
+	groupCatalogBlocks,
+	numberCatalogModules,
+} from "./module-groups";
 
 interface SwitchProjectDialogProps {
 	open: boolean;
@@ -46,6 +61,216 @@ function KindTag({ kind }: { kind: LessonModule["kind"] }) {
 	);
 }
 
+interface ModuleCardProps {
+	module: LessonModule;
+	number: number;
+	isCurrent: boolean;
+	onChoose: (module: LessonModule) => void;
+	onReset: (module: LessonModule) => void;
+}
+
+function ModuleCard({
+	module,
+	number,
+	isCurrent,
+	onChoose,
+	onReset,
+}: ModuleCardProps) {
+	return (
+		<div
+			className={cn(
+				"group relative flex flex-col rounded-lg border bg-card/40 p-3 transition-colors",
+				isCurrent
+					? "border-primary/60 ring-1 ring-primary/40"
+					: "border-border hover:border-border/80 hover:bg-accent/40",
+			)}
+		>
+			<div className="mb-1 flex items-start justify-between gap-2">
+				<h4 className="text-[13px] font-semibold leading-tight text-foreground">
+					{module.title}
+				</h4>
+				<KindTag kind={module.kind} />
+			</div>
+			<p className="mb-3 line-clamp-2 flex-1 text-[11.5px] leading-snug text-muted-foreground">
+				{module.description}
+			</p>
+			<div className="flex items-center justify-between">
+				{isCurrent ? (
+					<span className="text-[10.5px] font-medium uppercase tracking-wide text-primary">
+						Current
+					</span>
+				) : (
+					<span />
+				)}
+				{isCurrent ? (
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						className="h-7 gap-1.5 px-2 text-[12px]"
+						onClick={() => onReset(module)}
+					>
+						<RotateCcw className="size-3.5" />
+						Reset
+					</Button>
+				) : (
+					<Button
+						type="button"
+						size="sm"
+						className="h-7 px-3 text-[12px]"
+						onClick={() => onChoose(module)}
+					>
+						Load
+					</Button>
+				)}
+			</div>
+		</div>
+	);
+}
+
+interface ModuleGridProps {
+	modules: LessonModule[];
+	numbers: Map<string, number>;
+	currentModule: string | null;
+	onChoose: (module: LessonModule) => void;
+	onReset: (module: LessonModule) => void;
+}
+
+function ModuleGrid({
+	modules,
+	numbers,
+	currentModule,
+	onChoose,
+	onReset,
+}: ModuleGridProps) {
+	return (
+		<div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+			{modules.map((module) => (
+				<ModuleCard
+					key={module.id}
+					module={module}
+					number={numbers.get(module.id) ?? 1}
+					isCurrent={module.id === currentModule}
+					onChoose={onChoose}
+					onReset={onReset}
+				/>
+			))}
+		</div>
+	);
+}
+
+interface CatalogTreeProps {
+	entries: LessonCatalogEntry[];
+	path: string[];
+	depth: number;
+	numbers: Map<string, number>;
+	currentModule: string | null;
+	collapsedFolders: Set<string>;
+	onToggleFolder: (key: string) => void;
+	onChoose: (module: LessonModule) => void;
+	onReset: (module: LessonModule) => void;
+}
+
+function CatalogTree({
+	entries,
+	path,
+	depth,
+	numbers,
+	currentModule,
+	collapsedFolders,
+	onToggleFolder,
+	onChoose,
+	onReset,
+}: CatalogTreeProps) {
+	const blocks = groupCatalogBlocks(entries);
+
+	return (
+		<div className={cn(depth > 0 && "ml-3 border-l border-border/60 pl-3")}>
+			{blocks.map((block, index) => {
+				if (block.type === "modules") {
+					return (
+						<div
+							key={`modules-${block.modules[0]?.id}`}
+							className={cn(index > 0 && "mt-3")}
+						>
+							<ModuleGrid
+								modules={block.modules}
+								numbers={numbers}
+								currentModule={currentModule}
+								onChoose={onChoose}
+								onReset={onReset}
+							/>
+						</div>
+					);
+				}
+
+				const folderPath = [...path, block.folder.folder];
+				const folderKey = folderPathKey(folderPath);
+				const expanded = !collapsedFolders.has(folderKey);
+				const contentId = `lesson-folder-${encodeURIComponent(folderPath.join("/"))}`;
+				const hasCurrent = catalogContainsModule(
+					block.folder.modules,
+					currentModule,
+				);
+				return (
+					<section
+						key={`folder-${folderKey}`}
+						className={cn(index > 0 && "mt-3")}
+					>
+						<button
+							type="button"
+							aria-expanded={expanded}
+							aria-controls={contentId}
+							onClick={() => onToggleFolder(folderKey)}
+							className="-mx-1 mb-2 flex w-[calc(100%+0.5rem)] items-center gap-1.5 rounded-md px-1 py-1 text-left transition-colors hover:bg-accent/40"
+						>
+							{expanded ? (
+								<ChevronDown className="size-3.5 shrink-0 text-muted-foreground" />
+							) : (
+								<ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />
+							)}
+							<Folder className="size-3.5 shrink-0 text-muted-foreground" />
+							<span className="min-w-0 flex-1">
+								<span className="block truncate text-[12px] font-semibold text-foreground">
+									{block.folder.folder}
+								</span>
+								{block.folder.description && (
+									<span className="block truncate text-[11px] font-normal text-muted-foreground">
+										{block.folder.description}
+									</span>
+								)}
+							</span>
+							<span className="shrink-0 text-[10.5px] tabular-nums text-muted-foreground">
+								{countCatalogModules(block.folder.modules)}
+							</span>
+							{hasCurrent && (
+								<span className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-primary">
+									Current
+								</span>
+							)}
+						</button>
+						{expanded && (
+							<div id={contentId}>
+								<CatalogTree
+									entries={block.folder.modules}
+									path={folderPath}
+									depth={depth + 1}
+									numbers={numbers}
+									currentModule={currentModule}
+									collapsedFolders={collapsedFolders}
+									onToggleFolder={onToggleFolder}
+									onChoose={onChoose}
+									onReset={onReset}
+								/>
+							</div>
+						)}
+					</section>
+				);
+			})}
+		</div>
+	);
+}
+
 export function SwitchProjectDialog({
 	open,
 	onOpenChange,
@@ -60,6 +285,12 @@ export function SwitchProjectDialog({
 	const [pending, setPending] = useState<Pending | null>(null);
 	const [url, setUrl] = useState("");
 	const [urlError, setUrlError] = useState("");
+	const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(
+		new Set(),
+	);
+
+	// Number depth-first in rendered order so the visible list counts up from 1.
+	const moduleNumbers = useMemo(() => numberCatalogModules(modules), [modules]);
 
 	const running = state.status === "connecting" || state.status === "running";
 	const finished = state.status === "done" || state.status === "error";
@@ -75,6 +306,7 @@ export function SwitchProjectDialog({
 		setPending(null);
 		setUrl("");
 		setUrlError("");
+		setCollapsedFolders(new Set());
 		reset();
 	}, [reset]);
 
@@ -126,6 +358,24 @@ export function SwitchProjectDialog({
 		},
 		[projectEmpty, run],
 	);
+
+	const chooseModule = useCallback(
+		(module: LessonModule) => choose({ kind: "lesson", module }),
+		[choose],
+	);
+
+	const resetModule = useCallback((module: LessonModule) => {
+		setPending({ kind: "reset", module });
+	}, []);
+
+	const toggleFolder = useCallback((folder: string) => {
+		setCollapsedFolders((previous) => {
+			const next = new Set(previous);
+			if (next.has(folder)) next.delete(folder);
+			else next.add(folder);
+			return next;
+		});
+	}, []);
 
 	const repoName = useMemo(() => {
 		if (!pending || pending.kind !== "import") return "";
@@ -186,64 +436,17 @@ export function SwitchProjectDialog({
 									</p>
 								)}
 
-								<div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-									{modules.map((module, index) => {
-										const isCurrent = module.id === currentModule;
-										return (
-											<div
-												key={module.id}
-												className={cn(
-													"group relative flex flex-col rounded-lg border bg-card/40 p-3 transition-colors",
-													isCurrent
-														? "border-primary/60 ring-1 ring-primary/40"
-														: "border-border hover:border-border/80 hover:bg-accent/40",
-												)}
-											>
-												<div className="mb-1 flex items-start justify-between gap-2">
-													<h4 className="text-[13px] font-semibold leading-tight text-foreground">
-														{index + 1}. {module.title}
-													</h4>
-													<KindTag kind={module.kind} />
-												</div>
-												<p className="mb-3 line-clamp-2 flex-1 text-[11.5px] leading-snug text-muted-foreground">
-													{module.description}
-												</p>
-												<div className="flex items-center justify-between">
-													{isCurrent ? (
-														<span className="text-[10.5px] font-medium uppercase tracking-wide text-primary">
-															Current
-														</span>
-													) : (
-														<span />
-													)}
-													{isCurrent ? (
-														<Button
-															type="button"
-															variant="ghost"
-															size="sm"
-															className="h-7 gap-1.5 px-2 text-[12px]"
-															onClick={() =>
-																setPending({ kind: "reset", module })
-															}
-														>
-															<RotateCcw className="size-3.5" />
-															Reset
-														</Button>
-													) : (
-														<Button
-															type="button"
-															size="sm"
-															className="h-7 px-3 text-[12px]"
-															onClick={() => choose({ kind: "lesson", module })}
-														>
-															Load
-														</Button>
-													)}
-												</div>
-											</div>
-										);
-									})}
-								</div>
+								<CatalogTree
+									entries={modules}
+									path={[]}
+									depth={0}
+									numbers={moduleNumbers}
+									currentModule={currentModule}
+									collapsedFolders={collapsedFolders}
+									onToggleFolder={toggleFolder}
+									onChoose={chooseModule}
+									onReset={resetModule}
+								/>
 
 								{/* ── Import from GitHub ─────────────────────────── */}
 								<div className="mt-5 border-t border-border pt-4">

@@ -95,6 +95,8 @@ describe("S5/S11 — clone/copy target paths are built from generated staging na
 				userId: workspace.user_id,
 				moduleId: "robot-starter",
 				subdir: "modules/robot-starter",
+				repo: null,
+				preserveGit: false,
 				kind: "robot",
 				remote: null,
 				send: () => {},

@@ -65,9 +65,12 @@ Explorer sidebar to open `README.md` and the project files they need.
 A few behaviors are worth understanding before you put this in front of
 students:
 
-- **Lessons are gitless.** Loading a lesson does not create a Git repository in
-  the workspace. "Reset" is therefore just re-loading the same module: the
-  student gets a fresh, clean copy of the starting project.
+- **Lessons are gitless by default.** Loading a lesson does not create a Git
+  repository in the workspace. "Reset" is therefore just re-loading the same
+  module: the student gets a fresh, clean copy of the starting project. (The
+  exception is a module authored with `repo` + `preserveGit: true`, which keeps
+  the lesson repository's `.git`; see
+  [Authoring Lesson Modules](./authoring-modules.md#standalone-repo-modules).)
 - **Switching modules discards the current workspace.** Moving from one lesson
   to another (or to a different lesson, or resetting) **intentionally throws
   away** whatever is currently in the workspace. This is by design: lessons are
