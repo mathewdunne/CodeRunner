@@ -5,7 +5,7 @@ title: CLI Reference
 
 # CLI Reference
 
-All scripts are run from the repo root with `bun run NAME` and require Bun 1.3.13 or newer — this is the interface for a from-source host checkout (including the host dev loop). For a `docker compose` deployment, the equivalent ops surface is the `coderunner` CLI baked into the control image; see [Containerized ops: the `coderunner` CLI](#containerized-ops-the-coderunner-cli) below.
+All scripts are run from the repo root with `bun run NAME` and require Bun 1.4.4 or newer — this is the interface for a from-source host checkout (including the host dev loop). For a `docker compose` deployment, the equivalent ops surface is the `coderunner` CLI baked into the control image; see [Containerized ops: the `coderunner` CLI](#containerized-ops-the-coderunner-cli) below.
 
 ## Running the App
 

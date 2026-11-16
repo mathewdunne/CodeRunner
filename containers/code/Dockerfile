@@ -4,7 +4,7 @@ ARG SPOTLESS_GRADLE_COMMIT=c11a273a11454bfc06fc9cbb19290d5c330e884c
 # The publisher does not attach VSIX files to GitHub releases and the extension
 # is absent from Open VSX. Build the pinned MIT-licensed source instead of
 # downloading the Marketplace artifact (which is not licensed for VSCodium).
-FROM node:16-bookworm-slim AS spotless-builder
+FROM node:24-slim AS spotless-builder
 
 ARG SPOTLESS_GRADLE_VERSION
 ARG SPOTLESS_GRADLE_COMMIT
@@ -23,7 +23,7 @@ RUN apt-get update -qq \
 
 # CodeRunner's own editor extension: attaches the Java debugger to Debug runs.
 # See docs/decisions/045-sim-debugging.md.
-FROM node:22-bookworm-slim AS coderunner-debug-builder
+FROM node:24-slim AS coderunner-debug-builder
 
 COPY containers/code/coderunner-debug/ /src/
 WORKDIR /src

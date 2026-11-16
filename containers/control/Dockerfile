@@ -12,7 +12,7 @@
 #
 # See docs/decisions/031-containerized-control-plane.md.
 
-ARG BUN_VERSION=1.3.13
+ARG BUN_VERSION=1.4.4
 
 # ── Stage 1: web shell build ───────────────────────────────────────────
 FROM oven/bun:${BUN_VERSION} AS web-build
@@ -89,7 +89,7 @@ COPY --from=ascope-build /repo/dist/advantagescope /
 # never changes, so a cached layer built against an older release is reused
 # even after a newer one is published — and the amd64/arm64 jobs could
 # otherwise resolve different releases if "latest" moved between them.
-FROM debian:bookworm-slim AS pathplanner-dist
+FROM debian:stable-slim AS pathplanner-dist
 # The default belongs on the in-stage ARG: an ARG between stages is scoped to
 # the preceding stage, so a default declared there never reaches this one and
 # the tag would expand empty (composing a 404 `/download//...` URL).
