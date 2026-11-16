@@ -195,8 +195,7 @@ export class HalSimBridge extends ReconnectingWsBridge<
 		const snapshot = this.ensureConnected(workspaceId, upstreamUrl);
 		const entry = this.entries.get(workspaceId);
 		if (
-			!entry ||
-			entry.connection !== "connected" ||
+			entry?.connection !== "connected" ||
 			!entry.socket ||
 			entry.socket.readyState !== WebSocket.OPEN
 		) {
@@ -267,8 +266,7 @@ export class HalSimBridge extends ReconnectingWsBridge<
 		const snapshot = this.ensureConnected(workspaceId, upstreamUrl);
 		const entry = this.entries.get(workspaceId);
 		if (
-			!entry ||
-			entry.connection !== "connected" ||
+			entry?.connection !== "connected" ||
 			!entry.socket ||
 			entry.socket.readyState !== WebSocket.OPEN
 		) {
