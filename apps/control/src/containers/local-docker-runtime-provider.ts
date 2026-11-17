@@ -190,6 +190,14 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
 		);
 	}
 
+	/** Whether Docker reports the workspace's code container as running. */
+	async isCodeContainerRunning(workspaceId: WorkspaceId): Promise<boolean> {
+		const inspected = await this.inspectContainer(
+			codeContainerName(workspaceId),
+		);
+		return inspected?.State?.Running === true;
+	}
+
 	async removeWorkspace(workspaceId: WorkspaceId): Promise<void> {
 		await this.withRunningStatusInvalidated(workspaceId, () =>
 			removeCodeContainer(this.storage, this.dockerRunner, workspaceId),

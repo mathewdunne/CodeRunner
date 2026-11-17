@@ -3,7 +3,9 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createApp } from "../app";
 import { pruneIdleGradleCaches } from "../gradle-cache-prune";
+import { createFakeDocker } from "./helpers";
 
 const NOW = new Date("2026-11-17T00:00:00.000Z");
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -137,5 +139,43 @@ describe("pruneIdleGradleCaches", () => {
 	test("is a no-op when users/ does not exist", async () => {
 		const result = await run({});
 		expect(result.pruned).toEqual([]);
+	});
+});
+
+describe("createApp startup prune", () => {
+	async function boot(gradleCachePruneDays: number) {
+		return createApp({
+			dataDir,
+			sessionSecret: "test-session-secret",
+			baseUrl: "http://localhost:4000",
+			containerAutoStart: false,
+			dockerRunner: createFakeDocker().runner,
+			portAvailable: async () => true,
+			gradleCachePruneDays,
+		});
+	}
+
+	test("prunes an idle workspace's cache shortly after boot", async () => {
+		await seedCache("ws_orphan");
+		const app = await boot(14);
+		try {
+			for (let i = 0; i < 100 && hasCache("ws_orphan"); i++) {
+				await Bun.sleep(10);
+			}
+			expect(hasCache("ws_orphan")).toBe(false);
+		} finally {
+			app.close();
+		}
+	});
+
+	test("does nothing when GRADLE_CACHE_PRUNE_DAYS is 0", async () => {
+		await seedCache("ws_orphan");
+		const app = await boot(0);
+		try {
+			await Bun.sleep(200);
+			expect(hasCache("ws_orphan")).toBe(true);
+		} finally {
+			app.close();
+		}
 	});
 });

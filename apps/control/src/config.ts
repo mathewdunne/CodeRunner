@@ -67,6 +67,7 @@ export type ControlConfigInput = Partial<
 		| "containerAutoStart"
 		| "demo"
 		| "adminEmails"
+		| "gradleCachePruneDays"
 	>
 > & {
 	simPortRange?: PortRange | string;
