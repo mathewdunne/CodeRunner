@@ -135,3 +135,33 @@ describe("codeDiskReadLimit (via loadControlConfig)", () => {
 		);
 	});
 });
+
+describe("gradleCachePruneDays", () => {
+	test("defaults to 14", () => {
+		expect(loadControlConfig({}).gradleCachePruneDays).toBe(14);
+	});
+
+	test("blank counts as unset, not as 0", () => {
+		expect(
+			loadControlConfig({ gradleCachePruneDays: " " }).gradleCachePruneDays,
+		).toBe(14);
+	});
+
+	test("accepts 0 to disable pruning", () => {
+		expect(
+			loadControlConfig({ gradleCachePruneDays: "0" }).gradleCachePruneDays,
+		).toBe(0);
+	});
+
+	test("accepts a positive day count", () => {
+		expect(
+			loadControlConfig({ gradleCachePruneDays: "30" }).gradleCachePruneDays,
+		).toBe(30);
+	});
+
+	test.each(["-1", "abc", "1.5"])("rejects %p", (value) => {
+		expect(() => loadControlConfig({ gradleCachePruneDays: value })).toThrow(
+			/GRADLE_CACHE_PRUNE_DAYS must be a non-negative integer/,
+		);
+	});
+});

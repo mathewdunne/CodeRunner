@@ -73,6 +73,13 @@ configured timeout. The default is 30 minutes (`IDLE_STOP_MINUTES`); the cloud
 VM deployment uses 10 minutes. Containers are reconciled on the next session
 without any student-visible data loss.
 
+Each workspace holds its own copy of the Gradle cache (~1–2 GB). Every time the
+control plane starts, it deletes the caches of workspaces nobody has used in
+the last 14 days (`GRADLE_CACHE_PRUNE_DAYS`), so the data disk tracks recently
+active students rather than everyone who ever signed in. A pruned student's
+next start copies the cache back from the image, which adds a little time to
+that start; their project files are untouched.
+
 ---
 
 ## Managing who can sign in

@@ -50,6 +50,7 @@ export type ControlConfig = {
 	containerAutoStart: boolean;
 	idleStopMinutes: number;
 	idleCheckIntervalMs: number;
+	gradleCachePruneDays: number;
 	adminToken: string | null;
 	maxActiveContainers: number;
 	demo: boolean;
@@ -66,6 +67,7 @@ export type ControlConfigInput = Partial<
 		| "containerAutoStart"
 		| "demo"
 		| "adminEmails"
+		| "gradleCachePruneDays"
 	>
 > & {
 	simPortRange?: PortRange | string;
@@ -73,6 +75,7 @@ export type ControlConfigInput = Partial<
 	halsimPortRange?: PortRange | string;
 	idleStopMinutes?: number | string;
 	idleCheckIntervalMs?: number | string;
+	gradleCachePruneDays?: number | string;
 	maxActiveContainers?: number | string;
 	port?: number | string;
 	logLevel?: LogLevel | string;
@@ -173,6 +176,24 @@ function parsePositiveInteger(
 				: Number(value);
 	if (!Number.isInteger(parsed) || parsed < 1) {
 		throw new Error(`${name} must be a positive integer.`);
+	}
+	return parsed;
+}
+
+/** Like parsePositiveInteger but allows 0; blank counts as unset. */
+function parseNonNegativeInteger(
+	value: string | number | undefined,
+	fallback: number,
+	name: string,
+): number {
+	const parsed =
+		typeof value === "number"
+			? value
+			: value === undefined || value.trim() === ""
+				? fallback
+				: Number(value);
+	if (!Number.isInteger(parsed) || parsed < 0) {
+		throw new Error(`${name} must be a non-negative integer.`);
 	}
 	return parsed;
 }
@@ -413,6 +434,11 @@ export function loadControlConfig(
 			input.idleCheckIntervalMs ?? Bun.env.IDLE_CHECK_INTERVAL_MS,
 			60_000,
 			"IDLE_CHECK_INTERVAL_MS",
+		),
+		gradleCachePruneDays: parseNonNegativeInteger(
+			input.gradleCachePruneDays ?? Bun.env.GRADLE_CACHE_PRUNE_DAYS,
+			14,
+			"GRADLE_CACHE_PRUNE_DAYS",
 		),
 		adminToken: input.adminToken ?? Bun.env.ADMIN_TOKEN ?? null,
 		maxActiveContainers: parsePositiveInteger(

@@ -107,6 +107,9 @@ log.info("control plane configuration", {
 	simStartupSec: c.simStartupTimeoutMs / 1000,
 	idleStopMinutes: c.idleStopMinutes,
 	idleCheckSec: c.idleCheckIntervalMs / 1000,
+	gradleCachePruneDays: c.demo
+		? "(disabled in demo)"
+		: c.gradleCachePruneDays || "(disabled)",
 	containerUser: c.containerUser
 		? detected.containerUser
 			? `${c.containerUser} (auto-detected)`
