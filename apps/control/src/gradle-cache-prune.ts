@@ -55,14 +55,22 @@ export async function pruneIdleGradleCaches(
 		const workspaceId = entry.name;
 		const gradleDir = join(usersDir, workspaceId, "home", ".gradle");
 		gradleDirs.push(gradleDir);
-		try {
+		// An unparseable timestamp counts as recent: keep rather than guess.
+		const isIdle = () => {
 			const accessed = options.lastAccessedAt(workspaceId);
-			if (accessed !== null && Date.parse(accessed) >= cutoff) continue;
+			if (accessed === null) return true;
+			const time = Date.parse(accessed);
+			return !Number.isNaN(time) && time < cutoff;
+		};
+		try {
+			if (!isIdle()) continue;
 			const hasCaches = (await listDirs(gradleDir)).some(
 				(child) => child.isDirectory() && child.name === "caches",
 			);
 			if (!hasCaches) continue;
 			if (await options.isRunning(workspaceId)) continue;
+			// Re-check: a sign-in during the awaits above bumps last_accessed_at.
+			if (!isIdle()) continue;
 			await rename(
 				join(gradleDir, "caches"),
 				join(gradleDir, `${PRUNING_PREFIX}${now.getTime()}`),

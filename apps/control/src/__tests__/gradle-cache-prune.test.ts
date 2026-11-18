@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createApp } from "../app";
+import { isContainerRunning } from "../containers/docker-client";
 import { pruneIdleGradleCaches } from "../gradle-cache-prune";
 import { createFakeDocker } from "./helpers";
 
@@ -111,6 +112,26 @@ describe("pruneIdleGradleCaches", () => {
 		expect(hasCache("ws_b")).toBe(false);
 	});
 
+	test("keeps a workspace whose last_accessed_at is unparseable", async () => {
+		await seedCache("ws_bad");
+		const result = await run({ ws_bad: "not a date" });
+		expect(result.pruned).toEqual([]);
+		expect(hasCache("ws_bad")).toBe(true);
+	});
+
+	test("keeps a workspace accessed while its running check was in flight", async () => {
+		await seedCache("ws_late");
+		const accessed: Record<string, string | null> = { ws_late: daysAgo(30) };
+		const result = await run(accessed, {
+			isRunning: async () => {
+				accessed.ws_late = NOW.toISOString();
+				return false;
+			},
+		});
+		expect(result.pruned).toEqual([]);
+		expect(hasCache("ws_late")).toBe(true);
+	});
+
 	test("removes leftover caches.pruning-* dirs even for active workspaces", async () => {
 		await seedCache("ws_active");
 		const leftover = join(gradleDir("ws_active"), "caches.pruning-123");
@@ -177,5 +198,45 @@ describe("createApp startup prune", () => {
 		} finally {
 			app.close();
 		}
+	});
+});
+
+describe("isContainerRunning", () => {
+	test("is false for a missing container", async () => {
+		const running = await isContainerRunning(
+			async () => ({
+				exitCode: 1,
+				stdout: "[]",
+				stderr: "Error: No such container: x",
+			}),
+			"x",
+		);
+		expect(running).toBe(false);
+	});
+
+	test("throws on other docker failures instead of reporting not running", async () => {
+		await expect(
+			isContainerRunning(
+				async () => ({
+					exitCode: 1,
+					stdout: "",
+					stderr:
+						"permission denied while trying to connect to the Docker daemon socket",
+				}),
+				"x",
+			),
+		).rejects.toThrow(/permission denied/);
+	});
+
+	test("reads State.Running", async () => {
+		const running = await isContainerRunning(
+			async () => ({
+				exitCode: 0,
+				stdout: JSON.stringify([{ State: { Running: true } }]),
+				stderr: "",
+			}),
+			"x",
+		);
+		expect(running).toBe(true);
 	});
 });

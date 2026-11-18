@@ -120,6 +120,26 @@ export async function inspectContainerOrThrow(
 	return container;
 }
 
+/**
+ * Whether the container is running. A missing container is `false`; any other
+ * docker failure throws, so a caller deciding whether something is safe to
+ * touch doesn't mistake "docker didn't answer" for "not running".
+ */
+export async function isContainerRunning(
+	dockerRunner: DockerRunner,
+	name: string,
+): Promise<boolean> {
+	try {
+		const container = await inspectContainerOrThrow(dockerRunner, name);
+		return container.State?.Running === true;
+	} catch (err) {
+		if (err instanceof Error && /no such container/i.test(err.message)) {
+			return false;
+		}
+		throw err;
+	}
+}
+
 export async function inspectContainers(
 	dockerRunner: DockerRunner,
 	names: string[],
