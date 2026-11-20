@@ -36,22 +36,6 @@ export function catalogContainsModule(
 	);
 }
 
-/** Number modules depth-first, in the order the tree renders them. */
-export function numberCatalogModules(
-	entries: LessonCatalogEntry[],
-): Map<string, number> {
-	const numbers = new Map<string, number>();
-	let next = 1;
-	const visit = (items: LessonCatalogEntry[]) => {
-		for (const entry of items) {
-			if (isLessonFolder(entry)) visit(entry.modules);
-			else numbers.set(entry.id, next++);
-		}
-	};
-	visit(entries);
-	return numbers;
-}
-
 /**
  * Group consecutive modules into one grid per run. Folder entries break the run
  * so the rendered list follows the sorted entry order exactly. Folders with no

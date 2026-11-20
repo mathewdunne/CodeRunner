@@ -5,7 +5,6 @@ import {
 	countCatalogModules,
 	folderPathKey,
 	groupCatalogBlocks,
-	numberCatalogModules,
 } from "./module-groups";
 
 function module(id: string, order = 10): LessonModule {
@@ -62,16 +61,6 @@ describe("catalog tree helpers", () => {
 		expect(catalogContainsModule(tree, "stage-2")).toBe(true);
 		expect(catalogContainsModule(tree, "missing")).toBe(false);
 		expect(catalogContainsModule(tree, null)).toBe(false);
-	});
-
-	test("numbers modules depth-first in rendered order", () => {
-		expect([...numberCatalogModules(tree)]).toEqual([
-			["intro", 1],
-			["stage-1", 2],
-			["stage-2", 3],
-			["stage-3", 4],
-			["appendix", 5],
-		]);
 	});
 
 	test("skips folders with no modules in their subtree", () => {

@@ -186,7 +186,7 @@ describe("SwitchProjectDialog", () => {
 		expect(screen.queryByRole("button", { name: /Advanced/ })).toBeNull();
 	});
 
-	test("numbers modules depth-first in rendered order", () => {
+	test("renders module titles without numbering", () => {
 		mockModules.current = [
 			mockModule("intro", "Intro", "plain-java", 10),
 			{
@@ -206,10 +206,15 @@ describe("SwitchProjectDialog", () => {
 		];
 		renderDialog(true);
 
-		expect(screen.getByText("1. Intro")).toBeInTheDocument();
-		expect(screen.getByText("2. Stage 1")).toBeInTheDocument();
-		expect(screen.getByText("3. Stage 2")).toBeInTheDocument();
-		expect(screen.getByText("4. Stage 3")).toBeInTheDocument();
-		expect(screen.getByText("5. Appendix")).toBeInTheDocument();
+		for (const title of [
+			"Intro",
+			"Stage 1",
+			"Stage 2",
+			"Stage 3",
+			"Appendix",
+		]) {
+			expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
+		}
+		expect(screen.queryByText(/^\d+\.\s/)).toBeNull();
 	});
 });

@@ -29,7 +29,6 @@ import {
 	countCatalogModules,
 	folderPathKey,
 	groupCatalogBlocks,
-	numberCatalogModules,
 } from "./module-groups";
 
 interface SwitchProjectDialogProps {
@@ -63,19 +62,12 @@ function KindTag({ kind }: { kind: LessonModule["kind"] }) {
 
 interface ModuleCardProps {
 	module: LessonModule;
-	number: number;
 	isCurrent: boolean;
 	onChoose: (module: LessonModule) => void;
 	onReset: (module: LessonModule) => void;
 }
 
-function ModuleCard({
-	module,
-	number,
-	isCurrent,
-	onChoose,
-	onReset,
-}: ModuleCardProps) {
+function ModuleCard({ module, isCurrent, onChoose, onReset }: ModuleCardProps) {
 	return (
 		<div
 			className={cn(
@@ -130,7 +122,6 @@ function ModuleCard({
 
 interface ModuleGridProps {
 	modules: LessonModule[];
-	numbers: Map<string, number>;
 	currentModule: string | null;
 	onChoose: (module: LessonModule) => void;
 	onReset: (module: LessonModule) => void;
@@ -138,7 +129,6 @@ interface ModuleGridProps {
 
 function ModuleGrid({
 	modules,
-	numbers,
 	currentModule,
 	onChoose,
 	onReset,
@@ -149,7 +139,6 @@ function ModuleGrid({
 				<ModuleCard
 					key={module.id}
 					module={module}
-					number={numbers.get(module.id) ?? 1}
 					isCurrent={module.id === currentModule}
 					onChoose={onChoose}
 					onReset={onReset}
@@ -163,7 +152,6 @@ interface CatalogTreeProps {
 	entries: LessonCatalogEntry[];
 	path: string[];
 	depth: number;
-	numbers: Map<string, number>;
 	currentModule: string | null;
 	collapsedFolders: Set<string>;
 	onToggleFolder: (key: string) => void;
@@ -175,7 +163,6 @@ function CatalogTree({
 	entries,
 	path,
 	depth,
-	numbers,
 	currentModule,
 	collapsedFolders,
 	onToggleFolder,
@@ -195,7 +182,6 @@ function CatalogTree({
 						>
 							<ModuleGrid
 								modules={block.modules}
-								numbers={numbers}
 								currentModule={currentModule}
 								onChoose={onChoose}
 								onReset={onReset}
@@ -255,7 +241,6 @@ function CatalogTree({
 									entries={block.folder.modules}
 									path={folderPath}
 									depth={depth + 1}
-									numbers={numbers}
 									currentModule={currentModule}
 									collapsedFolders={collapsedFolders}
 									onToggleFolder={onToggleFolder}
@@ -288,9 +273,6 @@ export function SwitchProjectDialog({
 	const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(
 		new Set(),
 	);
-
-	// Number depth-first in rendered order so the visible list counts up from 1.
-	const moduleNumbers = useMemo(() => numberCatalogModules(modules), [modules]);
 
 	const running = state.status === "connecting" || state.status === "running";
 	const finished = state.status === "done" || state.status === "error";
@@ -440,7 +422,6 @@ export function SwitchProjectDialog({
 									entries={modules}
 									path={[]}
 									depth={0}
-									numbers={moduleNumbers}
 									currentModule={currentModule}
 									collapsedFolders={collapsedFolders}
 									onToggleFolder={toggleFolder}
