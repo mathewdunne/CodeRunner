@@ -128,6 +128,7 @@ The idle manager periodically checks active containers and stops those that have
 |----------|---------|---------|
 | `IDLE_STOP_MINUTES` | `30` | Stop a workspace container after this many minutes of inactivity. |
 | `IDLE_CHECK_INTERVAL_MS` | `60000` | How often (ms) the idle sweep runs. |
+| `GRADLE_CACHE_PRUNE_DAYS` | `14` | At each control-plane start, delete the Gradle cache (`home/.gradle/caches`, ~1–2 GB) of every workspace unused for longer than this many days. The workspace re-seeds it from the image on its next start. `0` disables. Not applied in demo mode. |
 
 ## Admin and Metrics
 

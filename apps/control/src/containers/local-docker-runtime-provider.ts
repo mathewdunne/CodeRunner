@@ -19,6 +19,7 @@ import { runtimeFromLease, statusFromLease } from "./converters";
 import {
 	dockerPortBindError,
 	inspectContainer as inspectContainerCli,
+	isContainerRunning,
 	runDockerCli,
 	runDocker as runDockerCommand,
 } from "./docker-client";
@@ -187,6 +188,17 @@ export class LocalDockerRuntimeProvider implements WorkspaceRuntimeProvider {
 			lease,
 			code.state,
 			code.error,
+		);
+	}
+
+	/**
+	 * Whether Docker reports the workspace's code container as running. Throws
+	 * on docker errors other than a missing container.
+	 */
+	async isCodeContainerRunning(workspaceId: WorkspaceId): Promise<boolean> {
+		return isContainerRunning(
+			this.dockerRunner,
+			codeContainerName(workspaceId),
 		);
 	}
 

@@ -30,6 +30,7 @@ import { ClassroomSweeper } from "./classroom-sweeper";
 import { FailedAttemptLimiter } from "./classrooms";
 import { LocalDockerRuntimeProvider } from "./containers";
 import { GamepadSessions } from "./gamepad";
+import { pruneIdleGradleCaches } from "./gradle-cache-prune";
 import { HalSimBridge } from "./halsim";
 import { IdleManager } from "./idle";
 import { ImportManager } from "./imports";
@@ -184,6 +185,26 @@ export async function createApp(
 		},
 	});
 	idle.start();
+	// Fire-and-forget: frees the Gradle caches of long-idle workspaces without
+	// delaying boot (decision 049). Demo mode keeps caches in named volumes.
+	const pruneDays = storage.config.gradleCachePruneDays;
+	if (!configuredRuntimeProvider && !storage.config.demo && pruneDays > 0) {
+		pruneIdleGradleCaches({
+			dataDir: storage.config.dataDir,
+			days: pruneDays,
+			lastAccessedAt: (id) =>
+				storage.findWorkspaceById(id as WorkspaceId)?.last_accessed_at ?? null,
+			isRunning: (id) => containers.isCodeContainerRunning(id as WorkspaceId),
+		})
+			.then(({ pruned }) =>
+				bootLog.info("pruned idle Gradle caches", {
+					cutoffDays: pruneDays,
+					count: pruned.length,
+					workspaceIds: pruned,
+				}),
+			)
+			.catch((err) => bootLog.warn("Gradle cache prune failed", { err }));
+	}
 	const dockerStatsPoller = new DockerStatsPoller({ containers });
 	dockerStatsPoller.start();
 
