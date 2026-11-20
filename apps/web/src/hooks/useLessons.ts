@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import type { LessonModule } from "@/lib/contracts";
+import type { LessonCatalogEntry } from "@/lib/contracts";
 import { lessonCatalogResponseSchema } from "@/lib/contracts";
 
 interface UseLessonsReturn {
-	modules: LessonModule[];
+	modules: LessonCatalogEntry[];
 	error: string | null;
 	loading: boolean;
 	refetch: () => void;
@@ -15,7 +15,7 @@ interface UseLessonsReturn {
  * non-null `error` is the "catalog temporarily unavailable" state.
  */
 export function useLessons(workspaceSlug: string | null): UseLessonsReturn {
-	const [modules, setModules] = useState<LessonModule[]>([]);
+	const [modules, setModules] = useState<LessonCatalogEntry[]>([]);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [nonce, setNonce] = useState(0);

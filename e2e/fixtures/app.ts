@@ -119,6 +119,9 @@ export const test = base.extend<AppFixtures & AppOptions>({
 			const candidate = await createApp({
 				dataDir: join(root, "data"),
 				catalogDir,
+				// Keep the suite hermetic: never inherit LESSONS_CATALOG_REPO
+				// from a developer's .env and hit the network.
+				catalogRepo: null,
 				webDistDir,
 				advantageScopeDistDir: ascopeDistDir,
 				pathplannerDistDir,

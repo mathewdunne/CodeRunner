@@ -58,10 +58,20 @@ workspaces start empty and the student fills them via the topbar **Switch
 Project** surface, which offers a lesson catalog plus a public GitHub team
 import. The catalog has two sources behind one interface: a **bundled** `catalog/`
 (zero-config, baked into the image) and a **remote** lessons repo when
-`LESSONS_CATALOG_REPO` is set. Catalog loads are gitless (reset = re-load); team
-imports keep `.git` for push. The per-import backup/restore flow was removed
-(pure discard + git). See [`docs/lessons/overview.md`](./docs/lessons/overview.md)
-and `docs/decisions/029-lessons-and-modules.md`.
+`LESSONS_CATALOG_REPO` is set. Catalog loads are gitless by default (reset =
+re-load); team imports keep `.git` for push. A module may also define `repo`
+instead of `subdir`: a standalone public GitHub repo whose root is the lesson
+(useful for premade curricula such as FRCSoftware.org), with opt-in
+`preserveGit` to keep the lesson's `.git`. Catalog `modules` are a recursive
+tree: an entry may be a folder (`folder` + `order` + `modules`) containing
+modules and further folders, rendered as multi-level collapsible sections in the
+picker. `order` positions modules and folders on one sibling scale while the
+arrays define hierarchy. The per-import backup/restore flow was removed (pure
+discard + git). See
+[`docs/lessons/overview.md`](./docs/lessons/overview.md),
+`docs/decisions/029-lessons-and-modules.md`,
+`docs/decisions/049-repo-sourced-lesson-modules.md`, and
+`docs/decisions/050-module-folders.md`.
 
 **Project Preview (post-V2):** a third right-pane tab beside AdvantageScope
 and PathPlanner reads the project's own Markdown and generated HTML reports

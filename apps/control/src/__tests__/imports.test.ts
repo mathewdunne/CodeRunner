@@ -342,6 +342,8 @@ describe("ImportManager — bundled catalog load", () => {
 				userId: workspace.user_id,
 				moduleId: "robot-starter",
 				subdir: "modules/robot-starter",
+				repo: null,
+				preserveGit: false,
 				kind: "robot",
 				remote: null,
 				send: (m) => messages.push(m),
@@ -403,6 +405,8 @@ describe("ImportManager — bundled catalog load", () => {
 					userId: workspace.user_id,
 					moduleId: "hello-world",
 					subdir: "modules/hello-world",
+					repo: null,
+					preserveGit: false,
 					kind: "plain-java",
 					remote: null,
 					send: (m) => messages.push(m),
@@ -432,6 +436,8 @@ describe("ImportManager — bundled catalog load", () => {
 				userId: workspace.user_id,
 				moduleId: "bad",
 				subdir: "modules/bad;rm -rf /",
+				repo: null,
+				preserveGit: false,
 				kind: "plain-java",
 				remote: null,
 				send: (m) => messages.push(m),
@@ -467,6 +473,8 @@ describe("ImportManager — remote catalog load", () => {
 				userId: workspace.user_id,
 				moduleId: "closest-distance",
 				subdir: "modules/closest-distance",
+				repo: null,
+				preserveGit: false,
 				kind: "robot",
 				remote: {
 					cloneUrl: "https://github.com/owner/lessons.git",
@@ -492,6 +500,115 @@ describe("ImportManager — remote catalog load", () => {
 			);
 			expect(sparseCall).toBeTruthy();
 			expect(sparseCall!.command).toContain("modules/closest-distance");
+		});
+	});
+});
+
+describe("ImportManager — standalone module repo", () => {
+	async function loadRepoModule(options: {
+		repo: string;
+		preserveGit: boolean;
+	}): Promise<{
+		commands: string[][];
+		messages: ImportServerMessage[];
+	}> {
+		let commands: string[][] = [];
+		const messages: ImportServerMessage[] = [];
+		await withApp(async (app) => {
+			await login(app, "alice");
+			const workspace = app.storage.db
+				.query("SELECT * FROM workspaces WHERE slug = ?")
+				.get("alice") as WorkspaceRow;
+			const mock = new MockWorkspaceRuntimeProvider([
+				runningRuntime(workspace.id),
+			]);
+			const manager = new ImportManager(app.storage, mock);
+			await manager.run({
+				source: "catalog",
+				workspace,
+				userId: workspace.user_id,
+				moduleId: "java-fundamentals",
+				subdir: null,
+				repo: options.repo,
+				preserveGit: options.preserveGit,
+				kind: "plain-java",
+				remote: null,
+				send: (m) => messages.push(m),
+			});
+			commands = mock.execCalls.map((call) => call.command);
+		});
+		return { commands, messages };
+	}
+
+	test("clones the repo root and drops .git by default", async () => {
+		const { commands, messages } = await loadRepoModule({
+			repo: "frcsoftware/java-fundamentals",
+			preserveGit: false,
+		});
+
+		const cloneCall = commands.find(
+			(command) => command[0] === "git" && command[1] === "clone",
+		);
+		expect(cloneCall).toBeTruthy();
+		expect(cloneCall).toContain("--depth");
+		expect(cloneCall).toContain("1");
+		expect(cloneCall).toContain(
+			"https://github.com/frcsoftware/java-fundamentals.git",
+		);
+		expect(cloneCall).not.toContain("--sparse");
+		expect(cloneCall).not.toContain("sparse-checkout");
+
+		const dropGit = commands.find(
+			(command) =>
+				command[0] === "rm" && command.includes("/workspace/project/.git"),
+		);
+		expect(dropGit).toBeTruthy();
+
+		const done = messages.find((m) => m.type === "done");
+		expect(done).toMatchObject({ type: "done", success: true });
+	});
+
+	test("keeps .git when preserveGit is true", async () => {
+		const { commands } = await loadRepoModule({
+			repo: "https://github.com/frcsoftware/robot-lesson.git",
+			preserveGit: true,
+		});
+
+		const dropGit = commands.find(
+			(command) =>
+				command[0] === "rm" && command.includes("/workspace/project/.git"),
+		);
+		expect(dropGit).toBeUndefined();
+	});
+
+	test("rejects an unsafe module repo before executing commands", async () => {
+		await withApp(async (app) => {
+			await login(app, "alice");
+			const workspace = app.storage.db
+				.query("SELECT * FROM workspaces WHERE slug = ?")
+				.get("alice") as WorkspaceRow;
+			const mock = new MockWorkspaceRuntimeProvider([
+				runningRuntime(workspace.id),
+			]);
+			const manager = new ImportManager(app.storage, mock);
+			const messages: ImportServerMessage[] = [];
+			await manager.run({
+				source: "catalog",
+				workspace,
+				userId: workspace.user_id,
+				moduleId: "bad",
+				subdir: null,
+				repo: "git@github.com:owner/repo.git",
+				preserveGit: false,
+				kind: "plain-java",
+				remote: null,
+				send: (m) => messages.push(m),
+			});
+
+			expect(mock.execCalls).toEqual([]);
+			expect(messages).toContainEqual(
+				expect.objectContaining({ type: "done", success: false }),
+			);
 		});
 	});
 });

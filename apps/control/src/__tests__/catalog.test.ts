@@ -3,6 +3,10 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+	flattenLessonModules,
+	isLessonFolder,
+} from "@frc-coderunner/contracts";
+import {
 	BundledCatalogSource,
 	createCatalogSource,
 	parseCatalogRepo,
@@ -47,10 +51,70 @@ describe("BundledCatalogSource", () => {
 			const source = new BundledCatalogSource(dir);
 			const { modules, error } = await source.getManifest();
 			expect(error).toBeNull();
-			expect(modules.map((m) => m.id)).toEqual([
+			expect(flattenLessonModules(modules).map((m) => m.id)).toEqual([
 				"hello-world",
 				"robot-starter",
 			]);
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
+	});
+
+	test("sorts modules and folders by order at each level", async () => {
+		const dir = await mkdtemp(join(tmpdir(), "frc-catalog-folders-"));
+		const module = (id: string, order: number) => ({
+			id,
+			title: id,
+			description: "",
+			subdir: `modules/${id}`,
+			kind: "robot",
+			order,
+		});
+		try {
+			await writeFile(
+				join(dir, "modules.json"),
+				JSON.stringify({
+					schemaVersion: 1,
+					modules: [
+						module("last", 50),
+						{
+							folder: "Course",
+							order: 20,
+							modules: [
+								module("stage-1", 40),
+								{
+									folder: "Advanced",
+									order: 10,
+									modules: [module("stage-2", 10)],
+								},
+							],
+						},
+						module("first", 10),
+					],
+				}),
+				"utf8",
+			);
+			const source = new BundledCatalogSource(dir);
+			const { modules, error } = await source.getManifest();
+			expect(error).toBeNull();
+			expect(modules[0]).toMatchObject({ id: "first" });
+			expect(modules[1]).toMatchObject({ folder: "Course" });
+			expect(modules[2]).toMatchObject({ id: "last" });
+			const course = modules[1];
+			expect(
+				course && isLessonFolder(course)
+					? course.modules.map((entry) =>
+							isLessonFolder(entry) ? entry.folder : entry.id,
+						)
+					: [],
+			).toEqual(["Advanced", "stage-1"]);
+			expect(flattenLessonModules(modules).map((m) => m.id)).toEqual([
+				"first",
+				"stage-2",
+				"stage-1",
+				"last",
+			]);
+			expect((await source.resolveModule("stage-2")).kind).toBe("robot");
 		} finally {
 			await rm(dir, { recursive: true, force: true });
 		}
@@ -64,6 +128,41 @@ describe("BundledCatalogSource", () => {
 			expect(module.kind).toBe("plain-java");
 			expect(module.subdir).toBe("modules/hello-world");
 			await expect(source.resolveModule("nope")).rejects.toThrow(ImportError);
+		} finally {
+			await rm(dir, { recursive: true, force: true });
+		}
+	});
+
+	test("reads a standalone repo module without a subdir", async () => {
+		const dir = await mkdtemp(join(tmpdir(), "frc-catalog-repo-"));
+		try {
+			await writeFile(
+				join(dir, "modules.json"),
+				JSON.stringify({
+					schemaVersion: 1,
+					modules: [
+						{
+							id: "java-fundamentals",
+							title: "Java Fundamentals",
+							description: "From frcsoftware.org.",
+							repo: "frcsoftware/java-fundamentals",
+							kind: "plain-java",
+							order: 10,
+						},
+					],
+				}),
+				"utf8",
+			);
+			const source = new BundledCatalogSource(dir);
+			const { modules, error } = await source.getManifest();
+			expect(error).toBeNull();
+			const [module] = flattenLessonModules(modules);
+			expect(module).toMatchObject({
+				id: "java-fundamentals",
+				repo: "frcsoftware/java-fundamentals",
+				preserveGit: false,
+			});
+			expect(module?.subdir).toBeUndefined();
 		} finally {
 			await rm(dir, { recursive: true, force: true });
 		}
@@ -156,7 +255,7 @@ describe("RemoteCatalogSource", () => {
 
 		const first = await source.getManifest();
 		expect(first.error).toBeNull();
-		expect(first.modules.map((m) => m.id)).toEqual([
+		expect(flattenLessonModules(first.modules).map((m) => m.id)).toEqual([
 			"hello-world",
 			"robot-starter",
 		]);

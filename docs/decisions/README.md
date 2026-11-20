@@ -22,6 +22,8 @@ Record active architecture decisions here.
 - [`047-cut-proxied-polling.md`](047-cut-proxied-polling.md) — sim status and auto choosers are pushed over the run WebSocket instead of polled at 1 s, and the AS Lite alive probe retries at 1 s instead of 350 ms, to keep Cloudflare-proxied requests within the Workers free tier.
 - [`048-auth0-rbac-permissions.md`](048-auth0-rbac-permissions.md) — Auth0 roles come from RBAC `permissions` in an access token for a CodeRunner API (`AUTH0_AUDIENCE`), not an ID-token roles claim, so permissions stay scoped to this app.
 - [`049-startup-gradle-cache-prune.md`](049-startup-gradle-cache-prune.md) — at each start the control plane deletes the Gradle caches of workspaces idle longer than `GRADLE_CACHE_PRUNE_DAYS` (default 14), so the data disk tracks recently active students.
+- [`050-repo-sourced-lesson-modules.md`](050-repo-sourced-lesson-modules.md) — a catalog module may point at its own public GitHub repo (`repo`) instead of a catalog `subdir`, with opt-in `preserveGit` to keep the lesson's `.git` for fork/commit workflows.
+- [`051-module-folders.md`](051-module-folders.md) — catalog `modules` arrays may contain recursive folder entries (`folder` + `order` + optional `description` + `modules`), rendered as multi-level collapsible sections; `order` positions modules and folders on one sibling scale while the arrays define hierarchy.
 
 ## Archive
 

@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
-import type { LessonModule } from "@frc-coderunner/contracts";
+import {
+	flattenLessonModules,
+	type LessonCatalogEntry,
+} from "@frc-coderunner/contracts";
 import { cookieFrom, createFakeDocker, login, withApp } from "./helpers";
 
 describe("GET /u/:slug/api/lessons", () => {
@@ -18,16 +21,16 @@ describe("GET /u/:slug/api/lessons", () => {
 				expect(lessons.status).toBe(200);
 				const body = (await lessons.json()) as {
 					ok: boolean;
-					modules: LessonModule[];
+					modules: LessonCatalogEntry[];
 					error: string | null;
 				};
 				expect(body.ok).toBe(true);
 				expect(body.error).toBeNull();
-				expect(body.modules.map((m) => m.id)).toEqual([
+				expect(flattenLessonModules(body.modules).map((m) => m.id)).toEqual([
 					"hello-world",
 					"robot-starter",
 				]);
-				expect(body.modules[0]?.kind).toBe("plain-java");
+				expect(flattenLessonModules(body.modules)[0]?.kind).toBe("plain-java");
 			},
 			{ dockerRunner: docker.runner },
 		);

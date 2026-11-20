@@ -206,22 +206,54 @@ describe("lessonModuleSchema / lessonCatalogSchema", () => {
 			fc.property(
 				fc.record({
 					schemaVersion: fc.integer({ min: 1, max: 10 }),
-					modules: fc.array(
-						fc.record({
-							id: fc.stringMatching(/^[a-z][a-z0-9-]{0,30}$/),
-							title: fc.stringMatching(/^.{1,40}$/),
-							description: fc.string(),
-							subdir: fc.stringMatching(/^modules\/[a-z][a-z0-9-]{0,30}$/),
-							kind: fc.constantFrom("plain-java", "robot"),
-							order: fc.integer({ min: 0, max: 1000 }),
-						}),
-						{ maxLength: 6 },
-					),
+					modules: fc
+						.array(
+							fc.record({
+								title: fc.stringMatching(/^.{1,40}$/),
+								description: fc.string(),
+								subdir: fc.stringMatching(/^modules\/[a-z][a-z0-9-]{0,30}$/),
+								kind: fc.constantFrom("plain-java", "robot"),
+								order: fc.integer({ min: 0, max: 1000 }),
+							}),
+							{ maxLength: 6 },
+						)
+						.map((modules) =>
+							modules.map((module, index) => ({
+								...module,
+								id: `module-${index}`,
+							})),
+						),
 				}),
 				(rec) => {
 					const parsed = lessonCatalogSchema.parse(rec);
 					const round = JSON.parse(JSON.stringify(parsed));
 					expect(lessonCatalogSchema.safeParse(round).success).toBe(true);
+				},
+			),
+			{ numRuns: NUM_RUNS },
+		);
+	});
+
+	test("P11 JSON round-trip of repo modules", () => {
+		fc.assert(
+			fc.property(
+				fc.record({
+					id: fc.stringMatching(/^[a-z][a-z0-9-]{0,30}$/),
+					title: fc.stringMatching(/^.{1,40}$/),
+					description: fc.string(),
+					repo: fc.stringMatching(
+						/^[a-z][a-z0-9-]{0,20}\/[a-z][a-z0-9-]{0,20}$/,
+					),
+					preserveGit: fc.boolean(),
+					kind: fc.constantFrom("plain-java", "robot"),
+					order: fc.integer({ min: 0, max: 1000 }),
+				}),
+				(module) => {
+					const parsed = lessonModuleSchema.parse(module);
+					expect(parsed.subdir).toBeUndefined();
+					expect(parsed.preserveGit).toBe(module.preserveGit);
+					const round = JSON.parse(JSON.stringify(parsed));
+					expect(lessonModuleSchema.safeParse(round).success).toBe(true);
 				},
 			),
 			{ numRuns: NUM_RUNS },
