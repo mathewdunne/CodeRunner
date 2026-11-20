@@ -11,49 +11,47 @@ describe("AllianceToggle", () => {
 		expect(screen.getByTestId("ds-alliance-red")).toBeInTheDocument();
 	});
 
-	test.each([
-		"blue1",
-		"blue2",
-		"blue3",
-	] as const)("shows blue active for %s", (alliance) => {
-		render(
-			<AllianceToggle
-				alliance={alliance}
-				enabled={false}
-				onSelect={() => {}}
-			/>,
-		);
-		expect(screen.getByTestId("ds-alliance-blue")).toHaveAttribute(
-			"data-active",
-			"true",
-		);
-		expect(screen.getByTestId("ds-alliance-red")).toHaveAttribute(
-			"data-active",
-			"false",
-		);
-	});
+	test.each(["blue1", "blue2", "blue3"] as const)(
+		"shows blue active for %s",
+		(alliance) => {
+			render(
+				<AllianceToggle
+					alliance={alliance}
+					enabled={false}
+					onSelect={() => {}}
+				/>,
+			);
+			expect(screen.getByTestId("ds-alliance-blue")).toHaveAttribute(
+				"data-active",
+				"true",
+			);
+			expect(screen.getByTestId("ds-alliance-red")).toHaveAttribute(
+				"data-active",
+				"false",
+			);
+		},
+	);
 
-	test.each([
-		"red1",
-		"red2",
-		"red3",
-	] as const)("shows red active for %s", (alliance) => {
-		render(
-			<AllianceToggle
-				alliance={alliance}
-				enabled={false}
-				onSelect={() => {}}
-			/>,
-		);
-		expect(screen.getByTestId("ds-alliance-red")).toHaveAttribute(
-			"data-active",
-			"true",
-		);
-		expect(screen.getByTestId("ds-alliance-blue")).toHaveAttribute(
-			"data-active",
-			"false",
-		);
-	});
+	test.each(["red1", "red2", "red3"] as const)(
+		"shows red active for %s",
+		(alliance) => {
+			render(
+				<AllianceToggle
+					alliance={alliance}
+					enabled={false}
+					onSelect={() => {}}
+				/>,
+			);
+			expect(screen.getByTestId("ds-alliance-red")).toHaveAttribute(
+				"data-active",
+				"true",
+			);
+			expect(screen.getByTestId("ds-alliance-blue")).toHaveAttribute(
+				"data-active",
+				"false",
+			);
+		},
+	);
 
 	test("selecting red sends red1", () => {
 		const onSelect = vi.fn();

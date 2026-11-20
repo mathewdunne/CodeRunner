@@ -79,19 +79,22 @@ describe("UserMenu", () => {
 	test.each([
 		["fails", () => Promise.resolve({ ok: false, status: 500 })],
 		["can't reach the server", () => Promise.reject(new TypeError("offline"))],
-	])("when Leave %s it still signs out before going to /join", async (_label, respond) => {
-		const user = userEvent.setup();
-		vi.stubGlobal("fetch", vi.fn(respond));
-		const assign = stubLocationAssign();
-		renderGuestMenu();
-		await user.click(screen.getByRole("button", { name: "User menu" }));
-		await user.click(await screen.findByRole("menuitem", { name: "Leave" }));
-		await waitFor(() => expect(assign).toHaveBeenCalledWith("/join"));
-		expect(authClient.signOut).toHaveBeenCalled();
-		expect(
-			vi.mocked(authClient.signOut).mock.invocationCallOrder[0],
-		).toBeLessThan(assign.mock.invocationCallOrder[0] ?? 0);
-	});
+	])(
+		"when Leave %s it still signs out before going to /join",
+		async (_label, respond) => {
+			const user = userEvent.setup();
+			vi.stubGlobal("fetch", vi.fn(respond));
+			const assign = stubLocationAssign();
+			renderGuestMenu();
+			await user.click(screen.getByRole("button", { name: "User menu" }));
+			await user.click(await screen.findByRole("menuitem", { name: "Leave" }));
+			await waitFor(() => expect(assign).toHaveBeenCalledWith("/join"));
+			expect(authClient.signOut).toHaveBeenCalled();
+			expect(
+				vi.mocked(authClient.signOut).mock.invocationCallOrder[0],
+			).toBeLessThan(assign.mock.invocationCallOrder[0] ?? 0);
+		},
+	);
 
 	test("signed-in users still see their email and Logout", async () => {
 		const user = userEvent.setup();

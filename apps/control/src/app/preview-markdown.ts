@@ -44,9 +44,9 @@ md.core.ruler.push("preview_heading_anchors", (state) => {
 	const used = new Map<string, number>();
 	for (let i = 0; i < state.tokens.length; i++) {
 		const token = state.tokens[i];
-		if (!token || token.type !== "heading_open") continue;
+		if (token?.type !== "heading_open") continue;
 		const inline = state.tokens[i + 1];
-		if (!inline || inline.type !== "inline") continue;
+		if (inline?.type !== "inline") continue;
 
 		const base = slugify(inline.content) || "section";
 		const seen = used.get(base) ?? 0;

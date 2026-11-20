@@ -149,7 +149,7 @@ function snapshotChoosers(entry: Nt4AutoEntry): AutoChooser[] {
 		.sort((a, b) => chooserSortKey(a).localeCompare(chooserSortKey(b)));
 }
 
-function encodeMsgPack(value: unknown): Uint8Array {
+function encodeMsgPack(value: unknown): Uint8Array<ArrayBuffer> {
 	const chunks: number[] = [];
 	const push = (...bytes: number[]) =>
 		chunks.push(...bytes.map((byte) => byte & 0xff));

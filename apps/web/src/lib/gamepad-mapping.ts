@@ -33,7 +33,7 @@ function dpadToPov(
 }
 
 function clamp(n: number, lo: number, hi: number): number {
-	return n < lo ? lo : n > hi ? hi : n;
+	return n < lo ? lo : Math.min(n, hi);
 }
 
 export function gamepadFrameToWpilib(frame: GamepadFrame): GamepadState {

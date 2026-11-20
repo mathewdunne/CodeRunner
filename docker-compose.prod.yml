@@ -36,7 +36,7 @@ services:
       - control
 
   alloy:
-    image: grafana/alloy:${ALLOY_VERSION:-v1.5.1}
+    image: grafana/alloy:${ALLOY_VERSION:-v1.22.0}
     restart: unless-stopped
     command:
       - run

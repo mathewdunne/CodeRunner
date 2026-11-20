@@ -102,9 +102,7 @@ describe("Code container VS Code defaults", () => {
 		expect(contents).toContain(
 			"SPOTLESS_GRADLE_COMMIT=c11a273a11454bfc06fc9cbb19290d5c330e884c",
 		);
-		expect(contents).toContain(
-			"FROM node:16-bookworm-slim AS spotless-builder",
-		);
+		expect(contents).toContain("FROM node:24-slim AS spotless-builder");
 		expect(contents).not.toContain("gallery.vsassets.io");
 	});
 

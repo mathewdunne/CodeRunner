@@ -128,7 +128,7 @@ export function SwitchProjectDialog({
 	);
 
 	const repoName = useMemo(() => {
-		if (!pending || pending.kind !== "import") return "";
+		if (pending?.kind !== "import") return "";
 		const match = /github\.com\/([^/]+\/[^/]+)/i.exec(pending.url);
 		return match ? match[1]?.replace(/\.git$/, "") : pending.url;
 	}, [pending]);
