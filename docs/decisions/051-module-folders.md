@@ -1,4 +1,4 @@
-# 050 — Nested module folders in the project picker
+# 051 — Nested module folders in the project picker
 
 Status: **Accepted** — 2026-11-13
 
