@@ -70,8 +70,8 @@ arrays define hierarchy. The per-import backup/restore flow was removed (pure
 discard + git). See
 [`docs/lessons/overview.md`](./docs/lessons/overview.md),
 `docs/decisions/029-lessons-and-modules.md`,
-`docs/decisions/049-repo-sourced-lesson-modules.md`, and
-`docs/decisions/050-module-folders.md`.
+`docs/decisions/050-repo-sourced-lesson-modules.md`, and
+`docs/decisions/051-module-folders.md`.
 
 **Project Preview (post-V2):** a third right-pane tab beside AdvantageScope
 and PathPlanner reads the project's own Markdown and generated HTML reports
@@ -170,7 +170,7 @@ arch-independent). See `docs/decisions/035-multi-arch-images-and-workflow-split.
 ## Key References
 
 - `docs/` + `website/` — docs site content and Docusaurus config; published at `https://mathewdunne.github.io/CodeRunner/`; run `bun run docs:dev` to browse locally, `bun run docs:build` to build.
-- `docs/decisions/` — all architecture decision logs (011–049 active; 001–010 archived under `docs/decisions/archive/`).
+- `docs/decisions/` — all architecture decision logs (011–051 active; 001–010 archived under `docs/decisions/archive/`).
 - Pinned AdvantageScope submodule: `vendor/AdvantageScope` at tag `v26.0.2`.
 
 ## Commands
