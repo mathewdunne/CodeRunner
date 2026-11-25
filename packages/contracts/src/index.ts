@@ -441,6 +441,14 @@ export const lessonModuleRepoSchema = z
 	.regex(
 		/^(?:https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\.git)?|[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+)$/,
 		"Repo must be an https://github.com/owner/repo URL or owner/repo shorthand.",
+	)
+	.refine(
+		(repo) =>
+			!repo
+				.replace(/^https:\/\/github\.com\//, "")
+				.split("/")
+				.some((segment) => /^\.+$/.test(segment)),
+		"Repo owner and name cannot be only dots.",
 	);
 
 /** Display label for a folder in the Switch Project picker. */
@@ -463,7 +471,6 @@ export const lessonModuleSchema = z
 		kind: lessonModuleKindSchema,
 		order: z.number().int(),
 	})
-	.strict()
 	.superRefine((module, ctx) => {
 		const hasSubdir = module.subdir !== undefined;
 		const hasRepo = module.repo !== undefined;
@@ -496,18 +503,31 @@ export interface LessonFolder {
 export type LessonCatalogEntry = LessonModule | LessonFolder;
 
 export const lessonFolderSchema: z.ZodType<LessonFolder> = z.lazy(() =>
-	z
-		.object({
-			folder: lessonFolderNameSchema,
-			description: z.string().optional(),
-			order: z.number().int(),
-			modules: z.array(lessonCatalogEntrySchema),
-		})
-		.strict(),
+	z.object({
+		folder: lessonFolderNameSchema,
+		description: z.string().optional(),
+		order: z.number().int(),
+		modules: z.array(lessonCatalogEntrySchema),
+	}),
 );
 
+// An entry with a `folder` key is a folder; anything else is a module. Picking
+// the schema up front (instead of a union) keeps unknown keys ignored, as they
+// were before folders, and reports errors against the one schema that applies.
 export const lessonCatalogEntrySchema: z.ZodType<LessonCatalogEntry> = z.lazy(
-	() => z.union([lessonModuleSchema, lessonFolderSchema]),
+	() =>
+		z.unknown().transform((value, ctx) => {
+			const schema =
+				typeof value === "object" && value !== null && "folder" in value
+					? lessonFolderSchema
+					: lessonModuleSchema;
+			const result = schema.safeParse(value);
+			if (result.success) return result.data;
+			for (const issue of result.error.issues) {
+				ctx.addIssue(issue as Parameters<typeof ctx.addIssue>[0]);
+			}
+			return z.NEVER;
+		}),
 );
 
 export function isLessonFolder(

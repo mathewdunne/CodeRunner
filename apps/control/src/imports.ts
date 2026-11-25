@@ -190,10 +190,10 @@ export class ImportManager {
 			);
 		}
 
-		// Team imports are public clones over the network and are rate-limited.
-		// Catalog loads are trusted/local (or a sparse clone of a control-plane
-		// configured repo); students switch lessons freely, so they are NOT
-		// rate-limited.
+		// Team imports are public clones of student-supplied repos and are
+		// rate-limited. Catalog loads are NOT, so students can switch lessons
+		// freely: every module, including a `repo` module's full shallow clone,
+		// comes from a catalog the control plane is configured to trust.
 		if (ctx.source === "github") {
 			this.rateLimiter.check(userId);
 		}
@@ -206,7 +206,9 @@ export class ImportManager {
 			importId,
 			source: ctx.source,
 			cloneUrl:
-				ctx.source === "github" ? ctx.cloneUrl : (ctx.remote?.cloneUrl ?? null),
+				ctx.source === "github"
+					? ctx.cloneUrl
+					: (ctx.repo ?? ctx.remote?.cloneUrl ?? null),
 			moduleId: ctx.source === "catalog" ? ctx.moduleId : null,
 		});
 		send({ type: "hello", importId });
@@ -407,6 +409,8 @@ export class ImportManager {
 			}
 
 			// Validate the module root exists and is non-empty (no build.gradle gate).
+			// `.git` alone does not count: a repo module's clone always has one,
+			// even when the repository itself is empty.
 			send({
 				type: "progress",
 				stage: "validating",
@@ -423,7 +427,7 @@ export class ImportManager {
 			const nonEmptyResult = await this.runtimeExec(workspace.id, [
 				"bash",
 				"-c",
-				`test -n "$(find ${projectRoot} -mindepth 1 -maxdepth 1 -print -quit)"`,
+				`test -n "$(find ${projectRoot} -mindepth 1 -maxdepth 1 ! -name .git -print -quit)"`,
 			]);
 			if (nonEmptyResult.exitCode !== 0) {
 				throw new ImportError(`Lesson module ${moduleLabel} is empty.`);

@@ -412,7 +412,7 @@ export function SwitchProjectDialog({
 										Loading lessons…
 									</p>
 								)}
-								{!loading && modules.length === 0 && !error && (
+								{!loading && countCatalogModules(modules) === 0 && !error && (
 									<p className="py-6 text-center text-[12.5px] text-muted-foreground">
 										No lessons are available yet.
 									</p>

@@ -299,18 +299,69 @@ describe("lesson catalog schemas", () => {
 		).toBe(false);
 	});
 
-	test("rejects the old flat module folder field", () => {
+	test("rejects a module entry carrying a folder field", () => {
 		expect(
-			lessonModuleSchema.safeParse({
-				id: "x",
-				title: "X",
-				description: "",
-				subdir: "modules/x",
-				folder: "Course",
-				kind: "plain-java",
-				order: 10,
+			lessonCatalogSchema.safeParse({
+				schemaVersion: 1,
+				modules: [
+					{
+						id: "x",
+						title: "X",
+						description: "",
+						subdir: "modules/x",
+						folder: "Course",
+						kind: "plain-java",
+						order: 10,
+					},
+				],
 			}).success,
 		).toBe(false);
+	});
+
+	test("ignores unknown keys on modules and folders", () => {
+		const parsed = lessonCatalogSchema.parse({
+			schemaVersion: 1,
+			modules: [
+				{
+					id: "x",
+					title: "X",
+					description: "",
+					subdir: "modules/x",
+					kind: "plain-java",
+					order: 10,
+					difficulty: 2,
+				},
+				{ folder: "Course", order: 20, modules: [], $comment: "later" },
+			],
+		});
+		expect(parsed.modules[0]).not.toHaveProperty("difficulty");
+		expect(parsed.modules[1]).not.toHaveProperty("$comment");
+	});
+
+	test("reports a nested module error at the module's own path", () => {
+		const result = lessonCatalogSchema.safeParse({
+			schemaVersion: 1,
+			modules: [
+				{
+					folder: "Course",
+					order: 10,
+					modules: [
+						{
+							id: "x",
+							title: "X",
+							description: "",
+							subdir: "modules/x",
+							kind: "not-a-kind",
+							order: 10,
+						},
+					],
+				},
+			],
+		});
+		expect(result.success).toBe(false);
+		expect(result.error?.issues.map((issue) => issue.path)).toEqual([
+			["modules", 0, "modules", 0, "kind"],
+		]);
 	});
 
 	test("rejects an unknown module kind", () => {
@@ -449,6 +500,10 @@ describe("lesson catalog schemas", () => {
 			"https://gitlab.com/owner/repo",
 			"https://github.com/owner/repo/tree/main/src",
 			"owner/repo/extra",
+			"../lessons",
+			"./repo",
+			"owner/..",
+			"https://github.com/../repo",
 		]) {
 			expect(
 				lessonModuleSchema.safeParse({

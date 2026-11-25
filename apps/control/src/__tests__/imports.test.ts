@@ -1,4 +1,7 @@
 import { describe, expect, test } from "bun:test";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type {
 	ImportServerMessage,
 	WorkspaceId,
@@ -566,6 +569,32 @@ describe("ImportManager — standalone module repo", () => {
 
 		const done = messages.find((m) => m.type === "done");
 		expect(done).toMatchObject({ type: "done", success: true });
+	});
+
+	test("emptiness check treats a clone holding only .git as empty", async () => {
+		const { commands } = await loadRepoModule({
+			repo: "frcsoftware/empty-lesson",
+			preserveGit: false,
+		});
+		const check = commands.find(
+			(command) => command[0] === "bash" && command[2]?.includes("-mindepth"),
+		);
+		expect(check).toBeTruthy();
+		const sourceDir = /find (\S+) /.exec(check![2]!)![1]!;
+
+		// Run the real check against a local stand-in for the clone.
+		const dir = mkdtempSync(join(tmpdir(), "empty-clone-"));
+		try {
+			mkdirSync(join(dir, ".git"));
+			const runCheck = () =>
+				Bun.spawnSync(["bash", "-c", check![2]!.replace(sourceDir, dir)])
+					.exitCode;
+			expect(runCheck()).not.toBe(0);
+			writeFileSync(join(dir, "README.md"), "lesson");
+			expect(runCheck()).toBe(0);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
 	});
 
 	test("keeps .git when preserveGit is true", async () => {

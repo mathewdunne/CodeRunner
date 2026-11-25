@@ -128,6 +128,14 @@ describe("SwitchProjectDialog", () => {
 		});
 	});
 
+	test("shows the empty state when every folder is empty", () => {
+		mockModules.current = [{ folder: "Week 1", order: 10, modules: [] }];
+		renderDialog(true);
+		expect(
+			screen.getByText("No lessons are available yet."),
+		).toBeInTheDocument();
+	});
+
 	test("shows modules in collapsible folders", async () => {
 		mockModules.current = [
 			{
