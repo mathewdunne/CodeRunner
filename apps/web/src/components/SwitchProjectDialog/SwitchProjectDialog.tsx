@@ -62,12 +62,20 @@ function KindTag({ kind }: { kind: LessonModule["kind"] }) {
 
 interface ModuleCardProps {
 	module: LessonModule;
+	/** Position shown before the title; omitted when the list is unnumbered. */
+	number: number | null;
 	isCurrent: boolean;
 	onChoose: (module: LessonModule) => void;
 	onReset: (module: LessonModule) => void;
 }
 
-function ModuleCard({ module, isCurrent, onChoose, onReset }: ModuleCardProps) {
+function ModuleCard({
+	module,
+	number,
+	isCurrent,
+	onChoose,
+	onReset,
+}: ModuleCardProps) {
 	return (
 		<div
 			className={cn(
@@ -79,6 +87,7 @@ function ModuleCard({ module, isCurrent, onChoose, onReset }: ModuleCardProps) {
 		>
 			<div className="mb-1 flex items-start justify-between gap-2">
 				<h4 className="text-[13px] font-semibold leading-tight text-foreground">
+					{number !== null && `${number}. `}
 					{module.title}
 				</h4>
 				<KindTag kind={module.kind} />
@@ -122,6 +131,8 @@ function ModuleCard({ module, isCurrent, onChoose, onReset }: ModuleCardProps) {
 
 interface ModuleGridProps {
 	modules: LessonModule[];
+	/** Number of the grid's first module, or null to leave the grid unnumbered. */
+	firstNumber: number | null;
 	currentModule: string | null;
 	onChoose: (module: LessonModule) => void;
 	onReset: (module: LessonModule) => void;
@@ -129,16 +140,18 @@ interface ModuleGridProps {
 
 function ModuleGrid({
 	modules,
+	firstNumber,
 	currentModule,
 	onChoose,
 	onReset,
 }: ModuleGridProps) {
 	return (
 		<div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-			{modules.map((module) => (
+			{modules.map((module, index) => (
 				<ModuleCard
 					key={module.id}
 					module={module}
+					number={firstNumber === null ? null : firstNumber + index}
 					isCurrent={module.id === currentModule}
 					onChoose={onChoose}
 					onReset={onReset}
@@ -170,11 +183,18 @@ function CatalogTree({
 	onReset,
 }: CatalogTreeProps) {
 	const blocks = groupCatalogBlocks(entries);
+	// Number lessons only in a list with no (visible) folders, so a number never
+	// jumps across a folder. A flat catalog counts 1, 2, 3; a folder holding only
+	// lessons counts its own from 1.
+	const numbered = blocks.every((block) => block.type === "modules");
+	let nextNumber = 1;
 
 	return (
 		<div className={cn(depth > 0 && "ml-3 border-l border-border/60 pl-3")}>
 			{blocks.map((block, index) => {
 				if (block.type === "modules") {
+					const firstNumber = numbered ? nextNumber : null;
+					nextNumber += block.modules.length;
 					return (
 						<div
 							key={`modules-${block.modules[0]?.id}`}
@@ -182,6 +202,7 @@ function CatalogTree({
 						>
 							<ModuleGrid
 								modules={block.modules}
+								firstNumber={firstNumber}
 								currentModule={currentModule}
 								onChoose={onChoose}
 								onReset={onReset}

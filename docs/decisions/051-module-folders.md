@@ -77,9 +77,11 @@ so module IDs remain a global namespace and loading is unchanged.
   by the `order` of the modules inside it.
 - The `modules` array still defines hierarchy and breaks ties: entries with the
   same `order` keep their array sequence because the sort is stable.
-- Modules are numbered depth-first in rendered order, so the visible list counts
-  up from 1 and a folder's modules are contiguous. Numbers do not change when a
-  folder is collapsed.
+- Modules are numbered only in a sibling list that contains no folders: a flat
+  catalog counts 1, 2, 3 as before folders existed, and a folder holding only
+  modules counts its own from 1. A list that mixes modules and folders is
+  unnumbered, because one count would jump around the folders between its
+  modules. Empty folders are hidden and do not count.
 
 The picker renders consecutive modules as a grid, then a folder section, then
 the next run, so a sibling list such as `[module, folder, module]` renders in

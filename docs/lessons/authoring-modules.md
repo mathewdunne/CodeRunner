@@ -217,9 +217,10 @@ Folders are part of the JSON tree. A folder entry has a `folder` name and its ow
   name and stays visible whether the folder is open or closed.
 - Folder names must be unique among siblings. The same folder name can appear in
   different branches.
-- Module numbers follow the depth-first display order, so nested lessons are
-  numbered contiguously. A module keeps the same number whether a folder is open
-  or closed.
+- Lessons are numbered only in a list that contains no folders. A flat catalog
+  shows 1, 2, 3, and a folder that holds only lessons numbers its own lessons
+  from 1. A list that mixes lessons and folders is unnumbered, so a number never
+  jumps across a folder. Empty folders are hidden and do not count.
 - A folder header shows the total number of modules in its subtree and marks
   itself when the current lesson is inside it.
 - Folder open/closed state is per browser session; it resets when the dialog

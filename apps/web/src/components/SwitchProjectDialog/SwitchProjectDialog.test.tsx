@@ -194,7 +194,53 @@ describe("SwitchProjectDialog", () => {
 		expect(screen.queryByRole("button", { name: /Advanced/ })).toBeNull();
 	});
 
-	test("renders module titles without numbering", () => {
+	function headingNames(): string[] {
+		return screen
+			.getAllByRole("heading", { level: 4 })
+			.map((heading) => heading.textContent ?? "");
+	}
+
+	test("numbers a flat catalog 1, 2, 3", () => {
+		mockModules.current = [
+			mockModule("intro", "Intro", "plain-java", 10),
+			mockModule("drive", "Drive", "robot", 20),
+			mockModule("auto", "Auto", "robot", 30),
+		];
+		renderDialog(true);
+		expect(headingNames()).toEqual(["1. Intro", "2. Drive", "3. Auto"]);
+	});
+
+	test("numbers each lesson-only folder from 1", () => {
+		mockModules.current = [
+			{
+				folder: "Week 1",
+				order: 10,
+				modules: [
+					mockModule("w1-a", "Variables", "plain-java", 10),
+					mockModule("w1-b", "Loops", "plain-java", 20),
+				],
+			},
+			{
+				folder: "Week 2",
+				order: 20,
+				modules: [mockModule("w2-a", "Drive", "robot", 10)],
+			},
+		];
+		renderDialog(true);
+		expect(headingNames()).toEqual(["1. Variables", "2. Loops", "1. Drive"]);
+	});
+
+	test("ignores hidden empty folders when numbering", () => {
+		mockModules.current = [
+			mockModule("intro", "Intro", "plain-java", 10),
+			{ folder: "Later", order: 20, modules: [] },
+			mockModule("drive", "Drive", "robot", 30),
+		];
+		renderDialog(true);
+		expect(headingNames()).toEqual(["1. Intro", "2. Drive"]);
+	});
+
+	test("leaves lists that mix lessons and folders unnumbered", () => {
 		mockModules.current = [
 			mockModule("intro", "Intro", "plain-java", 10),
 			{
@@ -214,15 +260,14 @@ describe("SwitchProjectDialog", () => {
 		];
 		renderDialog(true);
 
-		for (const title of [
+		// The top level and Course mix lessons with folders; Advanced holds only
+		// lessons, so it is the one list that is numbered.
+		expect(headingNames()).toEqual([
 			"Intro",
 			"Stage 1",
-			"Stage 2",
+			"1. Stage 2",
 			"Stage 3",
 			"Appendix",
-		]) {
-			expect(screen.getByRole("heading", { name: title })).toBeInTheDocument();
-		}
-		expect(screen.queryByText(/^\d+\.\s/)).toBeNull();
+		]);
 	});
 });
