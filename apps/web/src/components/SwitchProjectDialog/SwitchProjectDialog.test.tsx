@@ -3,18 +3,55 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { SwitchProjectDialog } from "./SwitchProjectDialog";
 
+type MockModule = {
+	id: string;
+	title: string;
+	description: string;
+	kind: "plain-java" | "robot";
+	subdir: string;
+	preserveGit: boolean;
+	order: number;
+};
+
+type MockEntry =
+	| MockModule
+	| {
+			folder: string;
+			description?: string;
+			order: number;
+			modules: MockEntry[];
+	  };
+
+function mockModule(
+	id: string,
+	title: string,
+	kind: MockModule["kind"] = "plain-java",
+	order = 10,
+): MockModule {
+	return {
+		id,
+		title,
+		description: `${title} description.`,
+		kind,
+		subdir: `modules/${id}`,
+		preserveGit: false,
+		order,
+	};
+}
+
+const BASE_MODULES: MockEntry[] = [mockModule("hello-world", "Hello, World")];
+
+const { mockModules } = vi.hoisted(() => ({
+	mockModules: {
+		current: [] as MockEntry[],
+	},
+}));
+
 const startSwap = vi.fn();
 
 vi.mock("@/hooks/useLessons", () => ({
 	useLessons: () => ({
-		modules: [
-			{
-				id: "hello-world",
-				title: "Hello, World",
-				description: "Print a line.",
-				kind: "plain-java",
-			},
-		],
+		modules: mockModules.current,
 		error: null,
 		loading: false,
 	}),
@@ -50,6 +87,7 @@ function renderDialog(projectEmpty: boolean) {
 
 describe("SwitchProjectDialog", () => {
 	beforeEach(() => {
+		mockModules.current = BASE_MODULES;
 		startSwap.mockClear();
 	});
 
@@ -88,5 +126,148 @@ describe("SwitchProjectDialog", () => {
 			kind: "import",
 			url: "https://github.com/team1234/robot-2026",
 		});
+	});
+
+	test("shows the empty state when every folder is empty", () => {
+		mockModules.current = [{ folder: "Week 1", order: 10, modules: [] }];
+		renderDialog(true);
+		expect(
+			screen.getByText("No lessons are available yet."),
+		).toBeInTheDocument();
+	});
+
+	test("shows modules in collapsible folders", async () => {
+		mockModules.current = [
+			{
+				folder: "FRCSoftware",
+				description: "A premade Java and robotics curriculum.",
+				order: 10,
+				modules: [
+					mockModule("stage-1", "Stage 1", "robot", 10),
+					mockModule("stage-2", "Stage 2", "robot", 20),
+				],
+			},
+		];
+		renderDialog(true);
+
+		expect(screen.getByText("FRCSoftware")).toBeInTheDocument();
+		expect(
+			screen.getByText("A premade Java and robotics curriculum."),
+		).toBeInTheDocument();
+		expect(screen.getAllByRole("button", { name: "Load" })).toHaveLength(2);
+
+		await userEvent.click(screen.getByRole("button", { name: /FRCSoftware/ }));
+		expect(screen.queryByRole("heading", { name: /Stage 1/ })).toBeNull();
+		expect(screen.queryByRole("heading", { name: /Stage 2/ })).toBeNull();
+
+		await userEvent.click(screen.getByRole("button", { name: /FRCSoftware/ }));
+		expect(
+			screen.getByRole("heading", { name: /Stage 1/ }),
+		).toBeInTheDocument();
+	});
+
+	test("supports nested folders", async () => {
+		mockModules.current = [
+			{
+				folder: "Course",
+				order: 10,
+				modules: [
+					mockModule("stage-1", "Stage 1", "robot", 10),
+					{
+						folder: "Advanced",
+						order: 20,
+						modules: [mockModule("stage-2", "Stage 2", "robot", 20)],
+					},
+				],
+			},
+		];
+		renderDialog(true);
+
+		await userEvent.click(screen.getByRole("button", { name: /Advanced/ }));
+		expect(
+			screen.getByRole("heading", { name: /Stage 1/ }),
+		).toBeInTheDocument();
+		expect(screen.queryByRole("heading", { name: /Stage 2/ })).toBeNull();
+
+		await userEvent.click(screen.getByRole("button", { name: /Course/ }));
+		expect(screen.queryByRole("heading", { name: /Stage 1/ })).toBeNull();
+		expect(screen.queryByRole("button", { name: /Advanced/ })).toBeNull();
+	});
+
+	function headingNames(): string[] {
+		return screen
+			.getAllByRole("heading", { level: 4 })
+			.map((heading) => heading.textContent ?? "");
+	}
+
+	test("numbers a flat catalog 1, 2, 3", () => {
+		mockModules.current = [
+			mockModule("intro", "Intro", "plain-java", 10),
+			mockModule("drive", "Drive", "robot", 20),
+			mockModule("auto", "Auto", "robot", 30),
+		];
+		renderDialog(true);
+		expect(headingNames()).toEqual(["1. Intro", "2. Drive", "3. Auto"]);
+	});
+
+	test("numbers each lesson-only folder from 1", () => {
+		mockModules.current = [
+			{
+				folder: "Week 1",
+				order: 10,
+				modules: [
+					mockModule("w1-a", "Variables", "plain-java", 10),
+					mockModule("w1-b", "Loops", "plain-java", 20),
+				],
+			},
+			{
+				folder: "Week 2",
+				order: 20,
+				modules: [mockModule("w2-a", "Drive", "robot", 10)],
+			},
+		];
+		renderDialog(true);
+		expect(headingNames()).toEqual(["1. Variables", "2. Loops", "1. Drive"]);
+	});
+
+	test("ignores hidden empty folders when numbering", () => {
+		mockModules.current = [
+			mockModule("intro", "Intro", "plain-java", 10),
+			{ folder: "Later", order: 20, modules: [] },
+			mockModule("drive", "Drive", "robot", 30),
+		];
+		renderDialog(true);
+		expect(headingNames()).toEqual(["1. Intro", "2. Drive"]);
+	});
+
+	test("leaves lists that mix lessons and folders unnumbered", () => {
+		mockModules.current = [
+			mockModule("intro", "Intro", "plain-java", 10),
+			{
+				folder: "Course",
+				order: 20,
+				modules: [
+					mockModule("stage-1", "Stage 1", "robot", 20),
+					{
+						folder: "Advanced",
+						order: 30,
+						modules: [mockModule("stage-2", "Stage 2", "robot", 30)],
+					},
+					mockModule("stage-3", "Stage 3", "robot", 40),
+				],
+			},
+			mockModule("appendix", "Appendix", "plain-java", 50),
+		];
+		renderDialog(true);
+
+		// The top level and Course mix lessons with folders; Advanced holds only
+		// lessons, so it is the one list that is numbered.
+		expect(headingNames()).toEqual([
+			"Intro",
+			"Stage 1",
+			"1. Stage 2",
+			"Stage 3",
+			"Appendix",
+		]);
 	});
 });

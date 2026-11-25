@@ -2,7 +2,10 @@ import { describe, expect, test } from "bun:test";
 import { access, readdir, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { lessonCatalogSchema } from "../packages/contracts/src/index";
+import {
+	flattenLessonModules,
+	lessonCatalogSchema,
+} from "../packages/contracts/src/index";
 
 const repoRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const catalogRoot = resolve(repoRoot, "catalog");
@@ -22,17 +25,20 @@ describe("bundled lesson catalog", () => {
 		const catalog = lessonCatalogSchema.parse(manifest);
 
 		expect(catalog.schemaVersion).toBe(1);
-		const ids = catalog.modules.map((module) => module.id).sort();
+		const ids = flattenLessonModules(catalog.modules)
+			.map((module) => module.id)
+			.sort();
 		expect(ids).toEqual(["hello-world", "robot-starter"]);
 	});
 
-	test("every module subdir exists and is non-empty", async () => {
+	test("every subdir module exists and is non-empty", async () => {
 		const manifest = await Bun.file(
 			resolve(catalogRoot, "modules.json"),
 		).json();
 		const catalog = lessonCatalogSchema.parse(manifest);
 
-		for (const module of catalog.modules) {
+		for (const module of flattenLessonModules(catalog.modules)) {
+			if (module.subdir === undefined) continue;
 			const subdirPath = resolve(catalogRoot, module.subdir);
 			const subdirStat = await stat(subdirPath);
 			expect(subdirStat.isDirectory()).toBe(true);

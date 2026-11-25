@@ -58,10 +58,20 @@ workspaces start empty and the student fills them via the topbar **Switch
 Project** surface, which offers a lesson catalog plus a public GitHub team
 import. The catalog has two sources behind one interface: a **bundled** `catalog/`
 (zero-config, baked into the image) and a **remote** lessons repo when
-`LESSONS_CATALOG_REPO` is set. Catalog loads are gitless (reset = re-load); team
-imports keep `.git` for push. The per-import backup/restore flow was removed
-(pure discard + git). See [`docs/lessons/overview.md`](./docs/lessons/overview.md)
-and `docs/decisions/029-lessons-and-modules.md`.
+`LESSONS_CATALOG_REPO` is set. Catalog loads are gitless by default (reset =
+re-load); team imports keep `.git` for push. A module may also define `repo`
+instead of `subdir`: a standalone public GitHub repo whose root is the lesson
+(useful for premade curricula such as FRCSoftware.org), with opt-in
+`preserveGit` to keep the lesson's `.git`. Catalog `modules` are a recursive
+tree: an entry may be a folder (`folder` + `order` + `modules`) containing
+modules and further folders, rendered as multi-level collapsible sections in the
+picker. `order` positions modules and folders on one sibling scale while the
+arrays define hierarchy. The per-import backup/restore flow was removed (pure
+discard + git). See
+[`docs/lessons/overview.md`](./docs/lessons/overview.md),
+`docs/decisions/029-lessons-and-modules.md`,
+`docs/decisions/050-repo-sourced-lesson-modules.md`, and
+`docs/decisions/051-module-folders.md`.
 
 **Project Preview (post-V2):** a third right-pane tab beside AdvantageScope
 and PathPlanner reads the project's own Markdown and generated HTML reports
@@ -160,7 +170,7 @@ arch-independent). See `docs/decisions/035-multi-arch-images-and-workflow-split.
 ## Key References
 
 - `docs/` + `website/` — docs site content and Docusaurus config; published at `https://mathewdunne.github.io/CodeRunner/`; run `bun run docs:dev` to browse locally, `bun run docs:build` to build.
-- `docs/decisions/` — all architecture decision logs (011–049 active; 001–010 archived under `docs/decisions/archive/`).
+- `docs/decisions/` — all architecture decision logs (011–051 active; 001–010 archived under `docs/decisions/archive/`).
 - Pinned AdvantageScope submodule: `vendor/AdvantageScope` at tag `v26.0.2`.
 
 ## Commands

@@ -6,15 +6,19 @@ import {
 	deployFilePathSchema,
 	deployFilesSnapshotResponseSchema,
 	driverStationPatchSchema,
+	flattenLessonModules,
 	gamepadClientMessageSchema,
 	gamepadServerMessageSchema,
 	gamepadStateSchema,
 	importRequestSchema,
 	importResponseSchema,
+	isLessonFolder,
 	isWorkspaceSlug,
 	lessonCatalogResponseSchema,
 	lessonCatalogSchema,
+	lessonFolderNameSchema,
 	lessonLoadRequestSchema,
+	lessonModuleSchema,
 	runClientMessageSchema,
 	runServerMessageSchema,
 	simRunCommandRequestSchema,
@@ -174,6 +178,192 @@ describe("lesson catalog schemas", () => {
 		).toMatchObject({ modules: [{ id: "hello-world", kind: "plain-java" }] });
 	});
 
+	test("parses nested folders and flattens modules depth-first", () => {
+		const parsed = lessonCatalogSchema.parse({
+			schemaVersion: 1,
+			modules: [
+				{
+					id: "intro",
+					title: "Intro",
+					description: "",
+					subdir: "modules/intro",
+					kind: "plain-java",
+					order: 10,
+				},
+				{
+					folder: "  Course  ",
+					description: "A guided course.",
+					order: 20,
+					modules: [
+						{
+							id: "stage-1",
+							title: "Stage 1",
+							description: "",
+							subdir: "modules/stage-1",
+							kind: "robot",
+							order: 20,
+						},
+						{
+							folder: "Advanced",
+							order: 20,
+							modules: [
+								{
+									id: "stage-2",
+									title: "Stage 2",
+									description: "",
+									subdir: "modules/stage-2",
+									kind: "robot",
+									order: 30,
+								},
+							],
+						},
+					],
+				},
+			],
+		});
+
+		const folder = parsed.modules[1];
+		expect(folder && isLessonFolder(folder) && folder.folder).toBe("Course");
+		expect(folder && isLessonFolder(folder) && folder.description).toBe(
+			"A guided course.",
+		);
+		expect(flattenLessonModules(parsed.modules).map((m) => m.id)).toEqual([
+			"intro",
+			"stage-1",
+			"stage-2",
+		]);
+	});
+
+	test("requires an integer order on folder entries", () => {
+		const base = {
+			schemaVersion: 1,
+			modules: [{ folder: "Course", modules: [] }],
+		};
+		expect(lessonCatalogSchema.safeParse(base).success).toBe(false);
+		expect(
+			lessonCatalogSchema.safeParse({
+				schemaVersion: 1,
+				modules: [{ folder: "Course", order: 10.5, modules: [] }],
+			}).success,
+		).toBe(false);
+	});
+
+	test("rejects duplicate folder names among siblings", () => {
+		const module = (id: string) => ({
+			id,
+			title: id,
+			description: "",
+			subdir: `modules/${id}`,
+			kind: "plain-java" as const,
+			order: 10,
+		});
+		expect(
+			lessonCatalogSchema.safeParse({
+				schemaVersion: 1,
+				modules: [
+					{ folder: "Course", order: 10, modules: [module("a")] },
+					{ folder: "Course", order: 20, modules: [module("b")] },
+				],
+			}).success,
+		).toBe(false);
+
+		expect(
+			lessonCatalogSchema.safeParse({
+				schemaVersion: 1,
+				modules: [
+					{ folder: "Course", order: 10, modules: [module("a")] },
+					{
+						folder: "Other",
+						order: 20,
+						modules: [{ folder: "Course", order: 10, modules: [module("b")] }],
+					},
+				],
+			}).success,
+		).toBe(true);
+	});
+
+	test("rejects duplicate module ids across the tree", () => {
+		const module = {
+			id: "same",
+			title: "Same",
+			description: "",
+			subdir: "modules/same",
+			kind: "plain-java" as const,
+			order: 10,
+		};
+		expect(
+			lessonCatalogSchema.safeParse({
+				schemaVersion: 1,
+				modules: [module, { folder: "Course", order: 10, modules: [module] }],
+			}).success,
+		).toBe(false);
+	});
+
+	test("rejects a module entry carrying a folder field", () => {
+		expect(
+			lessonCatalogSchema.safeParse({
+				schemaVersion: 1,
+				modules: [
+					{
+						id: "x",
+						title: "X",
+						description: "",
+						subdir: "modules/x",
+						folder: "Course",
+						kind: "plain-java",
+						order: 10,
+					},
+				],
+			}).success,
+		).toBe(false);
+	});
+
+	test("ignores unknown keys on modules and folders", () => {
+		const parsed = lessonCatalogSchema.parse({
+			schemaVersion: 1,
+			modules: [
+				{
+					id: "x",
+					title: "X",
+					description: "",
+					subdir: "modules/x",
+					kind: "plain-java",
+					order: 10,
+					difficulty: 2,
+				},
+				{ folder: "Course", order: 20, modules: [], $comment: "later" },
+			],
+		});
+		expect(parsed.modules[0]).not.toHaveProperty("difficulty");
+		expect(parsed.modules[1]).not.toHaveProperty("$comment");
+	});
+
+	test("reports a nested module error at the module's own path", () => {
+		const result = lessonCatalogSchema.safeParse({
+			schemaVersion: 1,
+			modules: [
+				{
+					folder: "Course",
+					order: 10,
+					modules: [
+						{
+							id: "x",
+							title: "X",
+							description: "",
+							subdir: "modules/x",
+							kind: "not-a-kind",
+							order: 10,
+						},
+					],
+				},
+			],
+		});
+		expect(result.success).toBe(false);
+		expect(result.error?.issues.map((issue) => issue.path)).toEqual([
+			["modules", 0, "modules", 0, "kind"],
+		]);
+	});
+
 	test("rejects an unknown module kind", () => {
 		expect(
 			lessonCatalogSchema.safeParse({
@@ -214,6 +404,115 @@ describe("lesson catalog schemas", () => {
 							order: 10,
 						},
 					],
+				}).success,
+			).toBe(false);
+		}
+	});
+
+	test("accepts a standalone repo module and defaults preserveGit to false", () => {
+		const parsed = lessonCatalogSchema.parse({
+			schemaVersion: 1,
+			modules: [
+				{
+					id: "java-fundamentals",
+					title: "Java Fundamentals",
+					description: "A premade lesson repo.",
+					repo: "frcsoftware/java-fundamentals",
+					kind: "plain-java",
+					order: 10,
+				},
+			],
+		});
+		const [module] = flattenLessonModules(parsed.modules);
+		expect(module).toMatchObject({
+			repo: "frcsoftware/java-fundamentals",
+			preserveGit: false,
+		});
+		expect(module?.subdir).toBeUndefined();
+	});
+
+	test("accepts preserveGit on a repo module", () => {
+		const parsed = lessonModuleSchema.parse({
+			id: "robot-repo",
+			title: "Robot Repo",
+			description: "",
+			repo: "https://github.com/frcsoftware/robot-repo.git",
+			preserveGit: true,
+			kind: "robot",
+			order: 10,
+		});
+		expect(parsed.preserveGit).toBe(true);
+	});
+
+	test("requires exactly one of subdir or repo", () => {
+		const base = {
+			id: "x",
+			title: "X",
+			description: "",
+			kind: "plain-java" as const,
+			order: 10,
+		};
+		expect(lessonModuleSchema.safeParse(base).success).toBe(false);
+		expect(
+			lessonModuleSchema.safeParse({
+				...base,
+				subdir: "modules/x",
+				repo: "owner/repo",
+			}).success,
+		).toBe(false);
+	});
+
+	test("rejects preserveGit on a subdir module", () => {
+		expect(
+			lessonModuleSchema.safeParse({
+				id: "x",
+				title: "X",
+				description: "",
+				subdir: "modules/x",
+				preserveGit: true,
+				kind: "plain-java",
+				order: 10,
+			}).success,
+		).toBe(false);
+	});
+
+	test("accepts and trims a folder name", () => {
+		expect(lessonFolderNameSchema.parse("  Stage 1  ")).toBe("Stage 1");
+	});
+
+	test("rejects path-like or control-character folder names", () => {
+		for (const folder of [
+			"",
+			"   ",
+			"Stage/1",
+			"Stage\\1",
+			"Stage\n1",
+			"x".repeat(81),
+		]) {
+			expect(lessonFolderNameSchema.safeParse(folder).success).toBe(false);
+		}
+	});
+
+	test("rejects unsafe module repo values", () => {
+		for (const repo of [
+			"",
+			"git@github.com:owner/repo.git",
+			"https://gitlab.com/owner/repo",
+			"https://github.com/owner/repo/tree/main/src",
+			"owner/repo/extra",
+			"../lessons",
+			"./repo",
+			"owner/..",
+			"https://github.com/../repo",
+		]) {
+			expect(
+				lessonModuleSchema.safeParse({
+					id: "x",
+					title: "X",
+					description: "",
+					repo,
+					kind: "robot",
+					order: 10,
 				}).success,
 			).toBe(false);
 		}

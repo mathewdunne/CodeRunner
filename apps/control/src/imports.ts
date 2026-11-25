@@ -59,6 +59,18 @@ export function parseGitHubUrl(rawUrl: string): ParsedImportUrl {
 	);
 }
 
+/**
+ * Normalize a catalog module `repo` entry to an HTTPS clone URL. Accepts a full
+ * GitHub URL or `owner/repo` shorthand, matching `LESSONS_CATALOG_REPO`.
+ */
+export function normalizeCatalogModuleRepo(repo: string): string {
+	const trimmed = repo.trim();
+	const url = /^https:\/\//i.test(trimmed)
+		? trimmed
+		: `https://github.com/${trimmed}`;
+	return parseGitHubUrl(url).cloneUrl;
+}
+
 // --- Errors ---
 
 export class ImportError extends Error {
@@ -133,17 +145,21 @@ export type GithubImportContext = {
 };
 
 /**
- * Lesson-module load from the catalog (D11/§5.2). `remote` is the sparse
- * shallow clone descriptor when the remote catalog is active, or `null` to copy
- * from the in-image bundled catalog. Gitless; never backed up; no build.gradle
- * gate.
+ * Lesson-module load from the catalog (D11/§5.2). A module is either a folder
+ * inside the catalog repo (`subdir`) or a standalone git repo (`repo`).
+ * `remote` is the sparse shallow clone descriptor when the remote catalog is
+ * active, or `null` to copy a subdir module from the in-image bundled catalog.
+ * Never backed up; no build.gradle gate. A module repo's `.git` is dropped
+ * unless `preserveGit` is set.
  */
 export type CatalogLoadContext = {
 	source: "catalog";
 	workspace: WorkspaceRow;
 	userId: string;
 	moduleId: string;
-	subdir: string;
+	subdir: string | null;
+	repo: string | null;
+	preserveGit: boolean;
 	kind: LessonModuleKind;
 	remote: { cloneUrl: string; branch: string } | null;
 	send: ImportSend;
@@ -174,10 +190,10 @@ export class ImportManager {
 			);
 		}
 
-		// Team imports are public clones over the network and are rate-limited.
-		// Catalog loads are trusted/local (or a sparse clone of a control-plane
-		// configured repo); students switch lessons freely, so they are NOT
-		// rate-limited.
+		// Team imports are public clones of student-supplied repos and are
+		// rate-limited. Catalog loads are NOT, so students can switch lessons
+		// freely: every module, including a `repo` module's full shallow clone,
+		// comes from a catalog the control plane is configured to trust.
 		if (ctx.source === "github") {
 			this.rateLimiter.check(userId);
 		}
@@ -190,7 +206,9 @@ export class ImportManager {
 			importId,
 			source: ctx.source,
 			cloneUrl:
-				ctx.source === "github" ? ctx.cloneUrl : (ctx.remote?.cloneUrl ?? null),
+				ctx.source === "github"
+					? ctx.cloneUrl
+					: (ctx.repo ?? ctx.remote?.cloneUrl ?? null),
 			moduleId: ctx.source === "catalog" ? ctx.moduleId : null,
 		});
 		send({ type: "hello", importId });
@@ -299,8 +317,15 @@ export class ImportManager {
 	}
 
 	private async executeCatalogLoad(ctx: CatalogLoadContext): Promise<void> {
-		const { workspace, send, moduleId, kind, remote } = ctx;
-		const subdir = safeCatalogSubdir(ctx.subdir);
+		const { workspace, send, moduleId, kind, remote, preserveGit } = ctx;
+		const subdir = ctx.subdir ? safeCatalogSubdir(ctx.subdir) : null;
+		const repo = ctx.repo ? normalizeCatalogModuleRepo(ctx.repo) : null;
+		if ((subdir === null) === (repo === null)) {
+			throw new ImportError(
+				"Lesson module must define exactly one of subdir or repo.",
+			);
+		}
+		const moduleLabel = subdir ?? repo ?? moduleId;
 		const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 		const stagingName = `.lesson-${timestamp}`;
 
@@ -314,8 +339,22 @@ export class ImportManager {
 
 		let projectRoot: string;
 		try {
-			if (remote) {
-				// Remote: sparse shallow clone of just this module's subdir.
+			if (repo) {
+				// Standalone module repo: the repository root is the project.
+				send({
+					type: "progress",
+					stage: "cloning",
+					detail: `Fetching lesson "${moduleId}"…`,
+				});
+				const sourceDir = `/workspace/${stagingName}/source`;
+				await this.cloneOrThrow(
+					workspace.id,
+					["git", "clone", "--depth", "1", "--", repo, sourceDir],
+					send,
+				);
+				projectRoot = sourceDir;
+			} else if (remote && subdir) {
+				// Remote catalog: sparse shallow clone of just this module's subdir.
 				send({
 					type: "progress",
 					stage: "cloning",
@@ -355,7 +394,7 @@ export class ImportManager {
 					throw new ImportError(`Sparse checkout failed: ${detail}`);
 				}
 				projectRoot = `${sourceDir}/${subdir}`;
-			} else {
+			} else if (subdir) {
 				// Bundled: copy from the in-image catalog. No network, no clone.
 				send({
 					type: "progress",
@@ -363,9 +402,15 @@ export class ImportManager {
 					detail: `Loading bundled lesson "${moduleId}"…`,
 				});
 				projectRoot = `${IMAGE_CATALOG_DIR}/${subdir}`;
+			} else {
+				throw new ImportError(
+					"Lesson module must define exactly one of subdir or repo.",
+				);
 			}
 
 			// Validate the module root exists and is non-empty (no build.gradle gate).
+			// `.git` alone does not count: a repo module's clone always has one,
+			// even when the repository itself is empty.
 			send({
 				type: "progress",
 				stage: "validating",
@@ -377,27 +422,30 @@ export class ImportManager {
 				projectRoot,
 			]);
 			if (existsResult.exitCode !== 0) {
-				throw new ImportError(`Lesson module not found at ${subdir}.`);
+				throw new ImportError(`Lesson module not found at ${moduleLabel}.`);
 			}
 			const nonEmptyResult = await this.runtimeExec(workspace.id, [
 				"bash",
 				"-c",
-				`test -n "$(find ${projectRoot} -mindepth 1 -maxdepth 1 -print -quit)"`,
+				`test -n "$(find ${projectRoot} -mindepth 1 -maxdepth 1 ! -name .git -print -quit)"`,
 			]);
 			if (nonEmptyResult.exitCode !== 0) {
-				throw new ImportError(`Lesson module ${subdir} is empty.`);
+				throw new ImportError(`Lesson module ${moduleLabel} is empty.`);
 			}
 
 			// Size cap as cheap insurance.
 			await this.enforceSizeCap(workspace.id, projectRoot, send);
 
-			// Swap into /workspace/project, then drop any `.git` (lessons are gitless).
+			// Swap into /workspace/project. Only a module repo may keep `.git`;
+			// subdir modules are always gitless.
 			await this.swapProject(workspace.id, projectRoot, send);
-			await this.runtimeExec(workspace.id, [
-				"rm",
-				"-rf",
-				"/workspace/project/.git",
-			]);
+			if (!repo || !preserveGit) {
+				await this.runtimeExec(workspace.id, [
+					"rm",
+					"-rf",
+					"/workspace/project/.git",
+				]);
+			}
 			await this.runtimeExec(workspace.id, [
 				"bash",
 				"-c",

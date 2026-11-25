@@ -190,6 +190,9 @@ export async function withApp<T>(
 	const app = await createApp({
 		dataDir: join(root, "data"),
 		catalogDir,
+		// Tests must not reach the real remote lessons repo just because the
+		// developer's .env sets LESSONS_CATALOG_REPO; individual tests opt in.
+		catalogRepo: null,
 		webDistDir,
 		advantageScopeDistDir,
 		pathplannerDistDir,
